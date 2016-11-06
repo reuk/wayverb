@@ -242,6 +242,7 @@ int main(int argc, char** argv) {
                     waveguide_params,
                     max_element(eyring_reverb_time(scene_data, 0.0)),
                     true,
+                    [](auto) {},
                     [&](auto& queue,
                         const auto& buffer,
                         auto step,

@@ -7,6 +7,12 @@ small?
 Put a really short hanning window on the beginning of output signals to hide
 dc drift? QUALITY ENGINEERING
 
+Remove variable-spacing waveguide mesh stuff.
+    Engine should cache whatever state is possible:
+        probably the waveguide mesh + voxels
+
+Threaded engine - finish completely
+
 app stuff
 ---------
 
@@ -34,6 +40,8 @@ write out files immediately. Wait until all files have been generated and then
 normalize them all.
 
 Fail for really long reverbs i.e. longer than 60 seconds.
+
+Rewrite MeshGenerator to use `async` rather than raw threads.
 
 Benchmark gpu vs cpu performance.
 

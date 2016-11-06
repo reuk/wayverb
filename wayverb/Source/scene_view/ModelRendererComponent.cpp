@@ -91,34 +91,18 @@ void ModelRendererComponent::left_panel_debug_show_closest_surfaces(
         wayverb::combined::engine::scene_data scene,
         double sample_rate,
         double speed_of_sound) {
-    generator_ = std::experimental::make_optional(generator_and_connector{});
-
-    generator_->connector = generator_->generator.add_event_finished_callback(
-            [&](auto model) {
-                renderer_.context_command([m = std::move(model)](auto &i) {
-                    i.debug_show_closest_surfaces(std::move(m));
-                });
-                generator_ = std::experimental::nullopt;
-            });
-
-    generator_->generator.run(std::move(scene), sample_rate, speed_of_sound);
+    generate_mesh_async(std::move(scene), sample_rate, speed_of_sound, [] (auto& i, auto mesh) {
+        i.debug_show_closest_surfaces(std::move(m));
+    });
 }
 
 void ModelRendererComponent::left_panel_debug_show_boundary_types(
         wayverb::combined::engine::scene_data scene,
         double sample_rate,
         double speed_of_sound) {
-    generator_ = std::experimental::make_optional(generator_and_connector{});
-
-    generator_->connector = generator_->generator.add_event_finished_callback(
-            [&](auto model) {
-                renderer_.context_command([m = std::move(model)](auto &i) {
-                    i.debug_show_boundary_types(std::move(m));
-                });
-                generator_ = std::experimental::nullopt;
-            });
-    
-    generator_->generator.run(std::move(scene), sample_rate, speed_of_sound);
+    generate_mesh_async(std::move(scene), sample_rate, speed_of_sound, [] (auto& i, auto mesh) {
+        i.debug_show_boundary_types(std::move(m));
+    });
 }
 
 void ModelRendererComponent::left_panel_debug_hide_debug_mesh() {

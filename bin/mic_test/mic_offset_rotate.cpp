@@ -153,6 +153,7 @@ int main(int argc, char** argv) {
                 wayverb::waveguide::single_band_parameters{sample_rate, 0.6},
                 2 / env.speed_of_sound,
                 true,
+                [](auto) {},
                 [&](auto& queue, const auto& buffer, auto step, auto steps) {
                     set_progress(pb, step, steps);
                 });

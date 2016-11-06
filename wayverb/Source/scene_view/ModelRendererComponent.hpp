@@ -69,6 +69,22 @@ private:
     model::BroadcastConnector facing_direction_connector{&app.receiver_settings,
                                                          this};
     */
+    template <typename T>
+    void generate_mesh_async(wayverb::combined::engine::scene_data scene,
+                             double sample_rate,
+                             double speed_of_sound,
+                             T t) {
+        generator_ = std::experimental::make_optional(generator_and_connector{});
+        generator_->connector = generator_->generator.add_event_finished_callback(
+                [this, t = std::move(t)](auto model) {
+                    renderer_.context_command([t = std::move(t), m = std::move(model)](auto &i) {
+                        t(i, std::move(m));
+                    });
+                    generator_ = std::experimental::nullopt;
+                });
+        generator_->generator.run(std::move(scene), sample_rate, speed_of_sound);
+    }
+    
     struct generator_and_connector final {
         AsyncMeshGenerator generator;
         util::event<wayverb::waveguide::mesh>::scoped_connector connector;

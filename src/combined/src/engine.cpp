@@ -149,6 +149,12 @@ std::unique_ptr<intermediate> engine::run(
             waveguide,
             max_stochastic_time,
             keep_going,
+            [&](auto mesh_descriptor) {
+                if (! waveguide_node_positions_changed_.empty()) {
+                    waveguide_node_positions_changed_(
+                            waveguide::compute_node_positions(mesh_descriptor));
+                }
+            },
             [&](auto& queue, const auto& buffer, auto step, auto steps) {
                 //  If there are node pressure listeners.
                 if (!waveguide_node_pressures_changed_.empty()) {

@@ -105,7 +105,7 @@ struct simulation_results final {
 ///     source at closest available location
 ///     single hard source
 ///     single directional receiver
-template <typename Callback>
+template <typename PositionCallback, typename PressureCallback>
 std::experimental::optional<simulation_results> canonical(
         const core::compute_context& cc,
         const core::generic_scene_data<cl_float3,
@@ -117,12 +117,15 @@ std::experimental::optional<simulation_results> canonical(
         const single_band_parameters& sim_params,
         double simulation_time,
         const std::atomic_bool& keep_going,
-        Callback&& callback) {
+        PositionCallback&& position_callback,
+        PressureCallback&& pressure_callback) {
     auto voxelised = compute_voxels_and_mesh(cc,
                                              scene,
                                              receiver,
                                              sim_params.sample_rate,
                                              environment.speed_of_sound);
+
+    position_callback(voxelised.mesh.get_descriptor());
 
     if (auto ret = detail::canonical_impl(cc,
                                           voxelised.mesh,
@@ -132,7 +135,7 @@ std::experimental::optional<simulation_results> canonical(
                                           receiver,
                                           environment,
                                           keep_going,
-                                          std::forward<Callback>(callback))) {
+                                          pressure_callback)) {
         return simulation_results{{bandpass_band{
                 std::move(*ret),
                 util::make_range(
@@ -158,7 +161,7 @@ inline auto set_flat_coefficients_for_band(voxels_and_mesh& voxels_and_mesh,
 
 /// This method shows a different approach which more accurately simulates
 /// frequency-dependent boundaries, but which runs several times slower.
-template <typename Callback>
+template <typename PositionCallback, typename PressureCallback>
 [
         [deprecated("really slow and inaccurate compared to the single-band "
                     "version")]] std::experimental::optional<simulation_results>
@@ -172,7 +175,8 @@ canonical(const core::compute_context& cc,
           const multiple_band_variable_spacing_parameters& sim_params,
           double simulation_time,
           const std::atomic_bool& keep_going,
-          Callback&& callback) {
+          PositionCallback&& position_callback,
+          PressureCallback&& pressure_callback) {
     const auto band_params = hrtf_data::hrtf_band_params_hz();
 
     simulation_results ret{};
@@ -195,6 +199,9 @@ canonical(const core::compute_context& cc,
 
             return ret.mesh;
         }();
+
+        position_callback(mesh.get_descriptor());
+
         if (auto rendered_band = detail::canonical_impl(cc,
                                                         mesh,
                                                         sample_rate,
@@ -203,7 +210,7 @@ canonical(const core::compute_context& cc,
                                                         receiver,
                                                         environment,
                                                         keep_going,
-                                                        callback)) {
+                                                        pressure_callback)) {
             ret.bands.emplace_back(bandpass_band{
                     std::move(*rendered_band),
                     util::make_range(band_params.edges[band],
@@ -218,7 +225,7 @@ canonical(const core::compute_context& cc,
 
 /// This is a sort of middle ground - more accurate boundary modelling, but
 /// really unbelievably slow.
-template <typename Callback>
+template <typename PositionCallback, typename PressureCallback>
 std::experimental::optional<simulation_results> canonical(
         const core::compute_context& cc,
         const core::generic_scene_data<cl_float3,
@@ -230,7 +237,8 @@ std::experimental::optional<simulation_results> canonical(
         const multiple_band_constant_spacing_parameters& sim_params,
         double simulation_time,
         const std::atomic_bool& keep_going,
-        Callback&& callback) {
+        PositionCallback&& position_callback,
+        PressureCallback&& pressure_callback) {
     const auto band_params = hrtf_data::hrtf_band_params_hz();
 
     //  Find the waveguide sampling rate required.
@@ -239,6 +247,8 @@ std::experimental::optional<simulation_results> canonical(
                                                    receiver,
                                                    sim_params.sample_rate,
                                                    environment.speed_of_sound);
+
+    position_callback(voxels_and_mesh.mesh.get_descriptor());
 
     simulation_results ret{};
 
@@ -254,7 +264,7 @@ std::experimental::optional<simulation_results> canonical(
                                                         receiver,
                                                         environment,
                                                         keep_going,
-                                                        callback)) {
+                                                        pressure_callback)) {
             ret.bands.emplace_back(bandpass_band{
                     std::move(*rendered_band),
                     util::make_range(band_params.edges[band],
