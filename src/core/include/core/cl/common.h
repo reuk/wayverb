@@ -32,7 +32,7 @@ size_t items_in_buffer(const cl::Buffer& buffer) {
 }
 
 template <typename T>
-util::aligned::vector<T> read_from_buffer(const cl::CommandQueue& queue,
+util::aligned::vector<T> read_from_buffer(cl::CommandQueue& queue,
                                           const cl::Buffer& buffer) {
     util::aligned::vector<T> ret(items_in_buffer<T>(buffer));
     cl::copy(queue, buffer, ret.begin(), ret.end());

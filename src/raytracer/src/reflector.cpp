@@ -50,15 +50,15 @@ util::aligned::vector<reflection> reflector::run_step(
     return core::read_from_buffer<reflection>(queue_, reflection_buffer_);
 }
 
-util::aligned::vector<core::ray> reflector::get_rays() const {
+util::aligned::vector<core::ray> reflector::get_rays() {
     return core::read_from_buffer<core::ray>(queue_, ray_buffer_);
 }
 
-util::aligned::vector<reflection> reflector::get_reflections() const {
+util::aligned::vector<reflection> reflector::get_reflections() {
     return core::read_from_buffer<reflection>(queue_, reflection_buffer_);
 }
 
-util::aligned::vector<cl_float> reflector::get_rng() const {
+util::aligned::vector<cl_float> reflector::get_rng() {
     return core::read_from_buffer<cl_float>(queue_, rng_buffer_);
 }
 

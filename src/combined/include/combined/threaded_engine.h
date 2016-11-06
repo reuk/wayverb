@@ -37,8 +37,8 @@ struct channel_info final {
     std::string capsule_name;
 };
 
-/// For a scene, and a collection of sources and receivers, for each source-
-/// receiver pair:
+/// Given a scene, and a collection of sources and receivers,
+/// For each source-receiver pair:
 ///     Simulate the scene.
 ///     Do microphone post-processing according to the receiver's capsules.
 ///     Cache the results.
@@ -150,8 +150,8 @@ public:
 
             const auto factor = 1.0 / max_mag;
 
-            for (auto& channel: all_channels) {
-                for (auto& sample: channel.data) {
+            for (auto& channel : all_channels) {
+                for (auto& sample : channel.data) {
                     sample *= factor;
                 }
             }

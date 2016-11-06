@@ -242,9 +242,10 @@ int main(int argc, char** argv) {
                     waveguide_params,
                     max_element(eyring_reverb_time(scene_data, 0.0)),
                     true,
-                    [&](auto step, auto steps) {
-                        set_progress(pb, step, steps);
-                    });
+                    [&](auto& queue,
+                        const auto& buffer,
+                        auto step,
+                        auto steps) { set_progress(pb, step, steps); });
 
             return [&, input = std::move(input) ](const auto& attenuator) {
                 return util::make_named_value(

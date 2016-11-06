@@ -58,6 +58,8 @@ Reduce visiblity of methods wherever possible.
 nice-to-have
 ============
 
+Speed up compile times.
+
 Directional sources.
 
 Real-time simulation.

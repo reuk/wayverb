@@ -55,9 +55,9 @@ public:
     util::aligned::vector<reflection> run_step(
             const core::scene_buffers& buffers);
 
-    util::aligned::vector<core::ray> get_rays() const;
-    util::aligned::vector<reflection> get_reflections() const;
-    util::aligned::vector<cl_float> get_rng() const;
+    util::aligned::vector<core::ray> get_rays();
+    util::aligned::vector<reflection> get_reflections();
+    util::aligned::vector<cl_float> get_rng();
 
 private:
     using kernel_t = decltype(std::declval<program>().get_kernel());

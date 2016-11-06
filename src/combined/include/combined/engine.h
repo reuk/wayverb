@@ -117,7 +117,7 @@ public:
                     waveguide_node_positions_changed::callback_type);
 
     using waveguide_node_pressures_changed =
-            util::event<util::aligned::vector<float>>;
+            util::event<util::aligned::vector<float>, double>;
 
     waveguide_node_pressures_changed::scoped_connector
             add_scoped_waveguide_node_pressures_changed_callback(

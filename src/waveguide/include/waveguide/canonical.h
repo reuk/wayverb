@@ -80,7 +80,7 @@ std::experimental::optional<band> canonical_impl(
                         compute_mesh_index(source), begin(input), end(input)),
                 [&](auto& queue, const auto& buffer, auto step) {
                     output_accumulator(queue, buffer, step);
-                    callback(step, ideal_steps);
+                    callback(queue, buffer, step, ideal_steps);
                 },
                 keep_going);
 

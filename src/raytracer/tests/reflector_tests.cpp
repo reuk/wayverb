@@ -66,7 +66,7 @@ struct reflector_fixture : public ::testing::Test {
 
     reflector reflector{cc, receiver, begin(rays), end(rays)};
 
-    auto get_fast_intersections() const {
+    auto get_fast_intersections() {
         const auto rays = reflector.get_rays();
         const auto reflections = reflector.get_reflections();
         util::aligned::vector<std::experimental::optional<intersection>> ret;
@@ -78,7 +78,7 @@ struct reflector_fixture : public ::testing::Test {
         return ret;
     }
 
-    auto get_slow_intersections() const {
+    auto get_slow_intersections() {
         const auto rays = reflector.get_rays();
         const auto reflections = reflector.get_reflections();
         util::aligned::vector<std::experimental::optional<intersection>> ret;

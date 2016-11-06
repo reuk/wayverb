@@ -149,7 +149,16 @@ std::unique_ptr<intermediate> engine::run(
             waveguide,
             max_stochastic_time,
             keep_going,
-            [&](auto step, auto steps) {
+            [&](auto& queue, const auto& buffer, auto step, auto steps) {
+                //  If there are node pressure listeners.
+                if (!waveguide_node_pressures_changed_.empty()) {
+                    auto pressures =
+                            core::read_from_buffer<float>(queue, buffer);
+                    const auto time = step / waveguide.sample_rate;
+                    waveguide_node_pressures_changed_(std::move(pressures),
+                                                      time);
+                }
+
                 engine_state_changed_(state::running_waveguide,
                                       step / (steps - 1.0));
             });

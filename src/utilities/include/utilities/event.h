@@ -16,7 +16,7 @@ public:
             : pimpl_{std::make_shared<impl>()} {}
 
     using key_type = size_t;
-    using callback_type = std::function<void(Ts&&... ts)>;
+    using callback_type = std::function<void(Ts... ts)>;
 
     auto add(callback_type callback) {
         return pimpl_->add(std::move(callback));
@@ -54,6 +54,8 @@ public:
         pimpl_->operator()(std::forward<Us>(us)...);
     }
 
+    bool empty() const { return pimpl_->empty(); }
+
 private:
     class impl final {
     public:
@@ -79,6 +81,8 @@ private:
                 slot.second(std::forward<Us>(us)...);
             }
         }
+
+        bool empty() const { return slots_.empty(); }
 
     private:
         key_type current_key_{0};
