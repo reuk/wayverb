@@ -59,12 +59,6 @@ public:
         return postprocess_impl(attenuator, sample_rate);
     }
 
-    engine_state_changed::scoped_connector
-    add_scoped_engine_state_changed_callback(
-            engine_state_changed::callback_type callback) override {
-        return engine_state_changed_.add_scoped(std::move(callback));
-    }
-
 private:
     template <typename Attenuator>
     auto postprocess_impl(const Attenuator& attenuator,
@@ -121,7 +115,7 @@ std::unique_ptr<intermediate> engine::run(
 
     auto raytracer_output = raytracer::canonical(
             compute_context,
-            scene_data,
+            voxelised.voxels,
             source,
             receiver,
             environment,

@@ -32,6 +32,7 @@ enum class state {
     starting_waveguide,
     running_waveguide,
     finishing_waveguide,
+    postprocessing,
 };
 
 constexpr auto to_string(state s) {
@@ -44,6 +45,7 @@ constexpr auto to_string(state s) {
         case state::starting_waveguide: return "starting waveguide";
         case state::running_waveguide: return "running waveguide";
         case state::finishing_waveguide: return "finishing waveguide";
+        case state::postprocessing: return "postprocessing";
     }
 }
 
@@ -74,10 +76,6 @@ public:
     virtual util::aligned::vector<float> postprocess(
             const core::attenuator::null& attenuator,
             double sample_rate) const = 0;
-
-    virtual engine_state_changed::scoped_connector
-            add_scoped_engine_state_changed_callback(
-                    engine_state_changed::callback_type) = 0;
 };
 
 //  engine  ////////////////////////////////////////////////////////////////////

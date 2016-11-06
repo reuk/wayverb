@@ -1,5 +1,4 @@
 #include "box/img_src.h"
-#include "box/raytracer.h"
 
 #include "combined/engine.h"
 
@@ -144,6 +143,10 @@ int main(int argc, char** argv) {
     const auto scene_data =
             wayverb::core::geo::get_scene_data(box, scattering_surface);
 
+    const wayverb::core::compute_context cc{};
+    const auto voxelised = wayverb::waveguide::compute_voxels_and_mesh(
+            cc, scene_data, receiver, sample_rate, environment.speed_of_sound);
+
     const auto room_volume = estimate_room_volume(scene_data);
     const auto eyring = eyring_reverb_time(scene_data, 0.0f);
     const auto max_time = max_element(eyring);
@@ -160,7 +163,7 @@ int main(int argc, char** argv) {
         //  engine /////////////////////////////////////////////////////////////
         renderers.emplace_back(make_concrete_renderer_ptr([&] {
             auto input = wayverb::combined::engine{}.run(
-                    wayverb::core::compute_context{},
+                    cc,
                     scene_data,
                     source,
                     receiver,
@@ -181,17 +184,20 @@ int main(int argc, char** argv) {
     if (false) {
         //  raytracer //////////////////////////////////////////////////////////
         renderers.emplace_back(make_concrete_renderer_ptr([&] {
-            auto input = run_raytracer(
-                    box,
-                    scattering_surface,
+            auto input = wayverb::raytracer::canonical(
+                    cc,
+                    voxelised.voxels,
                     source,
                     receiver,
                     environment,
-                    wayverb::raytracer::simulation_parameters{1 << 16, 5});
+                    wayverb::raytracer::simulation_parameters{1 << 16, 5},
+                    0,
+                    true,
+                    [](auto step, auto steps) {});
             return [&, input = std::move(input) ](const auto& attenuator) {
                 return util::make_named_value(
                         "raytracer",
-                        wayverb::raytracer::postprocess(input,
+                        wayverb::raytracer::postprocess(input->aural,
                                                         attenuator,
                                                         receiver,
                                                         room_volume,
@@ -231,14 +237,6 @@ int main(int argc, char** argv) {
 
     const auto make_waveguide_renderer = [&](const auto& name,
                                              const auto& waveguide_params) {
-        const wayverb::core::compute_context cc;
-        const auto voxelised = wayverb::waveguide::compute_voxels_and_mesh(
-                cc,
-                scene_data,
-                receiver,
-                waveguide_params.sample_rate,
-                environment.speed_of_sound);
-
         return make_concrete_renderer_ptr([&] {
             util::progress_bar pb;
             auto input = *wayverb::waveguide::canonical(

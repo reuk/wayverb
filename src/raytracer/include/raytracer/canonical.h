@@ -3,6 +3,8 @@
 #include "raytracer/raytracer.h"
 #include "raytracer/simulation_parameters.h"
 
+#include "core/spatial_division/voxelised_scene_data.h"
+
 namespace wayverb {
 namespace raytracer {
 
@@ -41,8 +43,8 @@ auto make_canonical_results(
 template <typename Callback>
 auto canonical(
         const core::compute_context& cc,
-        const core::generic_scene_data<cl_float3,
-                                       core::surface<core::simulation_bands>>&
+        const core::voxelised_scene_data<cl_float3,
+                                         core::surface<core::simulation_bands>>&
                 scene,
         const glm::vec3& source,
         const glm::vec3& receiver,
@@ -57,7 +59,7 @@ auto canonical(
             run(begin(directions),
                 end(directions),
                 cc,
-                make_voxelised_scene_data(scene, 5, 0.1f),
+                scene,
                 source,
                 receiver,
                 environment,

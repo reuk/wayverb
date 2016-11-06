@@ -81,9 +81,7 @@ public:
             return std::experimental::nullopt;
         }
 
-        const auto intermediate_state_change_connector =
-                intermediate.add_scoped_engine_state_changed_callback(
-                        make_forwarding_call(engine_state_changed_));
+        engine_state_changed_(state::postprocessing, 1.0);
 
         util::aligned::vector<util::aligned::vector<float>> channels;
         for (auto it = b_capsules; it != e_capsules && keep_going; ++it) {
