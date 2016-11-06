@@ -52,8 +52,6 @@ public:
                       waveguide}
             , state_connector_{engine_.add_scoped_engine_state_changed_callback(
                       make_forwarding_call(engine_state_changed_))}
-            , position_connector_{engine_.add_scoped_waveguide_node_positions_changed_callback(
-                      make_forwarding_call(waveguide_node_positions_changed_))}
             , pressure_connector_{engine_.add_scoped_waveguide_node_pressures_changed_callback(
                       make_forwarding_call(waveguide_node_pressures_changed_))}
             , reflection_connector_{
@@ -101,13 +99,6 @@ public:
         return engine_state_changed_.add_scoped(std::move(callback));
     }
 
-    waveguide_node_positions_changed::scoped_connector
-    add_scoped_waveguide_node_positions_changed_callback(
-            waveguide_node_positions_changed::callback_type callback) {
-        return waveguide_node_positions_changed_.add_scoped(
-                std::move(callback));
-    }
-
     waveguide_node_pressures_changed::scoped_connector
     add_scoped_waveguide_node_pressures_changed_callback(
             waveguide_node_pressures_changed::callback_type callback) {
@@ -121,16 +112,18 @@ public:
         return raytracer_reflections_generated_.add_scoped(std::move(callback));
     }
 
+    const waveguide::voxels_and_mesh& get_voxels_and_mesh() const {
+        return engine_.get_voxels_and_mesh();
+    }
+
 private:
     engine_type engine_;
 
     engine_state_changed engine_state_changed_;
-    waveguide_node_positions_changed waveguide_node_positions_changed_;
     waveguide_node_pressures_changed waveguide_node_pressures_changed_;
     raytracer_reflections_generated raytracer_reflections_generated_;
 
     engine_state_changed::scoped_connector state_connector_;
-    waveguide_node_positions_changed::scoped_connector position_connector_;
     waveguide_node_pressures_changed::scoped_connector pressure_connector_;
     raytracer_reflections_generated::scoped_connector reflection_connector_;
 };

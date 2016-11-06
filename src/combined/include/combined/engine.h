@@ -52,8 +52,6 @@ constexpr auto to_string(state s) {
 }
 
 using engine_state_changed = util::event<state, double>;
-using waveguide_node_positions_changed =
-        util::event<util::aligned::vector<glm::vec3>>;
 using waveguide_node_pressures_changed =
         util::event<util::aligned::vector<float>, double>;
 using raytracer_reflections_generated = util::event<
@@ -248,13 +246,6 @@ public:
         return engine_state_changed_.add_scoped(std::move(callback));
     }
 
-    waveguide_node_positions_changed::scoped_connector
-    add_scoped_waveguide_node_positions_changed_callback(
-            waveguide_node_positions_changed::callback_type callback) {
-        return waveguide_node_positions_changed_.add_scoped(
-                std::move(callback));
-    }
-
     waveguide_node_pressures_changed::scoped_connector
     add_scoped_waveguide_node_pressures_changed_callback(
             waveguide_node_pressures_changed::callback_type callback) {
@@ -267,6 +258,8 @@ public:
             raytracer_reflections_generated::callback_type callback) {
         return raytracer_reflections_generated_.add_scoped(std::move(callback));
     }
+
+    //  cached data  ///////////////////////////////////////////////////////////
 
     const waveguide::voxels_and_mesh& get_voxels_and_mesh() const {
         return voxels_and_mesh_;
@@ -283,7 +276,6 @@ private:
     WaveguideParameters waveguide_;
 
     engine_state_changed engine_state_changed_;
-    waveguide_node_positions_changed waveguide_node_positions_changed_;
     waveguide_node_pressures_changed waveguide_node_pressures_changed_;
     raytracer_reflections_generated raytracer_reflections_generated_;
 };

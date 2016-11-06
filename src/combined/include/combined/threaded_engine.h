@@ -44,6 +44,9 @@ struct max_mag_functor final {
     }
 };
 
+using waveguide_node_positions_changed =
+        util::event<waveguide::mesh_descriptor>;
+
 /// Given a scene, and a collection of sources and receivers,
 /// For each source-receiver pair:
 ///     Simulate the scene.
@@ -98,16 +101,15 @@ public:
                                                            raytracer,
                                                            waveguide);
 
+                    //  Send new node position notification.
+                    waveguide_node_positions_changed_(
+                            eng->get_voxels_and_mesh().mesh.get_descriptor());
+
                     //  Register callbacks.
                     const auto engine_state_change_connector =
                             eng->add_scoped_engine_state_changed_callback(
                                     make_forwarding_call(
                                             engine_state_changed_));
-
-                    const auto node_position_connector =
-                            eng->add_scoped_waveguide_node_positions_changed_callback(
-                                    make_forwarding_call(
-                                            waveguide_node_positions_changed_));
 
                     const auto node_pressure_connector =
                             eng->add_scoped_waveguide_node_pressures_changed_callback(

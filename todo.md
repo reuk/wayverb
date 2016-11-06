@@ -2,15 +2,12 @@ important
 =========
 
 Sanity checks - do big echo-y rooms sound big and echo-y? Do small rooms sound
-small?
+small? Can I get the correct direct/reflected ratios for near and far sources?
 
 Put a really short hanning window on the beginning of output signals to hide
 dc drift? QUALITY ENGINEERING
 
 Threaded engine - finish completely
-
-Can I use something like a spatial sinc kernel to place the initial impulse at
-an exact location?
 
 Not convinced that waveguide/raytracer levels are matched properly.
 
@@ -62,6 +59,9 @@ nice-to-have
 ============
 
 Speed up compile times.
+
+Can I use something like a spatial sinc kernel to place the initial impulse at
+an exact location?
 
 Directional sources.
 
