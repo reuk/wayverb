@@ -13,6 +13,11 @@ Remove variable-spacing waveguide mesh stuff.
 
 Threaded engine - finish completely
 
+Can I use something like a sinc kernel to place the initial impulse at an exact
+location?
+
+engine::scene_data -> core::gpu_scene_data
+
 app stuff
 ---------
 
@@ -32,12 +37,6 @@ Make source and receiver draggable.
 Improve source/reciever + microphone direction models.
 
 Change orientation of whole microphone group, with their own up + facing pairs.
-
-Auto-configure wherever possible, but make it clear what the algorithm is doing.
-
-Make sure all outputs from the same run are normalized appropriately, so don't
-write out files immediately. Wait until all files have been generated and then
-normalize them all.
 
 Fail for really long reverbs i.e. longer than 60 seconds.
 

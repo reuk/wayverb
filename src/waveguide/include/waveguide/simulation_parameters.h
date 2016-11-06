@@ -29,20 +29,6 @@ constexpr auto compute_sampling_frequency(double cutoff,
     return cutoff / (0.25 * usable_portion);
 }
 
-struct multiple_band_variable_spacing_parameters final {
-    /// The number of bands which should be simulated with the waveguide.
-    /// Be careful with high numbers.
-    /// Not only will the waveguide be run once for each band, but the
-    /// simulated frequency will increase with each band, so that the
-    /// simulation will take *much* longer.
-    size_t bands;
-
-    /// Same as the usable_portion of the single_band_parameters.
-    /// The waveguide simulation sampling rate is found by taking the high
-    /// edge of the frequency band, and dividing it by usable_portion * 0.25.
-    double usable_portion;
-};
-
 struct multiple_band_constant_spacing_parameters final {
     /// The number of bands which should be simulated with the waveguide.
     /// Be careful with high numbers.

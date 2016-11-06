@@ -105,28 +105,17 @@ struct simulation_results final {
 ///     source at closest available location
 ///     single hard source
 ///     single directional receiver
-template <typename PositionCallback, typename PressureCallback>
+template <typename PressureCallback>
 std::experimental::optional<simulation_results> canonical(
         const core::compute_context& cc,
-        const core::generic_scene_data<cl_float3,
-                                       core::surface<core::simulation_bands>>&
-                scene,
+        voxels_and_mesh voxelised,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const core::environment& environment,
         const single_band_parameters& sim_params,
         double simulation_time,
         const std::atomic_bool& keep_going,
-        PositionCallback&& position_callback,
         PressureCallback&& pressure_callback) {
-    auto voxelised = compute_voxels_and_mesh(cc,
-                                             scene,
-                                             receiver,
-                                             sim_params.sample_rate,
-                                             environment.speed_of_sound);
-
-    position_callback(voxelised.mesh.get_descriptor());
-
     if (auto ret = detail::canonical_impl(cc,
                                           voxelised.mesh,
                                           sim_params.sample_rate,
@@ -159,105 +148,29 @@ inline auto set_flat_coefficients_for_band(voxels_and_mesh& voxels_and_mesh,
             }));
 }
 
-/// This method shows a different approach which more accurately simulates
-/// frequency-dependent boundaries, but which runs several times slower.
-template <typename PositionCallback, typename PressureCallback>
-[
-        [deprecated("really slow and inaccurate compared to the single-band "
-                    "version")]] std::experimental::optional<simulation_results>
-canonical(const core::compute_context& cc,
-          const core::generic_scene_data<cl_float3,
-                                         core::surface<core::simulation_bands>>&
-                  scene,
-          const glm::vec3& source,
-          const glm::vec3& receiver,
-          const core::environment& environment,
-          const multiple_band_variable_spacing_parameters& sim_params,
-          double simulation_time,
-          const std::atomic_bool& keep_going,
-          PositionCallback&& position_callback,
-          PressureCallback&& pressure_callback) {
-    const auto band_params = hrtf_data::hrtf_band_params_hz();
-
-    simulation_results ret{};
-
-    //  For each band, up to the maximum band specified.
-    for (auto band = 0; band != sim_params.bands; ++band) {
-        //  Find the waveguide sampling rate required.
-        const auto sample_rate = compute_sampling_frequency(
-                band_params.edges[band + 1], sim_params.usable_portion);
-
-        //  Generate a mesh using the largest possible grid spacing.
-        const auto mesh = [&] {
-            auto ret = compute_voxels_and_mesh(cc,
-                                               scene,
-                                               receiver,
-                                               sample_rate,
-                                               environment.speed_of_sound);
-
-            set_flat_coefficients_for_band(ret, band);
-
-            return ret.mesh;
-        }();
-
-        position_callback(mesh.get_descriptor());
-
-        if (auto rendered_band = detail::canonical_impl(cc,
-                                                        mesh,
-                                                        sample_rate,
-                                                        simulation_time,
-                                                        source,
-                                                        receiver,
-                                                        environment,
-                                                        keep_going,
-                                                        pressure_callback)) {
-            ret.bands.emplace_back(bandpass_band{
-                    std::move(*rendered_band),
-                    util::make_range(band_params.edges[band],
-                                     band_params.edges[band + 1])});
-        } else {
-            return std::experimental::nullopt;
-        }
-    }
-
-    return ret;
-}
-
 /// This is a sort of middle ground - more accurate boundary modelling, but
 /// really unbelievably slow.
-template <typename PositionCallback, typename PressureCallback>
+template <typename PressureCallback>
 std::experimental::optional<simulation_results> canonical(
         const core::compute_context& cc,
-        const core::generic_scene_data<cl_float3,
-                                       core::surface<core::simulation_bands>>&
-                scene,
+        voxels_and_mesh voxelised,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const core::environment& environment,
         const multiple_band_constant_spacing_parameters& sim_params,
         double simulation_time,
         const std::atomic_bool& keep_going,
-        PositionCallback&& position_callback,
         PressureCallback&& pressure_callback) {
     const auto band_params = hrtf_data::hrtf_band_params_hz();
-
-    //  Find the waveguide sampling rate required.
-    auto voxels_and_mesh = compute_voxels_and_mesh(cc,
-                                                   scene,
-                                                   receiver,
-                                                   sim_params.sample_rate,
-                                                   environment.speed_of_sound);
-
-    position_callback(voxels_and_mesh.mesh.get_descriptor());
 
     simulation_results ret{};
 
     //  For each band, up to the maximum band specified.
     for (auto band = 0; band != sim_params.bands; ++band) {
-        set_flat_coefficients_for_band(voxels_and_mesh, band);
+        set_flat_coefficients_for_band(voxelised, band);
 
         if (auto rendered_band = detail::canonical_impl(cc,
-                                                        voxels_and_mesh.mesh,
+                                                        voxelised.mesh,
                                                         sim_params.sample_rate,
                                                         simulation_time,
                                                         source,

@@ -105,6 +105,14 @@ std::unique_ptr<intermediate> engine::run(
         const raytracer::simulation_parameters& raytracer,
         const WaveguideParameters& waveguide,
         const std::atomic_bool& keep_going) const {
+    //  Compute acceleration structures.
+    const auto voxelised =
+            waveguide::compute_voxels_and_mesh(compute_context,
+                                               scene_data,
+                                               receiver,
+                                               waveguide.sample_rate,
+                                               environment.speed_of_sound);
+
     //  RAYTRACER  /////////////////////////////////////////////////////////
 
     const auto rays_to_visualise = std::min(1000ul, raytracer.rays);
@@ -142,19 +150,13 @@ std::unique_ptr<intermediate> engine::run(
 
     auto waveguide_output = waveguide::canonical(
             compute_context,
-            scene_data,
+            voxelised,
             source,
             receiver,
             environment,
             waveguide,
             max_stochastic_time,
             keep_going,
-            [&](auto mesh_descriptor) {
-                if (! waveguide_node_positions_changed_.empty()) {
-                    waveguide_node_positions_changed_(
-                            waveguide::compute_node_positions(mesh_descriptor));
-                }
-            },
             [&](auto& queue, const auto& buffer, auto step, auto steps) {
                 //  If there are node pressure listeners.
                 if (!waveguide_node_pressures_changed_.empty()) {

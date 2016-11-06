@@ -123,10 +123,17 @@ int main(int argc, char** argv) {
     constexpr auto absorption = 0.001f;
     constexpr auto scattering = 0.0f;
 
+    const wayverb::core::compute_context cc;
+
+    constexpr wayverb::core::environment env{};
+
     const auto scene_data = wayverb::core::geo::get_scene_data(
             box,
             wayverb::core::make_surface<wayverb::core::simulation_bands>(
                     absorption, scattering));
+
+    const auto voxelised = wayverb::waveguide::compute_voxels_and_mesh(
+            cc, scene_data, receiver, sample_rate, env.speed_of_sound);
 
     //  simulations ----------------------------------------------------------//
 
@@ -140,20 +147,17 @@ int main(int argc, char** argv) {
                 cereal::make_nvp("energies", output));
     };
 
-    constexpr wayverb::core::environment env{};
-
     run("waveguide", [&](const auto& source, const auto& receiver) {
         util::progress_bar pb;
         auto raw = *wayverb::waveguide::canonical(
-                wayverb::core::compute_context{},
-                scene_data,
+                cc,
+                voxelised,
                 source,
                 receiver,
                 env,
                 wayverb::waveguide::single_band_parameters{sample_rate, 0.6},
                 2 / env.speed_of_sound,
                 true,
-                [](auto) {},
                 [&](auto& queue, const auto& buffer, auto step, auto steps) {
                     set_progress(pb, step, steps);
                 });

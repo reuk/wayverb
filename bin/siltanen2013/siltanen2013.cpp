@@ -231,18 +231,25 @@ int main(int argc, char** argv) {
 
     const auto make_waveguide_renderer = [&](const auto& name,
                                              const auto& waveguide_params) {
+        const wayverb::core::compute_context cc;
+        const auto voxelised = wayverb::waveguide::compute_voxels_and_mesh(
+                cc,
+                scene_data,
+                receiver,
+                waveguide_params.sample_rate,
+                environment.speed_of_sound);
+
         return make_concrete_renderer_ptr([&] {
             util::progress_bar pb;
             auto input = *wayverb::waveguide::canonical(
-                    wayverb::core::compute_context{},
-                    scene_data,
+                    cc,
+                    voxelised,
                     source,
                     receiver,
                     environment,
                     waveguide_params,
                     max_element(eyring_reverb_time(scene_data, 0.0)),
                     true,
-                    [](auto) {},
                     [&](auto& queue,
                         const auto& buffer,
                         auto step,
