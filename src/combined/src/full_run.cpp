@@ -3,28 +3,28 @@
 namespace wayverb {
 namespace combined {
 
-std::experimental::optional<util::aligned::vector<util::aligned::vector<float>>>
-full_run(const engine& engine,
-         const util::aligned::vector<std::unique_ptr<capsule_base>>& capsules,
-         double sample_rate,
-         const std::atomic_bool& keep_going) {
-    const auto intermediate = engine.run(keep_going);
+engine_state_changed::scoped_connector
+postprocessing_engine::add_scoped_engine_state_changed_callback(
+        engine_state_changed::callback_type callback) {
+    return engine_state_changed_.add_scoped(std::move(callback));
+}
 
-    if (intermediate == nullptr) {
-        return std::experimental::nullopt;
-    }
+postprocessing_engine::waveguide_node_positions_changed::scoped_connector
+postprocessing_engine::add_scoped_waveguide_node_positions_changed_callback(
+        waveguide_node_positions_changed::callback_type callback) {
+    return waveguide_node_positions_changed_.add_scoped(std::move(callback));
+}
 
-    util::aligned::vector<util::aligned::vector<float>> channels;
-    for (auto it = begin(capsules), e = end(capsules); it != e && keep_going;
-         ++it) {
-        channels.emplace_back((*it)->postprocess(*intermediate, sample_rate));
-    }
+postprocessing_engine::waveguide_node_pressures_changed::scoped_connector
+postprocessing_engine::add_scoped_waveguide_node_pressures_changed_callback(
+        waveguide_node_pressures_changed::callback_type callback) {
+    return waveguide_node_pressures_changed_.add_scoped(std::move(callback));
+}
 
-    if (!keep_going) {
-        return std::experimental::nullopt;
-    }
-
-    return channels;
+postprocessing_engine::raytracer_reflections_generated::scoped_connector
+postprocessing_engine::add_scoped_raytracer_reflections_generated_callback(
+        raytracer_reflections_generated::callback_type callback) {
+    return raytracer_reflections_generated_.add_scoped(std::move(callback));
 }
 
 }  // namespace combined

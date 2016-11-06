@@ -1,9 +1,8 @@
 #pragma once
 
-#include "raytracer/cl/structs.h"
-#include "raytracer/simulation_parameters.h"
+#include "raytracer/canonical.h"
 
-#include "waveguide/simulation_parameters.h"
+#include "waveguide/canonical.h"
 
 #include "core/attenuator/hrtf.h"
 #include "core/attenuator/microphone.h"
@@ -48,6 +47,8 @@ constexpr auto to_string(state s) {
     }
 }
 
+using engine_state_changed = util::event<state, double>;
+
 //  postprocessing  ////////////////////////////////////////////////////////////
 
 class intermediate {
@@ -73,6 +74,10 @@ public:
     virtual util::aligned::vector<float> postprocess(
             const core::attenuator::null& attenuator,
             double sample_rate) const = 0;
+
+    virtual engine_state_changed::scoped_connector
+            add_scoped_engine_state_changed_callback(
+                    engine_state_changed::callback_type) = 0;
 };
 
 //  engine  ////////////////////////////////////////////////////////////////////
@@ -83,39 +88,22 @@ public:
             core::generic_scene_data<cl_float3,
                                      core::surface<core::simulation_bands>>;
 
-    //  Note: Passing scene_data by value is deliberate, as we need to own
-    //  the scene, and users can std::move if they don't need their own copy.
+    //  Only valid when WaveguideParameters is
+    //  waveguide::single_band_parameters
+    //  waveguide::multiple_band_constant_spacing_parameters
 
-    engine(const core::compute_context& compute_context,
-           scene_data scene_data,
-           const glm::vec3& source,
-           const glm::vec3& receiver,
-           const core::environment& environment,
-           const raytracer::simulation_parameters& raytracer,
-           const waveguide::single_band_parameters& waveguide);
-
-    engine(const core::compute_context& compute_context,
-           scene_data scene_data,
-           const glm::vec3& source,
-           const glm::vec3& receiver,
-           const core::environment& environment,
-           const raytracer::simulation_parameters& raytracer,
-           const waveguide::multiple_band_constant_spacing_parameters&
-                   waveguide);
-
-    engine(const engine& rhs) = delete;
-    engine(engine&& rhs) noexcept;
-
-    engine& operator=(const engine& rhs) = delete;
-    engine& operator=(engine&& rhs) noexcept;
-
-    ~engine() noexcept;
-
-    std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going) const;
+    template <typename WaveguideParameters>
+    std::unique_ptr<intermediate> run(
+            const core::compute_context& compute_context,
+            const scene_data& scene_data,
+            const glm::vec3& source,
+            const glm::vec3& receiver,
+            const core::environment& environment,
+            const raytracer::simulation_parameters& raytracer,
+            const WaveguideParameters& waveguide,
+            const std::atomic_bool& keep_going) const;
 
     //  notifications  /////////////////////////////////////////////////////////
-
-    using engine_state_changed = util::event<state, double>;
 
     engine_state_changed::scoped_connector
             add_scoped_engine_state_changed_callback(
@@ -142,17 +130,12 @@ public:
             add_scoped_raytracer_reflections_generated_callback(
                     raytracer_reflections_generated::callback_type);
 
-    //  utilities  /////////////////////////////////////////////////////////////
-
-    void swap(engine&) noexcept;
-
-    class impl;
-
 private:
-    std::unique_ptr<impl> pimpl_;
+    engine_state_changed engine_state_changed_;
+    waveguide_node_positions_changed waveguide_node_positions_changed_;
+    waveguide_node_pressures_changed waveguide_node_pressures_changed_;
+    raytracer_reflections_generated raytracer_reflections_generated_;
 };
-
-void swap(engine&, engine&) noexcept;
 
 }  // namespace combined
 }  // namespace wayverb

@@ -10,6 +10,9 @@ dc drift? QUALITY ENGINEERING
 app stuff
 ---------
 
+Validate scene before rendering.
+    If it isn't closed, display an error and use less accurate noise estimator.
+
 Pan view.
 
 Finish adding the help panel info.
