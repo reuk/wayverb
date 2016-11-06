@@ -162,17 +162,19 @@ int main(int argc, char** argv) {
     if (true) {
         //  engine /////////////////////////////////////////////////////////////
         renderers.emplace_back(make_concrete_renderer_ptr([&] {
-            auto input = wayverb::combined::engine{}.run(
-                    cc,
-                    scene_data,
-                    source,
-                    receiver,
-                    environment,
-                    wayverb::raytracer::simulation_parameters{1 << 16, 4},
-                    wayverb::waveguide::
-                            multiple_band_constant_spacing_parameters{
-                                    3, sample_rate, usable_portion},
-                    true);
+            auto input =
+                    wayverb::combined::make_engine(
+                            cc,
+                            scene_data,
+                            source,
+                            receiver,
+                            environment,
+                            wayverb::raytracer::simulation_parameters{1 << 16,
+                                                                      4},
+                            wayverb::waveguide::
+                                    multiple_band_constant_spacing_parameters{
+                                            3, sample_rate, usable_portion})
+                            .run(true);
 
             return [&, input = std::move(input) ](const auto& attenuator) {
                 return util::make_named_value(
@@ -324,24 +326,25 @@ int main(int argc, char** argv) {
             },
 
             std::make_tuple(
-                    std::make_tuple("null", wayverb::core::attenuator::null{})
-                    /*,
-                    std::make_tuple(
-                            "hrtf_l",
-                            attenuator::hrtf{pointing,
-                                             up,
-                                             attenuator::hrtf::channel::left}),
-                    std::make_tuple(
-                            "hrtf_r",
-                            attenuator::hrtf{pointing,
-                                             up,
-                                             attenuator::hrtf::channel::right}),
+                    std::make_tuple("null", wayverb::core::attenuator::null{}),
                     std::make_tuple("omnidirectional",
-                                    attenuator::microphone{pointing, 0.0f}),
-                    std::make_tuple("cardioid",
-                                    attenuator::microphone{pointing, 0.5f}),
-                    std::make_tuple("bidirectional",
-                                    attenuator::microphone{pointing, 1.0f})*/));
+                                    wayverb::core::attenuator::microphone{
+                                            pointing, 0.0f}) /*,
+std::make_tuple("cardioid",
+       wayverb::core::attenuator::microphone{pointing, 0.5f}),
+std::make_tuple("bidirectional",
+       wayverb::core::attenuator::microphone{pointing, 1.0f}),
+std::make_tuple(
+"hrtf_l",
+attenuator::hrtf{pointing,
+                up,
+                wayverb::core::attenuator::hrtf::channel::left}),
+std::make_tuple(
+"hrtf_r",
+attenuator::hrtf{pointing,
+                up,
+                wayverb::core::attenuator::hrtf::channel::right})*/
+                    ));
 
     return EXIT_SUCCESS;
 }

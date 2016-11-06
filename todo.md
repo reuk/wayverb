@@ -7,16 +7,12 @@ small?
 Put a really short hanning window on the beginning of output signals to hide
 dc drift? QUALITY ENGINEERING
 
-Remove variable-spacing waveguide mesh stuff.
-    Engine should cache whatever state is possible:
-        probably the waveguide mesh + voxels
-
 Threaded engine - finish completely
 
-Can I use something like a sinc kernel to place the initial impulse at an exact
-location?
+Can I use something like a spatial sinc kernel to place the initial impulse at
+an exact location?
 
-engine::scene_data -> core::gpu_scene_data
+Not convinced that waveguide/raytracer levels are matched properly.
 
 app stuff
 ---------

@@ -45,9 +45,7 @@ struct voxels_and_mesh final {
 /// boundaries, and then will use it to create a mesh
 voxels_and_mesh compute_voxels_and_mesh(
         const core::compute_context& cc,
-        const core::generic_scene_data<cl_float3,
-                                       core::surface<core::simulation_bands>>&
-                scene,
+        const core::gpu_scene_data& scene,
         const glm::vec3& anchor,  //  probably the receiver if you want it to
                                   //  coincide with an actual node
         double sample_rate,

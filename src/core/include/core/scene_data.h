@@ -105,5 +105,7 @@ auto compute_triangle_indices(
     return ret;
 }
 
+using gpu_scene_data = generic_scene_data<cl_float3, surface<simulation_bands>>;
+
 }  // namespace core
 }  // namespace wayverb

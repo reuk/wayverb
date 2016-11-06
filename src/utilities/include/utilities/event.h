@@ -15,6 +15,14 @@ public:
     event()
             : pimpl_{std::make_shared<impl>()} {}
 
+    event(const event&) = delete;
+    event(event&&) noexcept = default;
+
+    event& operator=(const event&) = delete;
+    event& operator=(event&&) noexcept = default;
+
+    ~event() noexcept = default;
+
     using key_type = size_t;
     using callback_type = std::function<void(Ts... ts)>;
 
@@ -26,7 +34,7 @@ public:
     public:
         disconnector() = default;
         disconnector(std::shared_ptr<impl> pimpl, key_type key)
-                : pimpl_{pimpl}
+                : pimpl_{std::move(pimpl)}
                 , key_{key} {}
 
         void operator()() const noexcept { pimpl_->remove(key_); }

@@ -129,14 +129,11 @@ mesh compute_mesh(
     return {desc, std::move(v)};
 }
 
-voxels_and_mesh compute_voxels_and_mesh(
-        const core::compute_context& cc,
-        const core::generic_scene_data<cl_float3,
-                                       core::surface<core::simulation_bands>>&
-                scene,
-        const glm::vec3& anchor,
-        double sample_rate,
-        double speed_of_sound) {
+voxels_and_mesh compute_voxels_and_mesh(const core::compute_context& cc,
+                                        const core::gpu_scene_data& scene,
+                                        const glm::vec3& anchor,
+                                        double sample_rate,
+                                        double speed_of_sound) {
     const auto mesh_spacing =
             config::grid_spacing(speed_of_sound, 1 / sample_rate);
     auto voxelised = make_voxelised_scene_data(

@@ -6,8 +6,8 @@ template <typename T>
 class final_act final {
 public:
     constexpr final_act() = default;
-    constexpr final_act(T&& t)
-            : t_{std::forward<T>(t)} {}
+    constexpr final_act(T t)
+            : t_{std::move(t)} {}
 
     ~final_act() noexcept {
         if (invoke_) {
@@ -40,8 +40,8 @@ private:
 };
 
 template <typename T>
-constexpr auto make_final_act(T&& t) {
-    return final_act<T>{std::forward<T>(t)};
+constexpr auto make_final_act(T t) {
+    return final_act<T>{std::move(t)};
 }
 
 }  // namespace util
