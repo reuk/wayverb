@@ -35,7 +35,7 @@ public:
                 [](auto i) {
                     aiString material_name;
                     i->Get(AI_MATKEY_NAME, material_name);
-                    return material{material_name.C_Str(), surface<8>{}};
+                    return std::string{material_name.C_Str()};
                 });
 
         for (auto i = 0u; i != scene->mNumMeshes; ++i) {

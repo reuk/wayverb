@@ -2,6 +2,7 @@
 
 #include "core/scene_data.h"
 
+#include "utilities/aligned/unordered_map.h"
 #include "utilities/map_to_vector.h"
 
 namespace wayverb {
@@ -31,18 +32,21 @@ private:
     std::unique_ptr<impl> pimpl_;
 };
 
-template <typename It>
-auto extract_surfaces(It begin, It end) {
-    return util::map_to_vector(begin, end, [](auto i) { return i.surface; });
-}
-
 template <typename Vertex, typename Surface>
 auto scene_with_extracted_surfaces(
-        const generic_scene_data<Vertex, Surface>& scene) {
-    return make_scene_data(scene.get_triangles(),
-                           scene.get_vertices(),
-                           extract_surfaces(scene.get_surfaces().begin(),
-                                            scene.get_surfaces().end()));
+        const generic_scene_data<Vertex, std::string>& scene,
+        const util::aligned::unordered_map<std::string, Surface>&
+                surface_table) {
+    const auto surfaces = util::map_to_vector(
+            begin(scene.get_surfaces()),
+            end(scene.get_surfaces()),
+            [&](const auto& i) {
+                const auto it = surface_table.find(i);
+                return it != surface_table.end() ? it->second : Surface();
+            });
+
+    return make_scene_data(
+            scene.get_triangles(), scene.get_vertices(), std::move(surfaces));
 }
 
 }  // namespace core

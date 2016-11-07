@@ -73,14 +73,18 @@ capsule_model::capsule_model() {
     hrtf.connect_on_change([&](auto&) { on_change_(*this); });
 }
 
-void capsule_model::set_type(type type) {
-    type_ = type;
-    on_change_(*this);
-}
-
 void capsule_model::set_name(std::string name) {
     name_ = name;
     on_change_(*this);
+}
+
+void capsule_model::set_mode(capsule_info::capsule_mode mode) {
+    mode_ = mode;
+    on_change_(*this);
+}
+
+capsule_info capsule_model::get_raw() const {
+    return {name_, mode_, microphone.get_raw(), hrtf.get_raw()};
 }
 
 capsule_model::on_change::connection capsule_model::connect_on_change(
@@ -92,7 +96,6 @@ capsule_model::on_change::connection capsule_model::connect_on_change(
 
 receiver_model::receiver_model(core::geo::box bounds)
         : bounds_{std::move(bounds)}
-        , name_{"new receiver"}
         , position_{centre(bounds_)} {
     capsules_.add(0);
     capsules_.connect_on_change([&](auto&) { on_change_(*this); });
@@ -114,11 +117,6 @@ void receiver_model::set_orientation(float azimuth, float elevation) {
     on_change_(*this);
 }
 
-receiver_model::on_change::connection receiver_model::connect_on_change(
-        on_change::callback_type t) {
-    return on_change_.connect(std::move(t));
-}
-
 const capsule_model& receiver_model::get_capsule(size_t index) const {
     return capsules_[index];
 }
@@ -137,16 +135,29 @@ void receiver_model::remove_capsule(size_t index) {
     }
 }
 
+receiver_info receiver_model::get_raw() const {
+    return {name_, position_, orientation_, capsules_.get_raw()};
+}
+
+receiver_model::on_change::connection receiver_model::connect_on_change(
+        on_change::callback_type t) {
+    return on_change_.connect(std::move(t));
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 void raytracer_model::set_rays(size_t rays) {
-    rays_ = rays;
+    data_.rays = rays;
     on_change_(*this);
 }
 
 void raytracer_model::set_max_img_src_order(size_t max) {
-    max_img_src_order_ = max;
+    data_.maximum_image_source_order = max;
     on_change_(*this);
+}
+
+raytracer::simulation_parameters raytracer_model::get_raw() const {
+    return data_;
 }
 
 raytracer_model::on_change::connection raytracer_model::connect_on_change(
@@ -155,13 +166,17 @@ raytracer_model::on_change::connection raytracer_model::connect_on_change(
 }
 
 void single_band_waveguide_model::set_cutoff(double cutoff) {
-    cutoff_ = cutoff;
+    data_.cutoff = cutoff;
     on_change_(*this);
 }
 
 void single_band_waveguide_model::set_usable_portion(double usable) {
-    usable_portion_ = clamp(usable, util::make_range(0.0, 1.0));
+    data_.usable_portion = clamp(usable, util::make_range(0.0, 1.0));
     on_change_(*this);
+}
+
+waveguide::single_band_parameters single_band_waveguide_model::get_raw() const {
+    return data_;
 }
 
 single_band_waveguide_model::on_change::connection
@@ -170,20 +185,24 @@ single_band_waveguide_model::connect_on_change(on_change::callback_type t) {
 }
 
 void multiple_band_waveguide_model::set_bands(size_t bands) {
-    bands_ = clamp(bands, util::make_range(size_t{1}, size_t{8}));
+    data_.bands = clamp(bands, util::make_range(size_t{1}, size_t{8}));
     maintain_valid_cutoff();
     on_change_(*this);
 }
 
 void multiple_band_waveguide_model::set_cutoff(double cutoff) {
-    cutoff_ = cutoff;
+    data_.cutoff = cutoff;
     maintain_valid_cutoff();
     on_change_(*this);
 }
 
 void multiple_band_waveguide_model::set_usable_portion(double usable) {
-    usable_portion_ = usable;
+    data_.usable_portion = usable;
     on_change_(*this);
+}
+
+waveguide::multiple_band_constant_spacing_parameters multiple_band_waveguide_model::get_raw() const {
+    return data_;
 }
 
 multiple_band_waveguide_model::on_change::connection
@@ -192,7 +211,7 @@ multiple_band_waveguide_model::connect_on_change(on_change::callback_type t) {
 }
 
 void multiple_band_waveguide_model::maintain_valid_cutoff() {
-    cutoff_ = std::max(cutoff_, band_params_.edges[bands_]);
+    data_.cutoff = std::max(data_.cutoff, band_params_.edges[data_.bands]);
 }
 
 waveguide_model::waveguide_model() {
@@ -200,9 +219,13 @@ waveguide_model::waveguide_model() {
     multiple_band.connect_on_change([&](auto&) { on_change_(*this); });
 }
 
-void waveguide_model::set_type(type type) {
-    type_ = type;
+void waveguide_model::set_mode(waveguide_info::waveguide_mode mode) {
+    mode_ = mode;
     on_change_(*this);
+}
+
+waveguide_info waveguide_model::get_raw() const {
+    return {mode_, single_band.get_raw(), multiple_band.get_raw()};
 }
 
 waveguide_model::on_change::connection waveguide_model::connect_on_change(
@@ -213,23 +236,27 @@ waveguide_model::on_change::connection waveguide_model::connect_on_change(
 ////////////////////////////////////////////////////////////////////////////////
 
 void output_model::set_output_folder(std::string output_folder) {
-    output_folder_ = std::move(output_folder);
+    data_.output_folder = std::move(output_folder);
     on_change_(*this);
 }
 
 void output_model::set_name(std::string name) {
-    name_ = std::move(name);
+    data_.name = std::move(name);
     on_change_(*this);
 }
 
 void output_model::set_sample_rate(double sr) {
-    sample_rate_ = sr;
+    data_.sample_rate = sr;
     on_change_(*this);
 }
 
-void output_model::set_bit_depth(bit_depth bit_depth) {
-    bit_depth_ = bit_depth;
+void output_model::set_bit_depth(enum output_info::bit_depth bit_depth) {
+    data_.bit_depth = bit_depth;
     on_change_(*this);
+}
+
+output_info output_model::get_raw() const {
+    return data_;
 }
 
 output_model::on_change::connection output_model::connect_on_change(
@@ -255,8 +282,6 @@ app_model::app_model(const std::string& name)
 
 app_model::~app_model() noexcept { stop_render(); }
 
-//  RENDERING
-//  /////////////////////////////////////////////////////////////
 void app_model::start_render() {
     stop_render();
 
@@ -267,11 +292,7 @@ void app_model::start_render() {
 
     //  Start engine in new thread.
     future_ = std::async(std::launch::async, [&] {
-        engine_.run(core::compute_context{},
-                    scene_data,
-                    make_scene_parameters(
-
-                            ));
+        engine_.run(core::compute_context{}, scene_data, scene_parameters{});
     });
 }
 
@@ -284,8 +305,6 @@ void app_model::stop_render() {
 
 void app_model::is_rendering() const { engine_.is_running(); }
 
-//  SAVE
-//  //////////////////////////////////////////////////////////////////
 //  TODO
 //  If currently_open_file_ is blank/not-a-.way then fire a callback
 //  asking
@@ -300,8 +319,6 @@ void app_model::save() const {}
 //  currently_open_file_.
 void app_model::save_as(std::string name) const {}
 
-//  DATA
-//  //////////////////////////////////////////////////////////////////
 //  TODO scene materials
 
 const source_model& app_model::get_source(size_t index) const {

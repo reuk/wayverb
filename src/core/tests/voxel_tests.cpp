@@ -27,12 +27,10 @@ auto get_test_scenes() {
     return util::aligned::vector<scene_data_loader::scene_data>{
             geo::get_scene_data(
                     geo::box{glm::vec3(0, 0, 0), glm::vec3(4, 3, 6)},
-                    scene_data_loader::material{
-                            "default", make_surface<simulation_bands>(0, 0)}),
+                    std::string{"default"}),
             geo::get_scene_data(
                     geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)},
-                    scene_data_loader::material{
-                            "default", make_surface<simulation_bands>(0, 0)}),
+                    std::string{"default"}),
             scene_data_loader{OBJ_PATH}.get_scene_data()};
 }
 
@@ -65,8 +63,10 @@ TEST(voxel, flatten) {
 TEST(voxel, surrounded) {
     const glm::vec3 source{1, 2, 1};
     for (const auto& scene : get_test_scenes()) {
-        const auto voxelised =
-                get_voxelised(scene_with_extracted_surfaces(scene));
+        const auto voxelised = get_voxelised(scene_with_extracted_surfaces(
+                scene,
+                util::aligned::unordered_map<std::string,
+                                             surface<simulation_bands>>{}));
         const compute_context cc{};
         const auto buffers = make_scene_buffers(cc.context, voxelised);
 
@@ -131,7 +131,10 @@ TEST(voxel, surrounded) {
 template <typename Vertex, typename Surface>
 void compare(const glm::vec3& source,
              const generic_scene_data<Vertex, Surface>& scene) {
-    const auto voxelised = get_voxelised(scene_with_extracted_surfaces(scene));
+    const auto voxelised = get_voxelised(scene_with_extracted_surfaces(
+            scene,
+            util::aligned::unordered_map<std::string,
+                                         surface<simulation_bands>>{}));
     const compute_context cc{};
     const auto buffers = make_scene_buffers(cc.context, voxelised);
 

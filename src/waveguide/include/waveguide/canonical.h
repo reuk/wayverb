@@ -116,21 +116,18 @@ std::experimental::optional<simulation_results> canonical(
         double simulation_time,
         const std::atomic_bool& keep_going,
         PressureCallback&& pressure_callback) {
-    if (auto ret = detail::canonical_impl(cc,
-                                          voxelised.mesh,
-                                          sim_params.sample_rate,
-                                          simulation_time,
-                                          source,
-                                          receiver,
-                                          environment,
-                                          keep_going,
-                                          pressure_callback)) {
+    if (auto ret =
+                detail::canonical_impl(cc,
+                                       voxelised.mesh,
+                                       compute_sampling_frequency(sim_params),
+                                       simulation_time,
+                                       source,
+                                       receiver,
+                                       environment,
+                                       keep_going,
+                                       pressure_callback)) {
         return simulation_results{{bandpass_band{
-                std::move(*ret),
-                util::make_range(
-                        0.0,
-                        compute_cutoff_frequency(sim_params.sample_rate,
-                                                 sim_params.usable_portion))}}};
+                std::move(*ret), util::make_range(0.0, sim_params.cutoff)}}};
     }
 
     return std::experimental::nullopt;
@@ -169,15 +166,16 @@ std::experimental::optional<simulation_results> canonical(
     for (auto band = 0; band != sim_params.bands; ++band) {
         set_flat_coefficients_for_band(voxelised, band);
 
-        if (auto rendered_band = detail::canonical_impl(cc,
-                                                        voxelised.mesh,
-                                                        sim_params.sample_rate,
-                                                        simulation_time,
-                                                        source,
-                                                        receiver,
-                                                        environment,
-                                                        keep_going,
-                                                        pressure_callback)) {
+        if (auto rendered_band = detail::canonical_impl(
+                    cc,
+                    voxelised.mesh,
+                    compute_sampling_frequency(sim_params),
+                    simulation_time,
+                    source,
+                    receiver,
+                    environment,
+                    keep_going,
+                    pressure_callback)) {
             ret.bands.emplace_back(bandpass_band{
                     std::move(*rendered_band),
                     util::make_range(band_params.edges[band],

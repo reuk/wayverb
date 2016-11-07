@@ -151,10 +151,10 @@ public:
     capsule_model& operator=(const capsule_model&) = delete;
     capsule_model& operator=(capsule_model&&) noexcept = delete;
 
-    enum class type { microphone, hrtf };
-
-    void set_type(type type);
     void set_name(std::string name);
+    void set_mode(capsule_info::capsule_mode mode);
+
+    capsule_info get_raw() const;
 
     using on_change = util::event<capsule_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
@@ -163,8 +163,8 @@ public:
     hrtf_model hrtf;
 
 private:
-    type type_ = type::microphone;
     std::string name_ = "new capsule";
+    capsule_info::capsule_mode mode_ = capsule_info::capsule_mode::microphone;
 
     on_change on_change_;
 };
@@ -190,13 +190,15 @@ public:
     void add_capsule(size_t index);
     void remove_capsule(size_t index);
 
+    receiver_info get_raw() const;
+
     using on_change = util::event<receiver_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
 
 private:
     core::geo::box bounds_;
 
-    std::string name_;
+    std::string name_ = "new receiver";
     glm::vec3 position_;
     core::orientable orientation_;
     vector_model<capsule_model> capsules_;
@@ -219,12 +221,13 @@ public:
     void set_rays(size_t rays);
     void set_max_img_src_order(size_t max);
 
+    raytracer::simulation_parameters get_raw() const;
+
     using on_change = util::event<raytracer_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
 
 private:
-    size_t rays_ = 10000;
-    size_t max_img_src_order_ = 4;
+    raytracer::simulation_parameters data_{10000, 4};
 
     on_change on_change_;
 };
@@ -244,12 +247,13 @@ public:
     void set_cutoff(double cutoff);
     void set_usable_portion(double usable);
 
+    waveguide::single_band_parameters get_raw() const;
+
     using on_change = util::event<single_band_waveguide_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
 
 private:
-    double cutoff_ = 500;
-    double usable_portion_ = 0.6;
+    waveguide::single_band_parameters data_{500, 0.6};
 
     on_change on_change_;
 };
@@ -272,6 +276,8 @@ public:
     void set_cutoff(double cutoff);
     void set_usable_portion(double usable);
 
+    waveguide::multiple_band_constant_spacing_parameters get_raw() const;
+
     using on_change = util::event<multiple_band_waveguide_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
 
@@ -281,9 +287,7 @@ private:
 
     void maintain_valid_cutoff();
 
-    size_t bands_ = 2;
-    double cutoff_ = 500;
-    double usable_portion_ = 0.6;
+    waveguide::multiple_band_constant_spacing_parameters data_{2, 500, 0.6};
 
     on_change on_change_;
 };
@@ -298,9 +302,9 @@ public:
     waveguide_model& operator=(const waveguide_model&) = delete;
     waveguide_model& operator=(waveguide_model&&) noexcept = delete;
 
-    enum class type { single_band, multiple_band };
+    void set_mode(waveguide_info::waveguide_mode mode);
 
-    void set_type(type type);
+    waveguide_info get_raw() const;
 
     using on_change = util::event<waveguide_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
@@ -309,7 +313,7 @@ public:
     multiple_band_waveguide_model multiple_band;
 
 private:
-    type type_;
+    waveguide_info::waveguide_mode mode_;
 
     on_change on_change_;
 };
@@ -329,19 +333,15 @@ public:
     void set_output_folder(std::string output_folder);
     void set_name(std::string name);
     void set_sample_rate(double sr);
+    void set_bit_depth(enum output_info::bit_depth bit_depth);
 
-    enum class bit_depth { bd16, bd24 };
-
-    void set_bit_depth(bit_depth bit_depth);
+    output_info get_raw() const;
 
     using on_change = util::event<output_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
 
 private:
-    std::string output_folder_ = ".";
-    std::string name_ = "sig";
-    double sample_rate_ = 44100.0;
-    bit_depth bit_depth_ = bit_depth::bd16;
+    output_info data_{".", "sig", 44100.0, output_info::bit_depth::bd16};
 
     on_change on_change_;
 };

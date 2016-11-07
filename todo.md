@@ -14,8 +14,6 @@ Not convinced that waveguide/raytracer levels are matched properly.
 app stuff
 ---------
 
-Use factory to generate ui from polymorphic data
-
 Change orientation of whole microphone group, with their own up + facing pairs.
     i.e. USE the orientation in combined::receiver_info
 

@@ -4,7 +4,7 @@
 
 #include "raytracer/canonical.h"
 
-#include "waveguide/canonical.h"
+#include "combined/polymorphic_waveguide.h"
 
 #include "core/attenuator/hrtf.h"
 #include "core/attenuator/microphone.h"
@@ -136,7 +136,6 @@ auto make_intermediate_impl_ptr(combined_results<Histogram> to_process,
 
 //  engine  ////////////////////////////////////////////////////////////////////
 
-template <typename WaveguideParameters>
 class engine final {
 public:
     engine(const core::compute_context& compute_context,
@@ -145,121 +144,30 @@ public:
            const glm::vec3& receiver,
            const core::environment& environment,
            const raytracer::simulation_parameters& raytracer,
-           const WaveguideParameters& waveguide)
-            : compute_context_{compute_context}
-            , voxels_and_mesh_{waveguide::compute_voxels_and_mesh(
-                      compute_context,
-                      scene_data,
-                      receiver,
-                      waveguide.sample_rate,
-                      environment.speed_of_sound)}
-            , room_volume_{estimate_room_volume(scene_data)}
-            , source_{source}
-            , receiver_{receiver}
-            , environment_{environment}
-            , raytracer_{raytracer}
-            , waveguide_{waveguide} {}
+           std::unique_ptr<waveguide_base> waveguide);
 
     //  Only valid when WaveguideParameters is
     //  waveguide::single_band_parameters
     //  waveguide::multiple_band_constant_spacing_parameters
 
-    std::unique_ptr<intermediate> run(
-            const std::atomic_bool& keep_going) const {
-        //  RAYTRACER  /////////////////////////////////////////////////////////
-
-        const auto rays_to_visualise = std::min(1000ul, raytracer_.rays);
-
-        engine_state_changed_(state::starting_raytracer, 1.0);
-
-        auto raytracer_output = raytracer::canonical(
-                compute_context_,
-                voxels_and_mesh_.voxels,
-                source_,
-                receiver_,
-                environment_,
-                raytracer_,
-                rays_to_visualise,
-                keep_going,
-                [&](auto step, auto total_steps) {
-                    engine_state_changed_(state::running_raytracer,
-                                          step / (total_steps - 1.0));
-                });
-
-        if (!(keep_going && raytracer_output)) {
-            return nullptr;
-        }
-
-        engine_state_changed_(state::finishing_raytracer, 1.0);
-
-        raytracer_reflections_generated_(std::move(raytracer_output->visual));
-
-        //  look for the max time of an impulse
-        const auto max_stochastic_time =
-                max_time(raytracer_output->aural.stochastic);
-
-        //  WAVEGUIDE  /////////////////////////////////////////////////////////
-        engine_state_changed_(state::starting_waveguide, 1.0);
-
-        auto waveguide_output = waveguide::canonical(
-                compute_context_,
-                voxels_and_mesh_,
-                source_,
-                receiver_,
-                environment_,
-                waveguide_,
-                max_stochastic_time,
-                keep_going,
-                [&](auto& queue, const auto& buffer, auto step, auto steps) {
-                    //  If there are node pressure listeners.
-                    if (!waveguide_node_pressures_changed_.empty()) {
-                        auto pressures =
-                                core::read_from_buffer<float>(queue, buffer);
-                        const auto time = step / waveguide_.sample_rate;
-                        waveguide_node_pressures_changed_(std::move(pressures),
-                                                          time);
-                    }
-
-                    engine_state_changed_(state::running_waveguide,
-                                          step / (steps - 1.0));
-                });
-
-        if (!(keep_going && waveguide_output)) {
-            return nullptr;
-        }
-
-        engine_state_changed_(state::finishing_waveguide, 1.0);
-
-        return make_intermediate_impl_ptr(
-                make_combined_results(std::move(raytracer_output->aural),
-                                      std::move(*waveguide_output)),
-                receiver_,
-                room_volume_,
-                environment_);
-    }
+    std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going) const;
 
     //  notifications  /////////////////////////////////////////////////////////
 
-    auto add_engine_state_changed_callback(
-            engine_state_changed::callback_type callback) {
-        return engine_state_changed_.connect(std::move(callback));
-    }
+    engine_state_changed::connection add_engine_state_changed_callback(
+            engine_state_changed::callback_type callback);
 
-    auto add_waveguide_node_pressures_changed_callback(
-            waveguide_node_pressures_changed::callback_type callback) {
-        return waveguide_node_pressures_changed_.connect(std::move(callback));
-    }
+    waveguide_node_pressures_changed::connection
+    add_waveguide_node_pressures_changed_callback(
+            waveguide_node_pressures_changed::callback_type callback);
 
-    auto add_raytracer_reflections_generated_callback(
-            raytracer_reflections_generated::callback_type callback) {
-        return raytracer_reflections_generated_.connect(std::move(callback));
-    }
+    raytracer_reflections_generated::connection
+    add_raytracer_reflections_generated_callback(
+            raytracer_reflections_generated::callback_type callback);
 
     //  cached data  ///////////////////////////////////////////////////////////
 
-    const waveguide::voxels_and_mesh& get_voxels_and_mesh() const {
-        return voxels_and_mesh_;
-    }
+    const waveguide::voxels_and_mesh& get_voxels_and_mesh() const;
 
 private:
     core::compute_context compute_context_;
@@ -269,29 +177,12 @@ private:
     glm::vec3 receiver_;
     core::environment environment_;
     raytracer::simulation_parameters raytracer_;
-    WaveguideParameters waveguide_;
+    std::unique_ptr<waveguide_base> waveguide_;
 
     engine_state_changed engine_state_changed_;
     waveguide_node_pressures_changed waveguide_node_pressures_changed_;
     raytracer_reflections_generated raytracer_reflections_generated_;
 };
-
-template <typename WaveguideParameters>
-auto make_engine(const core::compute_context& compute_context,
-                 const core::gpu_scene_data& scene_data,
-                 const glm::vec3& source,
-                 const glm::vec3& receiver,
-                 const core::environment& environment,
-                 const raytracer::simulation_parameters& raytracer,
-                 const WaveguideParameters& waveguide) {
-    return engine<WaveguideParameters>{compute_context,
-                                       scene_data,
-                                       source,
-                                       receiver,
-                                       environment,
-                                       raytracer,
-                                       waveguide};
-}
 
 }  // namespace combined
 }  // namespace wayverb

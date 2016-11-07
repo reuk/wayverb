@@ -31,33 +31,15 @@ constexpr auto make_forwarding_call(T& t) {
 
 /// Similar to `engine` but immediately runs the postprocessing step.
 
-template <typename WaveguideParameters>
 class postprocessing_engine final {
 public:
-    using engine_type = engine<WaveguideParameters>;
-
     postprocessing_engine(const core::compute_context& compute_context,
                           const core::gpu_scene_data& scene_data,
                           const glm::vec3& source,
                           const glm::vec3& receiver,
                           const core::environment& environment,
                           const raytracer::simulation_parameters& raytracer,
-                          const WaveguideParameters& waveguide)
-            : engine_{compute_context,
-                      scene_data,
-                      source,
-                      receiver,
-                      environment,
-                      raytracer,
-                      waveguide}
-            , state_connector_{engine_.add_engine_state_changed_callback(
-                      make_forwarding_call(engine_state_changed_))}
-            , pressure_connector_{engine_.add_waveguide_node_pressures_changed_callback(
-                      make_forwarding_call(waveguide_node_pressures_changed_))}
-            , reflection_connector_{
-                      engine_.add_raytracer_reflections_generated_callback(
-                              make_forwarding_call(
-                                      raytracer_reflections_generated_))} {}
+                          std::unique_ptr<waveguide_base> waveguide);
 
     postprocessing_engine(const postprocessing_engine&) = delete;
     postprocessing_engine(postprocessing_engine&&) noexcept = delete;
@@ -95,29 +77,23 @@ public:
 
     //  notifications
 
-    auto add_engine_state_changed_callback(
-            engine_state_changed::callback_type callback) {
-        return engine_state_changed_.connect(std::move(callback));
-    }
+    engine_state_changed::connection add_engine_state_changed_callback(
+            engine_state_changed::callback_type callback);
 
-    auto add_waveguide_node_pressures_changed_callback(
-            waveguide_node_pressures_changed::callback_type callback) {
-        return waveguide_node_pressures_changed_.connect(std::move(callback));
-    }
+    waveguide_node_pressures_changed::connection
+    add_waveguide_node_pressures_changed_callback(
+            waveguide_node_pressures_changed::callback_type callback);
 
-    auto add_raytracer_reflections_generated_callback(
-            raytracer_reflections_generated::callback_type callback) {
-        return raytracer_reflections_generated_.connect(std::move(callback));
-    }
+    raytracer_reflections_generated::connection
+    add_raytracer_reflections_generated_callback(
+            raytracer_reflections_generated::callback_type callback);
 
     //  get contents
 
-    const waveguide::voxels_and_mesh& get_voxels_and_mesh() const {
-        return engine_.get_voxels_and_mesh();
-    }
+    const waveguide::voxels_and_mesh& get_voxels_and_mesh() const;
 
 private:
-    engine_type engine_;
+    engine engine_;
 
     engine_state_changed engine_state_changed_;
     waveguide_node_pressures_changed waveguide_node_pressures_changed_;
@@ -127,25 +103,6 @@ private:
     waveguide_node_pressures_changed::scoped_connection pressure_connector_;
     raytracer_reflections_generated::scoped_connection reflection_connector_;
 };
-
-template <typename WaveguideParameters>
-auto make_postprocessing_engine_ptr(
-        const core::compute_context& compute_context,
-        const core::gpu_scene_data& scene_data,
-        const glm::vec3& source,
-        const glm::vec3& receiver,
-        const core::environment& environment,
-        const raytracer::simulation_parameters& raytracer,
-        const WaveguideParameters& waveguide) {
-    return std::make_unique<postprocessing_engine<WaveguideParameters>>(
-            compute_context,
-            scene_data,
-            source,
-            receiver,
-            environment,
-            raytracer,
-            waveguide);
-}
 
 }  // namespace combined
 }  // namespace wayverb
