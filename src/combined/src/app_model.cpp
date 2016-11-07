@@ -5,18 +5,23 @@ namespace combined {
 
 source_model::source_model(core::geo::box bounds)
         : bounds_{std::move(bounds)}
-        , name_{"new source"}
-        , position_{centre(bounds_)} {}
+        , data_{"new source", centre(bounds_)} {}
 
 void source_model::set_name(std::string name) {
-    name_ = std::move(name);
+    data_.name = std::move(name);
     on_change_(*this);
 }
 
+std::string source_model::get_name() const { return data_.name; }
+
 void source_model::set_position(const glm::vec3& position) {
-    position_ = clamp(position, bounds_);
+    data_.position = clamp(position, bounds_);
     on_change_(*this);
 }
+
+glm::vec3 source_model::get_position() const { return data_.position; }
+
+source_info source_model::get_raw() const { return data_; }
 
 source_model::on_change::connection source_model::connect_on_change(
         on_change::callback_type t) {
@@ -35,6 +40,10 @@ void microphone_model::set_shape(double shape) {
     on_change_(*this);
 }
 
+core::attenuator::microphone microphone_model::get_raw() const {
+    return microphone_;
+}
+
 microphone_model::on_change::connection microphone_model::connect_on_change(
         on_change::callback_type t) {
     return on_change_.connect(std::move(t));
@@ -49,6 +58,8 @@ void hrtf_model::set_channel(core::attenuator::hrtf::channel channel) {
     hrtf_.set_channel(channel);
     on_change_(*this);
 }
+
+core::attenuator::hrtf hrtf_model::get_raw() const { return hrtf_; }
 
 hrtf_model::on_change::connection hrtf_model::connect_on_change(
         on_change::callback_type t) {
@@ -77,41 +88,14 @@ capsule_model::on_change::connection capsule_model::connect_on_change(
     return on_change_.connect(std::move(t));
 }
 
-capsules_model::capsules_model() {
-    capsules_.connect_on_change([&](auto&) { on_change_(*this); });
-    add(0);
-}
-
-const capsule_model& capsules_model::operator[](size_t index) const {
-    return capsules_[index];
-}
-capsule_model& capsules_model::operator[](size_t index) {
-    return capsules_[index];
-}
-
-void capsules_model::add(size_t index) {
-    capsules_.add(index);
-    capsules_[index].connect_on_change([&](auto&) { on_change_(*this); });
-}
-
-void capsules_model::remove(size_t index) {
-    if (1 < capsules_.size()) {
-        capsules_.remove(index);
-    }
-}
-
-capsules_model::on_change::connection capsules_model::connect_on_change(
-        on_change::callback_type t) {
-    return on_change_.connect(std::move(t));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 receiver_model::receiver_model(core::geo::box bounds)
         : bounds_{std::move(bounds)}
         , name_{"new receiver"}
         , position_{centre(bounds_)} {
-    capsules.connect_on_change([&](auto&) { on_change_(*this); });
+    capsules_.add(0);
+    capsules_.connect_on_change([&](auto&) { on_change_(*this); });
 }
 
 void receiver_model::set_name(std::string name) {
@@ -133,6 +117,24 @@ void receiver_model::set_orientation(float azimuth, float elevation) {
 receiver_model::on_change::connection receiver_model::connect_on_change(
         on_change::callback_type t) {
     return on_change_.connect(std::move(t));
+}
+
+const capsule_model& receiver_model::get_capsule(size_t index) const {
+    return capsules_[index];
+}
+
+capsule_model& receiver_model::get_capsule(size_t index) {
+    return capsules_[index];
+}
+
+void receiver_model::add_capsule(size_t index) {
+    capsules_.add(index);
+}
+
+void receiver_model::remove_capsule(size_t index) {
+    if (1 < capsules_.size()) {
+        capsules_.remove(index);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -241,6 +243,9 @@ app_model::app_model(const std::string& name)
         : aabb_{core::geo::compute_aabb(scene_.get_scene_data())} {
     const auto callback = [&](auto&) { on_change_(*this); };
 
+    add_source(0);
+    add_receiver(0);
+
     raytracer.connect_on_change(callback);
     waveguide.connect_on_change(callback);
     output.connect_on_change(callback);
@@ -257,8 +262,17 @@ void app_model::start_render() {
 
     //  Collect parameters.
 
+    auto scene_data = scene_.get_scene_data();
+    //  TODO replace surfaces with the surfaces from the model.
+
     //  Start engine in new thread.
-    future_ = std::async(std::launch::async, [&] { engine_.run(); });
+    future_ = std::async(std::launch::async, [&] {
+        engine_.run(core::compute_context{},
+                    scene_data,
+                    make_scene_parameters(
+
+                            ));
+    });
 }
 
 void app_model::stop_render() {

@@ -41,6 +41,12 @@ public:
         on_change_(*this);
     }
 
+    auto get_raw() const {
+        return util::map_to_vector(begin(data_), end(data_), [](const auto& i) {
+            return i->get_raw();
+        });
+    }
+
     template <typename U>
     auto connect_on_change(U&& t) {
         return on_change_.connect(std::forward<U>(t));
@@ -65,7 +71,12 @@ public:
     source_model& operator=(source_model&&) noexcept = delete;
 
     void set_name(std::string name);
+    std::string get_name() const;
+
     void set_position(const glm::vec3& position);
+    glm::vec3 get_position() const;
+
+    source_info get_raw() const;
 
     using on_change = util::event<source_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
@@ -73,8 +84,7 @@ public:
 private:
     core::geo::box bounds_;
 
-    std::string name_;
-    glm::vec3 position_;
+    source_info data_;
 
     on_change on_change_;
 };
@@ -93,6 +103,8 @@ public:
 
     void set_orientation(float azimuth, float elevation);
     void set_shape(double shape);
+
+    core::attenuator::microphone get_raw() const;
 
     using on_change = util::event<microphone_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
@@ -115,6 +127,8 @@ public:
 
     void set_orientation(float azimuth, float elevation);
     void set_channel(core::attenuator::hrtf::channel channel);
+
+    core::attenuator::hrtf get_raw() const;
 
     using on_change = util::event<hrtf_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
@@ -155,31 +169,6 @@ private:
     on_change on_change_;
 };
 
-class capsules_model final {
-public:
-    capsules_model();
-
-    capsules_model(const capsules_model&) = delete;
-    capsules_model(capsules_model&&) noexcept = delete;
-
-    capsules_model& operator=(const capsules_model&) = delete;
-    capsules_model& operator=(capsules_model&&) noexcept = delete;
-
-    const capsule_model& operator[](size_t index) const;
-    capsule_model& operator[](size_t index);
-
-    void add(size_t index);
-    void remove(size_t index);
-
-    using on_change = util::event<capsules_model&>;
-    on_change::connection connect_on_change(on_change::callback_type t);
-
-private:
-    vector_model<capsule_model> capsules_;
-
-    on_change on_change_;
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 
 class receiver_model final {
@@ -196,10 +185,13 @@ public:
     void set_position(const glm::vec3& position);
     void set_orientation(float azimuth, float elevation);
 
+    const capsule_model& get_capsule(size_t index) const;
+    capsule_model& get_capsule(size_t index);
+    void add_capsule(size_t index);
+    void remove_capsule(size_t index);
+
     using on_change = util::event<receiver_model&>;
     on_change::connection connect_on_change(on_change::callback_type t);
-
-    capsules_model capsules;
 
 private:
     core::geo::box bounds_;
@@ -207,6 +199,7 @@ private:
     std::string name_;
     glm::vec3 position_;
     core::orientable orientation_;
+    vector_model<capsule_model> capsules_;
 
     on_change on_change_;
 };
@@ -358,6 +351,7 @@ private:
 class app_model final {
 public:
     //  SPECIAL MEMBERS  ///////////////////////////////////////////////////////
+    //  TODO
     //  If the file is a .way then open scene + config.
     //  Otherwise, attempt to read as a normal 3D file and use defaults for
     //  everything else.
@@ -373,9 +367,7 @@ public:
 
     //  RENDERING  /////////////////////////////////////////////////////////////
     void start_render();
-
     void stop_render();
-
     void is_rendering() const;
 
     //  SAVE  //////////////////////////////////////////////////////////////////
