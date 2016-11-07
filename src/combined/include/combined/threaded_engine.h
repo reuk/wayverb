@@ -20,6 +20,7 @@ struct capsule_info final {
 struct receiver_info final {
     std::string name;
     glm::vec3 position;
+    core::orientable orientation;  //  TODO use this
     std::vector<capsule_info> capsules;
 };
 
@@ -36,6 +37,33 @@ struct channel_info final {
     std::string receiver_name;
     std::string capsule_name;
 };
+
+template <typename WaveguideParams>
+struct scene_parameters final {
+    std::vector<source_info> sources;
+    std::vector<receiver_info> receivers;
+    core::environment environment;
+    raytracer::simulation_parameters raytracer;
+    WaveguideParams waveguide;
+    output_info output;
+};
+
+template <typename WaveguideParams>
+auto make_scene_parameters(std::vector<source_info> sources,
+                           std::vector<receiver_info> receivers,
+                           core::environment environment,
+                           raytracer::simulation_parameters raytracer,
+                           WaveguideParams waveguide,
+                           output_info output) {
+    return scene_parameters<WaveguideParams>{std::move(sources),
+                                             std::move(receivers),
+                                             std::move(environment),
+                                             std::move(raytracer),
+                                             std::move(waveguide),
+                                             std::move(output)};
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 struct max_mag_functor final {
     template <typename T>
@@ -65,41 +93,39 @@ public:
     template <typename WaveguideParameters>
     void run(const core::compute_context& compute_context,
              const core::gpu_scene_data& scene_data,
-             const std::vector<source_info>& sources,
-             const std::vector<receiver_info>& receivers,
-             const core::environment& environment,
-             const raytracer::simulation_parameters& raytracer,
-             const WaveguideParameters& waveguide,
-             const output_info& output,
-             const std::atomic_bool& keep_going) const {
+             const scene_parameters<WaveguideParameters>& scene_parameters) {
         try {
-            if (sources.empty()) {
+            is_running_ = true;
+            keep_going_ = true;
+
+            if (scene_parameters.sources.empty()) {
                 throw std::runtime_error{"no sources specified"};
             }
 
-            if (receivers.empty()) {
+            if (scene_parameters.receivers.empty()) {
                 throw std::runtime_error{"no receivers specified"};
             }
 
             std::vector<channel_info> all_channels;
 
             //  For each source-receiver pair.
-            for (auto source = begin(sources), e_source = end(sources);
-                 source != e_source && keep_going;
+            for (auto source = begin(scene_parameters.sources),
+                      e_source = end(scene_parameters.sources);
+                 source != e_source && keep_going_;
                  ++source) {
-                for (auto receiver = begin(receivers),
-                          e_receiver = end(receivers);
-                     receiver != e_receiver && keep_going;
+                for (auto receiver = begin(scene_parameters.receivers),
+                          e_receiver = end(scene_parameters.receivers);
+                     receiver != e_receiver && keep_going_;
                      ++receiver) {
                     //  Set up an engine to use.
-                    auto eng =
-                            make_postprocessing_engine_ptr(compute_context,
-                                                           scene_data,
-                                                           source->position,
-                                                           receiver->position,
-                                                           environment,
-                                                           raytracer,
-                                                           waveguide);
+                    auto eng = make_postprocessing_engine_ptr(
+                            compute_context,
+                            scene_data,
+                            source->position,
+                            receiver->position,
+                            scene_parameters.environment,
+                            scene_parameters.raytracer,
+                            scene_parameters.waveguide);
 
                     //  Send new node position notification.
                     waveguide_node_positions_changed_(
@@ -107,17 +133,17 @@ public:
 
                     //  Register callbacks.
                     const auto engine_state_change_connector =
-                            eng->add_scoped_engine_state_changed_callback(
+                            eng->add_engine_state_changed_callback(
                                     make_forwarding_call(
                                             engine_state_changed_));
 
                     const auto node_pressure_connector =
-                            eng->add_scoped_waveguide_node_pressures_changed_callback(
+                            eng->add_waveguide_node_pressures_changed_callback(
                                     make_forwarding_call(
                                             waveguide_node_pressures_changed_));
 
                     const auto raytracer_reflection_connector =
-                            eng->add_scoped_raytracer_reflections_generated_callback(
+                            eng->add_raytracer_reflections_generated_callback(
                                     make_forwarding_call(
                                             raytracer_reflections_generated_));
 
@@ -132,10 +158,10 @@ public:
                     auto channel =
                             eng->run(make_iterator(begin(receiver->capsules)),
                                      make_iterator(end(receiver->capsules)),
-                                     output.sample_rate,
-                                     keep_going);
+                                     scene_parameters.output.sample_rate,
+                                     keep_going_);
 
-                    if (!keep_going) {
+                    if (!keep_going_) {
                         throw std::runtime_error{"simulation cancelled"};
                     }
 
@@ -156,7 +182,7 @@ public:
             }
 
             //  If keep going is false now, then the simulation was cancelled.
-            if (!keep_going) {
+            if (!keep_going_) {
                 throw std::runtime_error{"simulation cancelled"};
             }
 
@@ -184,51 +210,67 @@ public:
 
             //  Write out files.
             for (const auto& i : all_channels) {
-                const auto file_name = util::build_string(output.output_folder,
-                                                          '/',
-                                                          output.name,
-                                                          '.',
-                                                          "s_",
-                                                          i.source_name,
-                                                          '.',
-                                                          "r_",
-                                                          i.receiver_name,
-                                                          '.',
-                                                          "c_",
-                                                          i.capsule_name,
-                                                          ".wav");
+                const auto file_name = util::build_string(
+                        scene_parameters.output.output_folder,
+                        '/',
+                        scene_parameters.output.name,
+                        '.',
+                        "s_",
+                        i.source_name,
+                        '.',
+                        "r_",
+                        i.receiver_name,
+                        '.',
+                        "c_",
+                        i.capsule_name,
+                        ".wav");
 
                 write(file_name,
-                      audio_file::make_audio_file(i.data, output.sample_rate),
-                      output.bit_depth);
+                      audio_file::make_audio_file(
+                              i.data, scene_parameters.output.sample_rate),
+                      scene_parameters.output.bit_depth);
             }
 
         } catch (const std::exception& e) {
             encountered_error_(e.what());
-            return;
         }
+
+        finished_();
+
+        is_running_ = false;
     }
 
-    engine_state_changed::scoped_connector
-            add_scoped_engine_state_changed_callback(
-                    engine_state_changed::callback_type);
+    bool is_running() const {
+        return is_running_;
+    }
 
-    waveguide_node_positions_changed::scoped_connector
-            add_scoped_waveguide_node_positions_changed_callback(
+    void cancel() {
+        keep_going_ = false;
+    }
+
+    engine_state_changed::connection add_engine_state_changed_callback(
+            engine_state_changed::callback_type);
+
+    waveguide_node_positions_changed::connection
+            add_waveguide_node_positions_changed_callback(
                     waveguide_node_positions_changed::callback_type);
 
-    waveguide_node_pressures_changed::scoped_connector
-            add_scoped_waveguide_node_pressures_changed_callback(
+    waveguide_node_pressures_changed::connection
+            add_waveguide_node_pressures_changed_callback(
                     waveguide_node_pressures_changed::callback_type);
 
-    raytracer_reflections_generated::scoped_connector
-            add_scoped_raytracer_reflections_generated_callback(
+    raytracer_reflections_generated::connection
+            add_raytracer_reflections_generated_callback(
                     raytracer_reflections_generated::callback_type);
 
     using encountered_error = util::event<std::string>;
 
-    encountered_error::scoped_connector add_scoped_encountered_error_callback(
+    encountered_error::connection add_encountered_error_callback(
             encountered_error::callback_type);
+
+    using finished = util::event<>;
+
+    finished::connection add_finished_callback(finished::callback_type);
 
 private:
     engine_state_changed engine_state_changed_;
@@ -236,6 +278,10 @@ private:
     waveguide_node_pressures_changed waveguide_node_pressures_changed_;
     raytracer_reflections_generated raytracer_reflections_generated_;
     encountered_error encountered_error_;
+    finished finished_;
+
+    std::atomic_bool is_running_;
+    std::atomic_bool keep_going_;
 };
 
 }  // namespace combined

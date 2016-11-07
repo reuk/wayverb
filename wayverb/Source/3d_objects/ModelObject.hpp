@@ -9,7 +9,7 @@
 namespace detail {
 constexpr auto model_colour = 0.5;
 
-inline util::aligned::vector<GLuint> get_indices(const wayverb::combined::engine::scene_data& scene_data) {
+inline util::aligned::vector<GLuint> get_indices(const wayverb::core::gpu_scene_data& scene_data) {
     util::aligned::vector<GLuint> ret;
     ret.reserve(scene_data.get_triangles().size() * 3);
     auto count = 0u;
@@ -26,7 +26,7 @@ inline util::aligned::vector<GLuint> get_indices(const wayverb::combined::engine
 class ModelObject final : public BasicDrawableObject {
 public:
     template <typename T>
-    ModelObject(T& shader, const wayverb::combined::engine::scene_data& scene_data)
+    ModelObject(T& shader, const wayverb::core::gpu_scene_data& scene_data)
             : BasicDrawableObject(shader,
                                   wayverb::core::convert(scene_data.get_vertices()),
                                   util::aligned::vector<glm::vec4>(

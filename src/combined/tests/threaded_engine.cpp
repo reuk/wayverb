@@ -17,29 +17,31 @@ TEST(threaded_engine, threaded_engine) {
 
     const auto scene_data = geo::get_scene_data(box, surface);
 
-    auto complete = complete_engine{};
-
-    const auto connection = complete.add_scoped_engine_state_changed_callback(
-            [](auto state, auto progress) {
-                std::cout << '\r' << std::setw(30) << to_string(state)
-                          << std::setw(10) << progress << std::flush;
-            });
-
     std::vector<capsule_info> capsules;
     capsules.emplace_back(capsule_info{
             "the_capsule", make_capsule_ptr(attenuator::microphone{})});
 
     std::vector<receiver_info> receivers;
-    receivers.emplace_back(
-            receiver_info{"the_receiver", receiver, std::move(capsules)});
+    receivers.emplace_back(receiver_info{
+            "the_receiver", receiver, orientable{}, std::move(capsules)});
 
-    complete.run(compute_context{},
-                 scene_data,
-                 {source_info{"the_source", source}},
-                 std::move(receivers),
-                 wayverb::core::environment{},
-                 simulation_parameters{1 << 16, 5},
-                 single_band_parameters{10000, 0.5},
-                 output_info{".", "threaded_test", 44100, 16},
-                 true);
+    auto complete = complete_engine{};
+
+    const engine_state_changed::scoped_connection connection =
+            complete.add_engine_state_changed_callback(
+                    [](auto state, auto progress) {
+                        std::cout << '\r' << std::setw(30) << to_string(state)
+                                  << std::setw(10) << progress << std::flush;
+                    });
+
+    complete.run(
+            compute_context{},
+            scene_data,
+            make_scene_parameters({source_info{"the_source", source}},
+                                  std::move(receivers),
+                                  wayverb::core::environment{},
+                                  simulation_parameters{1 << 16, 5},
+                                  single_band_parameters{10000, 0.5},
+                                  output_info{".", "threaded_test", 44100, 16}),
+            true);
 }

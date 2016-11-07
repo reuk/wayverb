@@ -10,7 +10,7 @@
 
 class MeshGeneratorFunctor final {
 public:
-    MeshGeneratorFunctor(wayverb::combined::engine::scene_data scene_data,
+    MeshGeneratorFunctor(wayverb::core::gpu_scene_data scene_data,
                          double sample_rate,
                          double speed_of_sound);
 
@@ -25,7 +25,7 @@ public:
 private:
     util::threading_policy::scoped_lock threading_policy_;
     
-    wayverb::combined::engine::scene_data scene_data_;
+    wayverb::core::gpu_scene_data scene_data_;
     double sample_rate_;
     double speed_of_sound_;
 
@@ -36,7 +36,7 @@ private:
 
 class AsyncMeshGenerator final {
 public:
-    void run(wayverb::combined::engine::scene_data scene_data,
+    void run(wayverb::core::gpu_scene_data scene_data,
              double sample_rate,
              double speed_of_sound);
 

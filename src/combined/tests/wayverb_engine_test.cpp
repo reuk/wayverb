@@ -30,8 +30,8 @@ TEST(engine, engine) {
                          simulation_parameters{1 << 16, 5},
                          single_band_parameters{10000, 0.5});
 
-    const auto connection = e.add_scoped_engine_state_changed_callback(
-            [](auto state, auto progress) {
+    const engine_state_changed::scoped_connection connection =
+            e.add_engine_state_changed_callback([](auto state, auto progress) {
                 std::cout << '\r' << std::setw(30) << to_string(state)
                           << std::setw(10) << progress << std::flush;
             });

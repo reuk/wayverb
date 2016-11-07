@@ -82,6 +82,8 @@ private:
     scene_data data_;
 };
 
+scene_data_loader::scene_data_loader() = default;
+
 scene_data_loader::scene_data_loader(scene_data_loader&&) noexcept = default;
 scene_data_loader& scene_data_loader::operator=(scene_data_loader&&) noexcept =
         default;

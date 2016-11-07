@@ -240,23 +240,19 @@ public:
 
     //  notifications  /////////////////////////////////////////////////////////
 
-    engine_state_changed::scoped_connector
-    add_scoped_engine_state_changed_callback(
+    auto add_engine_state_changed_callback(
             engine_state_changed::callback_type callback) {
-        return engine_state_changed_.add_scoped(std::move(callback));
+        return engine_state_changed_.connect(std::move(callback));
     }
 
-    waveguide_node_pressures_changed::scoped_connector
-    add_scoped_waveguide_node_pressures_changed_callback(
+    auto add_waveguide_node_pressures_changed_callback(
             waveguide_node_pressures_changed::callback_type callback) {
-        return waveguide_node_pressures_changed_.add_scoped(
-                std::move(callback));
+        return waveguide_node_pressures_changed_.connect(std::move(callback));
     }
 
-    raytracer_reflections_generated::scoped_connector
-    add_scoped_raytracer_reflections_generated_callback(
+    auto add_raytracer_reflections_generated_callback(
             raytracer_reflections_generated::callback_type callback) {
-        return raytracer_reflections_generated_.add_scoped(std::move(callback));
+        return raytracer_reflections_generated_.connect(std::move(callback));
     }
 
     //  cached data  ///////////////////////////////////////////////////////////

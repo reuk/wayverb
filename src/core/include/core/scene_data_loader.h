@@ -9,12 +9,7 @@ namespace core {
 
 class scene_data_loader final {
 public:
-    struct material final {
-        std::string name;
-        surface<simulation_bands> surface;
-    };
-
-    scene_data_loader() = default;
+    scene_data_loader();
     scene_data_loader(const std::string& fpath);
 
     //  need to declare but not define these here because pimpl idiom wew
@@ -28,7 +23,7 @@ public:
     bool is_loaded() const;
     void clear();
 
-    using scene_data = generic_scene_data<cl_float3, material>;
+    using scene_data = generic_scene_data<cl_float3, std::string>;
     const scene_data& get_scene_data() const;
 
 private:

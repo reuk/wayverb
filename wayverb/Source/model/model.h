@@ -9,43 +9,6 @@
 
 namespace model {
 
-struct receiver final {
-    receiver() = default;
-
-    receiver(receiver&&) noexcept = default;
-    receiver(const receiver& other)
-    : position{other.position}
-    , orientable{other.orientable}
-    , capsules{util::map_to_vector(begin(other.capsules),
-                                   end(other.capsules),
-                                   clone_functor{})} {}
-
-    receiver& operator=(receiver&&) noexcept = default;
-    receiver& operator=(const receiver& other) {
-        auto copy = other;
-        swap(copy);
-        return *this;
-    }
-
-    void swap(receiver& other) noexcept {
-        using std::swap;
-        swap(position, other.position);
-        swap(orientable, other.orientable);
-        swap(capsules, other.capsules);
-    }
-
-    glm::vec3 position;
-    wayverb::core::orientable orientable;
-    util::aligned::vector<std::unique_ptr<capsule_base>> capsules;
-
-    template <typename Archive>
-    void serialize(Archive& archive) {
-        archive(cereal::make_nvp("position", position),
-                cereal::make_nvp("orientable", orientable),
-                cereal::make_nvp("capsules", capsules));
-    }
-};
-
 ////////////////////////////////////////////////////////////////////////////////
 
 struct SingleShot final {

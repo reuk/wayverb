@@ -2,7 +2,7 @@
 
 #include "core/spatial_division/voxelised_scene_data.h"
 
-MeshGeneratorFunctor::MeshGeneratorFunctor(wayverb::combined::engine::scene_data scene,
+MeshGeneratorFunctor::MeshGeneratorFunctor(wayverb::core::gpu_scene_data scene,
                                            double sample_rate,
                                            double speed_of_sound)
         : scene_data_{std::move(scene)}
@@ -18,7 +18,7 @@ void MeshGeneratorFunctor::operator()() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void AsyncMeshGenerator::run(wayverb::combined::engine::scene_data scene_data,
+void AsyncMeshGenerator::run(wayverb::core::gpu_scene_data scene_data,
                              double sample_rate,
                              double speed_of_sound) {
     MeshGeneratorFunctor functor{std::move(scene_data), sample_rate, speed_of_sound};

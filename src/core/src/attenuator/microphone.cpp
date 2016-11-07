@@ -1,4 +1,5 @@
 #include "core/attenuator/microphone.h"
+#include "utilities/range.h"
 
 namespace wayverb {
 namespace core {
@@ -18,7 +19,7 @@ void microphone::set_pointing(const glm::vec3& pointing) {
 }
 
 void microphone::set_shape(float shape) {
-    shape_ = glm::clamp(shape, 0.0f, 1.0f);
+    shape_ = clamp(shape, util::make_range(0.0f, 1.0f));
 }
 
 float attenuation(const microphone& mic, const glm::vec3& incident) {

@@ -95,7 +95,7 @@ private:
 };
 
 template <typename t>
-range<t> make_range(const t& a, const t& b) {
+constexpr range<t> make_range(const t& a, const t& b) {
     return range<t>{a, b};
 }
 
@@ -113,42 +113,44 @@ constexpr bool operator!=(const range<A>& a, const range<B>& b) {
 }
 
 template <typename A, typename B>
-inline auto operator+(const range<A>& a, const B& b) {
+constexpr auto operator+(const range<A>& a, const B& b) {
     range<std::common_type_t<A, B>> ret{a};
     return ret += b;
 }
 
 template <typename A, typename B>
-inline auto operator-(const range<A>& a, const B& b) {
+constexpr auto operator-(const range<A>& a, const B& b) {
     range<std::common_type_t<A, B>> ret{a};
     return ret -= b;
 }
 
 template <typename A, typename B>
-inline auto operator*(const range<A>& a, const B& b) {
+constexpr auto operator*(const range<A>& a, const B& b) {
     range<std::common_type_t<A, B>> ret{a};
     return ret *= b;
 }
 
 template <typename A, typename B>
-inline auto operator/(const range<A>& a, const B& b) {
+constexpr auto operator/(const range<A>& a, const B& b) {
     range<std::common_type_t<A, B>> ret{a};
     return ret /= b;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 template <typename A, typename B>
-inline auto padded(const range<A>& a, const B& b) {
+constexpr auto padded(const range<A>& a, const B& b) {
     range<std::common_type_t<A, B>> ret{a};
     return ret.pad(b);
 }
 
 template <typename t>
-inline auto centre(const range<t>& a) {
+constexpr auto centre(const range<t>& a) {
     return (a.get_min() + a.get_max()) * t{0.5};
 }
 
 template <typename t>
-inline auto dimensions(const range<t>& a) {
+constexpr auto dimensions(const range<t>& a) {
     return a.get_max() - a.get_min();
 }
 
@@ -158,15 +160,22 @@ constexpr auto map(T x, range<U> in, range<V> out) {
            out.get_min();
 }
 
-template <typename T>
-constexpr auto inside(const range<T>& r, const T& t) {
+template <typename T, typename U>
+constexpr auto inside(const T& t, const range<U>& r) {
     return r.get_min() <= t && t < r.get_max();
+}
+
+template <typename T, typename U>
+constexpr auto clamp(const T& t, const range<U>& r) {
+    using std::min;
+    using std::max;
+    return max(r.get_min(), min(r.get_max(), t));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 template <typename It, typename T>
-inline auto accumulate_min(It begin, It end, T starting_value) {
+constexpr auto accumulate_min(It begin, It end, T starting_value) {
     return std::accumulate(
             begin, end, starting_value, [](const auto& a, const auto& b) {
                 return min(a, b);
@@ -174,7 +183,7 @@ inline auto accumulate_min(It begin, It end, T starting_value) {
 }
 
 template <typename It, typename T>
-inline auto accumulate_max(It begin, It end, T starting_value) {
+constexpr auto accumulate_max(It begin, It end, T starting_value) {
     return std::accumulate(
             begin, end, starting_value, [](const auto& a, const auto& b) {
                 return max(a, b);
@@ -182,7 +191,7 @@ inline auto accumulate_max(It begin, It end, T starting_value) {
 }
 
 template <typename It>
-inline auto enclosing_range(It begin, It end) {
+constexpr auto enclosing_range(It begin, It end) {
     if (begin == end) {
         throw std::runtime_error("can't minmax empty range");
     }

@@ -50,12 +50,12 @@ public:
                       environment,
                       raytracer,
                       waveguide}
-            , state_connector_{engine_.add_scoped_engine_state_changed_callback(
+            , state_connector_{engine_.add_engine_state_changed_callback(
                       make_forwarding_call(engine_state_changed_))}
-            , pressure_connector_{engine_.add_scoped_waveguide_node_pressures_changed_callback(
+            , pressure_connector_{engine_.add_waveguide_node_pressures_changed_callback(
                       make_forwarding_call(waveguide_node_pressures_changed_))}
             , reflection_connector_{
-                      engine_.add_scoped_raytracer_reflections_generated_callback(
+                      engine_.add_raytracer_reflections_generated_callback(
                               make_forwarding_call(
                                       raytracer_reflections_generated_))} {}
 
@@ -93,24 +93,24 @@ public:
         return channels;
     }
 
-    engine_state_changed::scoped_connector
-    add_scoped_engine_state_changed_callback(
+    //  notifications
+
+    auto add_engine_state_changed_callback(
             engine_state_changed::callback_type callback) {
-        return engine_state_changed_.add_scoped(std::move(callback));
+        return engine_state_changed_.connect(std::move(callback));
     }
 
-    waveguide_node_pressures_changed::scoped_connector
-    add_scoped_waveguide_node_pressures_changed_callback(
+    auto add_waveguide_node_pressures_changed_callback(
             waveguide_node_pressures_changed::callback_type callback) {
-        return waveguide_node_pressures_changed_.add_scoped(
-                std::move(callback));
+        return waveguide_node_pressures_changed_.connect(std::move(callback));
     }
 
-    raytracer_reflections_generated::scoped_connector
-    add_scoped_raytracer_reflections_generated_callback(
+    auto add_raytracer_reflections_generated_callback(
             raytracer_reflections_generated::callback_type callback) {
-        return raytracer_reflections_generated_.add_scoped(std::move(callback));
+        return raytracer_reflections_generated_.connect(std::move(callback));
     }
+
+    //  get contents
 
     const waveguide::voxels_and_mesh& get_voxels_and_mesh() const {
         return engine_.get_voxels_and_mesh();
@@ -123,9 +123,9 @@ private:
     waveguide_node_pressures_changed waveguide_node_pressures_changed_;
     raytracer_reflections_generated raytracer_reflections_generated_;
 
-    engine_state_changed::scoped_connector state_connector_;
-    waveguide_node_pressures_changed::scoped_connector pressure_connector_;
-    raytracer_reflections_generated::scoped_connector reflection_connector_;
+    engine_state_changed::scoped_connection state_connector_;
+    waveguide_node_pressures_changed::scoped_connection pressure_connector_;
+    raytracer_reflections_generated::scoped_connection reflection_connector_;
 };
 
 template <typename WaveguideParameters>

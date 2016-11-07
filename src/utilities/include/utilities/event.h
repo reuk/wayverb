@@ -10,6 +10,7 @@ namespace util {
 template <typename... Ts>
 class event final {
     class impl;
+    using key_type = size_t;
 
 public:
     event()
@@ -23,39 +24,51 @@ public:
 
     ~event() noexcept = default;
 
-    using key_type = size_t;
-    using callback_type = std::function<void(Ts... ts)>;
+    using callback_type = std::function<void(Ts...)>;
 
-    auto add(callback_type callback) {
-        return pimpl_->add(std::move(callback));
-    }
-
-    class disconnector final {
+    class connection final {
     public:
-        disconnector() = default;
-        disconnector(std::shared_ptr<impl> pimpl, key_type key)
+        connection() = default;
+        connection(std::shared_ptr<impl> pimpl, callback_type callback)
                 : pimpl_{std::move(pimpl)}
-                , key_{key} {}
+                , key_{pimpl_->connect(std::move(callback))} {}
 
-        void operator()() const noexcept { pimpl_->remove(key_); }
+        void disconnect() {
+            pimpl_->disconnect(key_);
+            pimpl_ = nullptr;
+        }
+
+        void block() { pimpl_->block(key_); }
+        void unblock() { pimpl_->block(key_); }
+        bool blocked() const { return pimpl_->blocked(key_); }
+
+        operator bool() const { return pimpl_; }
 
     private:
         std::shared_ptr<impl> pimpl_;
         key_type key_;
     };
-    
-    using scoped_connector = final_act<disconnector>;
 
-    auto make_scoped_connector(key_type key) const {
-        return scoped_connector{disconnector{pimpl_, key}};
+    auto connect(callback_type callback) {
+        return connection{pimpl_, std::move(callback)};
     }
 
-    auto add_scoped(callback_type callback) {
-        return make_scoped_connector(add(std::move(callback)));
-    }
-    
-    void remove(key_type key) { pimpl_.remove(key); }
-    void remove_all() { pimpl_->remove_all(); }
+    class scoped_connection final {
+    public:
+        scoped_connection(connection connection)
+                : connection_{std::move(connection)} {}
+
+        ~scoped_connection() noexcept { connection_.disconnect(); }
+
+        void block() { connection_.block(); }
+        void unblock() { connection_.unblock(); }
+        bool blocked() const { return connection_.blocked(); }
+
+        operator bool() const { return connection_; }
+
+    private:
+        connection connection_;
+    };
 
     template <typename... Us>
     void operator()(Us&&... us) const {
@@ -66,6 +79,11 @@ public:
 
 private:
     class impl final {
+        struct callback_info final {
+            callback_type callback;
+            bool blocked{false};
+        };
+
     public:
         impl() = default;
 
@@ -75,18 +93,42 @@ private:
         impl& operator=(const impl&) = delete;
         impl& operator=(impl&&) noexcept = delete;
 
-        auto add(callback_type callback) {
-            slots_.insert(std::make_pair(++current_key_, std::move(callback)));
+        auto connect(callback_type callback) {
+            slots_.insert(std::make_pair(++current_key_,
+                                         callback_info{std::move(callback)}));
             return current_key_;
         }
 
-        void remove(key_type key) { slots_.erase(key); }
-        void remove_all() { slots_.clear(); }
+        void disconnect(key_type key) { slots_.erase(key); }
+
+        void block(key_type key) {
+            auto slot = slots_.find(key);
+            if (slot != end(slots_)) {
+                slot->second.blocked = true;
+            }
+        }
+
+        void unblock(key_type key) {
+            auto slot = slots_.find(key);
+            if (slot != end(slots_)) {
+                slot->second.blocked = false;
+            }
+        }
+
+        bool blocked(key_type key) const {
+            auto slot = slots_.find(key);
+            if (slot != end(slots_)) {
+                return slot->second.blocked;
+            }
+            throw std::logic_error{"no such key"};
+        }
 
         template <typename... Us>
         void operator()(Us&&... us) const {
             for (const auto& slot : slots_) {
-                slot.second(std::forward<Us>(us)...);
+                if (!slot.second.blocked) {
+                    slot.second.callback(std::forward<Us>(us)...);
+                }
             }
         }
 
@@ -94,7 +136,7 @@ private:
 
     private:
         key_type current_key_{0};
-        std::unordered_map<key_type, callback_type> slots_;
+        std::unordered_map<key_type, callback_info> slots_;
     };
 
     /// We use a shared pointer here, so that scoped_connectors can make their

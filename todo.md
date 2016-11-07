@@ -14,6 +14,14 @@ Not convinced that waveguide/raytracer levels are matched properly.
 app stuff
 ---------
 
+Use factory to generate ui from polymorphic data
+
+Change orientation of whole microphone group, with their own up + facing pairs.
+    i.e. USE the orientation in combined::receiver_info
+
+Rewrite MeshGenerator to use `async` rather than raw threads.
+    This might get rolled into the app model somehow.
+
 Validate scene before rendering.
     If it isn't closed, display an error and use less accurate noise estimator.
 
@@ -29,11 +37,7 @@ Make source and receiver draggable.
 
 Improve source/reciever + microphone direction models.
 
-Change orientation of whole microphone group, with their own up + facing pairs.
-
 Fail for really long reverbs i.e. longer than 60 seconds.
-
-Rewrite MeshGenerator to use `async` rather than raw threads.
 
 Benchmark gpu vs cpu performance.
 
