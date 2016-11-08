@@ -19,6 +19,17 @@ public:
 
     waveguide::single_band_parameters get() const;
 
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(data_.cutoff, data_.usable_portion);
+        notify();
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(data_.cutoff, data_.usable_portion);
+    }
+
 private:
     waveguide::single_band_parameters data_{500, 0.6};
 };
@@ -34,6 +45,17 @@ public:
     void set_usable_portion(double usable);
 
     waveguide::multiple_band_constant_spacing_parameters get() const;
+
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(data_.bands, data_.cutoff, data_.usable_portion);
+        notify();
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(data_.bands, data_.cutoff, data_.usable_portion);
+    }
 
 private:
     static const frequency_domain::edges_and_width_factor<9> band_params_;
@@ -63,6 +85,16 @@ public:
 
     void set_mode(mode mode);
     mode get_mode() const;
+
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(single_band, multiple_band);
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(single_band, multiple_band);
+    }
 
     single_band_waveguide single_band;
     multiple_band_waveguide multiple_band;

@@ -32,6 +32,17 @@ public:
     void set_bit_depth(bit_depth bit_depth);
     bit_depth get_bit_depth() const;
 
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(output_folder_, name_, sample_rate_, bit_depth_);
+        notify();
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(output_folder_, name_, sample_rate_, bit_depth_);
+    }
+
 private:
     std::string output_folder_ = ".";
     std::string name_ = "sig";

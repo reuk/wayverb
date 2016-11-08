@@ -110,6 +110,17 @@ public:
         this->notify();
     }
 
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(data_);
+        notify();
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(data_);
+    }
+
 private:
     void connect() {
         for (auto& i : data_) {

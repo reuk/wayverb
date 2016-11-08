@@ -28,6 +28,16 @@ public:
     void set_mode(mode mode);
     mode get_mode() const;
 
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(microphone, hrtf, name_, mode_);
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(microphone, hrtf, name_, mode_);
+    }
+
     microphone microphone;
     hrtf hrtf;
 
@@ -68,6 +78,16 @@ public:
     bool empty() const;
 
     void clear();
+
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(capsules_);
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(capsules_);
+    }
 
 private:
     vector<capsule> capsules_;

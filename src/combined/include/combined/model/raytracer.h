@@ -23,6 +23,17 @@ public:
 
     wayverb::raytracer::simulation_parameters get() const;
 
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(data_.rays, data_.maximum_image_source_order);
+        notify();
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(data_.rays, data_.maximum_image_source_order);
+    }
+
 private:
     wayverb::raytracer::simulation_parameters data_{10000, 4};
 };

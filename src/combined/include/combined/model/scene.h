@@ -28,6 +28,16 @@ public:
 
     void swap(scene& other) noexcept;
 
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(aabb_, sources, receivers, raytracer, waveguide, output);
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(aabb_, sources, receivers, raytracer, waveguide, output);
+    }
+
 private:
     core::geo::box aabb_;
 

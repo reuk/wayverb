@@ -20,6 +20,17 @@ public:
     void set_position(const glm::vec3& position);
     glm::vec3 get_position() const;
 
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(aabb_, name_, position_);
+        notify();
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(aabb_, name_, position_);
+    }
+
 private:
     core::geo::box aabb_;
 
@@ -59,6 +70,16 @@ public:
     bool empty() const;
 
     void clear();
+
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(aabb_, sources_);
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(aabb_, sources_);
+    }
 
 private:
     core::geo::box aabb_;

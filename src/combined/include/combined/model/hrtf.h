@@ -3,6 +3,7 @@
 #include "combined/model/member.h"
 
 #include "core/attenuator/hrtf.h"
+#include "core/serialize/attenuators.h"
 
 namespace wayverb {
 namespace combined {
@@ -16,6 +17,17 @@ public:
     void set_channel(core::attenuator::hrtf::channel channel);
 
     core::attenuator::hrtf get() const;
+
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(hrtf_);
+        notify();
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(hrtf);
+    }
 
 private:
     core::attenuator::hrtf hrtf_;

@@ -3,6 +3,7 @@
 #include "combined/model/member.h"
 
 #include "core/attenuator/microphone.h"
+#include "core/serialize/attenuators.h"
 
 namespace wayverb {
 namespace combined {
@@ -16,6 +17,17 @@ public:
     void set_shape(double shape);
 
     core::attenuator::microphone get() const;
+
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(microphone_);
+        notify();
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(microphone_);
+    }
 
 private:
     core::attenuator::microphone microphone_;

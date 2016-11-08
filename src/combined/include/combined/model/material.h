@@ -18,6 +18,17 @@ public:
     void set_surface(core::surface<core::simulation_bands> surface);
     core::surface<core::simulation_bands> get_surface() const;
 
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(name_, surface_);
+        notify();
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(name_, surface_);
+    }
+
 private:
     std::string name_ = "new material";
     core::surface<core::simulation_bands> surface_;
@@ -55,6 +66,16 @@ public:
     bool empty() const;
 
     void clear();
+
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(materials_);
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(materials_);
+    }
 
 private:
     vector<material> materials_;

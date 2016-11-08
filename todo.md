@@ -16,16 +16,20 @@ Use number of inside waveguide nodes to estimate room volume.
 app stuff
 ---------
 
-separate models for sources, receivers, capsules, materials
+Debug model updating.
+
+Serialization for model objects.
 
 Change orientation of whole microphone group, with their own up + facing pairs.
     i.e. USE the orientation in combined::receiver_info
 
+Add MeshGenerator (using async) to app model.
+
 Rewrite MeshGenerator to use `async` rather than raw threads.
     This might get rolled into the app model somehow.
 
-Validate scene before rendering.
-    If it isn't closed, display an error and use less accurate noise estimator.
+Validate mesh volume by checking it against the number of 'inside' waveguide nodes.
+    If there's a significant difference, just use the mesh version.
 
 Pan view.
 

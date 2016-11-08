@@ -30,6 +30,16 @@ public:
     void set_orientation(float azimuth, float elevation);
     core::orientable get_orientation() const;
 
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(capsules, bounds_, name_, position_, orientation_);
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(capsules, bounds_, name_, position_, orientation_);
+    }
+
     capsules capsules;
 
 private:
@@ -72,6 +82,16 @@ public:
     bool empty() const;
 
     void clear();
+
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(aabb_, receivers_);
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(aabb_, receivers_);
+    }
 
 private:
     core::geo::box aabb_;
