@@ -1,7 +1,5 @@
 #pragma once
 
-#include "utilities/final_act.h"
-
 #include <functional>
 #include <unordered_map>
 
@@ -42,7 +40,7 @@ public:
         void unblock() { pimpl_->block(key_); }
         bool blocked() const { return pimpl_->blocked(key_); }
 
-        operator bool() const { return pimpl_; }
+        explicit operator bool() const { return pimpl_ != nullptr; }
 
     private:
         std::shared_ptr<impl> pimpl_;
@@ -55,10 +53,29 @@ public:
 
     class scoped_connection final {
     public:
-        scoped_connection(connection connection)
+        scoped_connection() = default;
+        explicit scoped_connection(connection connection)
                 : connection_{std::move(connection)} {}
 
-        ~scoped_connection() noexcept { connection_.disconnect(); }
+        void swap(scoped_connection& other) noexcept {
+            using std::swap;
+            swap(connection_, other.connection_);
+        }
+
+        scoped_connection(const scoped_connection&) = delete;
+        scoped_connection(scoped_connection&& other) noexcept { swap(other); }
+
+        scoped_connection& operator=(const scoped_connection&) = delete;
+        scoped_connection& operator=(scoped_connection&& other) noexcept {
+            swap(other);
+            return *this;
+        }
+
+        ~scoped_connection() noexcept {
+            if (connection_) {
+                connection_.disconnect();
+            }
+        }
 
         void block() { connection_.block(); }
         void unblock() { connection_.unblock(); }
