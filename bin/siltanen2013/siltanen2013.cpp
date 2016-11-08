@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
         //  engine /////////////////////////////////////////////////////////////
         renderers.emplace_back(make_concrete_renderer_ptr([&] {
             auto input =
-                    wayverb::combined::make_engine(
+                    wayverb::combined::engine{
                             cc,
                             scene_data,
                             source,
@@ -171,9 +171,12 @@ int main(int argc, char** argv) {
                             environment,
                             wayverb::raytracer::simulation_parameters{1 << 16,
                                                                       4},
-                            wayverb::waveguide::
-                                    multiple_band_constant_spacing_parameters{
-                                            3, sample_rate, usable_portion})
+                            wayverb::combined::make_waveguide_ptr(
+                                    wayverb::waveguide::
+                                            multiple_band_constant_spacing_parameters{
+                                                    3,
+                                                    sample_rate,
+                                                    usable_portion})}
                             .run(true);
 
             return [&, input = std::move(input) ](const auto& attenuator) {

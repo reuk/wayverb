@@ -22,19 +22,19 @@ TEST(engine, engine) {
 
     const auto scene_data = geo::get_scene_data(box, surface);
 
-    auto e = make_engine(compute_context{},
-                         scene_data,
-                         source,
-                         receiver,
-                         wayverb::core::environment{},
-                         simulation_parameters{1 << 16, 5},
-                         single_band_parameters{10000, 0.5});
+    engine e{compute_context{},
+             scene_data,
+             source,
+             receiver,
+             wayverb::core::environment{},
+             simulation_parameters{1 << 16, 5},
+             make_waveguide_ptr(single_band_parameters{10000, 0.5})};
 
-    const engine_state_changed::scoped_connection connection =
+    const engine_state_changed::scoped_connection connection{
             e.add_engine_state_changed_callback([](auto state, auto progress) {
                 std::cout << '\r' << std::setw(30) << to_string(state)
                           << std::setw(10) << progress << std::flush;
-            });
+            })};
 
     const auto intermediate = e.run(true);
 

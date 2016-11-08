@@ -25,11 +25,4 @@ void serialize(Archive& archive, wayverb::core::surface<Bands>& m) {
             cereal::make_nvp("scattering", m.scattering));
 }
 
-template <typename Archive>
-void serialize(Archive& archive,
-               wayverb::core::scene_data_loader::material& m) {
-    archive(cereal::make_nvp("name", m.name),
-            cereal::make_nvp("surface", m.surface));
-}
-
 }  // namespace cereal

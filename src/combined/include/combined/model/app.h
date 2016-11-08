@@ -10,7 +10,29 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class app final : public member<app, scene, vector<material>> {
+struct project final {
+    const core::scene_data_loader scene_data;
+    scene scene;
+    materials materials;
+
+    static constexpr const char* model_name = "model.model";
+    static constexpr const char* config_name = "config.json";
+
+    static std::string compute_model_path(const std::string& root);
+    static std::string compute_config_path(const std::string& root);
+
+    static bool is_project_file(const std::string& fpath);
+
+    static project load_wayverb_project(const std::string& fpath);
+    static project load_3d_object(const std::string& fpath);
+
+    static project load(const std::string& fpath);
+    static void save_to(const project& project, const std::string& fpath);
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+class app final : public member<app, materials, scene> {
 public:
     //  SPECIAL MEMBERS  ///////////////////////////////////////////////////////
     //  TODO
@@ -68,13 +90,12 @@ private:
 
     const core::scene_data_loader scene_;
 
-    vector<class material> materials_;
-
     complete_engine engine_;
     std::future<void> future_;
 
 public:
-    class scene scene;
+    materials materials;
+    scene scene;
 };
 
 }  // namespace model

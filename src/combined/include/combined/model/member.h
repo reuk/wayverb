@@ -12,13 +12,18 @@ class member {
 public:
     member() = default;
 
-    /// Copy operations should default-construct on_change_, thereby ensuring
+    /// Copy constructor should default-construct on_change_, thereby ensuring
     /// the copy has no listeners.
+    /// Copy *assignment* should retain the existing listeners on the assigned-
+    /// to object.
 
     member(const member& other) {}
     member(member&&) noexcept = default;
 
-    member& operator=(const member& other) = default;
+    member& operator=(const member& other) {
+        notify();
+        return *this;
+    }
     member& operator=(member&&) noexcept = default;
 
     using on_change = util::event<Derived&>;

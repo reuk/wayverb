@@ -2,6 +2,7 @@
 build
 lint
 xcproj
+xc
 Testing
 reference
 */output/
