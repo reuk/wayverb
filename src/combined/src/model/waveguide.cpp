@@ -48,14 +48,52 @@ void multiple_band_waveguide::maintain_valid_cutoff() {
     data_.cutoff = std::max(data_.cutoff, band_params_.edges[data_.bands]);
 }
 
+const frequency_domain::edges_and_width_factor<9>
+        multiple_band_waveguide::band_params_ =
+                hrtf_data::hrtf_band_params_hz();
+
 ////////////////////////////////////////////////////////////////////////////////
 
-waveguide::waveguide() { connect_all(single_band, multiple_band); }
+waveguide::waveguide() { connect(single_band, multiple_band); }
+
+void waveguide::swap(waveguide& other) noexcept {
+    using std::swap;
+    swap(single_band, other.single_band);
+    swap(multiple_band, other.multiple_band);
+    swap(mode_, other.mode_);
+}
+
+waveguide::waveguide(const waveguide& other)
+        : single_band{other.single_band}
+        , multiple_band{other.multiple_band}
+        , mode_{other.mode_} {
+    connect(single_band, multiple_band);
+}
+
+waveguide::waveguide(waveguide&& other) noexcept {
+    swap(other);
+    connect(single_band, multiple_band);
+}
+
+waveguide& waveguide::operator=(const waveguide& other) {
+    auto copy{other};
+    swap(copy);
+    connect(single_band, multiple_band);
+    return *this;
+}
+
+waveguide& waveguide::operator=(waveguide&& other) noexcept {
+    swap(other);
+    connect(single_band, multiple_band);
+    return *this;
+}
 
 void waveguide::set_mode(mode mode) {
     mode_ = mode;
     notify();
 }
+
+waveguide::mode waveguide::get_mode() const { return mode_; }
 
 }  // namespace model
 }  // namespace combined

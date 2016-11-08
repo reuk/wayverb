@@ -1,10 +1,7 @@
 #pragma once
 
-#include "combined/model/output.h"
-#include "combined/model/raytracer.h"
-#include "combined/model/receiver.h"
-#include "combined/model/source.h"
-#include "combined/model/waveguide.h"
+#include "combined/model/material.h"
+#include "combined/model/scene.h"
 #include "combined/threaded_engine.h"
 
 #include <future>
@@ -13,7 +10,7 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class app final : public member<app> {
+class app final : public member<app, scene, vector<material>> {
 public:
     //  SPECIAL MEMBERS  ///////////////////////////////////////////////////////
     //  TODO
@@ -48,23 +45,6 @@ public:
     //  Write the project to the specifed path, and set currently_open_file_.
     void save_as(std::string name) const;
 
-    //  DATA  //////////////////////////////////////////////////////////////////
-    //  TODO scene materials
-
-    const source& get_source(size_t index) const;
-    source& get_source(size_t index);
-    void add_source(size_t index);
-    void remove_source(size_t index);
-
-    const receiver& get_receiver(size_t index) const;
-    receiver& get_receiver(size_t index);
-    void add_receiver(size_t index);
-    void remove_receiver(size_t index);
-
-    raytracer raytracer;
-    waveguide waveguide;
-    output output;
-
     //  CALLBACKS  /////////////////////////////////////////////////////////////
 
     engine_state_changed::connection connect_engine_state(
@@ -87,13 +67,14 @@ private:
     std::string currently_open_file_;
 
     const core::scene_data_loader scene_;
-    const core::geo::box aabb_;
 
-    vector<source> sources_;
-    vector<receiver> receivers_;
+    vector<class material> materials_;
 
     complete_engine engine_;
     std::future<void> future_;
+
+public:
+    class scene scene;
 };
 
 }  // namespace model

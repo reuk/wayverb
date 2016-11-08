@@ -9,8 +9,9 @@ namespace model {
 receiver::receiver(core::geo::box bounds)
         : bounds_{std::move(bounds)}
         , position_{centre(bounds_)} {
-    capsules_.emplace(0);
-    connect(std::tie(capsules_));
+    class capsule tmp {};
+    capsules_.insert(capsules_.begin(), std::move(tmp));
+    connect(capsules_);
 }
 
 void receiver::set_name(std::string name) {
@@ -29,17 +30,20 @@ void receiver::set_orientation(float azimuth, float elevation) {
     notify();
 }
 
-const capsule& receiver::get_capsule(size_t index) const {
+const capsule& receiver::capsule(size_t index) const {
     return capsules_[index];
 }
 
-capsule& receiver::get_capsule(size_t index) { return capsules_[index]; }
+capsule& receiver::capsule(size_t index) { return capsules_[index]; }
 
-void receiver::add_capsule(size_t index) { capsules_.emplace(index); }
+void receiver::add_capsule(size_t index) {
+    class capsule tmp {};
+    capsules_.insert(capsules_.begin() + index, std::move(tmp));
+}
 
 void receiver::remove_capsule(size_t index) {
     if (1 < capsules_.size()) {
-        capsules_.erase(index);
+        capsules_.erase(capsules_.begin() + index);
     }
 }
 

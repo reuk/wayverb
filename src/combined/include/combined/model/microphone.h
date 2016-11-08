@@ -12,12 +12,6 @@ class microphone final : public member<microphone> {
 public:
     microphone() = default;
 
-    microphone(const microphone&) = delete;
-    microphone(microphone&&) noexcept = delete;
-
-    microphone& operator=(const microphone&) = delete;
-    microphone& operator=(microphone&&) noexcept = delete;
-
     void set_orientation(float azimuth, float elevation);
     void set_shape(double shape);
 

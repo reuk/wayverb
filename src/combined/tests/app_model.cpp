@@ -1,4 +1,4 @@
-#include "combined/app_model.h"
+#include "combined/model/app.h"
 
 #include "gtest/gtest.h"
 

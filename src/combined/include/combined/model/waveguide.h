@@ -14,12 +14,6 @@ class single_band_waveguide final : public member<single_band_waveguide> {
 public:
     single_band_waveguide() = default;
 
-    single_band_waveguide(const single_band_waveguide&) = delete;
-    single_band_waveguide(single_band_waveguide&&) = delete;
-
-    single_band_waveguide& operator=(const single_band_waveguide&) = delete;
-    single_band_waveguide& operator=(single_band_waveguide&&) = delete;
-
     void set_cutoff(double cutoff);
     void set_usable_portion(double usable);
 
@@ -35,13 +29,6 @@ class multiple_band_waveguide final : public member<multiple_band_waveguide> {
 public:
     multiple_band_waveguide() = default;
 
-    multiple_band_waveguide(const multiple_band_waveguide&) = delete;
-    multiple_band_waveguide(multiple_band_waveguide&&) noexcept = delete;
-
-    multiple_band_waveguide& operator=(const multiple_band_waveguide&) = delete;
-    multiple_band_waveguide& operator=(multiple_band_waveguide&&) noexcept =
-            delete;
-
     void set_bands(size_t bands);
     void set_cutoff(double cutoff);
     void set_usable_portion(double usable);
@@ -49,8 +36,7 @@ public:
     waveguide::multiple_band_constant_spacing_parameters get() const;
 
 private:
-    const frequency_domain::edges_and_width_factor<9> band_params_ =
-            hrtf_data::hrtf_band_params_hz();
+    static const frequency_domain::edges_and_width_factor<9> band_params_;
 
     void maintain_valid_cutoff();
 
@@ -59,19 +45,24 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class waveguide final : public member<waveguide> {
+class waveguide final : public member<waveguide,
+                                      single_band_waveguide,
+                                      multiple_band_waveguide> {
 public:
     waveguide();
 
-    waveguide(const waveguide&) = delete;
-    waveguide(waveguide&&) noexcept = delete;
+    waveguide(const waveguide& other);
+    waveguide(waveguide&& other) noexcept;
 
-    waveguide& operator=(const waveguide&) = delete;
-    waveguide& operator=(waveguide&&) noexcept = delete;
+    waveguide& operator=(const waveguide& other);
+    waveguide& operator=(waveguide&& other) noexcept;
+
+    void swap(waveguide& other) noexcept;
 
     enum class mode { single, multiple };
 
     void set_mode(mode mode);
+    mode get_mode() const;
 
     single_band_waveguide single_band;
     multiple_band_waveguide multiple_band;

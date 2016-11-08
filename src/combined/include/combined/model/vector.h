@@ -14,26 +14,33 @@ namespace model {
 template <typename T>
 class vector final : public member<vector<T>> {
 public:
+    static_assert(std::is_nothrow_move_constructible<T>{} &&
+                          std::is_nothrow_move_assignable<T>{},
+                  "T must be nothrow moveable");
+
     vector() = default;
-
-    vector(const vector&) = delete;
-    vector(vector&&) noexcept = delete;
-
-    vector& operator=(const vector&) = delete;
-    vector& operator=(vector&&) noexcept = delete;
 
     const auto& operator[](size_t index) const { return data_[index]; }
     auto& operator[](size_t index) { return data_[index]; }
 
-    template <typename... Ts>
-    void emplace(size_t index, Ts&&... ts) {
-        data_.emplace(data_.begin() + index, std::forward<Ts>(ts)...);
-        data_[index].connect_on_change([&] { this->notify(); });
+    auto cbegin() const { return data_.cbegin(); }
+    auto begin() const { return data_.begin(); }
+    auto begin() { return data_.begin(); }
+
+    auto cend() const { return data_.cend(); }
+    auto end() const { return data_.end(); }
+    auto end() { return data_.end(); }
+
+    template <typename It>
+    void insert(It it, T t) {
+        t.connect_on_change([&](auto&) { this->notify(); });
+        data_.insert(std::move(it), std::move(t));
         this->notify();
     }
 
-    void erase(size_t index) {
-        data_.erase(data_.begin() + index);
+    template <typename It>
+    void erase(It it) {
+        data_.erase(std::move(it));
         this->notify();
     }
 

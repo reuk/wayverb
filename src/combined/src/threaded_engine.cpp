@@ -2,20 +2,30 @@
 
 namespace wayverb {
 namespace combined {
+namespace {
+struct max_mag_functor final {
+    template <typename T>
+    auto operator()(const T& t) const {
+        return core::max_mag(t.data);
+    }
+};
+}  // namespace
 
-std::unique_ptr<capsule_base> polymorphic_capsule_info(const capsule_info& i) {
-    switch (i.mode) {
-        case capsule_info::capsule_mode::microphone:
+std::unique_ptr<capsule_base> polymorphic_capsule_model(
+        const model::capsule& i) {
+    switch (i.get_mode()) {
+        case model::capsule::mode::microphone:
             return make_capsule_ptr(i.microphone);
-        case capsule_info::capsule_mode::hrtf: return make_capsule_ptr(i.hrtf);
+        case model::capsule::mode::hrtf: return make_capsule_ptr(i.hrtf);
     }
 }
 
-std::unique_ptr<waveguide_base> polymorphic_waveguide(const waveguide_info& i) {
-    switch (i.mode) {
-        case waveguide_info::waveguide_mode::single_band:
+std::unique_ptr<waveguide_base> polymorphic_waveguide_model(
+        const model::waveguide& i) {
+    switch (i.get_mode()) {
+        case model::waveguide::mode::single:
             return make_waveguide_ptr(i.single_band);
-        case waveguide_info::waveguide_mode::multiple_band:
+        case model::waveguide::mode::multiple:
             return make_waveguide_ptr(i.multiple_band);
     }
 }
@@ -24,31 +34,23 @@ std::unique_ptr<waveguide_base> polymorphic_waveguide(const waveguide_info& i) {
 
 void complete_engine::run(const core::compute_context& compute_context,
                           const core::gpu_scene_data& scene_data,
-                          const scene_parameters& scene_parameters) {
+                          const model::scene& model_scene) {
     try {
         is_running_ = true;
         keep_going_ = true;
 
-        if (scene_parameters.sources.empty()) {
-            throw std::runtime_error{"no sources specified"};
-        }
-
-        if (scene_parameters.receivers.empty()) {
-            throw std::runtime_error{"no receivers specified"};
-        }
-
         const auto poly_waveguide =
-                polymorphic_waveguide(scene_parameters.waveguide);
+                polymorphic_waveguide_model(model_scene.waveguide);
 
         std::vector<channel_info> all_channels;
 
         //  For each source-receiver pair.
-        for (auto source = begin(scene_parameters.sources),
-                  e_source = end(scene_parameters.sources);
+        for (auto source = begin(model_scene.sources),
+                  e_source = end(model_scene.sources);
              source != e_source && keep_going_;
              ++source) {
-            for (auto receiver = begin(scene_parameters.receivers),
-                      e_receiver = end(scene_parameters.receivers);
+            for (auto receiver = begin(model_scene.receivers),
+                      e_receiver = end(model_scene.receivers);
                  receiver != e_receiver && keep_going_;
                  ++receiver) {
                 //  Set up an engine to use.
@@ -56,8 +58,8 @@ void complete_engine::run(const core::compute_context& compute_context,
                                           scene_data,
                                           source->position,
                                           receiver->position,
-                                          scene_parameters.environment,
-                                          scene_parameters.raytracer,
+                                          model_scene.environment,
+                                          model_scene.raytracer,
                                           poly_waveguide->clone()};
 
                 //  Send new node position notification.
@@ -82,12 +84,12 @@ void complete_engine::run(const core::compute_context& compute_context,
                 const auto polymorphic_capsules =
                         util::map_to_vector(begin(receiver->capsules),
                                             end(receiver->capsules),
-                                            polymorphic_capsule_info);
+                                            polymorphic_capsule_model);
 
                 //  Run the simulation, cache the result.
                 auto channel = eng.run(begin(polymorphic_capsules),
                                        end(polymorphic_capsules),
-                                       scene_parameters.output.sample_rate,
+                                       model_scene.output.sample_rate,
                                        keep_going_);
 
                 if (!keep_going_) {
@@ -138,9 +140,9 @@ void complete_engine::run(const core::compute_context& compute_context,
         //  Write out files.
         for (const auto& i : all_channels) {
             const auto file_name =
-                    util::build_string(scene_parameters.output.output_folder,
+                    util::build_string(model_scene.output.output_folder,
                                        '/',
-                                       scene_parameters.output.name,
+                                       model_scene.output.name,
                                        '.',
                                        "s_",
                                        i.source_name,
@@ -153,9 +155,9 @@ void complete_engine::run(const core::compute_context& compute_context,
                                        ".wav");
 
             write(file_name,
-                  audio_file::make_audio_file(
-                          i.data, scene_parameters.output.sample_rate),
-                  convert_bit_depth(scene_parameters.output.bit_depth));
+                  audio_file::make_audio_file(i.data,
+                                              model_scene.output.sample_rate),
+                  convert_bit_depth(model_scene.output.bit_depth));
         }
 
     } catch (const std::exception& e) {

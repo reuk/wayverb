@@ -12,11 +12,11 @@ class output final : public member<output> {
 public:
     output() = default;
 
-    output(const output&) = delete;
-    output(output&&) noexcept = delete;
+    output(const output&) = default;
+    output(output&&) noexcept = default;
 
-    output& operator=(const output&) = delete;
-    output& operator=(output&&) noexcept = delete;
+    output& operator=(const output&) = default;
+    output& operator=(output&&) noexcept = default;
 
     enum class bit_depth { bd16, bd24 };
 

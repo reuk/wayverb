@@ -17,31 +17,18 @@ TEST(threaded_engine, threaded_engine) {
 
     const auto scene_data = geo::get_scene_data(box, surface);
 
-    std::vector<capsule_info> capsules;
-    capsules.emplace_back(capsule_info{
-            "the_capsule", make_capsule_ptr(attenuator::microphone{})});
+    model::scene model_scene{geo::compute_aabb(scene_data)};
+    model_scene.source(0).set_position(source);
+    model_scene.receiver(0).set_position(receiver);
 
-    std::vector<receiver_info> receivers;
-    receivers.emplace_back(receiver_info{
-            "the_receiver", receiver, orientable{}, std::move(capsules)});
+    complete_engine complete{};
 
-    auto complete = complete_engine{};
-
-    const engine_state_changed::scoped_connection connection =
+    const engine_state_changed::scoped_connection connection{
             complete.add_engine_state_changed_callback(
                     [](auto state, auto progress) {
                         std::cout << '\r' << std::setw(30) << to_string(state)
                                   << std::setw(10) << progress << std::flush;
-                    });
+                    })};
 
-    complete.run(
-            compute_context{},
-            scene_data,
-            make_scene_parameters({source_info{"the_source", source}},
-                                  std::move(receivers),
-                                  wayverb::core::environment{},
-                                  simulation_parameters{1 << 16, 5},
-                                  single_band_parameters{10000, 0.5},
-                                  output_info{".", "threaded_test", 44100, 16}),
-            true);
+    complete.run(compute_context{}, scene_data, model_scene);
 }

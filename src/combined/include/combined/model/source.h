@@ -14,12 +14,6 @@ class source final : public member<source> {
 public:
     source(core::geo::box bounds);
 
-    source(const source&) = delete;
-    source(source&&) noexcept = delete;
-
-    source& operator=(const source&) = delete;
-    source& operator=(source&&) noexcept = delete;
-
     void set_name(std::string name);
     std::string get_name() const;
 

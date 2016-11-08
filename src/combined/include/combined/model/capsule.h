@@ -7,20 +7,25 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class capsule final : public member<capsule> {
+class capsule final : public member<capsule, microphone, hrtf> {
 public:
     capsule();
 
-    capsule(const capsule&) = delete;
-    capsule(capsule&&) noexcept = delete;
+    capsule(const capsule& other);
+    capsule(capsule&& other) noexcept;
 
-    capsule& operator=(const capsule&) = delete;
-    capsule& operator=(capsule&&) noexcept = delete;
+    capsule& operator=(const capsule& other);
+    capsule& operator=(capsule&& other) noexcept;
+
+    void swap(capsule& other) noexcept;
 
     enum class mode { microphone, hrtf };
 
     void set_name(std::string name);
+    std::string get_name() const;
+
     void set_mode(mode mode);
+    mode get_mode() const;
 
     microphone microphone;
     hrtf hrtf;

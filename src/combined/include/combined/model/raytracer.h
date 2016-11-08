@@ -12,11 +12,11 @@ class raytracer final : public member<raytracer> {
 public:
     raytracer() = default;
 
-    raytracer(const raytracer&) = delete;
-    raytracer(raytracer&&) noexcept = delete;
+    raytracer(const raytracer&) = default;
+    raytracer(raytracer&&) noexcept = default;
 
-    raytracer& operator=(const raytracer&) = delete;
-    raytracer& operator=(raytracer&&) noexcept = delete;
+    raytracer& operator=(const raytracer&) = default;
+    raytracer& operator=(raytracer&&) noexcept = default;
 
     void set_rays(size_t rays);
     void set_max_img_src_order(size_t max);

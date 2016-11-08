@@ -5,11 +5,8 @@ namespace combined {
 namespace model {
 
 app::app(const std::string& name)
-        : aabb_{core::geo::compute_aabb(scene_.get_scene_data())} {
-    add_source(0);
-    add_receiver(0);
-
-    connect_all(raytracer, waveguide, output, sources_, receivers_);
+        : scene{core::geo::compute_aabb(scene_.get_scene_data())} {
+    connect(scene, materials_);
 }
 
 app::~app() noexcept { stop_render(); }
@@ -19,12 +16,22 @@ void app::start_render() {
 
     //  Collect parameters.
 
-    auto scene_data = scene_.get_scene_data();
+    util::aligned::unordered_map<std::string,
+                                 core::surface<core::simulation_bands>>
+            material_map;
+
+    for (const auto& i : materials_) {
+        material_map[i.get_name()] = i.get_surface();
+    }
+
+    auto scene_data = scene_with_extracted_surfaces(scene_.get_scene_data(),
+                                                    material_map);
+
     //  TODO replace surfaces with the surfaces from the model.
 
     //  Start engine in new thread.
     future_ = std::async(std::launch::async, [&] {
-        engine_.run(core::compute_context{}, scene_data, scene_parameters{});
+        engine_.run(core::compute_context{}, std::move(scene_data), scene);
     });
 }
 
@@ -51,31 +58,7 @@ void app::save() const {}
 //  currently_open_file_.
 void app::save_as(std::string name) const {}
 
-//  TODO scene materials
-
-const source& app::get_source(size_t index) const { return sources_[index]; }
-source& app::get_source(size_t index) { return sources_[index]; }
-
-void app::add_source(size_t index) { sources_.emplace(index, aabb_); }
-
-void app::remove_source(size_t index) {
-    if (1 < sources_.size()) {
-        sources_.erase(index);
-    }
-}
-
-const receiver& app::get_receiver(size_t index) const {
-    return receivers_[index];
-}
-receiver& app::get_receiver(size_t index) { return receivers_[index]; }
-
-void app::add_receiver(size_t index) { receivers_.emplace(index, aabb_); }
-
-void app::remove_receiver(size_t index) {
-    if (1 < receivers_.size()) {
-        receivers_.erase(index);
-    }
-}
+//  CALLBACKS  /////////////////////////////////////////////////////////////////
 
 engine_state_changed::connection app::connect_engine_state(
         engine_state_changed::callback_type t) {
