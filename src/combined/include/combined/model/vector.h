@@ -2,8 +2,9 @@
 
 #include "combined/model/member.h"
 
+#include "utilities/aligned/vector.h"
 #include "utilities/event.h"
-#include "utilities/map_to_vector.h"
+#include "utilities/mapping_iterator_adapter.h"
 
 #include <memory>
 
@@ -13,6 +14,36 @@ namespace model {
 
 template <typename T>
 class vector final : public member<vector<T>> {
+    struct item_connection final {
+        T item;
+        typename util::event<T&>::scoped_connection connection;
+
+        item_connection(vector& v, T t)
+                : item{std::move(t)}
+                , connection{
+                          item.connect_on_change([&](auto&) { v.notify(); })} {}
+
+        item_connection(const item_connection& other)
+                : item{other.item} {}
+        item_connection(item_connection&&) noexcept = default;
+
+        item_connection& operator=(const item_connection& other) = default;
+        item_connection& operator=(item_connection&&) noexcept = default;
+    };
+
+    struct item_extractor final {
+        template <typename U>
+        constexpr auto& operator()(U&& u) const {
+            return u.item;
+        }
+    };
+
+    template <typename It>
+    static auto make_iterator(It it) {
+        return util::make_mapping_iterator_adapter(std::move(it),
+                                                   item_extractor{});
+    }
+
 public:
     static_assert(std::is_nothrow_move_constructible<T>{} &&
                           std::is_nothrow_move_assignable<T>{},
@@ -20,27 +51,54 @@ public:
 
     vector() = default;
 
-    const auto& operator[](size_t index) const { return data_[index]; }
-    auto& operator[](size_t index) { return data_[index]; }
+    void swap(vector& other) noexcept {
+        using std::swap;
+        swap(data_, other.data_);
+    }
 
-    auto cbegin() const { return data_.cbegin(); }
-    auto begin() const { return data_.begin(); }
-    auto begin() { return data_.begin(); }
+    vector(const vector& other)
+            : data_{other.data_} {
+        connect();
+    }
 
-    auto cend() const { return data_.cend(); }
-    auto end() const { return data_.end(); }
-    auto end() { return data_.end(); }
+    vector(vector&& other) noexcept {
+        swap(other);
+        connect();
+    }
+
+    vector& operator=(const vector& other) {
+        auto copy{other};
+        swap(copy);
+        connect();
+        return *this;
+    }
+
+    vector& operator=(vector&& other) noexcept {
+        swap(other);
+        connect();
+        return *this;
+    }
+
+    const auto& operator[](size_t index) const { return data_[index].item; }
+    auto& operator[](size_t index) { return data_[index].item; }
+
+    auto cbegin() const { return make_iterator(data_.cbegin()); }
+    auto begin() const { return make_iterator(data_.begin()); }
+    auto begin() { return make_iterator(data_.begin()); }
+
+    auto cend() const { return make_iterator(data_.cend()); }
+    auto end() const { return make_iterator(data_.end()); }
+    auto end() { return make_iterator(data_.end()); }
 
     template <typename It>
     void insert(It it, T t) {
-        t.connect_on_change([&](auto&) { this->notify(); });
-        data_.insert(std::move(it), std::move(t));
+        data_.emplace(it.base(), *this, std::move(t));
         this->notify();
     }
 
     template <typename It>
     void erase(It it) {
-        data_.erase(std::move(it));
+        data_.erase(it.base());
         this->notify();
     }
 
@@ -53,7 +111,14 @@ public:
     }
 
 private:
-    std::vector<T> data_;
+    void connect() {
+        for (auto& i : data_) {
+            i.connection = typename util::event<T&>::scoped_connection{
+                    i.item.connect_on_change([&](auto&) { this->notify(); })};
+        }
+    }
+
+    util::aligned::vector<item_connection> data_;
 };
 
 }  // namespace model

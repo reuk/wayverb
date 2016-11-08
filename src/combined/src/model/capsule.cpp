@@ -19,7 +19,7 @@ capsule::capsule(const capsule& other)
         , hrtf{other.hrtf}
         , name_{other.name_}
         , mode_{other.mode_} {
-    connect(microphone, hrtf);        
+    connect(microphone, hrtf);
 }
 
 capsule::capsule(capsule&& other) noexcept {
@@ -53,6 +53,62 @@ void capsule::set_mode(mode mode) {
 }
 
 capsule::mode capsule::get_mode() const { return mode_; }
+
+////////////////////////////////////////////////////////////////////////////////
+
+capsules::capsules() {
+    insert(0, capsule{});
+    connect(capsules_);
+}
+
+void capsules::swap(capsules& other) noexcept {
+    using std::swap;
+    swap(capsules_, other.capsules_);
+}
+
+capsules::capsules(const capsules& other)
+        : capsules_{other.capsules_} {
+    connect(capsules_);
+}
+
+capsules::capsules(capsules&& other) noexcept {
+    swap(other);
+    connect(capsules_);
+}
+
+capsules& capsules::operator=(const capsules& other) {
+    auto copy{other};
+    swap(copy);
+    connect(capsules_);
+    return *this;
+}
+
+capsules& capsules::operator=(capsules&& other) noexcept {
+    swap(other);
+    connect(capsules_);
+    return *this;
+}
+
+const capsule& capsules::operator[](size_t index) const {
+    return capsules_[index];
+}
+capsule& capsules::operator[](size_t index) { return capsules_[index]; }
+
+void capsules::insert(size_t index, capsule t) {
+    capsules_.insert(capsules_.begin() + index, std::move(t));
+}
+
+void capsules::erase(size_t index) {
+    if (1 < capsules_.size()) {
+        capsules_.erase(capsules_.begin() + index);
+    }
+}
+
+size_t capsules::size() const { return capsules_.size(); }
+
+bool capsules::empty() const { return capsules_.empty(); }
+
+void capsules::clear() { capsules_.clear(); }
 
 }  // namespace model
 }  // namespace combined

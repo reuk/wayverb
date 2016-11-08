@@ -16,6 +16,8 @@ Use number of inside waveguide nodes to estimate room volume.
 app stuff
 ---------
 
+separate models for sources, receivers, capsules, materials
+
 Change orientation of whole microphone group, with their own up + facing pairs.
     i.e. USE the orientation in combined::receiver_info
 

@@ -12,33 +12,31 @@ namespace combined {
 namespace model {
 
 class scene final : public member<scene,
+                                  sources,
+                                  receivers,
                                   raytracer,
                                   waveguide,
-                                  output,
-                                  vector<source>,
-                                  vector<receiver>> {
+                                  output> {
 public:
     scene(core::geo::box aabb);
 
-    const class source& source(size_t index) const;
-    class source& source(size_t index);
-    void add_source(size_t index);
-    void remove_source(size_t index);
+    scene(const scene& other);
+    scene(scene&& other) noexcept;
 
-    const class receiver& receiver(size_t index) const;
-    class receiver& receiver(size_t index);
-    void add_receiver(size_t index);
-    void remove_receiver(size_t index);
+    scene& operator=(const scene& other);
+    scene& operator=(scene&& other) noexcept;
 
-    raytracer raytracer;
-    waveguide waveguide;
-    output output;
+    void swap(scene& other) noexcept;
 
 private:
     core::geo::box aabb_;
 
-    vector<class source> sources_;
-    vector<class receiver> receivers_;
+public:
+    sources sources;
+    receivers receivers;
+    raytracer raytracer;
+    waveguide waveguide;
+    output output;
 };
 
 }  // namespace model

@@ -8,17 +8,6 @@
 namespace wayverb {
 namespace combined {
 
-////////////////////////////////////////////////////////////////////////////////
-
-struct channel_info final {
-    util::aligned::vector<float> data;
-    std::string source_name;
-    std::string receiver_name;
-    std::string capsule_name;
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
 using waveguide_node_positions_changed =
         util::event<waveguide::mesh_descriptor>;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "combined/model/member.h"
+#include "combined/model/vector.h"
 
 #include "core/cl/scene_structs.h"
 
@@ -21,6 +21,43 @@ public:
 private:
     std::string name_ = "new material";
     core::surface<core::simulation_bands> surface_;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+class materials final : public member<materials, vector<material>> {
+public:
+    materials();
+
+    materials(const materials& other);
+    materials(materials&& other) noexcept;
+
+    materials& operator=(const materials& other);
+    materials& operator=(materials&& other) noexcept;
+
+    void swap(materials& other) noexcept;
+
+    const material& operator[](size_t index) const;
+    material& operator[](size_t index);
+
+    auto cbegin() const { return materials_.cbegin(); }
+    auto begin() const { return materials_.begin(); }
+    auto begin() { return materials_.begin(); }
+
+    auto cend() const { return materials_.cend(); }
+    auto end() const { return materials_.end(); }
+    auto end() { return materials_.end(); }
+
+    void insert(size_t index, material t);
+    void erase(size_t index);
+
+    size_t size() const;
+    bool empty() const;
+
+    void clear();
+
+private:
+    vector<material> materials_;
 };
 
 }  // namespace model

@@ -3,20 +3,29 @@
 namespace wayverb {
 namespace combined {
 namespace {
+
 struct max_mag_functor final {
     template <typename T>
     auto operator()(const T& t) const {
         return core::max_mag(t.data);
     }
 };
+
+struct channel_info final {
+    util::aligned::vector<float> data;
+    std::string source_name;
+    std::string receiver_name;
+    std::string capsule_name;
+};
+
 }  // namespace
 
 std::unique_ptr<capsule_base> polymorphic_capsule_model(
         const model::capsule& i) {
     switch (i.get_mode()) {
         case model::capsule::mode::microphone:
-            return make_capsule_ptr(i.microphone);
-        case model::capsule::mode::hrtf: return make_capsule_ptr(i.hrtf);
+            return make_capsule_ptr(i.microphone.get());
+        case model::capsule::mode::hrtf: return make_capsule_ptr(i.hrtf.get());
     }
 }
 
@@ -24,9 +33,9 @@ std::unique_ptr<waveguide_base> polymorphic_waveguide_model(
         const model::waveguide& i) {
     switch (i.get_mode()) {
         case model::waveguide::mode::single:
-            return make_waveguide_ptr(i.single_band);
+            return make_waveguide_ptr(i.single_band.get());
         case model::waveguide::mode::multiple:
-            return make_waveguide_ptr(i.multiple_band);
+            return make_waveguide_ptr(i.multiple_band.get());
     }
 }
 
@@ -39,27 +48,29 @@ void complete_engine::run(const core::compute_context& compute_context,
         is_running_ = true;
         keep_going_ = true;
 
+        constexpr core::environment environment{};
+
         const auto poly_waveguide =
                 polymorphic_waveguide_model(model_scene.waveguide);
 
         std::vector<channel_info> all_channels;
 
         //  For each source-receiver pair.
-        for (auto source = begin(model_scene.sources),
-                  e_source = end(model_scene.sources);
+        for (auto source = std::begin(model_scene.sources),
+                  e_source = std::end(model_scene.sources);
              source != e_source && keep_going_;
              ++source) {
-            for (auto receiver = begin(model_scene.receivers),
-                      e_receiver = end(model_scene.receivers);
+            for (auto receiver = std::begin(model_scene.receivers),
+                      e_receiver = std::end(model_scene.receivers);
                  receiver != e_receiver && keep_going_;
                  ++receiver) {
                 //  Set up an engine to use.
                 postprocessing_engine eng{compute_context,
                                           scene_data,
-                                          source->position,
-                                          receiver->position,
-                                          model_scene.environment,
-                                          model_scene.raytracer,
+                                          source->get_position(),
+                                          receiver->get_position(),
+                                          environment,
+                                          model_scene.raytracer.get(),
                                           poly_waveguide->clone()};
 
                 //  Send new node position notification.
@@ -82,14 +93,14 @@ void complete_engine::run(const core::compute_context& compute_context,
                                         raytracer_reflections_generated_));
 
                 const auto polymorphic_capsules =
-                        util::map_to_vector(begin(receiver->capsules),
-                                            end(receiver->capsules),
+                        util::map_to_vector(std::begin(receiver->capsules),
+                                            std::end(receiver->capsules),
                                             polymorphic_capsule_model);
 
                 //  Run the simulation, cache the result.
                 auto channel = eng.run(begin(polymorphic_capsules),
                                        end(polymorphic_capsules),
-                                       model_scene.output.sample_rate,
+                                       model_scene.output.get_sample_rate(),
                                        keep_going_);
 
                 if (!keep_going_) {
@@ -103,9 +114,9 @@ void complete_engine::run(const core::compute_context& compute_context,
                 for (size_t i = 0, e = receiver->capsules.size(); i != e; ++i) {
                     all_channels.emplace_back(
                             channel_info{std::move((*channel)[i]),
-                                         source->name,
-                                         receiver->name,
-                                         receiver->capsules[i].name});
+                                         source->get_name(),
+                                         receiver->get_name(),
+                                         receiver->capsules[i].get_name()});
                 }
             }
         }
@@ -140,9 +151,9 @@ void complete_engine::run(const core::compute_context& compute_context,
         //  Write out files.
         for (const auto& i : all_channels) {
             const auto file_name =
-                    util::build_string(model_scene.output.output_folder,
+                    util::build_string(model_scene.output.get_output_folder(),
                                        '/',
-                                       model_scene.output.name,
+                                       model_scene.output.get_name(),
                                        '.',
                                        "s_",
                                        i.source_name,
@@ -155,9 +166,9 @@ void complete_engine::run(const core::compute_context& compute_context,
                                        ".wav");
 
             write(file_name,
-                  audio_file::make_audio_file(i.data,
-                                              model_scene.output.sample_rate),
-                  convert_bit_depth(model_scene.output.bit_depth));
+                  audio_file::make_audio_file(
+                          i.data, model_scene.output.get_sample_rate()),
+                  convert_bit_depth(model_scene.output.get_bit_depth()));
         }
 
     } catch (const std::exception& e) {

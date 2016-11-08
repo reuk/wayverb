@@ -12,7 +12,6 @@ public:
             typename std::iterator_traits<It>::iterator_category;
 
     using value_type = decltype(std::declval<Mapper>()(*std::declval<It>()));
-    ;
     using difference_type = typename std::iterator_traits<It>::difference_type;
     using reference = std::add_lvalue_reference_t<value_type>;
     using pointer = std::add_pointer_t<reference>;
@@ -58,7 +57,7 @@ public:
 
     constexpr value_type operator*() const { return mapper_(*it_); }
 
-    constexpr auto operator-> () const { return &operator*(); }
+    constexpr auto operator-> () const { return &mapper_(*it_); }
 
     constexpr value_type operator[](difference_type n) const {
         return mapper_(it_[n]);
