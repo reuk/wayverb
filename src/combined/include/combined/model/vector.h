@@ -18,6 +18,7 @@ class vector final : public member<vector<T>> {
         T item;
         typename util::event<T&>::scoped_connection connection;
 
+        item_connection() = default;
         item_connection(vector& v, T t)
                 : item{std::move(t)}
                 , connection{
@@ -29,6 +30,16 @@ class vector final : public member<vector<T>> {
 
         item_connection& operator=(const item_connection& other) = default;
         item_connection& operator=(item_connection&&) noexcept = default;
+
+        template <typename Archive>
+        void load(Archive& archive) {
+            archive(item);
+        }
+
+        template <typename Archive>
+        void save(Archive& archive) const {
+            archive(item);
+        }
     };
 
     struct item_extractor final {
@@ -39,9 +50,24 @@ class vector final : public member<vector<T>> {
     };
 
     template <typename It>
-    static auto make_iterator(It it) {
+    static auto make_extractor_iterator(It it) {
         return util::make_mapping_iterator_adapter(std::move(it),
                                                    item_extractor{});
+    }
+
+    struct item_creator final {
+        vector& v;
+
+        template <typename U>
+        constexpr auto operator()(U&& u) const {
+            return item_connection{v, std::forward<U>(u)};
+        }
+    };
+
+    template <typename It>
+    auto make_creator_iterator(It it) {
+        return util::make_mapping_iterator_adapter(std::move(it),
+                                                   item_creator{*this});
     }
 
 public:
@@ -50,6 +76,13 @@ public:
                   "T must be nothrow moveable");
 
     vector() = default;
+
+    template <typename It>
+    vector(It b, It e) {
+        std::copy(make_creator_iterator(std::move(b)),
+                  make_creator_iterator(std::move(e)),
+                  std::back_inserter(data_));
+    }
 
     void swap(vector& other) noexcept {
         using std::swap;
@@ -82,13 +115,13 @@ public:
     const auto& operator[](size_t index) const { return data_[index].item; }
     auto& operator[](size_t index) { return data_[index].item; }
 
-    auto cbegin() const { return make_iterator(data_.cbegin()); }
-    auto begin() const { return make_iterator(data_.begin()); }
-    auto begin() { return make_iterator(data_.begin()); }
+    auto cbegin() const { return make_extractor_iterator(data_.cbegin()); }
+    auto begin() const { return make_extractor_iterator(data_.begin()); }
+    auto begin() { return make_extractor_iterator(data_.begin()); }
 
-    auto cend() const { return make_iterator(data_.cend()); }
-    auto end() const { return make_iterator(data_.end()); }
-    auto end() { return make_iterator(data_.end()); }
+    auto cend() const { return make_extractor_iterator(data_.cend()); }
+    auto end() const { return make_extractor_iterator(data_.end()); }
+    auto end() { return make_extractor_iterator(data_.end()); }
 
     template <typename It>
     void insert(It it, T t) {
@@ -113,7 +146,8 @@ public:
     template <typename Archive>
     void load(Archive& archive) {
         archive(data_);
-        notify();
+        connect();
+        this->notify();
     }
 
     template <typename Archive>

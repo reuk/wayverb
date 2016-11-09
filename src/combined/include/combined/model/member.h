@@ -40,6 +40,12 @@ public:
 protected:
     ~member() noexcept = default;
 
+    void set_connections(
+            std::tuple<typename util::event<Sub&>::scoped_connection...>
+                    connections) {
+        connections_ = std::move(connections);
+    }
+
     void connect(Sub&... sub) {
         const auto connect = [&](auto& param) {
             using scoped_connection =
@@ -48,7 +54,7 @@ protected:
                     param.connect_on_change([&](auto&) { notify(); })};
         };
 
-        connections_ = std::make_tuple(connect(sub)...);
+        set_connections(std::make_tuple(connect(sub)...));
     }
 
 private:

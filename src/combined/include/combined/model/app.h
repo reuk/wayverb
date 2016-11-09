@@ -10,10 +10,25 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-struct project final {
-    const core::scene_data_loader scene_data;
-    scene scene;
-    materials materials;
+class project final : public member<project, scene, materials> {
+    void connect() {
+        const auto connect = [&](auto& param) {
+            using scoped_connection =
+                    typename util::event<decltype(param)>::scoped_connection;
+            return scoped_connection{param.connect_on_change([&](auto&) {
+                needs_save_ = true;
+                notify();
+            })};
+        };
+
+        set_connections(std::make_tuple(connect(scene), connect(materials)));
+    }
+
+    const core::scene_data_loader scene_data_;
+    bool needs_save_;
+
+public:
+    project(const std::string& fpath);
 
     static constexpr const char* model_name = "model.model";
     static constexpr const char* config_name = "config.json";
@@ -23,22 +38,19 @@ struct project final {
 
     static bool is_project_file(const std::string& fpath);
 
-    static project load_wayverb_project(const std::string& fpath);
-    static project load_3d_object(const std::string& fpath);
+    void save_to(const std::string& fpath);
 
-    static project load(const std::string& fpath);
-    static void save_to(const project& project, const std::string& fpath);
+    core::generic_scene_data<cl_float3, std::string> get_scene_data() const;
+
+    scene scene;
+    materials materials;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class app final : public member<app, materials, scene> {
+class app final {
 public:
     //  SPECIAL MEMBERS  ///////////////////////////////////////////////////////
-    //  TODO
-    //  If the file is a .way then open scene + config.
-    //  Otherwise, attempt to read as a normal 3D file and use defaults for
-    //  everything else.
     app(const std::string& name);
 
     app(const app&) = delete;
@@ -60,12 +72,12 @@ public:
     //  for a save location.
     //  Add .way to the file if it is not specified.
     //  Otherwise just overwrite the existing file.
-    void save() const;
+    void save();
 
     //  TODO
     //  Add .way to the file if it is not specified.
     //  Write the project to the specifed path, and set currently_open_file_.
-    void save_as(std::string name) const;
+    void save_as(std::string name);
 
     //  CALLBACKS  /////////////////////////////////////////////////////////////
 
@@ -85,17 +97,13 @@ public:
     encountered_error::connection connect_error_handler(
             encountered_error::callback_type t);
 
+    project project;
+
 private:
     std::string currently_open_file_;
 
-    const core::scene_data_loader scene_;
-
     complete_engine engine_;
     std::future<void> future_;
-
-public:
-    materials materials;
-    scene scene;
 };
 
 }  // namespace model

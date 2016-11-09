@@ -4,6 +4,11 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
+material::material(std::string name,
+                   core::surface<core::simulation_bands> surface)
+        : name_{std::move(name)}
+        , surface_{std::move(surface)} {}
+
 void material::set_name(std::string name) {
     name_ = std::move(name);
     notify();

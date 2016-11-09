@@ -26,7 +26,7 @@ public:
 
     template <typename Archive>
     void save(Archive& archive) const {
-        archive(hrtf);
+        archive(hrtf_);
     }
 
 private:

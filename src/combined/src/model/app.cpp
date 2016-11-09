@@ -1,10 +1,37 @@
 #include "combined/model/app.h"
 
+#include "core/serialize/surface.h"
+
+#include "cereal/archives/json.hpp"
+#include "cereal/types/string.hpp"
+
 #include <fstream>
 
 namespace wayverb {
 namespace combined {
 namespace model {
+
+project::project(const std::string& fpath)
+        : scene_data_{is_project_file(fpath) ? compute_model_path(fpath)
+                                             : fpath}
+        , needs_save_{!is_project_file(fpath)}
+        , scene{core::geo::compute_aabb(scene_data_.get_scene_data())} {
+    if (is_project_file(fpath)) {
+        const auto config_file = project::compute_config_path(fpath);
+
+        //  load the config
+        std::ifstream stream(config_file);
+        cereal::JSONInputArchive archive(stream);
+        archive(/*scene,*/ materials);
+    } else {
+        const auto& surface_strings =
+                scene_data_.get_scene_data().get_surfaces();
+        materials.set_from_strings(begin(surface_strings),
+                                   end(surface_strings));
+    }
+
+    connect();
+}
 
 std::string project::compute_model_path(const std::string& root) {
     return root + '/' + model_name;
@@ -22,58 +49,34 @@ bool project::is_project_file(const std::string& fpath) {
                        end(fpath)} == ".way";
 }
 
-project project::load_wayverb_project(const std::string& fpath) {
-    //  look inside for a model
-    const auto model_file = project::compute_model_path(fpath);
+void project::save_to(const std::string& fpath) {
+    if (needs_save_) {
+        //  TODO create directory
 
-    //  load the model
-    wayverb::core::scene_data_loader scene_loader{model_file};
-    const auto aabb = core::geo::compute_aabb(scene_loader.get_scene_data());
+        //  write current geometry to file
+        scene_data_.save(project::compute_model_path(fpath));
 
-    //  look inside for a config
-    const auto config_file = project::compute_config_path(fpath);
+        //  write config with all current materials to file
+        std::ofstream stream(project::compute_config_path(fpath));
+        cereal::JSONOutputArchive archive(stream);
+        archive(/*scene,*/ materials);
 
-    project ret{std::move(scene_loader), aabb};
+        needs_save_ = false;
 
-    //  load the config
-    std::ifstream stream(config_file);
-    cereal::JSONInputArchive archive(stream);
-    archive(ret.scene, ret.materials);
-
-    return ret;
+        //  TODO register_recent_file(f.getFullPathName().toStdString());
+    }
 }
 
-project project::load_3d_object(const std::string& fpath) {
-    wayverb::core::scene_data_loader scene_loader{fpath};
-    const auto aabb = core::geo::compute_aabb(scene_loader.get_scene_data());
-    return project{std::move(scene_loader), aabb};
-}
-
-project project::load(const std::string& fpath) {
-    return project::is_project_file(fpath) ? load_wayverb_project(fpath)
-                                           : load_3d_object(fpath);
-}
-
-void project::save_to(const project& project, const std::string& fpath) {
-    //  TODO create directory
-
-    //  write current geometry to file
-    project.scene_data.save(project::compute_model_path(fpath));
-
-    //  write config with all current materials to file
-    std::ofstream stream(project::compute_config_path(fpath));
-    cereal::JSONOutputArchive archive(stream);
-    archive(project.scene, project.materials);
-
-    //  TODO register_recent_file(f.getFullPathName().toStdString());
+core::generic_scene_data<cl_float3, std::string> project::get_scene_data()
+        const {
+    return scene_data_.get_scene_data();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//  TODO
-app::app(const std::string& name) {
-    connect(materials, scene);
-}
+app::app(const std::string& name)
+        : project{name}
+        , currently_open_file_{name} {}
 
 app::~app() noexcept { stop_render(); }
 
@@ -86,18 +89,19 @@ void app::start_render() {
                                  core::surface<core::simulation_bands>>
             material_map;
 
-    for (const auto& i : materials) {
+    for (const auto& i : project.materials) {
         material_map[i.get_name()] = i.get_surface();
     }
 
-    auto scene_data = scene_with_extracted_surfaces(scene_.get_scene_data(),
+    auto scene_data = scene_with_extracted_surfaces(project.get_scene_data(),
                                                     material_map);
 
     //  TODO replace surfaces with the surfaces from the model.
 
     //  Start engine in new thread.
     future_ = std::async(std::launch::async, [&] {
-        engine_.run(core::compute_context{}, std::move(scene_data), scene);
+        engine_.run(
+                core::compute_context{}, std::move(scene_data), project.scene);
     });
 }
 
@@ -110,18 +114,18 @@ void app::stop_render() {
 
 void app::is_rendering() const { engine_.is_running(); }
 
-void app::save() const {
+void app::save() {
     if (project::is_project_file(currently_open_file_)) {
-        project::save_to(project, currently_open_file_);
+        project.save_to(currently_open_file_);
     } else {
         //  TODO ask where to save file
         //  TODO append .way if filename is not valid
     }
 }
 
-void app::save_as(std::string name) const {
+void app::save_as(std::string name) {
     //  TODO append .way if filename is not valid
-    project::save_to(project, name);
+    project.save_to(name);
 }
 
 //  CALLBACKS  /////////////////////////////////////////////////////////////////

@@ -2,14 +2,18 @@
 
 #include "gtest/gtest.h"
 
-TEST(app_model, assignment) {
+TEST(app_model, copy_assignment) {
     bool called = false;
 
-    wayverb::combined::model::microphone mic;
+    wayverb::combined::model::microphone a;
 
-    mic.connect_on_change([&](auto&) { called = true; });
+    a.connect_on_change([&](auto&) { called = true; });
 
-    mic = wayverb::combined::model::microphone{};
+    wayverb::combined::model::microphone b;
+    b.set_shape(1);
+    b.set_orientation(M_PI, 0.1);
+
+    a = b;
 
     ASSERT_TRUE(called);
 }

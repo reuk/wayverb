@@ -10,7 +10,9 @@ namespace model {
 
 class material final : public member<material> {
 public:
-    material() = default;
+    explicit material(std::string name = "new material",
+                      core::surface<core::simulation_bands> surface =
+                              core::surface<core::simulation_bands>());
 
     void set_name(std::string name);
     std::string get_name() const;
@@ -30,11 +32,19 @@ public:
     }
 
 private:
-    std::string name_ = "new material";
+    std::string name_;
     core::surface<core::simulation_bands> surface_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
+
+namespace {
+
+struct make_material_from_string final {
+    auto operator()(const std::string& str) const { return material{str}; }
+};
+
+}  // namespace
 
 class materials final : public member<materials, vector<material>> {
 public:
@@ -66,6 +76,21 @@ public:
     bool empty() const;
 
     void clear();
+
+    template <typename It>
+    void set_from_strings(It b, It e) {
+        if (std::distance(b, e) <= 1) {
+            throw std::runtime_error{"must init with at least 1 material"};
+        }
+
+        const auto make_iterator = [&](auto it) {
+            return util::make_mapping_iterator_adapter(
+                    std::move(it), make_material_from_string{});
+        };
+
+        materials_ = vector<material>(make_iterator(std::move(b)),
+                                      make_iterator(std::move(e)));
+    }
 
     template <typename Archive>
     void load(Archive& archive) {
