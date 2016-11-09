@@ -81,39 +81,30 @@ app::app(const std::string& name)
         : project{name}
         , currently_open_file_{name} {}
 
-app::~app() noexcept { stop_render(); }
+app::~app() noexcept { cancel_render(); }
 
 void app::start_render() {
-    stop_render();
+    cancel_render();
 
     //  Collect parameters.
 
-    util::aligned::unordered_map<std::string,
-                                 core::surface<core::simulation_bands>>
-            material_map;
-
-    for (const auto& i : project.materials) {
-        material_map[i.get_name()] = i.get_surface();
-    }
-
-    auto scene_data = scene_with_extracted_surfaces(project.get_scene_data(),
-                                                    material_map);
+    auto scene_data = generate_scene_data();
+    auto params = project.scene;
 
     //  Start engine in new thread.
-    future_ = std::async(std::launch::async, [&] {
-        engine_.run(
-                core::compute_context{}, std::move(scene_data), project.scene);
-    });
+    future_ = std::async(
+            std::launch::async,
+            [ this, s = std::move(scene_data), p = std::move(params) ] {
+                engine_.run(
+                        core::compute_context{}, std::move(s), std::move(p));
+            });
 }
 
-void app::stop_render() {
+void app::cancel_render() {
     engine_.cancel();
-    if (future_.valid()) {
-        future_.get();
-    }
 }
 
-void app::is_rendering() const { engine_.is_running(); }
+//  void app::is_rendering() const { engine_.is_running(); }
 
 void app::save(const save_callback& callback) {
     if (project::is_project_file(currently_open_file_)) {
@@ -131,6 +122,26 @@ void app::save_as(std::string name) {
     }
     project.save_to(name);
     currently_open_file_ = std::move(name);
+}
+
+//  DEBUG  /////////////////////////////////////////////////////////////////////
+
+void app::generate_debug_mesh() {
+    auto scene_data = generate_scene_data();
+    auto sample_rate = project.scene.waveguide.get_sampling_frequency();
+    auto speed_of_sound = 340.0;
+
+    future_ = std::async(
+            std::launch::async,
+            [ this, s = std::move(scene_data), sample_rate, speed_of_sound ] {
+                auto pair = wayverb::waveguide::compute_voxels_and_mesh(
+                        core::compute_context{},
+                        s,
+                        glm::vec3{},
+                        sample_rate,
+                        speed_of_sound);
+                mesh_generated_(std::move(pair.mesh));
+            });
 }
 
 //  CALLBACKS  /////////////////////////////////////////////////////////////////
@@ -158,6 +169,24 @@ raytracer_reflections_generated::connection app::connect_reflections(
 app::encountered_error::connection app::connect_error_handler(
         encountered_error::callback_type t) {
     return engine_.add_encountered_error_callback(std::move(t));
+}
+
+app::mesh_generated::connection app::connect_mesh_generated(
+        mesh_generated::callback_type t) {
+    return mesh_generated_.connect(std::move(t));
+}
+
+core::gpu_scene_data app::generate_scene_data() {
+    util::aligned::unordered_map<std::string,
+                                 core::surface<core::simulation_bands>>
+            material_map;
+
+    for (const auto& i : project.materials) {
+        material_map[i.get_name()] = i.get_surface();
+    }
+
+    return scene_with_extracted_surfaces(project.get_scene_data(),
+                                         material_map);
 }
 
 }  // namespace model

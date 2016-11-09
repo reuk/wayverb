@@ -86,6 +86,8 @@ public:
     void set_mode(mode mode);
     mode get_mode() const;
 
+    double get_sampling_frequency() const;
+
     template <typename Archive>
     void load(Archive& archive) {
         archive(single_band, multiple_band);

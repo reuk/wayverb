@@ -1,5 +1,7 @@
 #include "combined/model/waveguide.h"
 
+#include "waveguide/simulation_parameters.h"
+
 #include "utilities/range.h"
 
 namespace wayverb {
@@ -94,6 +96,17 @@ void waveguide::set_mode(mode mode) {
 }
 
 waveguide::mode waveguide::get_mode() const { return mode_; }
+
+double waveguide::get_sampling_frequency() const {
+    switch (mode_) {
+        case mode::single:
+            return wayverb::waveguide::compute_sampling_frequency(
+                    single_band.get());
+        case mode::multiple:
+            return wayverb::waveguide::compute_sampling_frequency(
+                    multiple_band.get());
+}
+}
 
 }  // namespace model
 }  // namespace combined

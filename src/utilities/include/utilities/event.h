@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <mutex>
 #include <unordered_map>
 
 namespace util {
@@ -27,65 +28,56 @@ public:
     class connection final {
     public:
         connection() = default;
-        connection(std::shared_ptr<impl> pimpl, callback_type callback)
-                : pimpl_{std::move(pimpl)}
-                , key_{pimpl_->connect(std::move(callback))} {}
+        connection(const std::shared_ptr<impl>& pimpl, callback_type callback)
+                : pimpl_{pimpl}
+                , key_{pimpl->connect(std::move(callback))} {}
 
         void disconnect() {
-            pimpl_->disconnect(key_);
-            pimpl_ = nullptr;
+            if (auto p = pimpl_.lock()) {
+                p->disconnect(key_);
+                pimpl_.reset();
+            }
         }
 
-        void block() { pimpl_->block(key_); }
-        void unblock() { pimpl_->block(key_); }
-        bool blocked() const { return pimpl_->blocked(key_); }
+        void block() {
+            if (auto p = pimpl_.lock()) {
+                p->block(key_);
+            }
+        }
 
-        explicit operator bool() const { return pimpl_ != nullptr; }
+        void unblock() {
+            if (auto p = pimpl_.lock()) {
+                p->block(key_);
+            }
+        }
+
+        explicit operator bool() const { return !pimpl_.expired(); }
 
     private:
-        std::shared_ptr<impl> pimpl_;
+        std::weak_ptr<impl> pimpl_;
         key_type key_;
     };
-
-    auto connect(callback_type callback) {
-        return connection{pimpl_, std::move(callback)};
-    }
 
     class scoped_connection final {
     public:
         scoped_connection() = default;
         explicit scoped_connection(connection connection)
-                : connection_{std::move(connection)} {}
-
-        void swap(scoped_connection& other) noexcept {
-            using std::swap;
-            swap(connection_, other.connection_);
-        }
+                : connection{std::move(connection)} {}
 
         scoped_connection(const scoped_connection&) = delete;
-        scoped_connection(scoped_connection&& other) noexcept { swap(other); }
+        scoped_connection(scoped_connection&&) noexcept = default;
 
         scoped_connection& operator=(const scoped_connection&) = delete;
-        scoped_connection& operator=(scoped_connection&& other) noexcept {
-            swap(other);
-            return *this;
-        }
+        scoped_connection& operator=(scoped_connection&&) noexcept = default;
 
-        ~scoped_connection() noexcept {
-            if (connection_) {
-                connection_.disconnect();
-            }
-        }
+        ~scoped_connection() noexcept { connection.disconnect(); }
 
-        void block() { connection_.block(); }
-        void unblock() { connection_.unblock(); }
-        bool blocked() const { return connection_.blocked(); }
-
-        operator bool() const { return connection_; }
-
-    private:
-        connection connection_;
+        connection connection;
     };
+
+    auto connect(callback_type callback) {
+        return connection{pimpl_, std::move(callback)};
+    }
 
     template <typename... Us>
     void operator()(Us&&... us) const {
@@ -111,14 +103,19 @@ private:
         impl& operator=(impl&&) noexcept = delete;
 
         auto connect(callback_type callback) {
+            std::lock_guard<std::mutex> lck{mutex_};
             slots_.insert(std::make_pair(++current_key_,
                                          callback_info{std::move(callback)}));
             return current_key_;
         }
 
-        void disconnect(key_type key) { slots_.erase(key); }
+        void disconnect(key_type key) {
+            std::lock_guard<std::mutex> lck{mutex_};
+            slots_.erase(key);
+        }
 
         void block(key_type key) {
+            std::lock_guard<std::mutex> lck{mutex_};
             auto slot = slots_.find(key);
             if (slot != end(slots_)) {
                 slot->second.blocked = true;
@@ -126,6 +123,7 @@ private:
         }
 
         void unblock(key_type key) {
+            std::lock_guard<std::mutex> lck{mutex_};
             auto slot = slots_.find(key);
             if (slot != end(slots_)) {
                 slot->second.blocked = false;
@@ -133,6 +131,7 @@ private:
         }
 
         bool blocked(key_type key) const {
+            std::lock_guard<std::mutex> lck{mutex_};
             auto slot = slots_.find(key);
             if (slot != end(slots_)) {
                 return slot->second.blocked;
@@ -142,24 +141,32 @@ private:
 
         template <typename... Us>
         void operator()(Us&&... us) const {
-            for (const auto& slot : slots_) {
+            std::unordered_map<key_type, callback_info> copy;
+
+            {
+                std::lock_guard<std::mutex> lck{mutex_};
+                copy = slots_;
+            }
+
+            for (const auto& slot : copy) {
                 if (!slot.second.blocked) {
                     slot.second.callback(std::forward<Us>(us)...);
                 }
             }
         }
 
-        bool empty() const { return slots_.empty(); }
+        bool empty() const {
+            std::lock_guard<std::mutex> lck{mutex_};
+            return slots_.empty();
+        }
 
     private:
+        mutable std::mutex mutex_;
+
         key_type current_key_{0};
         std::unordered_map<key_type, callback_info> slots_;
     };
 
-    /// We use a shared pointer here, so that scoped_connectors can make their
-    /// own shared_ptrs, thereby increasing the lifespan of the impl object and
-    /// ensuring that the disconnector will not attempt to dereference a
-    /// previously-deleted pointer.
     std::shared_ptr<impl> pimpl_;
 };
 

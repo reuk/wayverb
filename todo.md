@@ -11,19 +11,10 @@ Threaded engine - finish completely
 
 Not convinced that waveguide/raytracer levels are matched properly.
 
+Look again at frequency domain test?
+
 app stuff
 ---------
-
-Change orientation of whole microphone group, with their own up + facing pairs.
-    i.e. USE the orientation in combined::receiver_info
-
-Add MeshGenerator (using async) to app model.
-
-Rewrite MeshGenerator to use `async` rather than raw threads.
-    This might get rolled into the app model somehow.
-
-Validate mesh volume by checking it against the number of 'inside' waveguide nodes.
-    If there's a significant difference, just use the mesh version.
 
 Pan view.
 

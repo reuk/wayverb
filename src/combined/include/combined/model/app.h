@@ -4,6 +4,8 @@
 #include "combined/model/scene.h"
 #include "combined/threaded_engine.h"
 
+#include "waveguide/mesh.h"
+
 #include "core/scene_data_loader.h"
 
 #include <future>
@@ -65,8 +67,8 @@ public:
 
     //  RENDERING  /////////////////////////////////////////////////////////////
     void start_render();
-    void stop_render();
-    void is_rendering() const;
+    void cancel_render();
+    //  void is_rendering() const;
 
     //  SAVE  //////////////////////////////////////////////////////////////////
     using save_callback =
@@ -75,6 +77,10 @@ public:
     void save(const save_callback& callback);
 
     void save_as(std::string name);
+
+    //  DEBUG  /////////////////////////////////////////////////////////////////
+
+    void generate_debug_mesh();
 
     //  CALLBACKS  /////////////////////////////////////////////////////////////
 
@@ -94,10 +100,18 @@ public:
     encountered_error::connection connect_error_handler(
             encountered_error::callback_type t);
 
+    using mesh_generated = util::event<wayverb::waveguide::mesh>;
+    mesh_generated::connection connect_mesh_generated(
+            mesh_generated::callback_type t);
+
     project project;
 
 private:
+    core::gpu_scene_data generate_scene_data();
+
     std::string currently_open_file_;
+
+    mesh_generated mesh_generated_;
 
     complete_engine engine_;
     std::future<void> future_;
