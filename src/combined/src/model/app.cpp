@@ -115,18 +115,22 @@ void app::stop_render() {
 
 void app::is_rendering() const { engine_.is_running(); }
 
-void app::save() {
+void app::save(const save_callback& callback) {
     if (project::is_project_file(currently_open_file_)) {
         project.save_to(currently_open_file_);
     } else {
-        //  TODO ask where to save file
-        //  TODO append .way if filename is not valid
+        if (const auto fpath = callback()) {
+            save_as(*fpath);
+        }
     }
 }
 
-void app::save_as(const std::string& name) {
-    //  TODO append .way if filename is not valid
+void app::save_as(std::string name) {
+    if (!project::is_project_file(name)) {
+        throw std::runtime_error{"save path must have project extension"};
+    }
     project.save_to(name);
+    currently_open_file_ = std::move(name);
 }
 
 //  CALLBACKS  /////////////////////////////////////////////////////////////////

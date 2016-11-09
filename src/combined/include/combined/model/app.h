@@ -69,17 +69,12 @@ public:
     void is_rendering() const;
 
     //  SAVE  //////////////////////////////////////////////////////////////////
-    //  TODO
-    //  If currently_open_file_ is blank/not-a-.way then fire a callback asking
-    //  for a save location.
-    //  Add .way to the file if it is not specified.
-    //  Otherwise just overwrite the existing file.
-    void save();
+    using save_callback =
+            std::function<std::experimental::optional<std::string>()>;
+    /// Will call save_callback if a new filepath is required.
+    void save(const save_callback& callback);
 
-    //  TODO
-    //  Add .way to the file if it is not specified.
-    //  Write the project to the specifed path, and set currently_open_file_.
-    void save_as(const std::string& name);
+    void save_as(std::string name);
 
     //  CALLBACKS  /////////////////////////////////////////////////////////////
 
