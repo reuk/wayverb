@@ -17,15 +17,13 @@ void receiver::swap(receiver& other) noexcept {
     swap(capsules, other.capsules);
     swap(bounds_, other.bounds_);
     swap(name_, other.name_);
-    swap(orientation_, other.orientation_);
 }
 
 receiver::receiver(const receiver& other)
         : capsules{other.capsules}
         , bounds_{other.bounds_}
         , name_{other.name_}
-        , position_{other.position_}
-        , orientation_{other.orientation_} {
+        , position_{other.position_} {
     connect(capsules);
 }
 

@@ -36,6 +36,7 @@ public:
     template <typename Archive>
     void load(Archive& archive) {
         archive(capsules, bounds_, name_, position_, orientation_);
+        notify();
     }
 
     template <typename Archive>

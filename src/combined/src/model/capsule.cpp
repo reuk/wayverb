@@ -1,5 +1,7 @@
 #include "combined/model/capsule.h"
 
+#include "core/az_el.h"
+
 namespace wayverb {
 namespace combined {
 namespace model {

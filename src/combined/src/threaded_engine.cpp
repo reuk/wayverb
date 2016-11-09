@@ -30,11 +30,12 @@ struct channel_info final {
 }  // namespace
 
 std::unique_ptr<capsule_base> polymorphic_capsule_model(
-        const model::capsule& i) {
+        const model::capsule& i, const core::orientable& orientation) {
     switch (i.get_mode()) {
         case model::capsule::mode::microphone:
-            return make_capsule_ptr(i.microphone.get());
-        case model::capsule::mode::hrtf: return make_capsule_ptr(i.hrtf.get());
+            return make_capsule_ptr(i.microphone.get(), orientation);
+        case model::capsule::mode::hrtf:
+            return make_capsule_ptr(i.hrtf.get(), orientation);
     }
 }
 
@@ -101,10 +102,13 @@ void complete_engine::run(const core::compute_context& compute_context,
                                 make_forwarding_call(
                                         raytracer_reflections_generated_));
 
-                const auto polymorphic_capsules =
-                        util::map_to_vector(std::begin(receiver->capsules),
-                                            std::end(receiver->capsules),
-                                            polymorphic_capsule_model);
+                const auto polymorphic_capsules = util::map_to_vector(
+                        std::begin(receiver->capsules),
+                        std::end(receiver->capsules),
+                        [&](const auto& i) {
+                            return polymorphic_capsule_model(
+                                    i, receiver->get_orientation());
+                        });
 
                 //  Run the simulation, cache the result.
                 auto channel = eng.run(begin(polymorphic_capsules),

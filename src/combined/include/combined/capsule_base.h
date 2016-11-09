@@ -9,6 +9,7 @@
 namespace wayverb {
 
 namespace core {
+class orientable;
 namespace attenuator {
 class hrtf;
 class microphone;
@@ -34,10 +35,12 @@ public:
 };
 
 std::unique_ptr<capsule_base> make_capsule_ptr(
-        const core::attenuator::hrtf& attenuator);
+        const core::attenuator::hrtf& attenuator,
+        const core::orientable& orientation);
 
 std::unique_ptr<capsule_base> make_capsule_ptr(
-        const core::attenuator::microphone& attenuator);
+        const core::attenuator::microphone& attenuator,
+        const core::orientable& orientation);
 
 }  // namespace combined
 }  // namespace wayverb
