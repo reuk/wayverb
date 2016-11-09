@@ -10,9 +10,8 @@ namespace combined {
 template <typename T>
 class capsule final : public capsule_base {
 public:
-    capsule() = default;
-    explicit capsule(const T& attenuator)
-            : attenuator_{attenuator} {}
+    explicit capsule(T attenuator)
+            : attenuator_{std::move(attenuator)} {}
 
     std::unique_ptr<capsule_base> clone() const override {
         return std::make_unique<capsule>(*this);
@@ -23,10 +22,6 @@ public:
             double sample_rate) const override {
         return intermediate.postprocess(attenuator_, sample_rate);
     }
-
-    //glm::vec3 get_pointing() const override {
-    //    return attenuator_.get_pointing();
-    //}
 
 private:
     T attenuator_;

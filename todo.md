@@ -11,8 +11,6 @@ Threaded engine - finish completely
 
 Not convinced that waveguide/raytracer levels are matched properly.
 
-Use number of inside waveguide nodes to estimate room volume.
-
 app stuff
 ---------
 

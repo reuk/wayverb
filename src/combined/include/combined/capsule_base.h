@@ -31,8 +31,6 @@ public:
     virtual std::unique_ptr<capsule_base> clone() const = 0;
     virtual util::aligned::vector<float> postprocess(
             const intermediate& intermediate, double sample_rate) const = 0;
-
-    //virtual glm::vec3 get_pointing() const = 0;
 };
 
 std::unique_ptr<capsule_base> make_capsule_ptr(

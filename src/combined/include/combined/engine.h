@@ -79,11 +79,14 @@ public:
     virtual ~intermediate() noexcept = default;
 
     virtual util::aligned::vector<float> postprocess(
-            const core::attenuator::null&, double) const = 0;
+            const core::attenuator::null&,
+            double) const = 0;
     virtual util::aligned::vector<float> postprocess(
-            const core::attenuator::hrtf&, double) const = 0;
+            const core::attenuator::hrtf&,
+            double) const = 0;
     virtual util::aligned::vector<float> postprocess(
-            const core::attenuator::microphone&, double) const = 0;
+            const core::attenuator::microphone&,
+            double) const = 0;
 };
 
 //  engine  ////////////////////////////////////////////////////////////////////

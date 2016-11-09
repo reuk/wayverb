@@ -37,6 +37,17 @@ void mesh::set_coefficients(
     vectors_.set_coefficients(std::move(coefficients));
 }
 
+double estimate_volume(const mesh& mesh) {
+    const auto& nodes = mesh.get_structure().get_condensed_nodes();
+    const auto num_inside =
+            std::count_if(cbegin(nodes), cend(nodes), [](const auto& i) {
+                return is_inside(i);
+            });
+    const auto spacing = mesh.get_descriptor().spacing;
+    const auto node_volume = spacing * spacing * spacing;
+    return node_volume * num_inside;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 mesh compute_mesh(

@@ -74,6 +74,7 @@ auto make_intermediate_impl_ptr(combined_results<Histogram> to_process,
     return std::make_unique<intermediate_impl<Histogram>>(
             std::move(to_process), receiver_position, room_volume, environment);
 }
+
 }  // namespace
 
 class engine::impl final {
@@ -92,12 +93,17 @@ public:
                       receiver,
                       waveguide->compute_sampling_frequency(),
                       environment.speed_of_sound)}
-            , room_volume_{estimate_room_volume(scene_data)}
+            , room_volume_{estimate_volume(voxels_and_mesh_.mesh)}
             , source_{source}
             , receiver_{receiver}
             , environment_{environment}
             , raytracer_{raytracer}
-            , waveguide_{std::move(waveguide)} {}
+            , waveguide_{std::move(waveguide)} {
+        //  TODO throw this out
+        std::cout << "estimated volume: " << room_volume_ << '\n';
+        std::cout << "exact volume: " << estimate_room_volume(scene_data)
+                  << '\n';
+    }
 
     std::unique_ptr<intermediate> run(
             const std::atomic_bool& keep_going) const {

@@ -24,6 +24,10 @@ private:
     vectors vectors_;
 };
 
+/// Uses the number of 'inside' nodes and the mesh spacing to estimate the
+/// total volume of the room.
+double estimate_volume(const mesh& mesh);
+
 bool is_inside(const mesh& m, size_t node_index);
 
 ///  use this if you already have a voxelised scene

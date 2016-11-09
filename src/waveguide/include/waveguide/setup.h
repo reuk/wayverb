@@ -19,7 +19,7 @@ namespace wayverb {
 namespace waveguide {
 
 constexpr bool is_inside(const condensed_node& c) {
-    return c.boundary_type && id_inside;
+    return c.boundary_type & id_inside;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
