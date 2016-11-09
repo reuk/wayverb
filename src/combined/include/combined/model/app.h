@@ -4,6 +4,8 @@
 #include "combined/model/scene.h"
 #include "combined/threaded_engine.h"
 
+#include "core/scene_data_loader.h"
+
 #include <future>
 
 namespace wayverb {
@@ -77,7 +79,7 @@ public:
     //  TODO
     //  Add .way to the file if it is not specified.
     //  Write the project to the specifed path, and set currently_open_file_.
-    void save_as(std::string name);
+    void save_as(const std::string& name);
 
     //  CALLBACKS  /////////////////////////////////////////////////////////////
 

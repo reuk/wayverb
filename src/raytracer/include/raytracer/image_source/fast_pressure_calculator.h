@@ -56,7 +56,7 @@ auto compute_fast_pressure(const glm::vec3& receiver,
             });
 
     return impulse<channels>{surface_attenuation,
-                             core::to_cl_float3(image_source),
+                             core::to_cl_float3{}(image_source),
                              glm::distance(image_source, receiver)};
 }
 

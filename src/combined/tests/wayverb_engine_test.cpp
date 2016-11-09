@@ -1,6 +1,13 @@
 #include "combined/engine.h"
+#include "combined/waveguide_base.h"
 
+#include "raytracer/simulation_parameters.h"
+
+#include "waveguide/simulation_parameters.h"
+
+#include "core/attenuator/null.h"
 #include "core/cl/common.h"
+#include "core/environment.h"
 #include "core/geo/box.h"
 #include "core/scene_data.h"
 

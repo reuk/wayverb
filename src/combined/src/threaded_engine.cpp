@@ -1,4 +1,13 @@
 #include "combined/threaded_engine.h"
+#include "combined/forwarding_call.h"
+#include "combined/waveguide_base.h"
+
+#include "core/dsp_vector_ops.h"
+#include "core/environment.h"
+
+#include "waveguide/mesh.h"
+
+#include "audio_file/audio_file.h"
 
 namespace wayverb {
 namespace combined {

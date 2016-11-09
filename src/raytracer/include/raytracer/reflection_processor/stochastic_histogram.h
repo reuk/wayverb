@@ -82,7 +82,7 @@ public:
                     ret.emplace_back(intermediate_impulse{
                             impulse.volume,
                             impulse.distance / environment_.speed_of_sound,
-                            glm::normalize(core::to_vec3(impulse.position) -
+                            glm::normalize(core::to_vec3{}(impulse.position) -
                                            receiver_)});
                 }
             };

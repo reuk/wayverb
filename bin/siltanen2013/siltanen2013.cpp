@@ -1,6 +1,7 @@
 #include "box/img_src.h"
 
 #include "combined/engine.h"
+#include "combined/waveguide_base.h"
 
 #include "raytracer/postprocess.h"
 

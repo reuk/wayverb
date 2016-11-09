@@ -3,7 +3,7 @@
 #include "combined/full_run.h"
 #include "combined/model/scene.h"
 
-#include "audio_file/audio_file.h"
+#include "waveguide/mesh_descriptor.h"
 
 namespace wayverb {
 namespace combined {

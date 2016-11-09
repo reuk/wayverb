@@ -12,7 +12,7 @@ finder::finder(const core::compute_context& cc,
         : cc_{cc}
         , queue_{cc.context, cc.device}
         , kernel_{program{cc}.get_kernel()}
-        , receiver_{core::to_cl_float3(receiver)}
+        , receiver_{core::to_cl_float3{}(receiver)}
         , receiver_radius_{receiver_radius}
         , rays_{rays}
         , reflections_buffer_{cc.context,
@@ -43,7 +43,7 @@ finder::finder(const core::compute_context& cc,
             cl::EnqueueArgs{queue_, cl::NDRange{rays_}},
             stochastic_path_buffer_,
             core::make_bands_type(starting_intensity),
-            core::to_cl_float3(source));
+            core::to_cl_float3{}(source));
 }
 
 }  // namespace stochastic

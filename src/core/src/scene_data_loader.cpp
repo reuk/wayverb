@@ -44,7 +44,7 @@ public:
             auto mesh_vertices =
                     util::map_to_vector(mesh->mVertices,
                                         mesh->mVertices + mesh->mNumVertices,
-                                        [](auto i) { return to_cl_float3(i); });
+                                        to_cl_float3{});
             auto mesh_triangles = util::map_to_vector(
                     mesh->mFaces, mesh->mFaces + mesh->mNumFaces, [&](auto i) {
                         return triangle{mesh->mMaterialIndex,

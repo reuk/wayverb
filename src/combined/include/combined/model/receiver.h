@@ -10,6 +10,9 @@ namespace combined {
 namespace model {
 
 class receiver final : public member<receiver, capsules> {
+    friend class vector<receiver>;
+    receiver() = default;
+
 public:
     receiver(core::geo::box bounds);
 
@@ -53,6 +56,9 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 
 class receivers final : public member<receivers, vector<receiver>> {
+    friend class cereal::access;
+    receivers() = default;
+
 public:
     receivers(core::geo::box aabb);
 

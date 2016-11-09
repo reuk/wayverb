@@ -1,6 +1,6 @@
 #include "utilities/progress_bar.h"
 
-#include <ostream>
+#include <cstddef>
 
 namespace util {
 

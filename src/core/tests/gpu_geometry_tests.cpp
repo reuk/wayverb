@@ -247,9 +247,8 @@ TEST(gpu_geometry, ray_triangle_intersection) {
 
     const auto vertices_buffer = load_to_buffer(
             cc.context,
-            util::map_to_vector(begin(scene.vertices),
-                                end(scene.vertices),
-                                [](const auto& i) { return to_cl_float3(i); }),
+            util::map_to_vector(
+                    begin(scene.vertices), end(scene.vertices), to_cl_float3{}),
             true);
 
     const auto rays_buffer = load_to_buffer(
@@ -382,7 +381,7 @@ TEST(gpu_geometry, line_sphere_percentage) {
                         [&](const auto& i) {
                             const auto line_length{
                                     2 * (sphere_distance + sphere_radius)};
-                            return to_cl_float3(i * line_length);
+                            return to_cl_float3{}(i * line_length);
                         }),
                 true);
 

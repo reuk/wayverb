@@ -33,7 +33,7 @@ auto get_direct(const glm::vec3& source,
         return std::experimental::make_optional(impulse<channels>{
                 core::unit_constructor_v<
                         ::detail::cl_vector_constructor_t<float, channels>>,
-                core::to_cl_float3(source),
+                core::to_cl_float3{}(source),
                 source_to_receiver_length});
     }
 

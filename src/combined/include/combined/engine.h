@@ -1,27 +1,37 @@
 #pragma once
 
-#include "combined/postprocess.h"
+#include "raytracer/cl/reflection.h"
 
-#include "raytracer/canonical.h"
-
-#include "combined/polymorphic_waveguide.h"
-
-#include "core/attenuator/hrtf.h"
-#include "core/attenuator/microphone.h"
-#include "core/attenuator/null.h"
-#include "core/cl/common.h"
-#include "core/environment.h"
 #include "core/scene_data.h"
 
 #include "utilities/aligned/vector.h"
 #include "utilities/event.h"
 
-#include "glm/glm.hpp"
+#include "glm/fwd.hpp"
 
-#include <functional>
+#include <memory>
 
 namespace wayverb {
+
+//  forward declarations  //////////////////////////////////////////////////////
+
+namespace core {
+class compute_context;
+struct environment;
+namespace attenuator {
+class null;
+class hrtf;
+class microphone;
+}  // namespace attenuator
+}  // namespace core
+namespace raytracer {
+struct simulation_parameters;
+}  // namespace raytracer
+namespace waveguide {
+struct voxels_and_mesh;
+}  // namespace waveguide
 namespace combined {
+class waveguide_base;
 
 //  state information  /////////////////////////////////////////////////////////
 
@@ -76,64 +86,6 @@ public:
             const core::attenuator::microphone&, double) const = 0;
 };
 
-template <typename Histogram>
-class intermediate_impl final : public intermediate {
-public:
-    intermediate_impl(combined_results<Histogram> to_process,
-                      const glm::vec3& receiver_position,
-                      double room_volume,
-                      const core::environment& environment)
-            : to_process_{std::move(to_process)}
-            , receiver_position_{receiver_position}
-            , room_volume_{room_volume}
-            , environment_{environment} {}
-
-    util::aligned::vector<float> postprocess(
-            const core::attenuator::null& a,
-            double sample_rate) const override {
-        return postprocess_impl(a, sample_rate);
-    }
-
-    util::aligned::vector<float> postprocess(
-            const core::attenuator::hrtf& a,
-            double sample_rate) const override {
-        return postprocess_impl(a, sample_rate);
-    }
-
-    util::aligned::vector<float> postprocess(
-            const core::attenuator::microphone& a,
-            double sample_rate) const override {
-        return postprocess_impl(a, sample_rate);
-    }
-
-private:
-    template <typename Attenuator>
-    auto postprocess_impl(const Attenuator& attenuator,
-                          double output_sample_rate) const {
-        return wayverb::combined::postprocess(to_process_,
-                                              attenuator,
-                                              receiver_position_,
-                                              room_volume_,
-                                              environment_,
-                                              output_sample_rate);
-    }
-
-    combined_results<Histogram> to_process_;
-    glm::vec3 receiver_position_;
-    double room_volume_;
-    core::environment environment_;
-    engine_state_changed engine_state_changed_;
-};
-
-template <typename Histogram>
-auto make_intermediate_impl_ptr(combined_results<Histogram> to_process,
-                                const glm::vec3& receiver_position,
-                                double room_volume,
-                                const core::environment& environment) {
-    return std::make_unique<intermediate_impl<Histogram>>(
-            std::move(to_process), receiver_position, room_volume, environment);
-}
-
 //  engine  ////////////////////////////////////////////////////////////////////
 
 class engine final {
@@ -146,9 +98,7 @@ public:
            const raytracer::simulation_parameters& raytracer,
            std::unique_ptr<waveguide_base> waveguide);
 
-    //  Only valid when WaveguideParameters is
-    //  waveguide::single_band_parameters
-    //  waveguide::multiple_band_constant_spacing_parameters
+    ~engine() noexcept;
 
     std::unique_ptr<intermediate> run(const std::atomic_bool& keep_going) const;
 
@@ -170,18 +120,8 @@ public:
     const waveguide::voxels_and_mesh& get_voxels_and_mesh() const;
 
 private:
-    core::compute_context compute_context_;
-    waveguide::voxels_and_mesh voxels_and_mesh_;
-    double room_volume_;
-    glm::vec3 source_;
-    glm::vec3 receiver_;
-    core::environment environment_;
-    raytracer::simulation_parameters raytracer_;
-    std::unique_ptr<waveguide_base> waveguide_;
-
-    engine_state_changed engine_state_changed_;
-    waveguide_node_pressures_changed waveguide_node_pressures_changed_;
-    raytracer_reflections_generated raytracer_reflections_generated_;
+    class impl;
+    std::unique_ptr<impl> pimpl_;
 };
 
 }  // namespace combined

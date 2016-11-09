@@ -14,7 +14,7 @@ triangle_vec3 get_triangle_vec3(const triangle& t,
 triangle_vec3 get_triangle_vec3(const triangle& t,
                                 const util::aligned::vector<cl_float3>& v) {
     return triangle_vec3{
-            {to_vec3(v[t.v0]), to_vec3(v[t.v1]), to_vec3(v[t.v2])}};
+            {to_vec3{}(v[t.v0]), to_vec3{}(v[t.v1]), to_vec3{}(v[t.v2])}};
 }
 
 triangle_vec2 get_triangle_vec2(const triangle& t,
@@ -25,7 +25,7 @@ triangle_vec2 get_triangle_vec2(const triangle& t,
 triangle_vec2 get_triangle_vec2(const triangle& t,
                                 const util::aligned::vector<cl_float3>& v) {
     return triangle_vec2{
-            {to_vec3(v[t.v0]), to_vec3(v[t.v1]), to_vec3(v[t.v2])}};
+            {to_vec3{}(v[t.v0]), to_vec3{}(v[t.v1]), to_vec3{}(v[t.v2])}};
 }
 
 ////////////////////////////////////////////////////////////////////////////////

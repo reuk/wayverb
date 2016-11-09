@@ -15,7 +15,7 @@ TEST(attenuator, microphone) {
         const auto calculate = [&](const auto& pos) {
             return attenuate(mic,
                              receiver,
-                             impulse<1>{cl_float1{{1}}, to_cl_float3(pos), 1})
+                             impulse<1>{cl_float1{{1}}, to_cl_float3{}(pos), 1})
                     .volume.s[0];
         };
 
@@ -34,7 +34,7 @@ TEST(attenuator, microphone) {
         const auto calculate = [&](const auto& pos) {
             return attenuate(mic,
                              receiver,
-                             impulse<1>{cl_float1{{1}}, to_cl_float3(pos), 1})
+                             impulse<1>{cl_float1{{1}}, to_cl_float3{}(pos), 1})
                     .volume.s[0];
         };
 
@@ -53,7 +53,7 @@ TEST(attenuator, microphone) {
         const auto calculate = [&](const auto& pos) {
             return attenuate(mic,
                              receiver,
-                             impulse<1>{cl_float1{{1}}, to_cl_float3(pos), 1})
+                             impulse<1>{cl_float1{{1}}, to_cl_float3{}(pos), 1})
                     .volume.s[0];
         };
 
@@ -86,7 +86,7 @@ TEST(attenuator, hrtf) {
             constexpr auto impulse_position = glm::vec3{-1, 0, 0};
             const auto impulse = make_impulse(
                     bands_type{{1, 1, 1, 1, 1, 1, 1, 1}},
-                    to_cl_float3(impulse_position),
+                    to_cl_float3{}(impulse_position),
                     glm::distance(impulse_position, receiver_position));
 
             ASSERT_NEAR(
@@ -104,7 +104,7 @@ TEST(attenuator, hrtf) {
             constexpr auto impulse_position = glm::vec3{1, 0, 0};
             const auto impulse = make_impulse(
                     bands_type{{1, 1, 1, 1, 1, 1, 1, 1}},
-                    to_cl_float3(impulse_position),
+                    to_cl_float3{}(impulse_position),
                     glm::distance(impulse_position, receiver_position));
 
             ASSERT_NEAR(
@@ -122,7 +122,7 @@ TEST(attenuator, hrtf) {
             constexpr auto impulse_position = glm::vec3{0, 2, 0};
             const auto impulse = make_impulse(
                     bands_type{{1, 1, 1, 1, 1, 1, 1, 1}},
-                    to_cl_float3(impulse_position),
+                    to_cl_float3{}(impulse_position),
                     glm::distance(impulse_position, receiver_position));
 
             ASSERT_EQ(attenuate(left, receiver_position, impulse).distance,

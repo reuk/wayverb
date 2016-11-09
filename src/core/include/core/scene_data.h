@@ -4,8 +4,6 @@
 
 #include "utilities/aligned/vector.h"
 
-#include "glm/glm.hpp"
-
 #include <numeric>
 
 namespace wayverb {
@@ -93,9 +91,6 @@ auto make_scene_data(util::aligned::vector<triangle> triangles,
     return generic_scene_data<Vertex, Surface>{
             std::move(triangles), std::move(vertices), std::move(surfaces)};
 }
-
-util::aligned::vector<glm::vec3> convert(
-        const util::aligned::vector<cl_float3>& c);
 
 template <typename Vertex, typename Surface>
 auto compute_triangle_indices(

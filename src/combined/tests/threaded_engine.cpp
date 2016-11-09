@@ -1,5 +1,7 @@
 #include "combined/threaded_engine.h"
 
+#include "core/cl/common.h"
+
 #include "gtest/gtest.h"
 
 using namespace wayverb::combined;

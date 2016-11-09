@@ -7,33 +7,41 @@
 namespace wayverb {
 namespace core {
 
-template <typename T>
-constexpr cl_float3 to_cl_float3(const T& t) {
-    return cl_float3{{t.x, t.y, t.z, 0}};
-}
+struct to_cl_float3 final {
+    template <typename T>
+    constexpr cl_float3 operator()(const T& t) const {
+        return cl_float3{{t.x, t.y, t.z, 0}};
+    }
+};
 
-template <typename T>
-constexpr cl_int3 to_cl_int3(const T& t) {
-    return cl_int3{{t.x, t.y, t.z, 0}};
-}
+struct to_cl_int3 final {
+    template <typename T>
+    constexpr cl_int3 operator()(const T& t) const {
+        return cl_int3{{t.x, t.y, t.z, 0}};
+    }
+};
 
-template <typename T>
-constexpr glm::vec3 to_vec3(const T& t) {
-    return glm::vec3{t.x, t.y, t.z};
-}
+struct to_vec3 final {
+    template <typename T>
+    constexpr glm::vec3 operator()(const T& t) const {
+        return glm::vec3{t.x, t.y, t.z};
+    }
+};
 
 template <>
-constexpr glm::vec3 to_vec3(const cl_float3& t) {
+constexpr glm::vec3 to_vec3::operator()(const cl_float3& t) const {
     return glm::vec3{t.s[0], t.s[1], t.s[2]};
 }
 
-template <typename T>
-constexpr glm::ivec3 to_ivec3(const T& t) {
-    return glm::ivec3{t.x, t.y, t.z};
-}
+struct to_ivec3 final {
+    template <typename T>
+    constexpr glm::ivec3 operator()(const T& t) const {
+        return glm::ivec3{t.x, t.y, t.z};
+    }
+};
 
 template <>
-constexpr glm::ivec3 to_ivec3(const cl_int3& t) {
+constexpr glm::ivec3 to_ivec3::operator()(const cl_int3& t) const {
     return glm::ivec3{t.s[0], t.s[1], t.s[2]};
 }
 

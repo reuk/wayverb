@@ -14,7 +14,8 @@ namespace model {
 
 template <typename T>
 class vector final : public member<vector<T>> {
-    struct item_connection final {
+    class item_connection final {
+    public:
         T item;
         typename util::event<T&>::scoped_connection connection;
 

@@ -1,4 +1,6 @@
 #include "combined/full_run.h"
+#include "combined/forwarding_call.h"
+#include "combined/waveguide_base.h"
 
 namespace wayverb {
 namespace combined {

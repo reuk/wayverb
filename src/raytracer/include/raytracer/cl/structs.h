@@ -1,45 +1,13 @@
 #pragma once
 
+#include "raytracer/cl/reflection.h"
+
 #include "core/cl/representation.h"
 #include "core/cl/scene_structs.h"
 #include "core/cl/traits.h"
 
 namespace wayverb {
 namespace raytracer {
-
-/// Rays will not intersect with the same surface that was referenced by the
-/// previous reflection along a ray.
-/// Ensure that the `triangle` field of the initial reflection buffer is set
-/// to a number larger than the total number of triangles in the scene
-/// (like ~uint{0})
-
-struct alignas(1 << 4) reflection final {
-    cl_float3 position;   //  position of the secondary source
-    cl_float3 direction;  //  specular direction from the source
-    cl_uint triangle;     //  triangle which contains source
-    cl_char keep_going;   //  whether or not this is the teriminator for this
-                          //  path (like a \0 in a char*)
-    cl_char receiver_visible;  //  whether or not the receiver is visible from
-                               //  this point
-};
-
-constexpr auto to_tuple(const reflection& x) {
-    return std::tie(x.position,
-                    x.direction,
-                    x.triangle,
-                    x.keep_going,
-                    x.receiver_visible);
-}
-
-constexpr bool operator==(const reflection& a, const reflection& b) {
-    return to_tuple(a) == to_tuple(b);
-}
-
-constexpr bool operator!=(const reflection& a, const reflection& b) {
-    return !(a == b);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 
 struct alignas(1 << 5) stochastic_path_info final {
     core::bands_type volume;  //  product of previous specular components

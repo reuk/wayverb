@@ -3,6 +3,8 @@
 
 #include "plan.h"
 
+#include "fftw3.h"
+
 namespace frequency_domain {
 
 using cbuf = buffer<fftwf_complex>;

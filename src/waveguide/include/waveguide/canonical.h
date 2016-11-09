@@ -1,5 +1,6 @@
 #pragma once
 
+#include "waveguide/bandpass_band.h"
 #include "waveguide/calibration.h"
 #include "waveguide/fitted_boundary.h"
 #include "waveguide/postprocessor/directional_receiver.h"
@@ -22,18 +23,6 @@
 
 namespace wayverb {
 namespace waveguide {
-
-struct band final {
-    util::aligned::vector<postprocessor::directional_receiver::output>
-            directional;
-    double sample_rate;
-};
-
-struct bandpass_band final {
-    band band;
-    util::range<double> valid_hz;
-};
-
 namespace detail {
 
 template <typename Callback>
@@ -95,10 +84,6 @@ std::experimental::optional<band> canonical_impl(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct simulation_results final {
-    util::aligned::vector<bandpass_band> bands;
-};
-
 /// Run a waveguide using:
 ///     specified sample rate
 ///     receiver at specified location
@@ -106,7 +91,7 @@ struct simulation_results final {
 ///     single hard source
 ///     single directional receiver
 template <typename PressureCallback>
-std::experimental::optional<simulation_results> canonical(
+std::experimental::optional<util::aligned::vector<bandpass_band>> canonical(
         const core::compute_context& cc,
         voxels_and_mesh voxelised,
         const glm::vec3& source,
@@ -126,8 +111,8 @@ std::experimental::optional<simulation_results> canonical(
                                        environment,
                                        keep_going,
                                        pressure_callback)) {
-        return simulation_results{{bandpass_band{
-                std::move(*ret), util::make_range(0.0, sim_params.cutoff)}}};
+        return util::aligned::vector<bandpass_band>{bandpass_band{
+                std::move(*ret), util::make_range(0.0, sim_params.cutoff)}};
     }
 
     return std::experimental::nullopt;
@@ -148,7 +133,7 @@ inline auto set_flat_coefficients_for_band(voxels_and_mesh& voxels_and_mesh,
 /// This is a sort of middle ground - more accurate boundary modelling, but
 /// really unbelievably slow.
 template <typename PressureCallback>
-std::experimental::optional<simulation_results> canonical(
+std::experimental::optional<util::aligned::vector<bandpass_band>> canonical(
         const core::compute_context& cc,
         voxels_and_mesh voxelised,
         const glm::vec3& source,
@@ -160,7 +145,7 @@ std::experimental::optional<simulation_results> canonical(
         PressureCallback&& pressure_callback) {
     const auto band_params = hrtf_data::hrtf_band_params_hz();
 
-    simulation_results ret{};
+    util::aligned::vector<bandpass_band> ret{};
 
     //  For each band, up to the maximum band specified.
     for (auto band = 0; band != sim_params.bands; ++band) {
@@ -176,7 +161,7 @@ std::experimental::optional<simulation_results> canonical(
                     environment,
                     keep_going,
                     pressure_callback)) {
-            ret.bands.emplace_back(bandpass_band{
+            ret.emplace_back(bandpass_band{
                     std::move(*rendered_band),
                     util::make_range(band_params.edges[band],
                                      band_params.edges[band + 1])});

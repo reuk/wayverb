@@ -20,13 +20,13 @@ glm::ivec3 compute_locator(const mesh_descriptor& d, size_t index) {
 }
 
 glm::ivec3 compute_locator(const mesh_descriptor& d, const glm::vec3& v) {
-    const auto transformed = v - core::to_vec3(d.min_corner);
+    const auto transformed = v - core::to_vec3{}(d.min_corner);
     return glm::round(transformed / d.spacing);
 }
 
 glm::vec3 compute_position(const mesh_descriptor& d,
                            const glm::ivec3& locator) {
-    return core::to_vec3(d.min_corner) + glm::vec3{locator} * d.spacing;
+    return core::to_vec3{}(d.min_corner) + core::to_vec3{}(locator)*d.spacing;
 }
 
 glm::vec3 compute_position(const mesh_descriptor& d, size_t index) {
@@ -50,7 +50,7 @@ void compute_neighbors(const mesh_descriptor& d,
             std::begin(n_loc), std::end(n_loc), output, [&](const auto& i) {
                 auto inside = glm::all(glm::lessThanEqual(glm::ivec3(0), i)) &&
                               glm::all(glm::lessThan(
-                                      i, core::to_ivec3(d.dimensions)));
+                                      i, core::to_ivec3{}(d.dimensions)));
                 return inside ? compute_index(d, i)
                               : mesh_descriptor::no_neighbor;
             });
@@ -65,9 +65,8 @@ std::array<cl_uint, 6> compute_neighbors(const mesh_descriptor& d,
 
 core::geo::box compute_aabb(const mesh_descriptor& d) {
     return core::geo::box{
-            core::to_vec3(d.min_corner),
-            core::to_vec3(d.min_corner) +
-                    glm::vec3{core::to_ivec3(d.dimensions)} * d.spacing};
+            core::to_vec3{}(d.min_corner),
+            core::to_vec3{}(d.min_corner + d.dimensions * d.spacing)};
 }
 
 double compute_sample_rate(const mesh_descriptor& d, double speed_of_sound) {

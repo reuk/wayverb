@@ -1,11 +1,13 @@
 #pragma once
 
-#include "core/cl/include.h"
-
 #include "glm/glm.hpp"
 
 #include <array>
-#include <functional>
+
+namespace cl {
+class Buffer;
+class CommandQueue;
+}  // namespace cl
 
 namespace wayverb {
 namespace waveguide {
@@ -38,7 +40,7 @@ private:
     double sample_rate_;
     double ambient_density_;
     size_t output_node_;
-    std::array<cl_uint, 6> surrounding_nodes_;
+    std::array<unsigned, 6> surrounding_nodes_;
     glm::dvec3 velocity_{0};
 };
 

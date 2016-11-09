@@ -72,13 +72,13 @@ auto postprocess(const band& band,
 }
 
 template <typename Method>
-auto postprocess(const simulation_results& results,
+auto postprocess(const util::aligned::vector<bandpass_band>& results,
                  const Method& method,
                  double acoustic_impedance,
                  double output_sample_rate) {
     util::aligned::vector<float> ret;
 
-    for (const auto& band : results.bands) {
+    for (const auto& band : results) {
         auto processed = postprocess(
                 band.band, method, acoustic_impedance, output_sample_rate);
 

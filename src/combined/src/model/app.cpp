@@ -1,5 +1,7 @@
 #include "combined/model/app.h"
 
+#include "core/cl/common.h"
+#include "core/serialize/range.h"
 #include "core/serialize/surface.h"
 
 #include "cereal/archives/json.hpp"
@@ -22,7 +24,8 @@ project::project(const std::string& fpath)
         //  load the config
         std::ifstream stream(config_file);
         cereal::JSONInputArchive archive(stream);
-        archive(/*scene,*/ materials);
+        archive(scene, materials);
+
     } else {
         const auto& surface_strings =
                 scene_data_.get_scene_data().get_surfaces();
@@ -59,7 +62,7 @@ void project::save_to(const std::string& fpath) {
         //  write config with all current materials to file
         std::ofstream stream(project::compute_config_path(fpath));
         cereal::JSONOutputArchive archive(stream);
-        archive(/*scene,*/ materials);
+        archive(scene, materials);
 
         needs_save_ = false;
 
@@ -96,8 +99,6 @@ void app::start_render() {
     auto scene_data = scene_with_extracted_surfaces(project.get_scene_data(),
                                                     material_map);
 
-    //  TODO replace surfaces with the surfaces from the model.
-
     //  Start engine in new thread.
     future_ = std::async(std::launch::async, [&] {
         engine_.run(
@@ -123,7 +124,7 @@ void app::save() {
     }
 }
 
-void app::save_as(std::string name) {
+void app::save_as(const std::string& name) {
     //  TODO append .way if filename is not valid
     project.save_to(name);
 }

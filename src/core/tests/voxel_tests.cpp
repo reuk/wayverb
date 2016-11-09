@@ -38,7 +38,7 @@ TEST(voxel, walk) {
     for (const auto& scene : get_test_scenes()) {
         const auto voxelised = get_voxelised(scene);
         for (const auto& i : get_random_directions(1000)) {
-            geo::ray ray{glm::vec3{0, 1, 0}, to_vec3(i)};
+            geo::ray ray{glm::vec3{0, 1, 0}, to_vec3{}(i)};
             bool has_triangles{false};
             traverse(voxelised.get_voxels(),
                      ray,
@@ -87,8 +87,7 @@ TEST(voxel, surrounded) {
                         return geo::ray_triangle_intersection(
                                 geo::ray{source, i},
                                 voxelised.get_scene_data().get_triangles(),
-                                convert(voxelised.get_scene_data()
-                                                .get_vertices()));
+                                voxelised.get_scene_data().get_vertices());
                     });
         }(directions);
 
@@ -155,7 +154,7 @@ void compare(const glm::vec3& source,
                     return geo::ray_triangle_intersection(
                             geo::ray{source, i},
                             voxelised.get_scene_data().get_triangles(),
-                            convert(voxelised.get_scene_data().get_vertices()));
+                            voxelised.get_scene_data().get_vertices());
                 });
     }(directions);
 

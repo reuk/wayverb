@@ -54,8 +54,8 @@ mesh compute_mesh(
     const auto desc = [&] {
         const auto aabb = voxelised.get_voxels().get_aabb();
         const auto dim = glm::ivec3{dimensions(aabb) / mesh_spacing};
-        return mesh_descriptor{core::to_cl_float3(aabb.get_min()),
-                               core::to_cl_int3(dim),
+        return mesh_descriptor{core::to_cl_float3{}(aabb.get_min()),
+                               core::to_cl_int3{}(dim),
                                mesh_spacing};
     }();
 

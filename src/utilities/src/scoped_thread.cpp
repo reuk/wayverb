@@ -1,5 +1,7 @@
 #include "utilities/scoped_thread.h"
 
+#include <stdexcept>
+
 namespace util {
 
 scoped_thread::scoped_thread(std::thread t)

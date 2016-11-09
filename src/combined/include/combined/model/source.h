@@ -11,6 +11,9 @@ namespace combined {
 namespace model {
 
 class source final : public member<source> {
+    friend class vector<source>;
+    source() = default;
+
 public:
     source(core::geo::box aabb);
 

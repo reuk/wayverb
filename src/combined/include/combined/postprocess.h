@@ -14,12 +14,13 @@ namespace combined {
 template <typename Histogram>
 struct combined_results final {
     raytracer::simulation_results<Histogram> raytracer;
-    waveguide::simulation_results waveguide;
+    util::aligned::vector<waveguide::bandpass_band> waveguide;
 };
 
 template <typename Histogram>
-auto make_combined_results(raytracer::simulation_results<Histogram> raytracer,
-                           waveguide::simulation_results waveguide) {
+auto make_combined_results(
+        raytracer::simulation_results<Histogram> raytracer,
+        util::aligned::vector<waveguide::bandpass_band> waveguide) {
     return combined_results<Histogram>{std::move(raytracer),
                                        std::move(waveguide)};
 }
@@ -88,10 +89,9 @@ auto postprocess(const combined_results<Histogram>& input,
                                                    max_frequency_functor{});
     };
 
-    const auto cutoff =
-            *std::max_element(make_iterator(begin(input.waveguide.bands)),
-                              make_iterator(end(input.waveguide.bands))) /
-            output_sample_rate;
+    const auto cutoff = *std::max_element(make_iterator(begin(input.waveguide)),
+                                          make_iterator(end(input.waveguide))) /
+                        output_sample_rate;
     const auto width = 0.2;  //  Wider = more natural-sounding
     return crossover_filter(begin(waveguide_processed),
                             end(waveguide_processed),

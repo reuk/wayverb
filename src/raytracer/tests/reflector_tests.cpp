@@ -87,7 +87,7 @@ struct reflector_fixture : public ::testing::Test {
             ret.emplace_back(geo::ray_triangle_intersection(
                     convert(rays[i]),
                     voxelised.get_scene_data().get_triangles(),
-                    convert(voxelised.get_scene_data().get_vertices()),
+                    voxelised.get_scene_data().get_vertices(),
                     reflections[i].triangle));
         }
         return ret;
@@ -117,7 +117,7 @@ TEST_F(reflector_fixture, locations) {
         const auto cpu_position =
                 converted.get_position() +
                 (converted.get_direction() * fast_intersections[i]->inter.t);
-        const auto gpu_position = to_vec3(reflections[i].position);
+        const auto gpu_position = to_vec3{}(reflections[i].position);
         ASSERT_TRUE(nearby(gpu_position, cpu_position, 0.00001));
     }
 }
@@ -140,7 +140,7 @@ TEST_F(reflector_fixture, multi_layer_reflections) {
             const auto cpu_position =
                     converted.get_position() + (converted.get_direction() *
                                                 fast_intersections[j]->inter.t);
-            const auto gpu_position = to_vec3(reflections[j].position);
+            const auto gpu_position = to_vec3{}(reflections[j].position);
             const auto is_nearby = nearby(gpu_position, cpu_position, 0.00001);
             if (!is_nearby) {
                 std::cout << j << '\n';

@@ -120,20 +120,22 @@ triangle_vec3 mirror(const triangle_vec3& in, const triangle_vec3& t);
 }  // namespace geo
 
 constexpr ray convert(const geo::ray& r) {
-    return ray{to_cl_float3(r.get_position()), to_cl_float3(r.get_direction())};
+    return ray{to_cl_float3{}(r.get_position()),
+               to_cl_float3{}(r.get_direction())};
 }
 
 inline geo::ray convert(const ray& r) {
-    return geo::ray{to_vec3(r.position), to_vec3(r.direction)};
+    return geo::ray{to_vec3{}(r.position), to_vec3{}(r.direction)};
 }
 
 constexpr triangle_verts convert(const geo::triangle_vec3& t) {
     return triangle_verts{
-            to_cl_float3(t[0]), to_cl_float3(t[1]), to_cl_float3(t[2])};
+            to_cl_float3{}(t[0]), to_cl_float3{}(t[1]), to_cl_float3{}(t[2])};
 }
 
 constexpr geo::triangle_vec3 convert(const triangle_verts& t) {
-    return geo::triangle_vec3{{to_vec3(t.v0), to_vec3(t.v1), to_vec3(t.v2)}};
+    return geo::triangle_vec3{
+            {to_vec3{}(t.v0), to_vec3{}(t.v1), to_vec3{}(t.v2)}};
 }
 }  // namespace core
 }  // namespace wayverb

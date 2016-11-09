@@ -1,13 +1,23 @@
 #pragma once
 
-#include "common/serialize/vec.h"
+#include "utilities/range.h"
 
-namespace wayverb {
-namespace core {
-template <typename t>
-template <typename archive>
-void util::range<t>::serialize(archive& a) {
-    a(cereal::make_nvp("min", min), cereal::make_nvp("max", max));
+#include "cereal/cereal.hpp"
+
+namespace cereal {
+
+template <typename Archive, typename T>
+void load(Archive& archive, util::range<T>& range) {
+    T min, max;
+    archive(cereal::make_nvp("min", min), cereal::make_nvp("max", max));
+    range = util::range<T>{min, max};
 }
-}  // namespace core
-}  // namespace wayverb
+
+template <typename Archive, typename T>
+void save(Archive& archive, const util::range<T>& range) {
+    archive(cereal::make_nvp("min", range.get_min()),
+            cereal::make_nvp("max", range.get_max()));
+}
+
+}  // namespace cereal
+

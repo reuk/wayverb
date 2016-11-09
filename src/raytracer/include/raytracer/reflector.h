@@ -32,7 +32,7 @@ public:
             : cc_{cc}
             , queue_{cc.context, cc.device}
             , kernel_{program{cc}.get_kernel()}
-            , receiver_{core::to_cl_float3(receiver)}
+            , receiver_{core::to_cl_float3{}(receiver)}
             , rays_(std::distance(b, e))
             , ray_buffer_{core::load_to_buffer(
                       cc.context,

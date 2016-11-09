@@ -28,7 +28,7 @@ template <size_t channels>
 auto attenuate(const core::attenuator::microphone& mic,
                const glm::vec3& position,
                const impulse<channels>& i) {
-    const auto dir = core::to_vec3(i.position) - position;
+    const auto dir = core::to_vec3{}(i.position) - position;
     const auto att = attenuation(mic, dir);
     return make_attenuated_impulse(i.volume * att, i.distance);
 }
@@ -42,7 +42,7 @@ auto attenuate(const core::attenuator::hrtf& hrtf,
                const impulse<channels>& i) {
     const auto adjusted_listener_position = get_ear_position(hrtf, position);
 
-    const auto impulse_position = core::to_vec3(i.position);
+    const auto impulse_position = core::to_vec3{}(i.position);
 
     const auto dir = impulse_position - adjusted_listener_position;
     const auto att = attenuation(hrtf, dir);

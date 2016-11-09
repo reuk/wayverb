@@ -3,4 +3,9 @@
 
 mkdir -p build
 cd build
-cmake -DCMAKE_CXX_CLANG_TIDY:STRING="clang-tidy;-checks=-*,clang-*,-clang-analyzer-alpha*,performance-*,readability-*" .. && cmake --build .
+
+clang_tidy_options=-DCMAKE_CXX_CLANG_TIDY:STRING="clang-tidy;-checks=-*,clang-*,-clang-analyzer-alpha*,performance-*,readability-*"
+
+#iwyu_options=-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE:STRING=iwyu
+
+cmake $clang_tidy_options .. && cmake --build .

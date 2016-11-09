@@ -17,12 +17,12 @@ public:
             : context_{context}
             , voxel_index_{load_to_buffer(
                       context_, get_flattened(scene_data.get_voxels()), true)}
-            , global_aabb_{to_cl_float3(scene_data.get_voxels()
-                                                .get_aabb()
-                                                .get_min()),
-                           to_cl_float3(scene_data.get_voxels()
-                                                .get_aabb()
-                                                .get_max())}
+            , global_aabb_{to_cl_float3{}(scene_data.get_voxels()
+                                                  .get_aabb()
+                                                  .get_min()),
+                           to_cl_float3{}(scene_data.get_voxels()
+                                                  .get_aabb()
+                                                  .get_max())}
             , side_{static_cast<cl_uint>(scene_data.get_voxels().get_side())}
             , triangles_{load_to_buffer(
                       context_,

@@ -76,7 +76,7 @@ void image_source_test() {
 
     const auto check_distances = [&](const auto& range) {
         for (const auto& imp : range) {
-            ASSERT_NEAR(glm::distance(receiver, to_vec3(imp.position)),
+            ASSERT_NEAR(glm::distance(receiver, to_vec3{}(imp.position)),
                         imp.distance,
                         0.0001);
         }
