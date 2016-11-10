@@ -11,42 +11,35 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class scene final : public member<scene,
-                                  sources,
-                                  receivers,
-                                  raytracer,
-                                  waveguide,
-                                  output> {
+class scene final : public owning_member<scene,
+                                         sources,
+                                         receivers,
+                                         raytracer,
+                                         waveguide,
+                                         output> {
 public:
-    scene(core::geo::box aabb);
+    explicit scene(core::geo::box aabb);
 
-    scene(const scene& other);
-    scene(scene&& other) noexcept;
+    using sources_t = class sources;
+    using receivers_t = class receivers;
+    using raytracer_t = class raytracer;
+    using waveguide_t = class waveguide;
+    using output_t = class output;
 
-    scene& operator=(const scene& other);
-    scene& operator=(scene&& other) noexcept;
+    sources_t& sources();
+    const sources_t& sources() const;
 
-    void swap(scene& other) noexcept;
+    receivers_t& receivers();
+    const receivers_t& receivers() const;
 
-    template <typename Archive>
-    void load(Archive& archive) {
-        archive(aabb_, sources, receivers, raytracer, waveguide, output);
-    }
+    raytracer_t& raytracer();
+    const raytracer_t& raytracer() const;
 
-    template <typename Archive>
-    void save(Archive& archive) const {
-        archive(aabb_, sources, receivers, raytracer, waveguide, output);
-    }
+    waveguide_t& waveguide();
+    const waveguide_t& waveguide() const;
 
-private:
-    core::geo::box aabb_;
-
-public:
-    sources sources;
-    receivers receivers;
-    raytracer raytracer;
-    waveguide waveguide;
-    output output;
+    output_t& output();
+    const output_t& output() const;
 };
 
 }  // namespace model

@@ -7,7 +7,7 @@ TEST(app_model, copy_assignment) {
 
     wayverb::combined::model::microphone a;
 
-    a.connect_on_change([&](auto&) { called = true; });
+    a.connect([&](auto&) { called = true; });
 
     wayverb::combined::model::microphone b;
     b.set_shape(1);

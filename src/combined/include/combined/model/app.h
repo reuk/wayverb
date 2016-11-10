@@ -14,25 +14,31 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class project final : public member<project, scene, materials> {
-    void connect() {
-        const auto connect = [&](auto& param) {
-            using scoped_connection =
-                    typename util::event<decltype(param)>::scoped_connection;
-            return scoped_connection{param.connect_on_change([&](auto&) {
-                needs_save_ = true;
-                notify();
-            })};
-        };
+class scene_and_materials final : public owning_member<scene_and_materials,
+                                                       scene,
+                                                       vector<material, 1>> {
+public:
+    explicit scene_and_materials(const core::geo::box& aabb);
 
-        set_connections(std::make_tuple(connect(scene), connect(materials)));
-    }
+    using scene_t = class scene;
 
+    scene_t& scene();
+    const scene_t& scene() const;
+
+    vector<material, 1>& materials();
+    const vector<material, 1>& materials() const;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+class project final {
     const core::scene_data_loader scene_data_;
     bool needs_save_;
 
 public:
-    project(const std::string& fpath);
+    scene_and_materials scene_and_materials;
+
+    explicit project(const std::string& fpath);
 
     static constexpr const char* model_name = "model.model";
     static constexpr const char* config_name = "config.json";
@@ -45,9 +51,6 @@ public:
     void save_to(const std::string& fpath);
 
     core::generic_scene_data<cl_float3, std::string> get_scene_data() const;
-
-    scene scene;
-    materials materials;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

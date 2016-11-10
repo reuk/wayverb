@@ -56,40 +56,6 @@ const frequency_domain::edges_and_width_factor<9>
 
 ////////////////////////////////////////////////////////////////////////////////
 
-waveguide::waveguide() { connect(single_band, multiple_band); }
-
-void waveguide::swap(waveguide& other) noexcept {
-    using std::swap;
-    swap(single_band, other.single_band);
-    swap(multiple_band, other.multiple_band);
-    swap(mode_, other.mode_);
-}
-
-waveguide::waveguide(const waveguide& other)
-        : single_band{other.single_band}
-        , multiple_band{other.multiple_band}
-        , mode_{other.mode_} {
-    connect(single_band, multiple_band);
-}
-
-waveguide::waveguide(waveguide&& other) noexcept {
-    swap(other);
-    connect(single_band, multiple_band);
-}
-
-waveguide& waveguide::operator=(const waveguide& other) {
-    auto copy{other};
-    swap(copy);
-    connect(single_band, multiple_band);
-    return *this;
-}
-
-waveguide& waveguide::operator=(waveguide&& other) noexcept {
-    swap(other);
-    connect(single_band, multiple_band);
-    return *this;
-}
-
 void waveguide::set_mode(mode mode) {
     mode_ = mode;
     notify();
@@ -101,11 +67,23 @@ double waveguide::get_sampling_frequency() const {
     switch (mode_) {
         case mode::single:
             return wayverb::waveguide::compute_sampling_frequency(
-                    single_band.get());
+                    get<single_band_waveguide>().get());
         case mode::multiple:
             return wayverb::waveguide::compute_sampling_frequency(
-                    multiple_band.get());
+                    get<multiple_band_waveguide>().get());
+    }
 }
+
+single_band_waveguide& waveguide::single_band() { return get<single_band_t>(); }
+const single_band_waveguide& waveguide::single_band() const {
+    return get<single_band_t>();
+}
+
+multiple_band_waveguide& waveguide::multiple_band() {
+    return get<multiple_band_t>();
+}
+const multiple_band_waveguide& waveguide::multiple_band() const {
+    return get<multiple_band_t>();
 }
 
 }  // namespace model

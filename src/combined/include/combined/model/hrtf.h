@@ -9,7 +9,7 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class hrtf final : public member<hrtf> {
+class hrtf final : public basic_member<hrtf> {
 public:
     hrtf() = default;
 

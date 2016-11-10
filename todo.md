@@ -16,21 +16,32 @@ Look again at frequency domain test?
 app stuff
 ---------
 
-Pan view.
-
 Finish adding the help panel info.
 
 Display reason for quitting if the engine quits early.
 
 Improve the source/receiver editors.
 
-Make source and receiver draggable.
+Model View
+    Pan.
 
-Improve source/reciever + microphone direction models.
+    Make sources and receivers draggable.
+        Can I move the majority of the renderer *data* (matrices etc.) to the
+        message thread?
+
+        This way we can calculate source/position + mouse status entirely on the
+        message thread, and literally just broadcast new positions to the view 
+        when necessary.
+
+        Oh hey it's model-view-controller
+
+    Improve source/reciever + microphone direction models.
 
 Fail for really long reverbs i.e. longer than 60 seconds.
 
 Benchmark gpu vs cpu performance.
+
+Window to configure output samplerate/bit-depth before rendering.
 
 documentation
 -------------

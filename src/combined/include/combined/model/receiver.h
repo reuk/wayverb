@@ -1,108 +1,94 @@
 #pragma once
 
 #include "combined/model/capsule.h"
+#include "combined/model/constrained_point.h"
 #include "combined/model/vector.h"
 
-#include "core/geo/box.h"
+#include "cereal/types/base_class.hpp"
 
 namespace wayverb {
 namespace combined {
 namespace model {
 
-class receiver final : public member<receiver, capsules> {
-    friend class vector<receiver>;
+class receiver final : public owning_member<receiver,
+                                            constrained_point,
+                                            vector<capsule, 1>> {
+    friend class vector<receiver, 1>;
     receiver() = default;
 
 public:
-    receiver(core::geo::box bounds);
-
-    receiver(const receiver& other);
-    receiver(receiver&& other) noexcept;
-
-    receiver& operator=(const receiver& other);
-    receiver& operator=(receiver&& other) noexcept;
-
-    void swap(receiver& other) noexcept;
+    explicit receiver(core::geo::box bounds);
 
     void set_name(std::string name);
     std::string get_name() const;
 
+    auto& position() { return get<constrained_point>(); }
+    const auto& position() const { return get<constrained_point>(); }
+
+    auto& capsules() { return get<vector<capsule, 1>>(); }
+    const auto& capsules() const { return get<vector<capsule, 1>>(); }
+
     void set_position(const glm::vec3& position);
-    glm::vec3 get_position() const; 
+    glm::vec3 get_position() const;
 
     void set_orientation(float azimuth, float elevation);
     core::orientable get_orientation() const;
 
     template <typename Archive>
     void load(Archive& archive) {
-        archive(capsules, bounds_, name_, position_, orientation_);
+        archive(cereal::base_class<type>(this), name_, orientation_);
         notify();
     }
 
     template <typename Archive>
     void save(Archive& archive) const {
-        archive(capsules, bounds_, name_, position_, orientation_);
+        archive(cereal::base_class<type>(this), name_, orientation_);
     }
 
-    capsules capsules;
-
 private:
-    core::geo::box bounds_;
-
     std::string name_ = "new receiver";
-    glm::vec3 position_;
     core::orientable orientation_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class receivers final : public member<receivers, vector<receiver>> {
-    friend class cereal::access;
-    receivers() = default;
-
+class receivers final : public owning_member<receivers, vector<receiver, 1>> {
 public:
-    receivers(core::geo::box aabb);
-
-    receivers(const receivers& other);
-    receivers(receivers&& other) noexcept;
-
-    receivers& operator=(const receivers& other);
-    receivers& operator=(receivers&& other) noexcept;
-
-    void swap(receivers& other) noexcept;
+    explicit receivers(const core::geo::box& aabb);
 
     const receiver& operator[](size_t index) const;
     receiver& operator[](size_t index);
 
-    auto cbegin() const { return receivers_.cbegin(); }
-    auto begin() const { return receivers_.begin(); }
-    auto begin() { return receivers_.begin(); }
+    auto cbegin() const { return data().cbegin(); }
+    auto begin() const { return data().begin(); }
+    auto begin() { return data().begin(); }
 
-    auto cend() const { return receivers_.cend(); }
-    auto end() const { return receivers_.end(); }
-    auto end() { return receivers_.end(); }
+    auto cend() const { return data().cend(); }
+    auto end() const { return data().end(); }
+    auto end() { return data().end(); }
 
-    void insert(size_t index, receiver t);
-    void erase(size_t index);
+    template <typename It>
+    void insert(It it) {
+        data().insert(std::move(it), receiver{aabb_});
+    }
+
+    template <typename It>
+    void erase(It it) {
+        data().erase(std::move(it));
+    }
 
     size_t size() const;
     bool empty() const;
 
     void clear();
 
-    template <typename Archive>
-    void load(Archive& archive) {
-        archive(aabb_, receivers_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
-        archive(aabb_, receivers_);
-    }
+    bool can_erase() const;
 
 private:
+    vector<receiver, 1>& data();
+    const vector<receiver, 1>& data() const;
+
     core::geo::box aabb_;
-    vector<receiver> receivers_;
 };
 
 }  // namespace model

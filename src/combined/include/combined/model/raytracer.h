@@ -8,7 +8,7 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class raytracer final : public member<raytracer> {
+class raytracer final : public basic_member<raytracer> {
 public:
     raytracer() = default;
 

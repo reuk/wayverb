@@ -20,8 +20,8 @@ TEST(threaded_engine, threaded_engine) {
     const auto scene_data = geo::get_scene_data(box, surface);
 
     model::scene model_scene{geo::compute_aabb(scene_data)};
-    model_scene.sources[0].set_position(source);
-    model_scene.receivers[0].set_position(receiver);
+    model_scene.sources()[0].position().set(source);
+    model_scene.receivers()[0].position().set(receiver);
 
     complete_engine complete{};
 

@@ -12,18 +12,12 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-template <typename T>
-class vector final : public member<vector<T>> {
+template <typename T, size_t MinimumSize>
+class vector final : public basic_member<vector<T, MinimumSize>> {
     class item_connection final {
     public:
-        T item;
-        typename util::event<T&>::scoped_connection connection;
-
-        item_connection() = default;
-        item_connection(vector& v, T t)
-                : item{std::move(t)}
-                , connection{
-                          item.connect_on_change([&](auto&) { v.notify(); })} {}
+        explicit item_connection(T t = T())
+                : item{std::move(t)} {}
 
         item_connection(const item_connection& other)
                 : item{other.item} {}
@@ -31,6 +25,11 @@ class vector final : public member<vector<T>> {
 
         item_connection& operator=(const item_connection& other) = default;
         item_connection& operator=(item_connection&&) noexcept = default;
+
+        void connect(vector& v) {
+            connection_ = typename T::scoped_connection{
+                    item.connect([&](auto&) { v.notify(); })};
+        }
 
         template <typename Archive>
         void load(Archive& archive) {
@@ -41,6 +40,11 @@ class vector final : public member<vector<T>> {
         void save(Archive& archive) const {
             archive(item);
         }
+
+        T item;
+
+    private:
+        typename T::scoped_connection connection_;
     };
 
     struct item_extractor final {
@@ -61,7 +65,9 @@ class vector final : public member<vector<T>> {
 
         template <typename U>
         constexpr auto operator()(U&& u) const {
-            return item_connection{v, std::forward<U>(u)};
+            item_connection ret{std::forward<U>(u)};
+            ret.connect(v);
+            return ret;
         }
     };
 
@@ -76,10 +82,17 @@ public:
                           std::is_nothrow_move_assignable<T>{},
                   "T must be nothrow moveable");
 
-    vector() = default;
+    vector()
+            : data_{MinimumSize} {
+        connect_all();
+    }
 
     template <typename It>
     vector(It b, It e) {
+        if (std::distance(b, e) < MinimumSize) {
+            throw std::logic_error{
+                    "must init with at least 'MinimumSize' elements"};
+        }
         std::copy(make_creator_iterator(std::move(b)),
                   make_creator_iterator(std::move(e)),
                   std::back_inserter(data_));
@@ -92,24 +105,24 @@ public:
 
     vector(const vector& other)
             : data_{other.data_} {
-        connect();
+        connect_all();
     }
 
     vector(vector&& other) noexcept {
         swap(other);
-        connect();
+        connect_all();
     }
 
     vector& operator=(const vector& other) {
         auto copy{other};
         swap(copy);
-        connect();
+        connect_all();
         return *this;
     }
 
     vector& operator=(vector&& other) noexcept {
         swap(other);
-        connect();
+        connect_all();
         return *this;
     }
 
@@ -132,8 +145,10 @@ public:
 
     template <typename It>
     void erase(It it) {
-        data_.erase(it.base());
-        this->notify();
+        if (can_erase()) {
+            data_.erase(it.base());
+            this->notify();
+        }
     }
 
     auto size() const { return data_.size(); }
@@ -144,10 +159,12 @@ public:
         this->notify();
     }
 
+    bool can_erase() const { return MinimumSize < size(); }
+
     template <typename Archive>
     void load(Archive& archive) {
         archive(data_);
-        connect();
+        connect_all();
         this->notify();
     }
 
@@ -157,10 +174,9 @@ public:
     }
 
 private:
-    void connect() {
+    void connect_all() {
         for (auto& i : data_) {
-            i.connection = typename util::event<T&>::scoped_connection{
-                    i.item.connect_on_change([&](auto&) { this->notify(); })};
+            i.connect(*this);
         }
     }
 

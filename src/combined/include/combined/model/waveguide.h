@@ -6,11 +6,13 @@
 
 #include "hrtf/multiband.h"
 
+#include "cereal/types/base_class.hpp"
+
 namespace wayverb {
 namespace combined {
 namespace model {
 
-class single_band_waveguide final : public member<single_band_waveguide> {
+class single_band_waveguide final : public basic_member<single_band_waveguide> {
 public:
     single_band_waveguide() = default;
 
@@ -36,7 +38,8 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class multiple_band_waveguide final : public member<multiple_band_waveguide> {
+class multiple_band_waveguide final
+        : public basic_member<multiple_band_waveguide> {
 public:
     multiple_band_waveguide() = default;
 
@@ -67,20 +70,10 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class waveguide final : public member<waveguide,
-                                      single_band_waveguide,
-                                      multiple_band_waveguide> {
+class waveguide final : public owning_member<waveguide,
+                                             single_band_waveguide,
+                                             multiple_band_waveguide> {
 public:
-    waveguide();
-
-    waveguide(const waveguide& other);
-    waveguide(waveguide&& other) noexcept;
-
-    waveguide& operator=(const waveguide& other);
-    waveguide& operator=(waveguide&& other) noexcept;
-
-    void swap(waveguide& other) noexcept;
-
     enum class mode { single, multiple };
 
     void set_mode(mode mode);
@@ -90,19 +83,25 @@ public:
 
     template <typename Archive>
     void load(Archive& archive) {
-        archive(single_band, multiple_band);
+        archive(cereal::base_class<type>(this), mode_);
     }
 
     template <typename Archive>
     void save(Archive& archive) const {
-        archive(single_band, multiple_band);
+        archive(cereal::base_class<type>(this), mode_);
     }
 
-    single_band_waveguide single_band;
-    multiple_band_waveguide multiple_band;
+    using single_band_t = single_band_waveguide;
+    using multiple_band_t = multiple_band_waveguide;
+
+    single_band_t& single_band();
+    const single_band_t& single_band()const;
+
+    multiple_band_t& multiple_band();
+    const multiple_band_t& multiple_band()const;
 
 private:
-    mode mode_;
+    mode mode_ = mode::single;
 };
 
 }  // namespace model

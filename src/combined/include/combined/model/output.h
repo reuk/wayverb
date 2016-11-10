@@ -8,7 +8,7 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class output final : public member<output> {
+class output final : public basic_member<output> {
 public:
     output() = default;
 

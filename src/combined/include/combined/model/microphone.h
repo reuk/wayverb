@@ -9,7 +9,7 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class microphone final : public member<microphone> {
+class microphone final : public basic_member<microphone> {
 public:
     microphone() = default;
 

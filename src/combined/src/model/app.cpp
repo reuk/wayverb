@@ -6,6 +6,7 @@
 
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
+#include "cereal/types/tuple.hpp"
 
 #include <fstream>
 
@@ -13,27 +14,41 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
+scene_and_materials::scene_and_materials(const core::geo::box& aabb)
+        : type{scene_t{aabb}, vector<material, 1>{}} {}
+
+scene& scene_and_materials::scene() { return get<0>(); }
+const scene& scene_and_materials::scene() const { return get<0>(); }
+
+vector<material, 1>& scene_and_materials::materials() { return get<1>(); }
+const vector<material, 1>& scene_and_materials::materials() const {
+    return get<1>();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 project::project(const std::string& fpath)
         : scene_data_{is_project_file(fpath) ? compute_model_path(fpath)
                                              : fpath}
         , needs_save_{!is_project_file(fpath)}
-        , scene{core::geo::compute_aabb(scene_data_.get_scene_data())} {
+        , scene_and_materials{
+                  core::geo::compute_aabb(scene_data_.get_scene_data())} {
     if (is_project_file(fpath)) {
         const auto config_file = project::compute_config_path(fpath);
 
         //  load the config
         std::ifstream stream(config_file);
         cereal::JSONInputArchive archive(stream);
-        archive(scene, materials);
+        archive(scene_and_materials);
 
     } else {
         const auto& surface_strings =
                 scene_data_.get_scene_data().get_surfaces();
-        materials.set_from_strings(begin(surface_strings),
-                                   end(surface_strings));
+        scene_and_materials.materials() = materials_from_names<1>(
+                begin(surface_strings), end(surface_strings));
     }
 
-    connect();
+    scene_and_materials.connect([&](auto&) { needs_save_ = true; });
 }
 
 std::string project::compute_model_path(const std::string& root) {
@@ -62,7 +77,7 @@ void project::save_to(const std::string& fpath) {
         //  write config with all current materials to file
         std::ofstream stream(project::compute_config_path(fpath));
         cereal::JSONOutputArchive archive(stream);
-        archive(scene, materials);
+        archive(scene_and_materials);
 
         needs_save_ = false;
 
@@ -89,7 +104,7 @@ void app::start_render() {
     //  Collect parameters.
 
     auto scene_data = generate_scene_data();
-    auto params = project.scene;
+    auto params = project.scene_and_materials.scene();
 
     //  Start engine in new thread.
     future_ = std::async(
@@ -100,9 +115,7 @@ void app::start_render() {
             });
 }
 
-void app::cancel_render() {
-    engine_.cancel();
-}
+void app::cancel_render() { engine_.cancel(); }
 
 //  void app::is_rendering() const { engine_.is_running(); }
 
@@ -128,7 +141,9 @@ void app::save_as(std::string name) {
 
 void app::generate_debug_mesh() {
     auto scene_data = generate_scene_data();
-    auto sample_rate = project.scene.waveguide.get_sampling_frequency();
+    auto sample_rate = project.scene_and_materials.scene()
+                               .waveguide()
+                               .get_sampling_frequency();
     auto speed_of_sound = 340.0;
 
     future_ = std::async(
@@ -181,7 +196,7 @@ core::gpu_scene_data app::generate_scene_data() {
                                  core::surface<core::simulation_bands>>
             material_map;
 
-    for (const auto& i : project.materials) {
+    for (const auto& i : project.scene_and_materials.materials()) {
         material_map[i.get_name()] = i.get_surface();
     }
 

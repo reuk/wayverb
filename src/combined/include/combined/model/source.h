@@ -1,8 +1,11 @@
 #pragma once
 
+#include "combined/model/constrained_point.h"
 #include "combined/model/vector.h"
 
 #include "core/geo/box.h"
+
+#include "cereal/types/base_class.hpp"
 
 #include <string>
 
@@ -10,83 +13,72 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class source final : public member<source> {
-    friend class vector<source>;
+class source final : public owning_member<source, constrained_point> {
+    friend class vector<source, 1>;
     source() = default;
 
 public:
-    source(core::geo::box aabb);
+    explicit source(const core::geo::box& aabb);
 
     void set_name(std::string name);
     std::string get_name() const;
 
-    void set_position(const glm::vec3& position);
-    glm::vec3 get_position() const;
+    auto& position() { return get<constrained_point>(); }
+    const auto& position() const { return get<constrained_point>(); }
 
     template <typename Archive>
     void load(Archive& archive) {
-        archive(aabb_, name_, position_);
-        notify();
+        archive(cereal::base_class<type>(this), name_);
     }
 
     template <typename Archive>
     void save(Archive& archive) const {
-        archive(aabb_, name_, position_);
+        archive(cereal::base_class<type>(this), name_);
     }
 
 private:
-    core::geo::box aabb_;
-
     std::string name_;
-    glm::vec3 position_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class sources final : public member<sources, vector<source>> {
+class sources final : public owning_member<sources, vector<source, 1>> {
 public:
-    sources(core::geo::box aabb);
-
-    sources(const sources& other);
-    sources(sources&& other) noexcept;
-
-    sources& operator=(const sources& other);
-    sources& operator=(sources&& other) noexcept;
-
-    void swap(sources& other) noexcept;
+    explicit sources(const core::geo::box& aabb);
 
     const source& operator[](size_t index) const;
     source& operator[](size_t index);
 
-    auto cbegin() const { return sources_.cbegin(); }
-    auto begin() const { return sources_.begin(); }
-    auto begin() { return sources_.begin(); }
+    auto cbegin() const { return data().cbegin(); }
+    auto begin() const { return data().begin(); }
+    auto begin() { return data().begin(); }
 
-    auto cend() const { return sources_.cend(); }
-    auto end() const { return sources_.end(); }
-    auto end() { return sources_.end(); }
+    auto cend() const { return data().cend(); }
+    auto end() const { return data().end(); }
+    auto end() { return data().end(); }
 
-    void insert(size_t index, source t);
-    void erase(size_t index);
+    template <typename It>
+    void insert(It it) {
+        data().insert(std::move(it), source{aabb_});
+    }
+
+    template <typename It>
+    void erase(It it) {
+        data().erase(std::move(it));
+    }
 
     size_t size() const;
     bool empty() const;
 
     void clear();
 
-    template <typename Archive>
-    void load(Archive& archive) {
-        archive(aabb_, sources_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
-        archive(aabb_, sources_);
-    }
+    bool can_erase() const;
 
 private:
+    vector<source, 1>& data();
+    const vector<source, 1>& data() const;
+
     core::geo::box aabb_;
-    vector<source> sources_;
 };
 
 }  // namespace model

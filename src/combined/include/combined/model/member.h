@@ -1,65 +1,139 @@
 #pragma once
 
 #include "utilities/event.h"
-#include "utilities/map.h"
+
+#include <tuple>
 
 namespace wayverb {
 namespace combined {
 namespace model {
 
-template <typename Derived, typename... Sub>
-class member {
+template <typename Derived>
+class basic_member {
 public:
-    member() = default;
+    using derived_type = Derived;
+    using type = basic_member<Derived>;
 
-    /// Copy constructor should default-construct on_change_, thereby ensuring
-    /// the copy has no listeners.
-    /// Copy *assignment* should retain the existing listeners on the assigned-
-    /// to object.
+    basic_member() = default;
 
-    member(const member& other) {}
-    member(member&&) noexcept = default;
+    basic_member(const basic_member&) {}
+    basic_member(basic_member&&) noexcept = default;
 
-    member& operator=(const member& other) {
+    basic_member& operator=(const basic_member&) {
         notify();
         return *this;
     }
-    member& operator=(member&&) noexcept = default;
+
+    basic_member& operator=(basic_member&&) noexcept = default;
 
     using on_change = util::event<Derived&>;
     using connection = typename on_change::connection;
     using scoped_connection = typename on_change::scoped_connection;
     using callback_type = typename on_change::callback_type;
 
-    connection connect_on_change(callback_type t) {
+    connection connect(callback_type t) {
         return on_change_.connect(std::move(t));
     }
 
     void notify() { on_change_(*static_cast<Derived*>(this)); }
 
 protected:
-    ~member() noexcept = default;
-
-    void set_connections(
-            std::tuple<typename util::event<Sub&>::scoped_connection...>
-                    connections) {
-        connections_ = std::move(connections);
-    }
-
-    void connect(Sub&... sub) {
-        const auto connect = [&](auto& param) {
-            using scoped_connection =
-                    typename util::event<decltype(param)>::scoped_connection;
-            return scoped_connection{
-                    param.connect_on_change([&](auto&) { notify(); })};
-        };
-
-        set_connections(std::make_tuple(connect(sub)...));
-    }
+    ~basic_member() noexcept = default;
 
 private:
     on_change on_change_;
-    std::tuple<typename util::event<Sub&>::scoped_connection...> connections_;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename Derived, typename... DataMembers>
+class owning_member : public basic_member<Derived> {
+public:
+    using derived_type = Derived;
+    using type = owning_member<Derived, DataMembers...>;
+
+    owning_member() = default;
+
+    explicit owning_member(DataMembers... data_members)
+            : data_members_{std::make_tuple(std::move(data_members)...)}
+            , scoped_connections_{make_connections()} {}
+
+    owning_member(const owning_member& other)
+            : data_members_{other.data_members_}
+            , scoped_connections_{make_connections()} {}
+
+    owning_member(owning_member&& other) noexcept
+            : data_members_{std::move(other.data_members_)} {}
+
+    void swap(owning_member& other) noexcept {
+        using std::swap;
+        swap(data_members_, other.data_members_);
+        swap(scoped_connections_, other.scoped_connections);
+    }
+
+    owning_member& operator=(const owning_member& other) {
+        auto copy{other};
+        swap(copy);
+        scoped_connections_ = make_connections();
+        this->notify();
+        return *this;
+    }
+
+    owning_member& operator=(owning_member&& other) noexcept {
+        swap(other);
+        scoped_connections_ = make_connections();
+        return *this;
+    }
+
+    template <typename Archive>
+    void load(Archive& archive) {
+        archive(data_members_);
+    }
+
+    template <typename Archive>
+    void save(Archive& archive) const {
+        archive(data_members_);
+    }
+
+protected:
+    ~owning_member() noexcept = default;
+
+    template <size_t I>
+    auto& get() & {
+        return std::get<I>(data_members_);
+    }
+
+    template <size_t I>
+    const auto& get() const & {
+        return std::get<I>(data_members_);
+    }
+
+    template <typename T>
+    auto& get() & {
+        return std::get<T>(data_members_);
+    }
+
+    template <typename T>
+    const auto& get() const & {
+        return std::get<T>(data_members_);
+    }
+
+private:
+    template <size_t... Ix>
+    auto make_connections(std::index_sequence<Ix...>) {
+        return std::make_tuple([&](auto& param) {
+            return typename std::decay_t<decltype(param)>::scoped_connection{
+                    param.connect([&](auto&) { this->notify(); })};
+        }(std::get<Ix>(data_members_))...);
+    }
+
+    auto make_connections() {
+        return make_connections(
+                std::make_index_sequence<sizeof...(DataMembers)>{});
+    }
+
+    std::tuple<DataMembers...> data_members_;
+    std::tuple<typename DataMembers::scoped_connection...> scoped_connections_;
 };
 
 }  // namespace model

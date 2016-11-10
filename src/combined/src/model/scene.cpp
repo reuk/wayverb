@@ -5,51 +5,26 @@ namespace combined {
 namespace model {
 
 scene::scene(core::geo::box aabb)
-        : aabb_{std::move(aabb)}
-        , sources{aabb_}
-        , receivers{aabb_} {
-    connect(sources, receivers, raytracer, waveguide, output);
-}
+        : type{sources_t{aabb},
+               receivers_t{aabb},
+               raytracer_t{},
+               waveguide_t{},
+               output_t{}} {}
 
-void scene::swap(scene& other) noexcept {
-    using std::swap;
-    swap(sources, other.sources);
-    swap(receivers, other.receivers);
-    swap(raytracer, other.raytracer);
-    swap(waveguide, other.waveguide);
-    swap(output, other.output);
-    swap(aabb_, other.aabb_);
-}
+sources& scene::sources() { return get<sources_t>(); }
+const sources& scene::sources() const { return get<sources_t>(); }
 
-scene::scene(const scene& other)
-        : aabb_{other.aabb_} 
-        , sources{other.sources}
-        , receivers{other.receivers}
-        , raytracer{other.raytracer}
-        , waveguide{other.waveguide}
-        , output{other.output} {
-    connect(sources, receivers, raytracer, waveguide, output);
-}
+receivers& scene::receivers() { return get<receivers_t>(); }
+const receivers& scene::receivers() const { return get<receivers_t>(); }
 
-scene::scene(scene&& other) noexcept
-        : sources{core::geo::box{}}
-        , receivers{core::geo::box{}} {
-    swap(other);
-    connect(sources, receivers, raytracer, waveguide, output);
-}
+raytracer& scene::raytracer() { return get<raytracer_t>(); }
+const raytracer& scene::raytracer() const { return get<raytracer_t>(); }
 
-scene& scene::operator=(const scene& other) {
-    auto copy{other};
-    swap(copy);
-    connect(sources, receivers, raytracer, waveguide, output);
-    return *this;
-}
+waveguide& scene::waveguide() { return get<waveguide_t>(); }
+const waveguide& scene::waveguide() const { return get<waveguide_t>(); }
 
-scene& scene::operator=(scene&& other) noexcept {
-    swap(other);
-    connect(sources, receivers, raytracer, waveguide, output);
-    return *this;
-}
+output& scene::output() { return get<output_t>(); }
+const output& scene::output() const { return get<output_t>(); }
 
 }  // namespace model
 }  // namespace combined
