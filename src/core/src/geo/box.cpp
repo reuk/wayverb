@@ -1,6 +1,10 @@
 #include "core/geo/box.h"
+#include "core/geo/geometric.h"
 #include "core/geo/tri_cube_intersection.h"
+#include "core/geo/triangle_vec.h"
 #include "core/scene_data.h"
+
+#include "utilities/mapping_iterator_adapter.h"
 
 namespace wayverb {
 namespace core {
@@ -16,7 +20,7 @@ box mirror(const box& b, wall w) {
 
 bool overlaps(const box& b, const triangle_vec3& t) {
     auto coll = t;
-    for (auto& i : coll) {
+    for (auto& i : coll.s) {
         i = (i - centre(b)) / dimensions(b);
     }
     return t_c_intersection(coll) == where::inside;
@@ -67,6 +71,20 @@ bool intersects(const box& b, const ray& ray, float t0, float t1) {
     }
     return false;
 }
+
+template <typename T>
+geo::box compute_aabb(const T* b, const T* e) {
+    const auto make_iterator = [](auto it) {
+        return util::make_mapping_iterator_adapter(std::move(it), to_vec3{});
+    };
+    return util::enclosing_range(make_iterator(b), make_iterator(e));
+}
+
+template geo::box compute_aabb<glm::vec3>(const glm::vec3* b,
+                                          const glm::vec3* e);
+
+template geo::box compute_aabb<cl_float3>(const cl_float3* b,
+                                          const cl_float3* e);
 
 }  // namespace geo
 }  // namespace core

@@ -8,4 +8,4 @@ clang_tidy_options=-DCMAKE_CXX_CLANG_TIDY:STRING="clang-tidy;-checks=-*,clang-*,
 
 #iwyu_options=-DCMAKE_CXX_INCLUDE_WHAT_YOU_USE:STRING=iwyu
 
-cmake $clang_tidy_options .. && cmake --build .
+cmake .. && cmake --build .

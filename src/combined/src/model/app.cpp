@@ -31,8 +31,8 @@ project::project(const std::string& fpath)
         : scene_data_{is_project_file(fpath) ? compute_model_path(fpath)
                                              : fpath}
         , needs_save_{!is_project_file(fpath)}
-        , scene_and_materials{
-                  core::geo::compute_aabb(scene_data_.get_scene_data())} {
+        , scene_and_materials{core::geo::compute_aabb(
+                  scene_data_.get_scene_data().get_vertices())} {
     if (is_project_file(fpath)) {
         const auto config_file = project::compute_config_path(fpath);
 

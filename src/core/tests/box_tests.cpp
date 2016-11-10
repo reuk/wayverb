@@ -1,4 +1,5 @@
 #include "core/geo/box.h"
+#include "core/geo/geometric.h"
 
 #include "gtest/gtest.h"
 

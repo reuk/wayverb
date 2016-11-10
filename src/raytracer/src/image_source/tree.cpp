@@ -67,7 +67,8 @@ private:
                              const cl_uint triangle_index) {
         const auto& scene{voxelised.get_scene_data()};
         return core::geo::get_triangle_vec3(
-                scene.get_triangles()[triangle_index], scene.get_vertices());
+                scene.get_triangles()[triangle_index],
+                scene.get_vertices().data());
     }
 
     static glm::vec3 find_image_source(const glm::vec3& previous_source,

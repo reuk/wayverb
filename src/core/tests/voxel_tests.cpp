@@ -67,6 +67,12 @@ TEST(voxel, surrounded) {
                 scene,
                 util::aligned::unordered_map<std::string,
                                              surface<simulation_bands>>{}));
+
+        const auto converted_vertices = util::map_to_vector(
+                begin(voxelised.get_scene_data().get_vertices()),
+                end(voxelised.get_scene_data().get_vertices()),
+                to_vec3{});
+
         const compute_context cc{};
         const auto buffers = make_scene_buffers(cc.context, voxelised);
 
@@ -84,10 +90,15 @@ TEST(voxel, surrounded) {
         const auto slow_intersections = [&](const auto& directions) {
             return util::map_to_vector(
                     begin(directions), end(directions), [&](const auto& i) {
-                        return geo::ray_triangle_intersection(
+                        return ray_triangle_intersection(
                                 geo::ray{source, i},
-                                voxelised.get_scene_data().get_triangles(),
-                                voxelised.get_scene_data().get_vertices());
+                                voxelised.get_scene_data()
+                                        .get_triangles()
+                                        .data(),
+                                voxelised.get_scene_data()
+                                        .get_triangles()
+                                        .size(),
+                                converted_vertices.data());
                     });
         }(directions);
 
@@ -134,6 +145,12 @@ void compare(const glm::vec3& source,
             scene,
             util::aligned::unordered_map<std::string,
                                          surface<simulation_bands>>{}));
+
+    const auto converted_vertices = util::map_to_vector(
+            begin(voxelised.get_scene_data().get_vertices()),
+            end(voxelised.get_scene_data().get_vertices()),
+            to_vec3{});
+
     const compute_context cc{};
     const auto buffers = make_scene_buffers(cc.context, voxelised);
 
@@ -153,8 +170,9 @@ void compare(const glm::vec3& source,
                 begin(directions), end(directions), [&](const auto& i) {
                     return geo::ray_triangle_intersection(
                             geo::ray{source, i},
-                            voxelised.get_scene_data().get_triangles(),
-                            voxelised.get_scene_data().get_vertices());
+                            voxelised.get_scene_data().get_triangles().data(),
+                            voxelised.get_scene_data().get_triangles().size(),
+                            converted_vertices.data());
                 });
     }(directions);
 

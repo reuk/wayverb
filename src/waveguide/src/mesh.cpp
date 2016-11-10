@@ -151,7 +151,9 @@ voxels_and_mesh compute_voxels_and_mesh(const core::compute_context& cc,
             scene,
             5,
             waveguide::compute_adjusted_boundary(
-                    core::geo::compute_aabb(scene), anchor, mesh_spacing));
+                    core::geo::compute_aabb(scene.get_vertices()),
+                    anchor,
+                    mesh_spacing));
     auto mesh = compute_mesh(cc, voxelised, mesh_spacing, speed_of_sound);
     return {std::move(voxelised), std::move(mesh)};
 }

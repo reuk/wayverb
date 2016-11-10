@@ -19,7 +19,7 @@ TEST(threaded_engine, threaded_engine) {
 
     const auto scene_data = geo::get_scene_data(box, surface);
 
-    model::scene model_scene{geo::compute_aabb(scene_data)};
+    model::scene model_scene{geo::compute_aabb(scene_data.get_vertices())};
     model_scene.sources()[0].position().set(source);
     model_scene.receivers()[0].position().set(receiver);
 

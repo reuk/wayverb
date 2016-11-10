@@ -15,10 +15,14 @@ float six_times_tetrahedron_volume(const geo::triangle_vec3& t) {
     /// From Efficient Feature Extraction for 2d/3d Objects in Mesh
     /// Representation, Cha Zhang and Tsuhan Chen
     const auto volume =
-            (t[1].x * t[2].y * t[0].z) - (t[2].x * t[1].y * t[0].z) +
-            (t[2].x * t[0].y * t[1].z) - (t[0].x * t[2].y * t[1].z) +
-            (t[0].x * t[1].y * t[2].z) - (t[1].x * t[0].y * t[2].z);
-    const auto sign = glm::dot(glm::normalize(t[0]), geo::normal(t));
+            (std::get<1>(t.s).x * std::get<2>(t.s).y * std::get<0>(t.s).z) -
+            (std::get<2>(t.s).x * std::get<1>(t.s).y * std::get<0>(t.s).z) +
+            (std::get<2>(t.s).x * std::get<0>(t.s).y * std::get<1>(t.s).z) -
+            (std::get<0>(t.s).x * std::get<2>(t.s).y * std::get<1>(t.s).z) +
+            (std::get<0>(t.s).x * std::get<1>(t.s).y * std::get<2>(t.s).z) -
+            (std::get<1>(t.s).x * std::get<0>(t.s).y * std::get<2>(t.s).z);
+    const auto sign =
+            glm::dot(glm::normalize(std::get<0>(t.s)), geo::normal(t));
     return std::copysign(volume, sign);
 }
 

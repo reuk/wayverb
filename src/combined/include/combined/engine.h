@@ -2,7 +2,7 @@
 
 #include "raytracer/cl/reflection.h"
 
-#include "core/scene_data.h"
+#include "core/gpu_scene_data.h"
 
 #include "utilities/aligned/vector.h"
 #include "utilities/event.h"

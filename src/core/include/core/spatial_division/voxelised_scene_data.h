@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/azimuth_elevation.h"
+#include "core/geo/geometric.h"
 #include "core/scene_data.h"
 #include "core/spatial_division/voxel_collection.h"
 
@@ -11,6 +12,12 @@ namespace core {
 
 template <typename Vertex, typename Surface>
 class voxelised_scene_data final {
+    static auto compute_triangle_indices(size_t num) {
+        util::aligned::vector<size_t> ret(num);
+        std::iota(ret.begin(), ret.end(), 0);
+        return ret;
+    }
+
 public:
     //  invariant:
     //  The 'voxels' structure holds references/indexes to valid triangles in
@@ -31,11 +38,11 @@ public:
                                   padded(aabb, glm::vec3{0.001}),
                                   geo::get_triangle_vec3(
                                           scene_.get_triangles()[item],
-                                          scene_.get_vertices()));
+                                          scene_.get_vertices().data()));
                       },
-                      compute_triangle_indices(scene_),
+                      compute_triangle_indices(scene_.get_triangles().size()),
                       aabb}} {
-        if (aabb == geo::compute_aabb(scene_)) {
+        if (aabb == geo::compute_aabb(scene_.get_vertices())) {
             throw std::runtime_error{
                     "remember to add some padding to the voxelisation "
                     "boundary!"};
@@ -69,7 +76,8 @@ template <typename Vertex, typename Surface, typename Pad>
 auto make_voxelised_scene_data(generic_scene_data<Vertex, Surface> scene,
                                size_t octree_depth,
                                Pad padding) {
-    const auto aabb = padded(geo::compute_aabb(scene), glm::vec3{padding});
+    const auto aabb =
+            padded(geo::compute_aabb(scene.get_vertices()), glm::vec3{padding});
     return make_voxelised_scene_data(std::move(scene), octree_depth, aabb);
 }
 
@@ -87,11 +95,12 @@ std::experimental::optional<intersection> intersects(
                  const voxel& to_test,
                  float min_dist_inside_voxel,
                  float max_dist_inside_voxel) {
-                 const auto i = geo::ray_triangle_intersection(
+                 const auto i = ray_triangle_intersection(
                          ray,
-                         to_test,
-                         voxelised.get_scene_data().get_triangles(),
-                         voxelised.get_scene_data().get_vertices(),
+                         to_test.data(),
+                         to_test.size(),
+                         voxelised.get_scene_data().get_triangles().data(),
+                         voxelised.get_scene_data().get_vertices().data(),
                          to_ignore);
                  if (i && i->inter.t <= max_dist_inside_voxel) {
                      state = i;
@@ -121,7 +130,7 @@ std::experimental::optional<size_t> count_intersections(
                      //  ray
                      const auto intersection = triangle_intersection(
                              voxelised.get_scene_data().get_triangles()[i],
-                             voxelised.get_scene_data().get_vertices(),
+                             voxelised.get_scene_data().get_vertices().data(),
                              ray);
                      //  if there is an intersection
                      if (intersection) {

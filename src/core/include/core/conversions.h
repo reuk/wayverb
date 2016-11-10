@@ -33,6 +33,11 @@ constexpr glm::vec3 to_vec3::operator()(const cl_float3& t) const {
     return glm::vec3{t.s[0], t.s[1], t.s[2]};
 }
 
+template <>
+constexpr glm::vec3 to_vec3::operator()(const glm::vec3& t) const {
+    return t;
+}
+
 struct to_ivec3 final {
     template <typename T>
     constexpr glm::ivec3 operator()(const T& t) const {
@@ -43,6 +48,11 @@ struct to_ivec3 final {
 template <>
 constexpr glm::ivec3 to_ivec3::operator()(const cl_int3& t) const {
     return glm::ivec3{t.s[0], t.s[1], t.s[2]};
+}
+
+template <>
+constexpr glm::ivec3 to_ivec3::operator()(const glm::ivec3& t) const {
+    return t;
 }
 
 }  // namespace core

@@ -100,9 +100,9 @@ where check_line(const glm::vec3& p1, const glm::vec3& p2, int outcode_diff) {
 }
 
 where point_triangle_intersection(const glm::vec3& p, const triangle_vec3& t) {
-    auto v0 = t[0];
-    auto v1 = t[1];
-    auto v2 = t[2];
+    const auto v0 = std::get<0>(t.s);
+    const auto v1 = std::get<1>(t.s);
+    const auto v2 = std::get<2>(t.s);
 
     const std::array<glm::vec3, 3> coll{{v0, v1, v2}};
     const auto mm = util::enclosing_range(std::begin(coll), std::end(coll));
@@ -114,16 +114,16 @@ where point_triangle_intersection(const glm::vec3& p, const triangle_vec3& t) {
         return where::outside;
     }
 
-    auto get_sign = [&p](auto a, auto b) {
+    const auto get_sign = [&p](auto a, auto b) {
         auto vec_a = a - b;
         auto vec_p = a - p;
         auto cross = glm::cross(vec_a, vec_p);
         return sign3(cross);
     };
 
-    auto sign12 = get_sign(v0, v1);
-    auto sign23 = get_sign(v1, v2);
-    auto sign31 = get_sign(v2, v0);
+    const auto sign12 = get_sign(v0, v1);
+    const auto sign23 = get_sign(v1, v2);
+    const auto sign31 = get_sign(v2, v0);
 
     return ((sign12 & sign23 & sign31) == 0) ? where::outside : where::inside;
 }
@@ -131,7 +131,8 @@ where point_triangle_intersection(const glm::vec3& p, const triangle_vec3& t) {
 //  from
 //  http://fileadmin.cs.lth.se/cs/Personal/Tomas_Akenine-Moller/code/tribox_tam.pdf
 where t_c_intersection(const triangle_vec3& t) {
-    std::array<glm::vec3, 3> v{{t[0], t[1], t[2]}};
+    std::array<glm::vec3, 3> v{
+            {std::get<0>(t.s), std::get<1>(t.s), std::get<2>(t.s)}};
     std::array<glm::vec3, 3> f{{v[1] - v[0], v[2] - v[1], v[0] - v[2]}};
 
     for (const auto& a : {glm::vec3(0, -f[0].z, f[0].y),

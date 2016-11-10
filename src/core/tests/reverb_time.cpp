@@ -1,4 +1,5 @@
 #include "core/reverb_time.h"
+#include "core/cl/scene_structs.h"
 #include "core/geo/box.h"
 #include "core/scene_data_loader.h"
 

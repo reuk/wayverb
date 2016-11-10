@@ -3,6 +3,7 @@
 #include "waveguide/mesh_descriptor.h"
 #include "waveguide/setup.h"
 
+#include "core/gpu_scene_data.h"
 #include "core/spatial_division/voxelised_scene_data.h"
 
 namespace wayverb {

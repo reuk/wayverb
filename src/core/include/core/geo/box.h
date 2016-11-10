@@ -1,17 +1,20 @@
 #pragma once
 
-#include "core/geo/geometric.h"
-#include "core/geo/triangle_vec.h"
+#include "core/conversions.h"
 #include "core/scene_data.h"
 
-#include "utilities/mapping_iterator_adapter.h"
 #include "utilities/range.h"
 
 #include "glm/glm.hpp"
 
+#include <experimental/optional>
+
 namespace wayverb {
 namespace core {
 namespace geo {
+
+struct triangle_vec3;
+class ray;
 
 using box = util::range<glm::vec3>;
 
@@ -80,19 +83,12 @@ constexpr glm::vec3 mirror(const box& b, const glm::vec3& v, wall w) {
     }
 }
 
-template <typename Surface>
-auto compute_aabb(const generic_scene_data<glm::vec3, Surface>& scene) {
-    return enclosing_range(scene.get_vertices().begin(),
-                           scene.get_vertices().end());
-}
+template <typename T>
+geo::box compute_aabb(const T* b, const T* e);
 
-template <typename Surface>
-auto compute_aabb(const generic_scene_data<cl_float3, Surface>& scene) {
-    const auto make_iterator = [](auto i) {
-        return util::make_mapping_iterator_adapter(std::move(i), to_vec3{});
-    };
-    return util::enclosing_range(make_iterator(scene.get_vertices().begin()),
-                                 make_iterator(scene.get_vertices().end()));
+template <typename T>
+geo::box compute_aabb(T&& t) {
+    return compute_aabb(t.data(), t.data() + t.size());
 }
 
 glm::vec3 mirror_inside(const box& b, const glm::vec3& v, direction d);

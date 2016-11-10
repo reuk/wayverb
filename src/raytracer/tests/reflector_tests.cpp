@@ -86,8 +86,9 @@ struct reflector_fixture : public ::testing::Test {
         for (auto i = 0u; i != rays.size(); ++i) {
             ret.emplace_back(geo::ray_triangle_intersection(
                     convert(rays[i]),
-                    voxelised.get_scene_data().get_triangles(),
-                    voxelised.get_scene_data().get_vertices(),
+                    voxelised.get_scene_data().get_triangles().data(),
+                    voxelised.get_scene_data().get_triangles().size(),
+                    voxelised.get_scene_data().get_vertices().data(),
                     reflections[i].triangle));
         }
         return ret;

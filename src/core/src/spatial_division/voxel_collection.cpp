@@ -1,5 +1,6 @@
 #include "core/spatial_division/voxel_collection.h"
 #include "core/cl/traits.h"
+#include "core/geo/geometric.h"
 #include "core/scene_data.h"
 
 namespace wayverb {

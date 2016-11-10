@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/cl/scene_structs.h"
+#include "core/cl/triangle.h"
 
 #include "utilities/aligned/vector.h"
 
@@ -8,9 +8,6 @@
 
 namespace wayverb {
 namespace core {
-
-class mesh_boundary;
-struct triangle;
 
 template <typename Vertex, typename Surface>
 class generic_scene_data final {
@@ -91,16 +88,6 @@ auto make_scene_data(util::aligned::vector<triangle> triangles,
     return generic_scene_data<Vertex, Surface>{
             std::move(triangles), std::move(vertices), std::move(surfaces)};
 }
-
-template <typename Vertex, typename Surface>
-auto compute_triangle_indices(
-        const generic_scene_data<Vertex, Surface>& scene) {
-    util::aligned::vector<size_t> ret(scene.get_triangles().size());
-    std::iota(ret.begin(), ret.end(), 0);
-    return ret;
-}
-
-using gpu_scene_data = generic_scene_data<cl_float3, surface<simulation_bands>>;
 
 }  // namespace core
 }  // namespace wayverb

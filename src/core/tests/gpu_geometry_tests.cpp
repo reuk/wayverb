@@ -1,8 +1,10 @@
 #include "core/azimuth_elevation.h"
 #include "core/cl/geometry.h"
 #include "core/cl/geometry_structs.h"
+#include "core/cl/triangle.h"
 #include "core/conversions.h"
 #include "core/geo/geometric.h"
+#include "core/geo/triangle_vec.h"
 #include "core/program_wrapper.h"
 
 #include "utilities/map_to_vector.h"
@@ -120,9 +122,9 @@ constexpr const char* program::source_;
 
 template <typename t>
 auto random_triangle_vec3(t& engine) {
-    return geo::triangle_vec3{{random_unit_vector(engine),
-                               random_unit_vector(engine),
-                               random_unit_vector(engine)}};
+    return geo::triangle_vec3{{{random_unit_vector(engine),
+                                random_unit_vector(engine),
+                                random_unit_vector(engine)}}};
 }
 
 template <typename t>
@@ -273,8 +275,10 @@ TEST(gpu_geometry, ray_triangle_intersection) {
 
     util::progress_bar pb;
     for (auto i = 0u; i != num_tests; ++i) {
-        const auto inter = ray_triangle_intersection(
-                rays[i], scene.triangles, scene.vertices);
+        const auto inter = ray_triangle_intersection(rays[i],
+                                                     scene.triangles.data(),
+                                                     scene.triangles.size(),
+                                                     scene.vertices.data());
         if (inter) {
             ASSERT_EQ(gpu_intersections[i].index, inter->index);
             ASSERT_TRUE(almost_equal(

@@ -50,39 +50,6 @@ constexpr auto make_surface(float s, float d) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct alignas(1 << 3) triangle final {
-    cl_uint surface;
-    cl_uint v0;
-    cl_uint v1;
-    cl_uint v2;
-};
-
-template <>
-struct cl_representation<triangle> final {
-    static constexpr auto value = R"(
-typedef struct {
-    uint surface;
-    uint v0;
-    uint v1;
-    uint v2;
-} triangle;
-)";
-};
-
-constexpr auto to_tuple(const triangle& x) {
-    return std::tie(x.surface, x.v0, x.v1, x.v2);
-}
-
-constexpr bool operator==(const triangle& a, const triangle& b) {
-    return to_tuple(a) == to_tuple(b);
-}
-
-constexpr bool operator!=(const triangle& a, const triangle& b) {
-    return !(a == b);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 struct alignas(1 << 4) triangle_verts final {
     cl_float3 v0;
     cl_float3 v1;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/cl/representation.h"
+#include "core/cl/traits.h"
 #include "core/geo/box.h"
 
 #include "glm/glm.hpp"
