@@ -5,6 +5,9 @@
 #include "combined/engine.h"
 
 #include "core/scene_data.h"
+#include "core/conversions.h"
+
+#include "utilities/map_to_vector.h"
 
 namespace detail {
 constexpr auto model_colour = 0.5;
@@ -28,7 +31,9 @@ public:
     template <typename T>
     ModelObject(T& shader, const wayverb::core::gpu_scene_data& scene_data)
             : BasicDrawableObject(shader,
-                                  wayverb::core::convert(scene_data.get_vertices()),
+                                  util::map_to_vector(begin(scene_data.get_vertices()),
+                                                      end(scene_data.get_vertices()),
+                                                      wayverb::core::to_vec3{}),
                                   util::aligned::vector<glm::vec4>(
                                           scene_data.get_vertices().size(),
                                           glm::vec4(detail::model_colour,

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "EngineThread.hpp"
 #include "HelpWindow.hpp"
 #include "LeftPanel.hpp"
 #include "ModelRendererComponent.hpp"

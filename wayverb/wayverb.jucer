@@ -38,10 +38,6 @@
         <FILE id="VCXhvu" name="value_wrapper.hpp" compile="0" resource="0"
               file="Source/data_model/value_wrapper.hpp"/>
       </GROUP>
-      <GROUP id="{6922EB6A-4991-EC01-B6F2-6E41F2A2D714}" name="model">
-        <FILE id="V4I0kc" name="model.cpp" compile="1" resource="0" file="Source/model/model.cpp"/>
-        <FILE id="OkbgYo" name="model.h" compile="0" resource="0" file="Source/model/model.h"/>
-      </GROUP>
       <GROUP id="{A14D8DC4-6D18-395B-E47A-604233655806}" name="scene_view">
         <FILE id="gZno6A" name="ModelRenderer.cpp" compile="1" resource="0"
               file="Source/scene_view/ModelRenderer.cpp"/>

@@ -9,8 +9,6 @@
 #include "PointObject.hpp"
 #include "RayVisualisation.hpp"
 
-#include "../model/model.h"
-
 #include "AxesObject.hpp"
 #include "BasicDrawableObject.hpp"
 #include "RenderHelpers.hpp"

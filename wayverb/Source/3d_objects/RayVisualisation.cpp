@@ -49,7 +49,7 @@ RayVisualisation::convert_to_path_data(const util::aligned::vector<wayverb::rayt
 
     distance_accumulator d(source);
     for (const auto& i : impulses) {
-        const auto pos =wayverb::core::to_vec3(i.position);
+        const auto pos = wayverb::core::to_vec3{}(i.position);
         const auto dist = d(pos);
         ret.push_back(
                 path_data{pos, dist, std::abs(mean(i.volume)) * (1 << 20)});
