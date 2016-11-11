@@ -28,9 +28,6 @@ public:
     auto& capsules() { return get<vector<capsule, 1>>(); }
     const auto& capsules() const { return get<vector<capsule, 1>>(); }
 
-    void set_position(const glm::vec3& position);
-    glm::vec3 get_position() const;
-
     void set_orientation(float azimuth, float elevation);
     core::orientable get_orientation() const;
 

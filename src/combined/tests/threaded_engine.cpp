@@ -19,9 +19,9 @@ TEST(threaded_engine, threaded_engine) {
 
     const auto scene_data = geo::get_scene_data(box, surface);
 
-    model::scene model_scene{geo::compute_aabb(scene_data.get_vertices())};
-    model_scene.sources()[0].position().set(source);
-    model_scene.receivers()[0].position().set(receiver);
+    model::persistent persistent{geo::compute_aabb(scene_data.get_vertices())};
+    persistent.sources()[0].position().set(source);
+    persistent.receivers()[0].position().set(receiver);
 
     complete_engine complete{};
 
@@ -32,5 +32,5 @@ TEST(threaded_engine, threaded_engine) {
                                   << std::setw(10) << progress << std::flush;
                     })};
 
-    complete.run(compute_context{}, scene_data, model_scene);
+    complete.run(compute_context{}, scene_data, persistent);
 }

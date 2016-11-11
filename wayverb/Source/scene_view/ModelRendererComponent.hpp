@@ -2,7 +2,6 @@
 
 #include "HelpWindow.hpp"
 #include "LeftPanel.hpp"
-#include "MeshGeneratorFunctor.hpp"
 #include "MeshObject.hpp"
 #include "ModelRenderer.hpp"
 #include "RenderHelpers.hpp"

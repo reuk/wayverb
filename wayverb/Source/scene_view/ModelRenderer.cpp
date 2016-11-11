@@ -20,10 +20,11 @@ public:
     void operator()(const glm::vec2 &position) {
         const auto diff = position - mouse_down_position;
         const auto angle_scale = 0.01;
-        scene.set_rotation(wayverb::core::az_el{static_cast<float>(diff.x * angle_scale +
-                                                   starting_azel.azimuth),
-                                static_cast<float>(diff.y * angle_scale +
-                                                   starting_azel.elevation)});
+        scene.set_rotation(wayverb::core::az_el{
+                static_cast<float>(diff.x * angle_scale +
+                                   starting_azel.azimuth),
+                static_cast<float>(diff.y * angle_scale +
+                                   starting_azel.elevation)});
     }
 
 private:
@@ -56,15 +57,18 @@ private:
 //----------------------------------------------------------------------------//
 
 namespace {
-void push_triangle_indices(util::aligned::vector<GLuint> &ret, const wayverb::core::triangle &tri) {
+void push_triangle_indices(util::aligned::vector<GLuint> &ret,
+                           const wayverb::core::triangle &tri) {
     ret.emplace_back(tri.v0);
     ret.emplace_back(tri.v1);
     ret.emplace_back(tri.v2);
 }
 }  // namespace
 
-util::aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_indices(
-        const wayverb::combined::engine::scene_data &scene_data, int material_index) {
+util::aligned::vector<GLuint>
+MultiMaterialObject::SingleMaterialSection::get_indices(
+        const wayverb::combined::engine::scene_data &scene_data,
+        int material_index) {
     util::aligned::vector<GLuint> ret;
     for (const auto &i : scene_data.get_triangles()) {
         if (i.surface == material_index) {
@@ -75,7 +79,8 @@ util::aligned::vector<GLuint> MultiMaterialObject::SingleMaterialSection::get_in
 }
 
 MultiMaterialObject::SingleMaterialSection::SingleMaterialSection(
-        const wayverb::combined::engine::scene_data &scene_data, int material_index) {
+        const wayverb::combined::engine::scene_data &scene_data,
+        int material_index) {
     const auto indices = get_indices(scene_data, material_index);
     size = indices.size();
     ibo.data(indices);
@@ -104,8 +109,8 @@ MultiMaterialObject::MultiMaterialObject(
 
     geometry.data(wayverb::core::convert(scene_data.get_vertices()));
     mglu::check_for_gl_error();
-    colors.data(util::aligned::vector<glm::vec4>(scene_data.get_vertices().size(),
-                                           glm::vec4(0.5, 0.5, 0.5, 1.0)));
+    colors.data(util::aligned::vector<glm::vec4>(
+            scene_data.get_vertices().size(), glm::vec4(0.5, 0.5, 0.5, 1.0)));
     mglu::check_for_gl_error();
 
     const auto configure_vao = [this](const auto &vao, const auto &shader) {
@@ -176,14 +181,16 @@ void PointObjects::set_sources(util::aligned::vector<glm::vec3> u) {
     sources = std::move(ret);
 }
 
-void PointObjects::set_receivers(
-        util::aligned::vector<model::receiver> u) {
+void PointObjects::set_receivers(util::aligned::vector<model::receiver> u) {
     util::aligned::vector<PointObject> ret;
     ret.reserve(u.size());
     for (const auto &i : u) {
         PointObject p(shader, glm::vec4{0, 0.7, 0.7, 1});
         p.set_position(i.position);
-        p.set_pointing(util::map_to_vector(begin(i.capsules), end(i.capsules), [](const auto& i) {return i->get_pointing();}));
+        p.set_pointing(util::map_to_vector(
+                begin(i.capsules), end(i.capsules), [](const auto &i) {
+                    return i->get_pointing();
+                }));
         ret.emplace_back(std::move(p));
     }
     receivers = std::move(ret);
@@ -241,15 +248,16 @@ SceneRendererContextLifetime::SceneRendererContextLifetime()
         : point_objects(generic_shader)
         , axes(generic_shader) {}
 
-void SceneRendererContextLifetime::set_scene(wayverb::combined::engine::scene_data scene) {
+void SceneRendererContextLifetime::set_scene(
+        wayverb::combined::engine::scene_data scene) {
     const auto aabb = wayverb::core::geo::compute_aabb(scene);
     const auto m = centre(aabb);
     const auto max = glm::length(dimensions(aabb));
     eye = eye_target = max > 0 ? 20 / max : 1;
     translation = -glm::vec3(m.x, m.y, m.z);
-    
+
     model_object = std::make_unique<MultiMaterialObject>(
-        generic_shader, lit_scene_shader, std::move(scene));
+            generic_shader, lit_scene_shader, std::move(scene));
 }
 
 void SceneRendererContextLifetime::set_eye(float u) { set_eye_impl(u); }
@@ -271,19 +279,23 @@ void SceneRendererContextLifetime::set_rendering(bool b) {
 
 void SceneRendererContextLifetime::set_positions(
         util::aligned::vector<glm::vec3> positions) {
-    mesh_object = std::make_unique<MeshObject>(mesh_shader, std::move(positions));
+    mesh_object =
+            std::make_unique<MeshObject>(mesh_shader, std::move(positions));
 }
 
-void SceneRendererContextLifetime::set_pressures(util::aligned::vector<float> pressures) {
+void SceneRendererContextLifetime::set_pressures(
+        util::aligned::vector<float> pressures) {
     if (mesh_object) {
         mesh_object->set_pressures(std::move(pressures));
     }
 }
 
 void SceneRendererContextLifetime::set_reflections(
-        util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>> reflections, const glm::vec3& source) {
+        util::aligned::vector<util::aligned::vector<
+                wayverb::raytracer::reflection>> reflections,
+        const glm::vec3 &source) {
     //  TODO
-    //ray_object = std::make_unique<RayVisualisation>(
+    // ray_object = std::make_unique<RayVisualisation>(
     //        ray_shader, impulses, source, receiver);
 }
 
@@ -431,11 +443,13 @@ void SceneRendererContextLifetime::set_eye_impl(float u) {
     eye_target = std::max(0.0f, u);
 }
 
-void SceneRendererContextLifetime::set_rotation_impl(const wayverb::core::az_el &u) {
-    azel_target = wayverb::core::az_el{u.azimuth,
-                       glm::clamp(u.elevation,
-                                  static_cast<float>(-M_PI / 2),
-                                  static_cast<float>(M_PI / 2))};
+void SceneRendererContextLifetime::set_rotation_impl(
+        const wayverb::core::az_el &u) {
+    azel_target =
+            wayverb::core::az_el{u.azimuth,
+                                 glm::clamp(u.elevation,
+                                            static_cast<float>(-M_PI / 2),
+                                            static_cast<float>(M_PI / 2))};
 }
 
 glm::vec3 SceneRendererContextLifetime::get_world_camera_position() const {

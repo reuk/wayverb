@@ -53,7 +53,7 @@ std::unique_ptr<waveguide_base> polymorphic_waveguide_model(
 
 void complete_engine::run(const core::compute_context& compute_context,
                           const core::gpu_scene_data& scene_data,
-                          const model::scene& model_scene) {
+                          const model::persistent& persistent) {
     try {
         is_running_ = true;
         keep_going_ = true;
@@ -61,17 +61,17 @@ void complete_engine::run(const core::compute_context& compute_context,
         constexpr core::environment environment{};
 
         const auto poly_waveguide =
-                polymorphic_waveguide_model(model_scene.waveguide());
+                polymorphic_waveguide_model(persistent.waveguide());
 
         std::vector<channel_info> all_channels;
 
         //  For each source-receiver pair.
-        for (auto source = std::begin(model_scene.sources()),
-                  e_source = std::end(model_scene.sources());
+        for (auto source = std::begin(persistent.sources()),
+                  e_source = std::end(persistent.sources());
              source != e_source && keep_going_;
              ++source) {
-            for (auto receiver = std::begin(model_scene.receivers()),
-                      e_receiver = std::end(model_scene.receivers());
+            for (auto receiver = std::begin(persistent.receivers()),
+                      e_receiver = std::end(persistent.receivers());
                  receiver != e_receiver && keep_going_;
                  ++receiver) {
                 //  Set up an engine to use.
@@ -80,7 +80,7 @@ void complete_engine::run(const core::compute_context& compute_context,
                                           source->position().get(),
                                           receiver->position().get(),
                                           environment,
-                                          model_scene.raytracer().get(),
+                                          persistent.raytracer().get(),
                                           poly_waveguide->clone()};
 
                 //  Send new node position notification.
@@ -113,7 +113,7 @@ void complete_engine::run(const core::compute_context& compute_context,
                 //  Run the simulation, cache the result.
                 auto channel = eng.run(begin(polymorphic_capsules),
                                        end(polymorphic_capsules),
-                                       model_scene.output().get_sample_rate(),
+                                       persistent.output().get_sample_rate(),
                                        keep_going_);
 
                 if (!keep_going_) {
@@ -165,9 +165,9 @@ void complete_engine::run(const core::compute_context& compute_context,
         //  Write out files.
         for (const auto& i : all_channels) {
             const auto file_name =
-                    util::build_string(model_scene.output().get_output_folder(),
+                    util::build_string(persistent.output().get_output_folder(),
                                        '/',
-                                       model_scene.output().get_name(),
+                                       persistent.output().get_name(),
                                        '.',
                                        "s_",
                                        i.source_name,
@@ -181,8 +181,8 @@ void complete_engine::run(const core::compute_context& compute_context,
 
             write(file_name,
                   audio_file::make_audio_file(
-                          i.data, model_scene.output().get_sample_rate()),
-                  convert_bit_depth(model_scene.output().get_bit_depth()));
+                          i.data, persistent.output().get_sample_rate()),
+                  convert_bit_depth(persistent.output().get_bit_depth()));
         }
 
     } catch (const std::exception& e) {

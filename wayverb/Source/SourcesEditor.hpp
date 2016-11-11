@@ -1,12 +1,12 @@
 #pragma once
 
-#include "BasicPanel.hpp"
+#include "UtilityComponents/BasicPanel.hpp"
 #include "HelpWindow.hpp"
 #include "ValueWrapperEditableListBox.hpp"
 
-#include "model/model.h"
-
 #include "core/geo/box.h"
+
+/*
 
 class SourcesListBox : public ValueWrapperListBox<glm::vec3> {
 public:
@@ -56,3 +56,4 @@ public:
 private:
     std::unique_ptr<Component> new_editor() ;
 };
+*/

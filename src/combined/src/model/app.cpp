@@ -15,25 +15,19 @@ namespace combined {
 namespace model {
 
 state::state(const core::geo::box& aabb)
-        : type{scene_t{aabb},
-               materials_t{},
-               material_presets_t{},
-               capsule_presets_t{}} {}
+        : type{persistent_t{aabb}, material_presets_t{}, capsule_presets_t{}} {}
 
-scene& state::scene() { return get<0>(); }
-const scene& state::scene() const { return get<0>(); }
+persistent& state::persistent() { return get<0>(); }
+const persistent& state::persistent() const { return get<0>(); }
 
-state::materials_t& state::materials() { return get<1>(); }
-const state::materials_t& state::materials() const { return get<1>(); }
-
-state::material_presets_t& state::material_presets() { return get<2>(); }
+state::material_presets_t& state::material_presets() { return get<1>(); }
 const state::material_presets_t& state::material_presets() const {
-    return get<2>();
+    return get<1>();
 }
 
-state::capsule_presets_t& state::capsule_presets() { return get<3>(); }
+state::capsule_presets_t& state::capsule_presets() { return get<2>(); }
 const state::capsule_presets_t& state::capsule_presets() const {
-    return get<3>();
+    return get<2>();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -55,8 +49,8 @@ project::project(const std::string& fpath)
     } else {
         const auto& surface_strings =
                 scene_data_.get_scene_data().get_surfaces();
-        state.materials() = materials_from_names<1>(begin(surface_strings),
-                                                    end(surface_strings));
+        state.persistent().materials() = materials_from_names<1>(
+                begin(surface_strings), end(surface_strings));
     }
 
     state.connect([&](auto&) { needs_save_ = true; });
@@ -115,7 +109,7 @@ void app::start_render() {
     //  Collect parameters.
 
     auto scene_data = generate_scene_data();
-    auto params = project.state.scene();
+    auto params = project.state.persistent();
 
     //  Start engine in new thread.
     future_ = std::async(
@@ -153,7 +147,7 @@ void app::save_as(std::string name) {
 void app::generate_debug_mesh() {
     auto scene_data = generate_scene_data();
     auto sample_rate =
-            project.state.scene().waveguide().get_sampling_frequency();
+            project.state.persistent().waveguide().get_sampling_frequency();
     auto speed_of_sound = 340.0;
 
     future_ = std::async(
@@ -206,7 +200,7 @@ core::gpu_scene_data app::generate_scene_data() {
                                  core::surface<core::simulation_bands>>
             material_map;
 
-    for (const auto& i : project.state.materials()) {
+    for (const auto& i : project.state.persistent().materials()) {
         material_map[i.get_name()] = i.get_surface();
     }
 

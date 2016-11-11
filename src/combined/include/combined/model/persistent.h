@@ -11,20 +11,25 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class scene final : public owning_member<scene,
-                                         sources,
-                                         receivers,
-                                         raytracer,
-                                         waveguide,
-                                         output> {
+/// Holds basically all the app state that will get written to file,
+/// other than presets, which will be stored separately.
+
+class persistent final : public owning_member<persistent,
+                                              sources,
+                                              receivers,
+                                              raytracer,
+                                              waveguide,
+                                              output,
+                                              vector<material, 1>> {
 public:
-    explicit scene(core::geo::box aabb);
+    explicit persistent(core::geo::box aabb);
 
     using sources_t = class sources;
     using receivers_t = class receivers;
     using raytracer_t = class raytracer;
     using waveguide_t = class waveguide;
     using output_t = class output;
+    using materials_t = class vector<material, 1>;
 
     sources_t& sources();
     const sources_t& sources() const;
@@ -40,6 +45,9 @@ public:
 
     output_t& output();
     const output_t& output() const;
+
+    materials_t& materials();
+    const materials_t& materials() const;
 };
 
 }  // namespace model

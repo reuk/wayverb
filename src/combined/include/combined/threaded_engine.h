@@ -1,7 +1,7 @@
 #pragma once
 
 #include "combined/full_run.h"
-#include "combined/model/scene.h"
+#include "combined/model/persistent.h"
 
 #include "waveguide/mesh_descriptor.h"
 
@@ -28,7 +28,7 @@ class complete_engine final {
 public:
     void run(const core::compute_context& compute_context,
              const core::gpu_scene_data& scene_data,
-             const model::scene& model_scene);
+             const model::persistent& persistent);
 
     bool is_running() const {
         return is_running_;

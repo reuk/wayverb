@@ -1,6 +1,6 @@
 #pragma once
 
-#include "connector.hpp"
+#include "data_model/connector.hpp"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 

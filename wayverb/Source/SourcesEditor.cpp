@@ -4,6 +4,7 @@
 #include "MicrophoneEditor.hpp"
 #include "Vec3Editor.hpp"
 
+/*
 std::unique_ptr<Component> SourcesListBox::new_component_for_row(
         int row, bool selected) {
     auto ret = std::make_unique<Label>();
@@ -92,3 +93,4 @@ ReceiversEditorPanel::ReceiversEditorPanel()
 std::unique_ptr<Component> ReceiversEditorPanel::new_editor() {
     return std::make_unique<SingleReceiverComponent>();
 }
+*/

@@ -39,14 +39,17 @@ public:
 
     class SingleMaterialSection : public mglu::drawable {
     public:
-        SingleMaterialSection(const wayverb::combined::engine::scene_data &scene_data, int material_index);
+        SingleMaterialSection(
+                const wayverb::combined::engine::scene_data &scene_data,
+                int material_index);
 
     private:
         void do_draw(const glm::mat4 &modelview_matrix) const override;
         glm::mat4 get_local_modelview_matrix() const override;
 
-        static util::aligned::vector<GLuint> get_indices(const wayverb::combined::engine::scene_data &scene_data,
-                                                   int material_index);
+        static util::aligned::vector<GLuint> get_indices(
+                const wayverb::combined::engine::scene_data &scene_data,
+                int material_index);
         mglu::static_ibo ibo;
         GLuint size;
     };
@@ -116,8 +119,9 @@ public:
 
     void set_positions(util::aligned::vector<glm::vec3> positions);
     void set_pressures(util::aligned::vector<float> pressures);
-    void set_reflections(util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>> reflections,
-                         const glm::vec3& source);
+    void set_reflections(util::aligned::vector<util::aligned::vector<
+                                 wayverb::raytracer::reflection>> reflections,
+                         const glm::vec3 &source);
     void set_distance_travelled(double distance);
 
     void set_highlighted(int u);
@@ -130,7 +134,7 @@ public:
     void mouse_up(const glm::vec2 &pos);
     void mouse_wheel_move(float delta_y);
 
-    void set_sources  (util::aligned::vector<glm::vec3> u);
+    void set_sources(util::aligned::vector<glm::vec3> u);
     void set_receivers(util::aligned::vector<model::receiver> u);
 
     void debug_show_closest_surfaces(wayverb::waveguide::mesh model);

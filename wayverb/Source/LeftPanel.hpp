@@ -2,7 +2,6 @@
 
 #include "BottomPanel.hpp"
 #include "HelpWindow.hpp"
-#include "SurfaceModel.hpp"
 
 class LeftPanel : public Component,
                   public SettableHelpPanelClient {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "combined/model/material.h"
-#include "combined/model/scene.h"
+#include "combined/model/persistent.h"
 #include "combined/threaded_engine.h"
 
 #include "waveguide/mesh.h"
@@ -17,24 +17,19 @@ namespace model {
 class state final
         : public owning_member<
                   state,
-                  scene,                // scene data
-                  vector<material, 1>,  // named materials used in the scene
-                  vector<material, 0>,  // preset materials
+                  persistent,                    // save-file contents
+                  vector<material, 0>,           // preset materials
                   vector<vector<capsule, 1>, 0>  // preset capsule groups
                   > {
 public:
     explicit state(const core::geo::box& aabb);
 
-    using scene_t = class scene;
-    using materials_t = vector<material, 1>;
+    using persistent_t = class persistent;
     using material_presets_t = vector<material, 0>;
     using capsule_presets_t = vector<vector<capsule, 1>, 0>;
 
-    scene_t& scene();
-    const scene_t& scene() const;
-
-    materials_t& materials();
-    const materials_t& materials() const;
+    persistent_t& persistent();
+    const persistent_t& persistent() const;
 
     material_presets_t& material_presets();
     const material_presets_t& material_presets() const;

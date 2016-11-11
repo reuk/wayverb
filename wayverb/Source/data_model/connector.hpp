@@ -1,6 +1,7 @@
 #pragma once
 
-#include "broadcaster.hpp"
+//#include "broadcaster.hpp"
+#include "../JuceLibraryCode/JuceHeader.h"
 
 namespace model {
 
@@ -66,6 +67,7 @@ private:
     Listener *const cl;
 };
 
+/*
 class BroadcastConnector : public Connector<Broadcaster> {
 public:
     using Connector<Broadcaster>::Connector;
@@ -73,5 +75,6 @@ public:
         get_listener()->receive_broadcast(get_broadcaster());
     }
 };
+*/
 
 }  // namespace model

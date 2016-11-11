@@ -1,27 +1,24 @@
 #pragma once
 
-#include "utilities/work_queue.h"
+#include "utilities/threaded_queue.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-template <typename ThreadingPolicy, typename... Ts>
+/// Assuming the work_queue is thread-safe (and I'm pretty confident it is)
+/// we don't need any locks here.
+/// work_queue.push is thread-safe
+/// triggerAsyncUpdate is thread-safe
+/// handleAsyncUpdate will only be called on the message thread, and calls to
+/// work_queue_.pop will block if something is being pushed from another thread.
 class async_work_queue final : private juce::AsyncUpdater {
 public:
-    template <typename Method>
-    void push(Method&& method) {
-        const auto lck = threading_policy_.get_lock();
-        work_queue_.push(std::forward<Method>(method));
-        triggerAsyncUpdate();
-    }
+    using queue = util::threaded_queue<util::threading_policy::scoped_lock,
+                                       std::function<void()>>;
+
+    void push(queue::value_type method);
 
 private:
-    inline void handleAsyncUpdate() override {
-        const auto lck = threading_policy_.get_lock();
-        while (const auto method = work_queue_.pop()) {
-            method();
-        }
-    }
+    void handleAsyncUpdate() override;
 
-    ThreadingPolicy threading_policy_;
-    util::work_queue<util::threading_policy::no_lock, Ts...> work_queue_;
+    queue work_queue_;
 };

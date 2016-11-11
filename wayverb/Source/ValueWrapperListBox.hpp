@@ -1,9 +1,10 @@
 #pragma once
 
-#include "collection.hpp"
+//#include "collection.hpp"
 
 #include "utilities/aligned/vector.h"
 
+/*
 template <typename T>
 class ValueWrapperListBox : public ListBox,
                             public ListBoxModel,
@@ -99,3 +100,4 @@ private:
 
     ListenerList<Listener> listener_list;
 };
+*/

@@ -59,6 +59,8 @@ flags = [
 '-Ibuild/include',
 '-Ibuild/library/core',
 '-Ibuild/library/waveguide',
+'-Iwayverb/Source',
+'-Iwayverb/JuceLibraryCode/modules',
 ]
 
 

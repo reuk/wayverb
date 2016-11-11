@@ -2,6 +2,7 @@
 
 #include "ValueWrapperListBox.hpp"
 
+/*
 template <typename T>
 class ValueWrapperEditableListBox : public Component,
                                     public T::Listener,
@@ -106,6 +107,8 @@ private:
     TextButton sub_button{"-"};
     model::Connector<TextButton> sub_button_connector{&sub_button, this};
 };
+
+*/
 
 //----------------------------------------------------------------------------//
 

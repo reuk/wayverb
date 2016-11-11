@@ -1,7 +1,6 @@
 #pragma once
 
 #include "HelpWindow.hpp"
-#include "SurfaceModel.hpp"
 #include "ValueWrapperSlider.hpp"
 
 class VolumeComponent : public Component {
