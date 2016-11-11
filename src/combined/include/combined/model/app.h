@@ -14,19 +14,33 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class scene_and_materials final : public owning_member<scene_and_materials,
-                                                       scene,
-                                                       vector<material, 1>> {
+class state final
+        : public owning_member<
+                  state,
+                  scene,                // scene data
+                  vector<material, 1>,  // named materials used in the scene
+                  vector<material, 0>,  // preset materials
+                  vector<vector<capsule, 1>, 0>  // preset capsule groups
+                  > {
 public:
-    explicit scene_and_materials(const core::geo::box& aabb);
+    explicit state(const core::geo::box& aabb);
 
     using scene_t = class scene;
+    using materials_t = vector<material, 1>;
+    using material_presets_t = vector<material, 0>;
+    using capsule_presets_t = vector<vector<capsule, 1>, 0>;
 
     scene_t& scene();
     const scene_t& scene() const;
 
-    vector<material, 1>& materials();
-    const vector<material, 1>& materials() const;
+    materials_t& materials();
+    const materials_t& materials() const;
+
+    material_presets_t& material_presets();
+    const material_presets_t& material_presets() const;
+
+    capsule_presets_t& capsule_presets();
+    const capsule_presets_t& capsule_presets() const;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -36,7 +50,7 @@ class project final {
     bool needs_save_;
 
 public:
-    scene_and_materials scene_and_materials;
+    state state;
 
     explicit project(const std::string& fpath);
 

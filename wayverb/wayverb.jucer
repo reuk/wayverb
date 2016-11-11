@@ -110,14 +110,6 @@
             file="Source/DirectionEditor.cpp"/>
       <FILE id="BnwJq9" name="DirectionEditor.hpp" compile="0" resource="0"
             file="Source/DirectionEditor.hpp"/>
-      <FILE id="zAuGaE" name="EngineFunctor.cpp" compile="1" resource="0"
-            file="Source/EngineFunctor.cpp"/>
-      <FILE id="vW9oHH" name="EngineFunctor.hpp" compile="0" resource="0"
-            file="Source/EngineFunctor.hpp"/>
-      <FILE id="L2JOKU" name="EngineThread.cpp" compile="1" resource="0"
-            file="Source/EngineThread.cpp"/>
-      <FILE id="YWCoAX" name="EngineThread.hpp" compile="0" resource="0"
-            file="Source/EngineThread.hpp"/>
       <FILE id="zB9C63" name="HelpWindow.cpp" compile="1" resource="0" file="Source/HelpWindow.cpp"/>
       <FILE id="hSixQq" name="HelpWindow.hpp" compile="0" resource="0" file="Source/HelpWindow.hpp"/>
       <FILE id="jgrKD6" name="LeftPanel.cpp" compile="1" resource="0" file="Source/LeftPanel.cpp"/>
@@ -128,10 +120,6 @@
             file="Source/MainContentComponent.hpp"/>
       <FILE id="DMUgEn" name="MainWindow.cpp" compile="1" resource="0" file="Source/MainWindow.cpp"/>
       <FILE id="jLHBY3" name="MainWindow.hpp" compile="0" resource="0" file="Source/MainWindow.hpp"/>
-      <FILE id="o9cL75" name="MeshGeneratorFunctor.cpp" compile="1" resource="0"
-            file="Source/MeshGeneratorFunctor.cpp"/>
-      <FILE id="E12lgU" name="MeshGeneratorFunctor.hpp" compile="0" resource="0"
-            file="Source/MeshGeneratorFunctor.hpp"/>
       <FILE id="l84rtb" name="MicrophoneEditor.cpp" compile="1" resource="0"
             file="Source/MicrophoneEditor.cpp"/>
       <FILE id="k5D5r2" name="MicrophoneEditor.hpp" compile="0" resource="0"
@@ -140,8 +128,6 @@
             file="Source/PolarPatternDisplay.cpp"/>
       <FILE id="RkOqdx" name="PolarPatternDisplay.hpp" compile="0" resource="0"
             file="Source/PolarPatternDisplay.hpp"/>
-      <FILE id="uRofFp" name="Presets.cpp" compile="1" resource="0" file="Source/Presets.cpp"/>
-      <FILE id="P7SCth" name="Presets.hpp" compile="0" resource="0" file="Source/Presets.hpp"/>
       <FILE id="G0WoiQ" name="ProgressButton.cpp" compile="1" resource="0"
             file="Source/ProgressButton.cpp"/>
       <FILE id="T4OvG8" name="ProgressButton.hpp" compile="0" resource="0"
@@ -154,10 +140,6 @@
             file="Source/SourcesEditor.cpp"/>
       <FILE id="otqnUo" name="SourcesEditor.hpp" compile="0" resource="0"
             file="Source/SourcesEditor.hpp"/>
-      <FILE id="O7pUPj" name="SurfaceModel.cpp" compile="1" resource="0"
-            file="Source/SurfaceModel.cpp"/>
-      <FILE id="pDtP59" name="SurfaceModel.hpp" compile="0" resource="0"
-            file="Source/SurfaceModel.hpp"/>
       <FILE id="OSMRqH" name="SurfacePanel.cpp" compile="1" resource="0"
             file="Source/SurfacePanel.cpp"/>
       <FILE id="xfJDu7" name="SurfacePanel.hpp" compile="0" resource="0"
