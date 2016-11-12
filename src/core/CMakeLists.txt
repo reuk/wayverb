@@ -22,7 +22,7 @@ target_include_directories(core
     ${WAYVERB_SOURCE_DIR}/include
     PRIVATE
     src
-    ${CMAKE_BINARY_DIR}/include
+    ${DEPENDENCY_INSTALL_PREFIX}/include
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 

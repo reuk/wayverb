@@ -12,7 +12,7 @@ target_include_directories(frequency_domain
     $<INSTALL_INTERFACE:include>
     PRIVATE
     ${CMAKE_CURRENT_SRC_DIR}/src
-    ${CMAKE_BINARY_DIR}/include
+    ${DEPENDENCY_INSTALL_PREFIX}/include
 )
 
 target_link_libraries(frequency_domain fftwf utilities)

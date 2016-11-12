@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-include_directories(${CMAKE_BINARY_DIR}/include)
+include_directories(${DEPENDENCY_INSTALL_PREFIX}/include)
 
 file(GLOB sources "*.cpp")
 

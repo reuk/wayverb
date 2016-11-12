@@ -16,7 +16,7 @@ target_include_directories(raytracer
     $<INSTALL_INTERFACE:include>
     PRIVATE
     src
-    ${CMAKE_BINARY_DIR}/include
+    ${DEPENDENCY_INSTALL_PREFIX}/include
 )
 
 target_link_libraries(raytracer core)

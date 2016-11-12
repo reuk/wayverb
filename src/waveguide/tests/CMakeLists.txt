@@ -16,7 +16,7 @@ add_definitions(-DMAT_PATH_BEDROOM="${CMAKE_SOURCE_DIR}/demo/assets/materials/ma
 add_definitions(-DOBJ_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/test_models/small_square.obj")
 add_definitions(-DMAT_PATH_BAD_BOX="${CMAKE_SOURCE_DIR}/demo/assets/materials/damped.json")
 
-include_directories(${CMAKE_BINARY_DIR}/include)
+include_directories(${DEPENDENCY_INSTALL_PREFIX}/include)
 
 add_executable(waveguide_tests ${sources})
 

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 project(combined_tests)
 
-include_directories(${CMAKE_BINARY_DIR}/include)
+include_directories(${DEPENDENCY_INSTALL_PREFIX}/include)
 
 set(name combined_tests)
 file(GLOB sources "*.cpp")

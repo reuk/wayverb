@@ -7,10 +7,11 @@
 
 namespace view {
 
-/*
-void scene::set_scene(wayverb::core::gpu_scene_data scene) {}
+void scene::set_projection_view_matrix(const glm::mat4& matrix) {
+    projection_view_matrix_ = matrix;
+}
 
-void scene::set_modelview_matrix(const glm::mat4& modelview_matrix) {}
+void scene::set_scene(wayverb::core::gpu_scene_data scene) {}
 
 void scene::set_node_positions(util::aligned::vector<glm::vec3> positions) {}
 
@@ -43,9 +44,25 @@ void scene::set_receivers(util::aligned::vector<glm::vec3> receivers) {}
 
 void scene::update(float dt) {}
 
-void      scene::do_draw(const glm::mat4& modelview_matrix) const {}
-glm::mat4 scene::get_local_modelview_matrix() const {}
-*/
+void scene::do_draw(const glm::mat4& modelview_matrix) const {
+    const auto c = 0.0;
+    glClearColor(c, c, c, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glEnable(GL_DEPTH_TEST);
+
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_POLYGON_SMOOTH);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    //  TODO Set up shaders.
+
+    //  TODO Draw objects.
+}
+
+glm::mat4 scene::get_local_modelview_matrix() const { return glm::mat4{}; }
 
 }  // namespace view
 

@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED true)
 
+include_directories(${DEPENDENCY_INSTALL_PREFIX}/include)
+
 add_subdirectory(boundary_test)
 add_subdirectory(mic_test)
 add_subdirectory(solution_growth)

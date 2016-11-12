@@ -4,7 +4,7 @@ project(raytracer_tests)
 
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
-    ${CMAKE_BINARY_DIR}/include
+    ${DEPENDENCY_INSTALL_PREFIX}/include
 )
 
 file(GLOB sources "*.cpp")

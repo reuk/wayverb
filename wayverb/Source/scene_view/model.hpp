@@ -21,36 +21,48 @@ namespace view {
 /// This is the actual opengl view.
 class scene final : public mglu::drawable, public mglu::updatable {
 public:
-    void set_scene(wayverb::core::gpu_scene_data scene);
-
-    void set_modelview_matrix(const glm::mat4& modelview_matrix);
+    //  Nodes.
 
     void set_node_positions(util::aligned::vector<glm::vec3> positions);
     void set_node_pressures(util::aligned::vector<float> pressures);
     void set_node_colours(util::aligned::vector<glm::vec3> colours);
 
-    void show_nodes();
-    void hide_nodes();
+    void set_nodes_visible(bool visible);
 
+    //  Reflections.
+    
     void set_reflections(util::aligned::vector<util::aligned::vector<
                                  wayverb::raytracer::reflection>> reflections,
                          const glm::vec3& source);
     void set_distance_travelled(double distance);
 
-    void show_reflections();
-    void hide_reflections();
+    void set_reflections_visible(bool visible);
+
+    //  Scene/surfaces.
+
+    void set_scene(wayverb::core::gpu_scene_data scene);
 
     void set_highlighted_surface(int surface);
     void set_emphasis_colour(const glm::vec3& colour);
 
+    //  Sources/receivers.
+
     void set_sources(util::aligned::vector<glm::vec3> sources);
     void set_receivers(util::aligned::vector<glm::vec3> receivers);
+
+    //  Drawing functionality. 
+
+    void set_projection_view_matrix(const glm::mat4& matrix);
 
     void update(float dt) override;
 
 private:
-    void do_draw(const glm::mat4& modelview_matrix) const override;
-    glm::mat4 get_local_modelview_matrix() const override;
+    void do_draw(const glm::mat4& model_matrix) const override;
+    glm::mat4 get_local_model_matrix() const override;
+
+    glm::mat4 projection_view_matrix_;
+    bool nodes_visible_ = false;
+    bool reflections_visible_ = false;
 };
 
 }  // namespace view

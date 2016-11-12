@@ -11,7 +11,7 @@
 include(ExternalProject)
 find_package(Git REQUIRED)
 
-set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
+set(DEPENDENCY_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/dependencies)
 
 set_directory_properties(PROPERTIES EP_PREFIX ${DEPENDENCY_INSTALL_PREFIX})
 
