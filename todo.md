@@ -17,13 +17,16 @@ app stuff
 ---------
 
 Help window should be per-app rather than per-main-window.
+    Make the menu option enabled.
+Finish adding the help panel info.
 
-Load/save material + receiver presets
+Spurious dirty data - asked to save when not strictly required.
+
+Load/save material + receiver presets.
+    Or at least have some good ones compiled-in
 
 Use appropriate surfaces for newly-loaded models
     i.e. make sure default constructor for 'material' is sensible
-
-Finish adding the help panel info.
 
 Display reason for quitting if the engine quits early.
 
@@ -45,6 +48,7 @@ Model View
     Improve source/reciever + microphone direction models.
 
 Fail for really long reverbs i.e. longer than 60 seconds.
+    OR disable absorptions lower than (for example) 0.01
 
 Benchmark gpu vs cpu performance.
 

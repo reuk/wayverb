@@ -113,8 +113,14 @@ public:
     //  Before quitting.
 
     void attempt_close_all() {
-        for (auto& window : main_windows_) {
-            window->closeButtonPressed();
+        //  IMPORTANT
+        //  You can't just loop through windows and call closeButtonPressed on
+        //  each, because the windows will be removed from the map while it is
+        //  being iterated, invalidating the iterators.
+        //  Instead, we manually check if each is ready to be deleted, and
+        //  erase it if so.
+        for (auto it = cbegin(main_windows_); it != cend(main_windows_);) {
+            it = (*it)->prepare_to_close() ? main_windows_.erase(it) : ++it;
         }
     }
 
@@ -196,8 +202,6 @@ private:
         menu.addCommandItem(&get_command_manager(), CommandIDs::idVisualise);
         menu.addSeparator();
         menu.addCommandItem(&get_command_manager(), CommandIDs::idShowHelp);
-        //    menu.addCommandItem(&get_command_manager(),
-        //                        CommandIDs::idShowAudioPreferences);
     }
 
     void open_project(const File& file) {
@@ -209,14 +213,12 @@ private:
             new_window->connect_wants_to_close([this](auto& window) {
                 //  Look up the window in the list of open windows.
                 const auto it = std::find_if(
-                        begin(main_windows_),
-                        end(main_windows_),
+                        cbegin(main_windows_),
+                        cend(main_windows_),
                         [&](const auto& ptr) { return ptr.get() == &window; });
 
-                //  Erase the window.
                 main_windows_.erase(it);
 
-                //  If all windows are shut, show the splash screen.
                 show_hide_load_window();
             });
             main_windows_.insert(std::move(new_window));

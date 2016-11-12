@@ -11,6 +11,8 @@ public:
     main_window(String name, std::string fname);
     ~main_window() noexcept;
 
+    /// Returns true if the object is ready to be deleted.
+    bool prepare_to_close();
     void closeButtonPressed() override;
 
     // void show_help();

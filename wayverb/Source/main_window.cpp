@@ -26,14 +26,14 @@ main_window::~main_window() noexcept {
             wayverb_application::get_command_manager().getKeyMappings());
 }
 
-void main_window::closeButtonPressed() {
+bool main_window::prepare_to_close() {
     if (model_.needs_save()) {
         switch (NativeMessageBox::showYesNoCancelBox(
                 AlertWindow::AlertIconType::WarningIcon,
                 "save?",
                 "There are unsaved changes. Do you wish to save?")) {
             case 0:  // cancel
-                return;
+                return false;
 
             case 1:  // yes
                 //  Attempt to save. Show a dialog if something goes wrong.
@@ -42,7 +42,7 @@ void main_window::closeButtonPressed() {
                 //  If the model still needs saving for some reason (the user
                 //  cancelled, an error ocurred), just return now.
                 if (model_.needs_save()) {
-                    return;
+                    return false;
                 }
 
                 //  Everything's fine, so carry on.
@@ -53,7 +53,13 @@ void main_window::closeButtonPressed() {
         }
     }
 
-    wants_to_close_(*this);
+    return true;
+}
+
+void main_window::closeButtonPressed() {
+    if (prepare_to_close()) {
+        wants_to_close_(*this);
+    }
 }
 
 void main_window::getAllCommands(Array<CommandID>& commands) {
