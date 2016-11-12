@@ -16,8 +16,6 @@ Look again at frequency domain test?
 app stuff
 ---------
 
-Find out why menu items aren't initially enabled.
-
 Finish adding the help panel info.
 
 Spurious dirty data - asked to save when not strictly required.

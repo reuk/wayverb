@@ -46,10 +46,12 @@ public:
 
         LookAndFeel::setDefaultLookAndFeel(&look_and_feel_);
 
+        command_manager_.setFirstCommandTarget(this);
         command_manager_.registerAllCommandsForTarget(this);
         command_manager_.getKeyMappings()->resetToDefaultMappings();
 
         MenuBarModel::setMacMainMenu(&main_menu_bar_model_, nullptr);
+        main_menu_bar_model_.menuItemsChanged();
 
         show_hide_load_window();
     }
