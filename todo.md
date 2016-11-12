@@ -16,8 +16,8 @@ Look again at frequency domain test?
 app stuff
 ---------
 
-Help window should be per-app rather than per-main-window.
-    Make the menu option enabled.
+Find out why menu items aren't initially enabled.
+
 Finish adding the help panel info.
 
 Spurious dirty data - asked to save when not strictly required.
@@ -29,6 +29,8 @@ Use appropriate surfaces for newly-loaded models
     i.e. make sure default constructor for 'material' is sensible
 
 Display reason for quitting if the engine quits early.
+
+Improve error message when loading a bad filetype.
 
 Improve the source/receiver editors.
 

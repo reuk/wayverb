@@ -40,12 +40,13 @@ public:
             : owner_{owner}
             , stored_settings_{owner.getApplicationName().toStdString(),
                                get_options()}
-            , main_menu_bar_model_{*this} {
+            , main_menu_bar_model_{command_manager_, stored_settings_} {
+        main_menu_bar_model_.connect_recent_file_selected(
+                [&](auto fname) { open_project(fname); });
+
         LookAndFeel::setDefaultLookAndFeel(&look_and_feel_);
 
         command_manager_.registerAllCommandsForTarget(this);
-        command_manager_.getKeyMappings()->resetToDefaultMappings();
-
         command_manager_.getKeyMappings()->resetToDefaultMappings();
 
         MenuBarModel::setMacMainMenu(&main_menu_bar_model_, nullptr);
@@ -112,7 +113,7 @@ public:
     //  File dropped.
 
     void file_dropped(FileDropComponent*, const File& f) override {
-        open_project(f);
+        open_project(f.getFullPathName().toStdString());
     }
 
     //  Before quitting.
@@ -144,10 +145,11 @@ public:
 private:
     class main_menu_bar_model : public MenuBarModel {
     public:
-        main_menu_bar_model(instance& instance)
-                : instance_{instance} {
-            setApplicationCommandManagerToWatch(
-                    &instance.get_command_manager());
+        main_menu_bar_model(ApplicationCommandManager& command_manager,
+                            StoredSettings& stored_settings)
+                : command_manager_{command_manager}
+                , stored_settings_{stored_settings} {
+            setApplicationCommandManagerToWatch(&command_manager_);
         }
 
         StringArray getMenuBarNames() override { return {"File", "View"}; }
@@ -156,9 +158,9 @@ private:
                                   const String& menu_name) override {
             PopupMenu menu;
             if (menu_name == "File") {
-                instance_.create_file_menu(menu);
+                create_file_menu(command_manager_, menu);
             } else if (menu_name == "View") {
-                instance_.create_view_menu(menu);
+                create_view_menu(command_manager_, menu);
             } else {
                 jassertfalse;
             }
@@ -167,54 +169,66 @@ private:
 
         void menuItemSelected(int menu_item_id,
                               int /*top_level_menu_index*/) override {
-            instance_.handle_main_menu_command(menu_item_id);
+            if (menu_item_id >= recent_projects_base_id) {
+                recent_file_selected_(
+                        stored_settings_.recent_files
+                                .getFile(menu_item_id - recent_projects_base_id)
+                                .getFullPathName()
+                                .toStdString());
+            }
+        }
+
+        void create_file_menu(ApplicationCommandManager& command_manager,
+                              PopupMenu& menu) {
+            menu.addCommandItem(&command_manager, CommandIDs::idOpenProject);
+
+            PopupMenu recent;
+            stored_settings_.recent_files.createPopupMenuItems(
+                    recent, recent_projects_base_id, true, true);
+            menu.addSubMenu("Open Recent", recent);
+
+            menu.addSeparator();
+
+            menu.addCommandItem(&command_manager, CommandIDs::idCloseProject);
+            menu.addCommandItem(&command_manager, CommandIDs::idSaveProject);
+            menu.addCommandItem(&command_manager, CommandIDs::idSaveAsProject);
+
+#if !JUCE_MAC
+            menu.addSeparator();
+            menu.addCommandItem(&command_manager,
+                                StandardApplicationCommandIDs::quit);
+#endif
+        }
+
+        void create_view_menu(ApplicationCommandManager& command_manager,
+                              PopupMenu& menu) {
+            menu.addCommandItem(&command_manager, CommandIDs::idVisualise);
+            menu.addSeparator();
+            menu.addCommandItem(&command_manager, CommandIDs::idShowHelp);
+        }
+
+        using recent_file_selected = util::event<std::string>;
+        recent_file_selected::connection connect_recent_file_selected(
+                recent_file_selected::callback_type callback) {
+            return recent_file_selected_.connect(std::move(callback));
         }
 
     private:
-        instance& instance_;
+        static constexpr auto recent_projects_base_id = 100;
+
+        ApplicationCommandManager& command_manager_;
+        StoredSettings& stored_settings_;
+
+        util::event<std::string> recent_file_selected_;
     };
 
-    void handle_main_menu_command(int menu_item_id) {
-        if (menu_item_id >= recent_projects_base_id) {
-            open_project(get_app_settings().recent_files.getFile(
-                    menu_item_id - recent_projects_base_id));
-        }
-    }
-
-    void create_file_menu(PopupMenu& menu) {
-        menu.addCommandItem(&get_command_manager(), CommandIDs::idOpenProject);
-
-        PopupMenu recent;
-        get_app_settings().recent_files.createPopupMenuItems(
-                recent, recent_projects_base_id, true, true);
-        menu.addSubMenu("Open Recent", recent);
-
-        menu.addSeparator();
-
-        menu.addCommandItem(&get_command_manager(), CommandIDs::idCloseProject);
-        menu.addCommandItem(&get_command_manager(), CommandIDs::idSaveProject);
-        menu.addCommandItem(&get_command_manager(),
-                            CommandIDs::idSaveAsProject);
-
-#if !JUCE_MAC
-        menu.addSeparator();
-        menu.addCommandItem(&get_command_manager(),
-                            StandardApplicationCommandIDs::quit);
-#endif
-    }
-
-    void create_view_menu(PopupMenu& menu) {
-        menu.addCommandItem(&get_command_manager(), CommandIDs::idVisualise);
-        menu.addSeparator();
-        menu.addCommandItem(&get_command_manager(), CommandIDs::idShowHelp);
-    }
-
-    void open_project(const File& file) {
+    void open_project(const std::string& fname) {
         try {
             auto new_window = std::make_unique<main_window>(
                     *this,
                     owner_.getApplicationName(),
-                    file.getFullPathName().toStdString());
+                    fname);
+
             //  When window asks to close, find it in the set and delete it.
             new_window->connect_wants_to_close([this](auto& window) {
                 //  Look up the window in the list of open windows.
@@ -228,7 +242,7 @@ private:
                 show_hide_load_window();
             });
             main_windows_.insert(std::move(new_window));
-            register_recent_file(file.getFullPathName().toStdString());
+            register_recent_file(fname);
             show_hide_load_window();
         } catch (const std::exception& e) {
             NativeMessageBox::showMessageBox(
@@ -246,7 +260,7 @@ private:
     void open_project_from_dialog() {
         FileChooser fc("open project", File::nonexistent, valid_file_formats);
         if (fc.browseForFileToOpen()) {
-            open_project(fc.getResult());
+            open_project(fc.getResult().getFullPathName().toStdString());
         }
     }
 
@@ -291,7 +305,6 @@ private:
     }
 
     static constexpr const char* valid_file_formats = "";
-    static constexpr auto recent_projects_base_id = 100;
 
     wayverb_application& owner_;
 
