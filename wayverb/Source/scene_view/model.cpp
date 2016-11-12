@@ -7,17 +7,15 @@
 
 namespace view {
 
-void scene::set_projection_view_matrix(const glm::mat4& matrix) {
-    projection_view_matrix_ = matrix;
-}
-
-void scene::set_scene(wayverb::core::gpu_scene_data scene) {}
-
 void scene::set_node_positions(util::aligned::vector<glm::vec3> positions) {}
 
 void scene::set_node_pressures(util::aligned::vector<float> pressures) {}
 
 void scene::set_node_colours(util::aligned::vector<glm::vec3> colours) {}
+
+void scene::set_nodes_visible(bool visible) {
+    nodes_visible_ = visible;
+}
 
 void scene::show_nodes() {}
 
@@ -30,9 +28,11 @@ void scene::set_reflections(
 
 void scene::set_distance_travelled(double distance) {}
 
-void scene::show_reflections() {}
+void scene::set_reflections_visible(bool visible) {
+    reflections_visible_ = visible;
+}
 
-void scene::hide_reflections() {}
+void scene::set_scene(wayverb::core::gpu_scene_data scene) {}
 
 void scene::set_highlighted_surface(int surface) {}
 
@@ -41,6 +41,10 @@ void scene::set_emphasis_colour(const glm::vec3& colour) {}
 void scene::set_sources(util::aligned::vector<glm::vec3> sources) {}
 
 void scene::set_receivers(util::aligned::vector<glm::vec3> receivers) {}
+
+void scene::set_projection_view_matrix(const glm::mat4& matrix) {
+    projection_view_matrix_ = matrix;
+}
 
 void scene::update(float dt) {}
 

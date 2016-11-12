@@ -57,6 +57,7 @@ flags = [
 '-Isrc/combined/include',
 '-Ibin/box/include',
 '-Ibuild/include',
+'-Ibuild/dependencies/include',
 '-Ibuild/library/core',
 '-Ibuild/library/waveguide',
 '-Iwayverb/Source',
