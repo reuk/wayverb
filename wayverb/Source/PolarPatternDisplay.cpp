@@ -1,4 +1,4 @@
-#include "PolarPatternDisplay.hpp"
+#include "PolarPatternDisplay.h"
 
 PolarPatternView::PolarPatternView() {
     set_help("polar pattern",

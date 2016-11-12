@@ -1,4 +1,4 @@
-#include "MeshShader.hpp"
+#include "MeshShader.h"
 
 MeshShader::MeshShader()
         : program(mglu::program::from_sources(vertex_shader, fragment_shader)) {

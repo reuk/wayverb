@@ -1,4 +1,4 @@
-#include "PointObject.hpp"
+#include "PointObject.h"
 
 #include <algorithm>
 #include <numeric>
@@ -77,16 +77,16 @@ void PointObject::set_highlight(float amount) {
     z_ring.set_highlight(amount);
 }
 
-void PointObject::do_draw(const glm::mat4& modelview_matrix) const {
-    x_ring.draw(modelview_matrix);
-    y_ring.draw(modelview_matrix);
-    z_ring.draw(modelview_matrix);
+void PointObject::do_draw(const glm::mat4& model_matrix) const {
+    x_ring.draw(model_matrix);
+    y_ring.draw(model_matrix);
+    z_ring.draw(model_matrix);
     for (auto& i : lines) {
-        i.draw(modelview_matrix);
+        i.draw(model_matrix);
     }
 }
 
-glm::mat4 PointObject::get_local_modelview_matrix() const {
+glm::mat4 PointObject::get_local_model_matrix() const {
     return get_matrix();
 }
 

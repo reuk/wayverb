@@ -1,4 +1,4 @@
-#include "MeshObject.hpp"
+#include "MeshObject.h"
 
 #include "waveguide/waveguide.h"
 
@@ -27,11 +27,11 @@ MeshObject::MeshObject(const std::shared_ptr<MeshShader>& shader,
     ibo.bind();
 }
 
-void MeshObject::do_draw(const glm::mat4& modelview_matrix) const {
+void MeshObject::do_draw(const glm::mat4& model_matrix) const {
     //    glBlendFunc(GL_ONE, GL_ONE);
     glDepthMask(GL_FALSE);
     auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(modelview_matrix);
+    shader->set_model_matrix(model_matrix);
 
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_POINTS, ibo.size(), GL_UNSIGNED_INT, nullptr);
@@ -39,7 +39,7 @@ void MeshObject::do_draw(const glm::mat4& modelview_matrix) const {
     //    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-glm::mat4 MeshObject::get_local_modelview_matrix() const { return glm::mat4{}; }
+glm::mat4 MeshObject::get_local_model_matrix() const { return glm::mat4{}; }
 
 void MeshObject::set_pressures(const util::aligned::vector<float>& u) {
     pressures.data(u);
@@ -157,14 +157,14 @@ DebugMeshObject::DebugMeshObject(
     ibo.bind();
 }
 
-void DebugMeshObject::do_draw(const glm::mat4& modelview_matrix) const {
+void DebugMeshObject::do_draw(const glm::mat4& model_matrix) const {
     auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(modelview_matrix);
+    shader->set_model_matrix(model_matrix);
 
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_POINTS, ibo.size(), GL_UNSIGNED_INT, nullptr);
 }
 
-glm::mat4 DebugMeshObject::get_local_modelview_matrix() const {
+glm::mat4 DebugMeshObject::get_local_model_matrix() const {
     return glm::mat4{};
 }

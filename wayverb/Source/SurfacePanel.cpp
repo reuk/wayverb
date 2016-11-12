@@ -1,4 +1,4 @@
-#include "SurfacePanel.hpp"
+#include "SurfacePanel.h"
 
 #include <functional>
 #include <iomanip>

@@ -1,4 +1,4 @@
-#include "PlaybackViewManager.hpp"
+#include "PlaybackViewManager.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/scene_data_loader.h"
+#include "core/cl/scene_structs.h"
 
 #include "cereal/types/map.hpp"
 #include "cereal/types/vector.hpp"

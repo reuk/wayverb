@@ -1,4 +1,4 @@
-#include "ProgressButton.hpp"
+#include "ProgressButton.h"
 
 void TransparentTextButton::paintButton(Graphics& g,
                                         bool is_mouse_over,

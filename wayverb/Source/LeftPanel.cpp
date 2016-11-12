@@ -1,14 +1,14 @@
-#include "LeftPanel.hpp"
+#include "LeftPanel.h"
 
-#include "Application.hpp"
-#include "CommandIDs.hpp"
-#include "DirectionEditor.hpp"
-#include "MicrophoneEditor.hpp"
-#include "PropertyComponentLAF.hpp"
-#include "SourcesEditor.hpp"
-#include "SurfacePanel.hpp"
-#include "TextDisplayProperty.hpp"
-#include "Vec3Editor.hpp"
+#include "Application.h"
+#include "CommandIDs.h"
+#include "DirectionEditor.h"
+#include "MicrophoneEditor.h"
+#include "PropertyComponentLAF.h"
+#include "SourcesEditor.h"
+#include "SurfacePanel.h"
+#include "TextDisplayProperty.h"
+#include "Vec3Editor.h"
 
 namespace {
 

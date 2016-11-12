@@ -1,7 +1,7 @@
-#include "MicrophoneEditor.hpp"
-#include "DirectionEditor.hpp"
-#include "PolarPatternDisplay.hpp"
-#include "Vec3Editor.hpp"
+#include "MicrophoneEditor.h"
+#include "DirectionEditor.h"
+#include "PolarPatternDisplay.h"
+#include "Vec3Editor.h"
 
 /*
 std::unique_ptr<Component> MicrophoneListBox::new_component_for_row(

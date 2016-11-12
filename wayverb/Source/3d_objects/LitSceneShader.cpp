@@ -1,4 +1,4 @@
-#include "LitSceneShader.hpp"
+#include "LitSceneShader.h"
 
 LitSceneShader::LitSceneShader()
         : program(mglu::program::from_sources(vertex_shader, fragment_shader)) {

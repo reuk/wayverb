@@ -1,4 +1,4 @@
-#include "GainSlider.hpp"
+#include "GainSlider.h"
 
 #include "utilities/range.h"
 

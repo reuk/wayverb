@@ -1,4 +1,4 @@
-#include "Playhead.hpp"
+#include "Playhead.h"
 
 void Playhead::paint(juce::Graphics& g) {
     g.setColour(juce::Colours::red);

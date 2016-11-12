@@ -1,6 +1,6 @@
-#include "MainWindow.hpp"
+#include "MainWindow.h"
 
-#include "Application.hpp"
+#include "Application.h"
 
 //  init from as much outside info as possible
 MainWindow::MainWindow(String name, project project)

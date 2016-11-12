@@ -1,4 +1,4 @@
-#include "RayVisualisation.hpp"
+#include "RayVisualisation.h"
 
 #include "core/cl/traits.h"
 #include "core/conversions.h"
@@ -268,14 +268,14 @@ void RayVisualisation::set_distance(double t) {
                        ray_wavefront_position(paths, t, source));
 }
 
-void RayVisualisation::do_draw(const glm::mat4& modelview_matrix) const {
+void RayVisualisation::do_draw(const glm::mat4& model_matrix) const {
     auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(modelview_matrix);
+    shader->set_model_matrix(model_matrix);
 
     auto s_vao = vao.get_scoped();
     glDrawElements(GL_LINES, ibo.size(), GL_UNSIGNED_INT, nullptr);
 }
 
-glm::mat4 RayVisualisation::get_local_modelview_matrix() const {
+glm::mat4 RayVisualisation::get_local_model_matrix() const {
     return glm::mat4{};
 }

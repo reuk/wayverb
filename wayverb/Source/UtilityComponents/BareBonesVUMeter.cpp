@@ -1,5 +1,5 @@
-#include "BareBonesVUMeter.hpp"
-#include "GainSlider.hpp"
+#include "BareBonesVUMeter.h"
+#include "GainSlider.h"
 
 BareBonesVUMeter::BareBonesVUMeter(size_t channel, Orientation orientation)
         : vu_meter(channel)

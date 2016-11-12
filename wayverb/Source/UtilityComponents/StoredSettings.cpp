@@ -1,4 +1,4 @@
-#include "StoredSettings.hpp"
+#include "StoredSettings.h"
 
 TargetOS::OS TargetOS::get_this_os() noexcept {
 #if JUCE_WINDOWS

@@ -1,4 +1,4 @@
-#include "BasicDrawableObject.hpp"
+#include "BasicDrawableObject.h"
 
 #include "utilities/map_to_vector.h"
 
@@ -32,15 +32,15 @@ void BasicDrawableObject::set_highlight(float amount) {
                                     [&](const auto& i) { return i + amount; }));
 }
 
-void BasicDrawableObject::do_draw(const glm::mat4& modelview_matrix) const {
+void BasicDrawableObject::do_draw(const glm::mat4& model_matrix) const {
     auto s_shader = shader->get_scoped();
-    shader->set_model_matrix(modelview_matrix);
+    shader->set_model_matrix(model_matrix);
 
     auto s_vao = vao.get_scoped();
     glDrawElements(mode, ibo.size(), GL_UNSIGNED_INT, nullptr);
 }
 
-glm::mat4 BasicDrawableObject::get_local_modelview_matrix() const {
+glm::mat4 BasicDrawableObject::get_local_model_matrix() const {
     return get_matrix();
 }
 

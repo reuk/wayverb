@@ -1,102 +1,13 @@
-#include "Application.hpp"
-#include "CommandIDs.hpp"
-#include "Presets.hpp"
-#include "HelpWindow.hpp"
+#include "Application.h"
+#include "CommandIDs.h"
+#include "HelpWindow.h"
 
-#include "UtilityComponents/LoadWindow.hpp"
+#include "UtilityComponents/LoadWindow.h"
 
 #include "core/serialize/surface.h"
-#include "cereal/archives/json.hpp"
 
 #include <memory>
 #include <fstream>
-
-File project::data::get_model_path(const File& root) {
-    return root.getChildFile("model.model");
-}
-
-File project::data::get_config_path(const File& root) {
-    return root.getChildFile("config.json");
-}
-
-struct project::data project::data::load(const File& file) {
-    const auto is_way = [&] {
-        //  look inside for a model
-        auto model_file = get_model_path(file);
-        if (!model_file.existsAsFile()) {
-            //  TODO show alert window
-        }
-
-        //  load the model
-        wayverb::core::scene_data_loader scene_loader{
-                model_file.getFullPathName().toStdString()};
-        //  look inside for a config
-        auto config_file = get_config_path(file);
-        if (!config_file.existsAsFile()) {
-            //  TODO show alert window
-        }
-
-        struct data ret{std::move(scene_loader)};
-        
-        //  load the config
-        std::ifstream stream(config_file.getFullPathName().toStdString());
-        cereal::JSONInputArchive archive(stream);
-        archive(ret.data);
-
-        //  return the pair
-        return ret;
-    };
-
-    const auto is_not_way = [&] {
-        //  try to load the model
-        wayverb::core::scene_data_loader scene_loader{file.getFullPathName().toStdString()};
-        struct data ret {std::move(scene_loader)};
-        return ret;
-    };
-
-    return file.getFileExtension() == ".way" ? is_way() : is_not_way();
-}
-
-void project::data::save_to(const struct data& pd, const File& f) {
-    f.createDirectory();
-
-    //  write current geometry to file
-    pd.scene.save(get_model_path(f).getFullPathName().toStdString());
-
-    //  write config with all current materials to file
-    std::ofstream stream(get_config_path(f).getFullPathName().toStdString());
-    cereal::JSONOutputArchive archive(stream);
-    archive(pd.data);
-
-    //  TODO register_recent_file(f.getFullPathName().toStdString());
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-project project::load(const File& file) {
-    return project{data::load(file), file};
-}
-
-bool project::save_as(project& project) {
-    FileChooser fc("save project as", File::nonexistent, "*.way");
-    if (fc.browseForFileToSave(true)) {
-        const auto root = fc.getResult();
-        data::save_to(project.data, root);
-        project.file = root;
-        return true;
-    }
-    return false;
-}
-
-bool project::save(project& project) {
-    if (!project.file.exists()) {
-        return save_as(project);
-    }
-    data::save_to(project.data, project.file);
-    return true;
-}
-
-////////////////////////////////////////////////////////////////////////////////
 
 namespace {
 StoredSettings& get_app_settings() {

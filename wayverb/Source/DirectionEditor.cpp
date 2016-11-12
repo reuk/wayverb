@@ -1,7 +1,7 @@
-#include "DirectionEditor.hpp"
-#include "Vec3Editor.hpp"
+#include "DirectionEditor.h"
+#include "Vec3Editor.h"
 
-#include "connector.hpp"
+#include "connector.h"
 
 #include "core/orientable.h"
 

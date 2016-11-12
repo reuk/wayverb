@@ -1,76 +1,37 @@
-#include "MainContentComponent.hpp"
+#include "MainContentComponent.h"
 
 #include "core/serialize/surface.h"
 
 #include <iomanip>
+#include <type_traits>
 
-MainContentComponent::MainContentComponent()
-        : left_panel()
-        , resizer_bar(&layout_manager, 1, true) {
+MainContentComponent::MainContentComponent(wayverb::combined::model::app& app)
+        : left_panel_{}
+        , resizer_bar_{&layout_manager_, 1, true}
+        , right_panel_{app} {
     set_help("wayverb", "This is the main wayverb app window.");
-    auto left_panel_width = 300;
-    layout_manager.setItemLayout(
+    const auto left_panel_width = 300;
+    layout_manager_.setItemLayout(
             0, left_panel_width, left_panel_width, left_panel_width);
-    auto bar_width = 0;
-    layout_manager.setItemLayout(1, bar_width, bar_width, bar_width);
-    layout_manager.setItemLayout(2, 300, 10000, 400);
+    const auto bar_width = 0;
+    layout_manager_.setItemLayout(1, bar_width, bar_width, bar_width);
+    layout_manager_.setItemLayout(2, 300, 10000, 400);
 
-    addAndMakeVisible(left_panel);
-    addAndMakeVisible(resizer_bar);
-    addAndMakeVisible(right_panel);
+    addAndMakeVisible(left_panel_);
+    addAndMakeVisible(resizer_bar_);
+    addAndMakeVisible(right_panel_);
 }
 
 void MainContentComponent::paint(Graphics& g) { g.fillAll(Colours::darkgrey); }
 
 void MainContentComponent::resized() {
-    util::aligned::vector<Component*> components{
-            &left_panel, &resizer_bar, &right_panel};
-    layout_manager.layOutComponents(components.data(),
-                                    components.size(),
-                                    0,
-                                    0,
-                                    getWidth(),
-                                    getHeight(),
-                                    false,
-                                    true);
+    Component* components[] = {&left_panel_, &resizer_bar_, &right_panel_};
+    layout_manager_.layOutComponents(components,
+                                     std::extent<decltype(components), 0>{},
+                                     0,
+                                     0,
+                                     getWidth(),
+                                     getHeight(),
+                                     false,
+                                     true);
 }
-
-/*
-void MainContentComponent::engine_encountered_error(AsyncEngine* u,
-                                                    const std::string& str) {
-    if (u == &engine) {
-        //  TODO
-        //  report the error somehow
-    }
-}
-
-void MainContentComponent::engine_state_changed(AsyncEngine* u,
-                                                wayverb::combined::state state,
-                                                double progress) {
-
-}
-
-void MainContentComponent::engine_nodes_changed(
-        AsyncEngine* u, const util::aligned::vector<glm::vec3>& positions) {
-
-}
-
-void MainContentComponent::engine_waveguide_visuals_changed(
-        AsyncEngine* u,
-        const util::aligned::vector<float>& pressures,
-        double current_time) {
-
-}
-
-void MainContentComponent::engine_raytracer_visuals_changed(
-        AsyncEngine* u,
-        const util::aligned::vector<util::aligned::vector<wayverb::raytracer::reflection>>& reflections,
-        const glm::vec3& source,
-        const glm::vec3& receiver) {
-
-}
-
-void MainContentComponent::engine_finished(AsyncEngine* u) {
-
-}
-*/

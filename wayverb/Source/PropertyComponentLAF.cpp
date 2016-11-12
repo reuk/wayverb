@@ -1,4 +1,4 @@
-#include "PropertyComponentLAF.hpp"
+#include "PropertyComponentLAF.h"
 
 PropertyComponentLAF::PropertyComponentLAF(int label_width)
         : label_width(label_width) {

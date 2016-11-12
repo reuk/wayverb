@@ -1,4 +1,4 @@
-#include "LoadWindow.hpp"
+#include "LoadWindow.h"
 
 LoadWindow::LoadWindow(juce::String name,
                        DocumentWindow::TitleBarButtons buttons,

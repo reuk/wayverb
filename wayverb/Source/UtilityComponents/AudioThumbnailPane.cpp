@@ -1,4 +1,4 @@
-#include "AudioThumbnailPane.hpp"
+#include "AudioThumbnailPane.h"
 
 #include "utilities/range.h"
 

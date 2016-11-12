@@ -16,9 +16,12 @@ Look again at frequency domain test?
 app stuff
 ---------
 
+Help window should be per-app rather than per-main-window.
+
 Load/save material + receiver presets
 
-Use appropriate surfaces for newly-loaded models (make sure default constructor for 'material' is sensible)
+Use appropriate surfaces for newly-loaded models
+    i.e. make sure default constructor for 'material' is sensible
 
 Finish adding the help panel info.
 

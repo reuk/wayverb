@@ -1,4 +1,4 @@
-#include "BottomPanel.hpp"
+#include "BottomPanel.h"
 
 BottomPanel::BottomPanel()
         : bar_{progress_} {

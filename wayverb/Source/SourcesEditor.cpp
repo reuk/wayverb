@@ -1,8 +1,8 @@
-#include "SourcesEditor.hpp"
+#include "SourcesEditor.h"
 
-#include "DirectionEditor.hpp"
-#include "MicrophoneEditor.hpp"
-#include "Vec3Editor.hpp"
+#include "DirectionEditor.h"
+#include "MicrophoneEditor.h"
+#include "Vec3Editor.h"
 
 /*
 std::unique_ptr<Component> SourcesListBox::new_component_for_row(

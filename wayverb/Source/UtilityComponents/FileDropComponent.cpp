@@ -1,4 +1,4 @@
-#include "FileDropComponent.hpp"
+#include "FileDropComponent.h"
 
 FileDropComponent::FileDropComponent(const std::string& back,
                                      const std::string& button)

@@ -12,7 +12,7 @@ void async_work_queue::push(queue::value_type method) {
     triggerAsyncUpdate();
 }
 
-void async_work_queue::handleAsyncUpdate() override {
+void async_work_queue::handleAsyncUpdate() {
     while (const auto method = work_queue_.pop()) {
         (*method)();
     }

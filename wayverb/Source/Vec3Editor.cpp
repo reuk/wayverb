@@ -1,4 +1,4 @@
-#include "Vec3Editor.hpp"
+#include "Vec3Editor.h"
 
 Vec3Editor::Vec3Editor() {
     property_panel.addProperties(
