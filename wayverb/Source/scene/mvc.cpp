@@ -172,6 +172,8 @@ auto make_move_item_action_ptr(T& t) {
 scene::scene(wayverb::combined::model::app& app)
         : app_{app} {}
 
+scene::~scene() noexcept = default;
+
 void scene::mouse_down(const MouseEvent& e) { mouse_action_ = start_action(e); }
 
 void scene::mouse_drag(const MouseEvent& e) {

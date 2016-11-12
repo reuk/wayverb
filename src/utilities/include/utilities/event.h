@@ -148,7 +148,7 @@ private:
                 copy = slots_;
             }
 
-            for (const auto& slot : copy) {
+            for (auto& slot : copy) {
                 if (!slot.second.blocked) {
                     slot.second.callback(std::forward<Us>(us)...);
                 }

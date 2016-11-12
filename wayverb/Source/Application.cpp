@@ -1,4 +1,5 @@
 #include "Application.h"
+#include "AngularLookAndFeel.h"
 #include "CommandIDs.h"
 #include "HelpWindow.h"
 
@@ -6,29 +7,329 @@
 
 #include "core/serialize/surface.h"
 
-#include <memory>
 #include <fstream>
+#include <memory>
 
 namespace {
-StoredSettings& get_app_settings() {
-    return *WayverbApplication::get_app().stored_settings;
+
+auto get_options() {
+    PropertiesFile::Options options;
+    options.filenameSuffix = "settings";
+    options.osxLibrarySubFolder = "Application Support";
+#if JUCE_LINUX
+    options.folderName = "~/.config/wayverb";
+#else
+    options.folderName = "wayverb";
+#endif
+    return options;
 }
 
-PropertiesFile& get_global_properties() {
-    return get_app_settings().get_global_properties();
-}
+class AutoDeleteDocumentWindow : public DocumentWindow {
+public:
+    using DocumentWindow::DocumentWindow;
+    void closeButtonPressed() override { delete this; }
+};
 }  // namespace
 
-void register_recent_file(const std::string& file) {
+class wayverb_application::instance final : public ApplicationCommandTarget,
+                                            public FileDropComponent::Listener {
+public:
+    //  Setup/Teardown.
+
+    instance(wayverb_application& owner, const std::string& /*command_line*/)
+            : owner_{owner}
+            , stored_settings_{owner.getApplicationName().toStdString(),
+                               get_options()}
+            , main_menu_bar_model_{*this} {
+        LookAndFeel::setDefaultLookAndFeel(&look_and_feel_);
+
+        command_manager_.registerAllCommandsForTarget(this);
+        command_manager_.getKeyMappings()->resetToDefaultMappings();
+
+        MenuBarModel::setMacMainMenu(&main_menu_bar_model_, nullptr);
+
+        show_hide_load_window();
+    }
+
+    ~instance() noexcept { MenuBarModel::setMacMainMenu(nullptr); }
+
+    //  Commands.
+
+    ApplicationCommandTarget* getNextCommandTarget() override {
+        return &owner_;
+    }
+
+    void getAllCommands(Array<CommandID>& commands) override {
+        commands.addArray({
+                CommandIDs::idOpenProject, CommandIDs::idShowHelp,
+        });
+    }
+
+    void getCommandInfo(CommandID command_id,
+                        ApplicationCommandInfo& result) override {
+        switch (command_id) {
+            case CommandIDs::idOpenProject: {
+                result.setInfo("Open Project...",
+                               "Open an existing project",
+                               "General",
+                               0);
+                result.defaultKeypresses.add(
+                        KeyPress('o', ModifierKeys::commandModifier, 0));
+                break;
+            }
+
+            case CommandIDs::idShowHelp: {
+                result.setInfo("Show Help Window",
+                               "Show descriptions of UI components and actions",
+                               "General",
+                               0);
+                break;
+            }
+        }
+    }
+
+    bool perform(const InvocationInfo& info) override {
+        switch (info.commandID) {
+            case CommandIDs::idOpenProject: {
+                open_project_from_dialog();
+                return true;
+            }
+
+            case CommandIDs::idShowHelp: {
+                show_help_window();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    //  File dropped.
+
+    void file_dropped(FileDropComponent*, const File& f) override {
+        open_project(f);
+    }
+
+    //  Before quitting.
+
+    void attempt_close_all() {
+        for (auto& window : main_windows_) {
+            window->closeButtonPressed();
+        }
+    }
+
+    bool ready_to_quit() const { return main_windows_.empty(); }
+
+    StoredSettings& get_app_settings() { return stored_settings_; }
+    const StoredSettings& get_app_settings() const { return stored_settings_; }
+
+    ApplicationCommandManager& get_command_manager() {
+        return command_manager_;
+    }
+    const ApplicationCommandManager& get_command_manager() const {
+        return command_manager_;
+    }
+
+private:
+    class main_menu_bar_model : public MenuBarModel {
+    public:
+        main_menu_bar_model(instance& instance)
+                : instance_{instance} {
+            setApplicationCommandManagerToWatch(
+                    &instance.get_command_manager());
+        }
+
+        StringArray getMenuBarNames() override { return {"File", "View"}; }
+
+        PopupMenu getMenuForIndex(int /*top_level_menu_index*/,
+                                  const String& menu_name) override {
+            PopupMenu menu;
+            if (menu_name == "File") {
+                instance_.create_file_menu(menu);
+            } else if (menu_name == "View") {
+                instance_.create_view_menu(menu);
+            } else {
+                jassertfalse;
+            }
+            return menu;
+        }
+
+        void menuItemSelected(int menu_item_id,
+                              int /*top_level_menu_index*/) override {
+            instance_.handle_main_menu_command(menu_item_id);
+        }
+
+    private:
+        instance& instance_;
+    };
+
+    void handle_main_menu_command(int menu_item_id) {
+        if (menu_item_id >= recent_projects_base_id) {
+            open_project(get_app_settings().recent_files.getFile(
+                    menu_item_id - recent_projects_base_id));
+        }
+    }
+
+    void create_file_menu(PopupMenu& menu) {
+        menu.addCommandItem(&get_command_manager(), CommandIDs::idOpenProject);
+
+        PopupMenu recent;
+        get_app_settings().recent_files.createPopupMenuItems(
+                recent, recent_projects_base_id, true, true);
+        menu.addSubMenu("Open Recent", recent);
+
+        menu.addSeparator();
+
+        menu.addCommandItem(&get_command_manager(), CommandIDs::idCloseProject);
+        menu.addCommandItem(&get_command_manager(), CommandIDs::idSaveProject);
+        menu.addCommandItem(&get_command_manager(),
+                            CommandIDs::idSaveAsProject);
+
+#if !JUCE_MAC
+        menu.addSeparator();
+        menu.addCommandItem(&get_command_manager(),
+                            StandardApplicationCommandIDs::quit);
+#endif
+    }
+
+    void create_view_menu(PopupMenu& menu) {
+        menu.addCommandItem(&get_command_manager(), CommandIDs::idVisualise);
+        menu.addSeparator();
+        menu.addCommandItem(&get_command_manager(), CommandIDs::idShowHelp);
+        //    menu.addCommandItem(&get_command_manager(),
+        //                        CommandIDs::idShowAudioPreferences);
+    }
+
+    void open_project(const File& file) {
+        try {
+            auto new_window = std::make_unique<main_window>(
+                    owner_.getApplicationName(),
+                    file.getFullPathName().toStdString());
+            //  When window asks to close, find it in the set and delete it.
+            new_window->connect_wants_to_close([this](auto& window) {
+                //  Look up the window in the list of open windows.
+                const auto it = std::find_if(
+                        begin(main_windows_),
+                        end(main_windows_),
+                        [&](const auto& ptr) { return ptr.get() == &window; });
+
+                //  Erase the window.
+                main_windows_.erase(it);
+
+                //  If all windows are shut, show the splash screen.
+                show_hide_load_window();
+            });
+            main_windows_.insert(std::move(new_window));
+            register_recent_file(file.getFullPathName().toStdString());
+            show_hide_load_window();
+        } catch (const std::exception& e) {
+            NativeMessageBox::showMessageBox(
+                    AlertWindow::WarningIcon,
+                    "exception...",
+                    std::string("Encountered an exception: ") + e.what());
+        } catch (...) {
+            NativeMessageBox::showMessageBox(
+                    AlertWindow::WarningIcon,
+                    "exception...",
+                    std::string("Encountered an unknown exception."));
+        }
+    }
+
+    void open_project_from_dialog() {
+        FileChooser fc("open project", File::nonexistent, valid_file_formats);
+        if (fc.browseForFileToOpen()) {
+            open_project(fc.getResult());
+        }
+    }
+
+    void show_hide_load_window() {
+        load_window_ = ready_to_quit() ? [this] {
+                auto ret = std::make_unique<LoadWindow>(
+                        owner_.getApplicationName(),
+                        DocumentWindow::closeButton,
+                        valid_file_formats,
+                        get_command_manager());
+                ret->addListener(this);
+                return ret;
+            }() : nullptr;
+    }
+
+    void show_help_window() {
+        if (!help_window_) {
+            help_window_ = new AutoDeleteDocumentWindow(
+                    "help viewer",
+                    Colours::darkgrey,
+                    AutoDeleteDocumentWindow::closeButton);
+
+            auto panel = std::make_unique<HelpPanel>();
+            panel->setSize(200, 300);
+
+            Rectangle<int> area(0, 0, 200, 300);
+            RectanglePlacement placement(RectanglePlacement::xRight |
+                                         RectanglePlacement::doNotResize);
+            auto result = placement.appliedTo(area,
+                                              Desktop::getInstance()
+                                                      .getDisplays()
+                                                      .getMainDisplay()
+                                                      .userArea.reduced(20));
+
+            help_window_->setBounds(result);
+            help_window_->setContentOwned(panel.release(), true);
+            help_window_->setResizable(false, false);
+            help_window_->setUsingNativeTitleBar(true);
+            help_window_->setVisible(true);
+            help_window_->setAlwaysOnTop(true);
+        }
+    }
+
+    static constexpr const char* valid_file_formats = "";
+    static constexpr auto recent_projects_base_id = 100;
+
+    wayverb_application& owner_;
+
+    AngularLookAndFeel look_and_feel_;
+
+    StoredSettings stored_settings_;
+
+    ApplicationCommandManager command_manager_;
+    main_menu_bar_model main_menu_bar_model_;
+
+    std::unique_ptr<DocumentWindow> load_window_;
+
+    std::unordered_set<std::unique_ptr<main_window>> main_windows_;
+
+    SharedResourcePointer<TooltipWindow> tooltip_window_;
+
+    Component::SafePointer<DocumentWindow> help_window_;
+};
+
+constexpr const char* wayverb_application::instance::valid_file_formats;
+
+////////////////////////////////////////////////////////////////////////////////
+
+StoredSettings& wayverb_application::get_app_settings() {
+    return get_app().instance_->get_app_settings();
+}
+
+PropertiesFile& wayverb_application::get_global_properties() {
+    return get_app_settings().get_global_properties();
+}
+
+void wayverb_application::register_recent_file(const std::string& file) {
     RecentlyOpenedFilesList::registerRecentFileNatively(File(file));
     get_app_settings().recent_files.addFile(File(file));
     get_app_settings().flush();
 }
 
-//  taken from the Projucer
-//  no h8 plx
-struct AsyncQuitRetrier : private Timer {
-    AsyncQuitRetrier() { startTimer(500); }
+//  taken from the Projucer, no h8 plx
+struct async_quit_retrier final : private Timer {
+    async_quit_retrier() { startTimer(500); }
+
+    async_quit_retrier(const async_quit_retrier&) = delete;
+    async_quit_retrier(async_quit_retrier&&) noexcept = delete;
+
+    async_quit_retrier& operator=(const async_quit_retrier&) = delete;
+    async_quit_retrier& operator=(async_quit_retrier&&) noexcept = delete;
 
     void timerCallback() override {
         stopTimer();
@@ -38,228 +339,47 @@ struct AsyncQuitRetrier : private Timer {
             app->systemRequestedQuit();
         }
     }
-
-    JUCE_DECLARE_NON_COPYABLE(AsyncQuitRetrier)
 };
 
-const String WayverbApplication::getApplicationName() {
+const String wayverb_application::getApplicationName() {
     return ProjectInfo::projectName;
 }
-const String WayverbApplication::getApplicationVersion() {
+
+const String wayverb_application::getApplicationVersion() {
     return ProjectInfo::versionString;
 }
-bool WayverbApplication::moreThanOneInstanceAllowed() { return false; }
 
-void WayverbApplication::initialise(const String& commandLine) {
-    LookAndFeel::setDefaultLookAndFeel(&look_and_feel);
+bool wayverb_application::moreThanOneInstanceAllowed() { return false; }
 
-    PropertiesFile::Options options;
-    options.filenameSuffix = "settings";
-    options.osxLibrarySubFolder = "Application Support";
-#if JUCE_LINUX
-    options.folderName = "~/.config/wayverb";
-#else
-    options.folderName = "wayverb";
-#endif
-
-    stored_settings = std::make_unique<StoredSettings>(
-            getApplicationName().toStdString(), options);
-
-    command_manager = std::make_unique<ApplicationCommandManager>();
-    command_manager->registerAllCommandsForTarget(this);
-    command_manager->getKeyMappings()->resetToDefaultMappings();
-
-    main_menu_bar_model = std::make_unique<MainMenuBarModel>();
-
-    MenuBarModel::setMacMainMenu(main_menu_bar_model.get(), nullptr);
-
-    show_hide_load_window();
+void wayverb_application::initialise(const String& command_line) {
+    instance_ = std::make_unique<instance>(*this, command_line.toStdString());
 }
 
-void WayverbApplication::shutdown() {
-    main_windows.clear();
+void wayverb_application::shutdown() { instance_ = nullptr; }
 
-    MenuBarModel::setMacMainMenu(nullptr);
-
-    main_menu_bar_model = nullptr;
-    command_manager = nullptr;
-
-    stored_settings = nullptr;
-}
-
-void WayverbApplication::systemRequestedQuit() {
+void wayverb_application::systemRequestedQuit() {
     if (ModalComponentManager::getInstance()->cancelAllModalComponents()) {
-        new ::AsyncQuitRetrier();
+        new async_quit_retrier();
     } else {
-        attempt_close_all();
-        if (main_windows.empty()) {
+        instance_->attempt_close_all();
+        if (instance_->ready_to_quit()) {
             quit();
         }
     }
 }
 
-void WayverbApplication::attempt_close_all() {
-    while (!main_windows.empty()) {
-        auto size = main_windows.size();
-        (*main_windows.begin())->closeButtonPressed();
-        if (main_windows.size() >= size) {
-            //  failed to remove the window
-            return;
-        }
-    }
-}
+void wayverb_application::anotherInstanceStarted(
+        const String& /*command_line*/) {}
 
-void WayverbApplication::anotherInstanceStarted(const String& commandLine) {}
-
-void WayverbApplication::file_dropped(FileDropComponent*, const File& f) {
-    open_project(f);
-}
-
-void WayverbApplication::show_hide_load_window() {
-    auto constructed_load_window = [this] {
-        auto ret = std::make_unique<LoadWindow>(getApplicationName(),
-                                                DocumentWindow::closeButton,
-                                                get_valid_file_formats(),
-                                                get_command_manager());
-        ret->addListener(this);
-        return ret;
-    };
-    load_window = main_windows.empty() ? constructed_load_window() : nullptr;
-}
-
-
-
-WayverbApplication& WayverbApplication::get_app() {
-    auto i = dynamic_cast<WayverbApplication*>(JUCEApplication::getInstance());
+wayverb_application& wayverb_application::get_app() {
+    auto i = dynamic_cast<wayverb_application*>(JUCEApplication::getInstance());
     jassert(i != nullptr);
     return *i;
 }
 
-ApplicationCommandManager& WayverbApplication::get_command_manager() {
-    auto i = WayverbApplication::get_app().command_manager.get();
-    jassert(i);
-    return *i;
+ApplicationCommandManager& wayverb_application::get_command_manager() {
+    jassert(get_app().instance_);
+    return get_app().instance_->get_command_manager();
 }
 
-void WayverbApplication::create_file_menu(PopupMenu& menu) {
-    menu.addCommandItem(&get_command_manager(), CommandIDs::idOpenProject);
-
-    PopupMenu recent;
-    stored_settings->recent_files.createPopupMenuItems(
-            recent, recent_projects_base_id, true, true);
-    menu.addSubMenu("Open Recent", recent);
-
-    menu.addSeparator();
-
-    menu.addCommandItem(&get_command_manager(), CommandIDs::idCloseProject);
-    menu.addCommandItem(&get_command_manager(), CommandIDs::idSaveProject);
-    menu.addCommandItem(&get_command_manager(), CommandIDs::idSaveAsProject);
-
-#if !JUCE_MAC
-    menu.addSeparator();
-    menu.addCommandItem(&get_command_manager(),
-                        StandardApplicationCommandIDs::quit);
-#endif
-}
-
-void WayverbApplication::create_view_menu(PopupMenu& menu) {
-    menu.addCommandItem(&get_command_manager(), CommandIDs::idVisualise);
-    menu.addSeparator();
-    menu.addCommandItem(&get_command_manager(), CommandIDs::idShowHelp);
-    //    menu.addCommandItem(&get_command_manager(),
-    //                        CommandIDs::idShowAudioPreferences);
-}
-
-void WayverbApplication::handle_main_menu_command(int menu_item_id) {
-    if (menu_item_id >= recent_projects_base_id) {
-        open_project(stored_settings->recent_files.getFile(
-                menu_item_id - recent_projects_base_id));
-    }
-}
-
-void WayverbApplication::getAllCommands(Array<CommandID>& commands) {
-    JUCEApplication::getAllCommands(commands);
-    commands.addArray({
-            CommandIDs::idOpenProject,
-    });
-}
-void WayverbApplication::getCommandInfo(CommandID command_id,
-                                        ApplicationCommandInfo& result) {
-    switch (command_id) {
-        case CommandIDs::idOpenProject:
-            result.setInfo("Open Project...",
-                           "Open an existing project",
-                           "General",
-                           0);
-            result.defaultKeypresses.add(
-                    KeyPress('o', ModifierKeys::commandModifier, 0));
-            break;
-        default: JUCEApplication::getCommandInfo(command_id, result); break;
-    }
-}
-
-bool WayverbApplication::perform(const InvocationInfo& info) {
-    switch (info.commandID) {
-        case CommandIDs::idOpenProject: open_project_from_dialog(); return true;
-        default: return JUCEApplication::perform(info);
-    }
-    return true;
-}
-
-void WayverbApplication::open_project(const File& file) {
-    try {
-        main_windows.insert(
-                std::make_unique<MainWindow>(getApplicationName(), project::load(file)));
-        register_recent_file(file.getFullPathName().toStdString());
-        show_hide_load_window();
-    } catch (const std::exception& e) {
-        NativeMessageBox::showMessageBox(
-                AlertWindow::WarningIcon,
-                "exception...",
-                std::string("Encountered an exception: ") + e.what());
-    } catch (...) {
-        NativeMessageBox::showMessageBox(
-                AlertWindow::WarningIcon,
-                "exception...",
-                std::string("Encountered an unknown exception."));
-    }
-}
-
-std::string WayverbApplication::get_valid_file_formats() {
-    return "*.way,*.obj,*.model";
-}
-
-void WayverbApplication::open_project_from_dialog() {
-    FileChooser fc("open project", File::nonexistent, get_valid_file_formats());
-    if (fc.browseForFileToOpen()) {
-        open_project(fc.getResult());
-    }
-}
-
-WayverbApplication::MainMenuBarModel::MainMenuBarModel() {
-    setApplicationCommandManagerToWatch(&get_command_manager());
-}
-
-StringArray WayverbApplication::MainMenuBarModel::getMenuBarNames() {
-    return {"File", "View"};
-}
-
-PopupMenu WayverbApplication::MainMenuBarModel::getMenuForIndex(
-        int top_level_menu_index, const String& menu_name) {
-    PopupMenu menu;
-    if (menu_name == "File") {
-        get_app().create_file_menu(menu);
-    } else if (menu_name == "View") {
-        get_app().create_view_menu(menu);
-    } else {
-        jassertfalse;
-    }
-    return menu;
-}
-
-void WayverbApplication::MainMenuBarModel::menuItemSelected(
-        int menu_item_id, int top_level_menu_index) {
-    get_app().handle_main_menu_command(menu_item_id);
-}
-
-START_JUCE_APPLICATION(WayverbApplication)
+START_JUCE_APPLICATION(wayverb_application)

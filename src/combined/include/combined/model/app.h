@@ -70,7 +70,7 @@ public:
     using save_callback =
             std::function<std::experimental::optional<std::string>()>;
     /// Will call save_callback if a new filepath is required.
-    bool save(const save_callback& callback);
+    void save(const save_callback& callback);
 
     void save_as(std::string name);
 

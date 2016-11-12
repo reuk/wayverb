@@ -17,7 +17,7 @@ class master_scene_component::impl final : public Component {
 public:
     impl(wayverb::combined::model::app& app)
             : app_{app}
-            , controller_{model_, app_.project.state.persistent()} {
+            , controller_{app_} {
         //  TODO Hook up all the actions so that the view is updated when the
         //  model changes.
         
@@ -40,10 +40,7 @@ private:
     //  Instead, we wrap it in an object which supplies async command queues.
     generic_renderer<view::scene> view_;
 
-    //  The model here is temporary (not stored between app runs).
-    model::scene model_;
-
-    //  Keep a reference to the global/persistent model.
+    //  Keep a reference to the global model.
     wayverb::combined::model::app& app_;
 
     //  This object decides how to interpret user input, and updates the models

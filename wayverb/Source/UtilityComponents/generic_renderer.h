@@ -19,18 +19,18 @@ class generic_renderer final : public Component {
     public:
         using input_queue =
                 util::threaded_queue<util::threading_policy::scoped_lock,
-                                     std::function<void(impl&)>>;
+                                     std::function<void(Renderer&)>>;
 
         impl(input_queue& input_queue)
                 : input_queue_{input_queue} {}
 
-        using context_created = util::event<impl&>;
+        using context_created = util::event<>;
         typename context_created::connection connect_context_created(
                 typename context_created::callback_type callback) {
             return context_created_.connect(std::move(callback));
         }
 
-        using context_closing = util::event<impl&>;
+        using context_closing = util::event<>;
         typename context_closing::connection connect_context_closing(
                 typename context_closing::callback_type callback) {
             return context_closing_.connect(std::move(callback));
@@ -41,12 +41,12 @@ class generic_renderer final : public Component {
             //  Create a new renderer object.
             renderer_ = std::make_unique<Renderer>();
             //  Signal that the context was created.
-            output_queue_.push([this] { context_created_(*this); });
+            output_queue_.push([this] { context_created_(); });
         }
 
         void renderOpenGL() override {
             //  Run all pending commands.
-            while (const auto method = input_queue_.pop()) {
+            while (auto method = input_queue_.pop()) {
                 (*method)(*renderer_);
             }
 
@@ -57,7 +57,7 @@ class generic_renderer final : public Component {
 
         void openGLContextClosing() override {
             //  Signal that the context is closing.
-            output_queue_.push([this] { context_closing_(*this); });
+            output_queue_.push([this] { context_closing_(); });
             //  Delete renderer object.
             renderer_ = nullptr;
         }

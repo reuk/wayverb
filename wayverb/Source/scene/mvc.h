@@ -71,6 +71,7 @@ namespace controller {
 class scene final {
 public:
     scene(wayverb::combined::model::app& app);
+    ~scene() noexcept;
 
     void mouse_down(const MouseEvent& e);
     void mouse_drag(const MouseEvent& e);

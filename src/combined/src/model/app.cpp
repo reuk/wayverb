@@ -108,7 +108,7 @@ void app::cancel_render() { engine_.cancel(); }
 
 //  void app::is_rendering() const { engine_.is_running(); }
 
-bool app::save(const save_callback& callback) {
+void app::save(const save_callback& callback) {
     if (project::is_project_file(currently_open_file_)) {
         project.save_to(currently_open_file_);
     } else {

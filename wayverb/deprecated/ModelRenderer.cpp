@@ -87,27 +87,30 @@ MultiMaterialObject::SingleMaterialSection::SingleMaterialSection(
 }
 
 void MultiMaterialObject::SingleMaterialSection::do_draw(
-        const glm::mat4 &modelview_matrix) const {
+        const glm::mat4 &model_matrix) const {
     ibo.bind();
     glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, nullptr);
 }
 
 glm::mat4
-MultiMaterialObject::SingleMaterialSection::get_local_modelview_matrix() const {
+MultiMaterialObject::SingleMaterialSection::get_local_model_matrix() const {
     return glm::mat4{};
 }
 
 MultiMaterialObject::MultiMaterialObject(
         const std::shared_ptr<mglu::generic_shader> &g,
         const std::shared_ptr<LitSceneShader> &l,
-        const wayverb::core::gpu_scene_data &scene_data)
+        wayverb::core::gpu_scene_data scene_data)
         : generic_shader(g)
         , lit_scene_shader(l) {
     for (auto i = 0; i != scene_data.get_surfaces().size(); ++i) {
         sections.emplace_back(scene_data, i);
     }
 
-    geometry.data(wayverb::core::convert(scene_data.get_vertices()));
+    geometry.data(util::map_to_vector(begin(scene_data.get_vertices()),
+                                      end(scene_data.get_vertices()),
+                                      wayverb::core::to_vec3{}));
+
     mglu::check_for_gl_error();
     colors.data(util::aligned::vector<glm::vec4>(
             scene_data.get_vertices().size(), glm::vec4(0.5, 0.5, 0.5, 1.0)));
@@ -134,24 +137,24 @@ MultiMaterialObject::MultiMaterialObject(
     configure_vao(fill_vao, lit_scene_shader);
 }
 
-glm::mat4 MultiMaterialObject::get_local_modelview_matrix() const {
+glm::mat4 MultiMaterialObject::get_local_model_matrix() const {
     return glm::mat4{};
 }
 
-void MultiMaterialObject::do_draw(const glm::mat4 &modelview_matrix) const {
+void MultiMaterialObject::do_draw(const glm::mat4 &model_matrix) const {
     for (auto i = 0u; i != sections.size(); ++i) {
         if (i == highlighted) {
             const auto s_shader = lit_scene_shader->get_scoped();
-            lit_scene_shader->set_model_matrix(modelview_matrix);
+            lit_scene_shader->set_model_matrix(model_matrix);
             const auto s_vao = fill_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-            sections[i].draw(modelview_matrix);
+            sections[i].draw(model_matrix);
         } else {
             const auto s_shader = generic_shader->get_scoped();
-            generic_shader->set_model_matrix(modelview_matrix);
+            generic_shader->set_model_matrix(model_matrix);
             const auto s_vao = wire_vao.get_scoped();
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-            sections[i].draw(modelview_matrix);
+            sections[i].draw(model_matrix);
         }
     }
 }
@@ -250,7 +253,7 @@ SceneRendererContextLifetime::SceneRendererContextLifetime()
 
 void SceneRendererContextLifetime::set_scene(
         wayverb::core::gpu_scene_data scene) {
-    const auto aabb = wayverb::core::geo::compute_aabb(scene);
+    const auto aabb = wayverb::core::geo::compute_aabb(scene.get_vertices());
     const auto m = centre(aabb);
     const auto max = glm::length(dimensions(aabb));
     eye = eye_target = max > 0 ? 20 / max : 1;
@@ -323,7 +326,7 @@ void SceneRendererContextLifetime::update(float dt) {
 }
 
 void SceneRendererContextLifetime::do_draw(
-        const glm::mat4 &modelview_matrix) const {
+        const glm::mat4 &model_matrix) const {
     const auto c = 0.0;
     glClearColor(c, c, c, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -350,30 +353,30 @@ void SceneRendererContextLifetime::do_draw(
     config_shader(ray_shader);
 
     if (model_object) {
-        model_object->draw(modelview_matrix);
+        model_object->draw(model_matrix);
     }
-    point_objects.draw(modelview_matrix);
+    point_objects.draw(model_matrix);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     if (rendering) {
         if (mesh_object) {
-            mesh_object->draw(modelview_matrix);
+            mesh_object->draw(model_matrix);
         }
 
         if (ray_object) {
-            ray_object->draw(modelview_matrix);
+            ray_object->draw(model_matrix);
         }
     }
 
     if (debug_mesh_object) {
-        debug_mesh_object->draw(modelview_matrix);
+        debug_mesh_object->draw(model_matrix);
     }
 
-    axes.draw(modelview_matrix);
+    axes.draw(model_matrix);
 }
 
-glm::mat4 SceneRendererContextLifetime::get_local_modelview_matrix() const {
+glm::mat4 SceneRendererContextLifetime::get_local_model_matrix() const {
     return glm::mat4{};
 }
 

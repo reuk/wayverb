@@ -1,9 +1,9 @@
-#include "MainWindow.h"
 #include "Application.h"
 #include "CommandIDs.h"
+#include "main_window.h"
 
 //  init from as much outside info as possible
-MainWindow::MainWindow(String name, std::string fname)
+main_window::main_window(String name, std::string fname)
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
         , model_{std::move(fname)}
         , content_component_{model_} {
@@ -16,18 +16,17 @@ MainWindow::MainWindow(String name, std::string fname)
     setResizeLimits(400, 300, 100000, 100000);
     setVisible(true);
 
-    auto& command_manager = WayverbApplication::get_command_manager();
+    auto& command_manager = wayverb_application::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
     addKeyListener(command_manager.getKeyMappings());
 }
 
-MainWindow::~MainWindow() noexcept {
-    // delete help_window_;
+main_window::~main_window() noexcept {
     removeKeyListener(
-            WayverbApplication::get_command_manager().getKeyMappings());
+            wayverb_application::get_command_manager().getKeyMappings());
 }
 
-void MainWindow::closeButtonPressed() {
+void main_window::closeButtonPressed() {
     if (model_.needs_save()) {
         switch (NativeMessageBox::showYesNoCancelBox(
                 AlertWindow::AlertIconType::WarningIcon,
@@ -54,26 +53,18 @@ void MainWindow::closeButtonPressed() {
         }
     }
 
-    auto& main_windows = WayverbApplication::get_app().main_windows;
-    auto it = std::find_if(begin(main_windows),
-                           end(main_windows),
-                           [this](const auto& i) { return i.get() == this; });
-    if (it != main_windows.end()) {
-        main_windows.erase(it);
-    }
-
-    WayverbApplication::get_app().show_hide_load_window();
+    wants_to_close_(*this);
 }
 
-void MainWindow::getAllCommands(Array<CommandID>& commands) {
+void main_window::getAllCommands(Array<CommandID>& commands) {
     commands.addArray({CommandIDs::idSaveProject,
                        CommandIDs::idSaveAsProject,
                        CommandIDs::idCloseProject,
                        CommandIDs::idVisualise});
 }
 
-void MainWindow::getCommandInfo(CommandID command_id,
-                                ApplicationCommandInfo& result) {
+void main_window::getCommandInfo(CommandID command_id,
+                                 ApplicationCommandInfo& result) {
     switch (command_id) {
         case CommandIDs::idSaveProject:
             result.setInfo("Save...", "Save", "General", 0);
@@ -108,7 +99,7 @@ void MainWindow::getCommandInfo(CommandID command_id,
         default: break;
     }
 }
-bool MainWindow::perform(const InvocationInfo& info) {
+bool main_window::perform(const InvocationInfo& info) {
     switch (info.commandID) {
         case CommandIDs::idSaveProject:
             try_and_explain([&] { save(); }, "saving");
@@ -130,21 +121,21 @@ bool MainWindow::perform(const InvocationInfo& info) {
     }
 }
 
-ApplicationCommandTarget* MainWindow::getNextCommandTarget() {
-    return &get_app();
+ApplicationCommandTarget* main_window::getNextCommandTarget() {
+    return &wayverb_application::get_app();
 }
 
-void MainWindow::save() {
+void main_window::save() {
     model_.save([this] { return browse_for_file_to_save(); });
 }
 
-void MainWindow::save_as() {
+void main_window::save_as() {
     if (const auto fname = browse_for_file_to_save()) {
         model_.save_as(*fname);
     }
 }
 
-std::experimental::optional<std::string> browse_for_file_to_save() {
+std::experimental::optional<std::string> main_window::browse_for_file_to_save() {
     FileChooser fc{"save location...", File(), "*.way"};
     return fc.browseForFileToSave(true)
                    ? std::experimental::make_optional(
@@ -152,37 +143,7 @@ std::experimental::optional<std::string> browse_for_file_to_save() {
                    : std::experimental::nullopt;
 }
 
-/*
-namespace {
-class AutoDeleteDocumentWindow : public DocumentWindow {
-public:
-    using DocumentWindow::DocumentWindow;
-    void closeButtonPressed() override { delete this; }
-};
-}  // namespace
-
-void MainWindow::show_help() {
-    if (!help_window_) {
-        help_window_ = new AutoDeleteDocumentWindow(
-                "help viewer", Colours::darkgrey, closeButton);
-        auto panel = new HelpPanel;
-        panel->setSize(200, 300);
-
-        Rectangle<int> area(0, 0, 200, 300);
-        RectanglePlacement placement(RectanglePlacement::xRight |
-                                     RectanglePlacement::doNotResize);
-        auto result = placement.appliedTo(area,
-                                          Desktop::getInstance()
-                                                  .getDisplays()
-                                                  .getMainDisplay()
-                                                  .userArea.reduced(20));
-
-        help_window_->setBounds(result);
-        help_window_->setContentOwned(panel, true);
-        help_window_->setResizable(false, false);
-        help_window_->setUsingNativeTitleBar(true);
-        help_window_->setVisible(true);
-        help_window_->setAlwaysOnTop(true);
-    }
+main_window::wants_to_close::connection main_window::connect_wants_to_close(
+        wants_to_close::callback_type callback) {
+    return wants_to_close_.connect(std::move(callback));
 }
-*/

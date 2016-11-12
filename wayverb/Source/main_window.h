@@ -4,12 +4,12 @@
 
 #include "combined/model/app.h"
 
-class MainWindow final : public DocumentWindow,
-                         public ApplicationCommandTarget {
+class main_window final : public DocumentWindow,
+                          public ApplicationCommandTarget {
 public:
     //  load with a custom config too
-    MainWindow(String name, std::string fname);
-    ~MainWindow() noexcept;
+    main_window(String name, std::string fname);
+    ~main_window() noexcept;
 
     void closeButtonPressed() override;
 
@@ -40,6 +40,10 @@ public:
         }
     }
 
+    using wants_to_close = util::event<main_window&>;
+    wants_to_close::connection connect_wants_to_close(
+            wants_to_close::callback_type callback);
+
     //  TODO closeButtonPressed should notify the app that the window needs to
     //  close. It should *not* take matters into its own hands.
 
@@ -48,4 +52,6 @@ private:
 
     wayverb::combined::model::app model_;
     MainContentComponent content_component_;
+
+    wants_to_close wants_to_close_;
 };
