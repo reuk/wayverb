@@ -1,12 +1,8 @@
 #include "mvc.h"
 
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/noise.hpp"
-#include "glm/gtc/type_ptr.hpp"
-#include "glm/gtx/rotate_vector.hpp"
-
 namespace view {
 
+/*
 void scene::set_node_positions(util::aligned::vector<glm::vec3> positions) {}
 
 void scene::set_node_pressures(util::aligned::vector<float> pressures) {}
@@ -37,14 +33,15 @@ void scene::set_emphasis_colour(const glm::vec3& colour) {}
 void scene::set_sources(util::aligned::vector<glm::vec3> sources) {}
 
 void scene::set_receivers(util::aligned::vector<glm::vec3> receivers) {}
+*/
 
-void scene::set_projection_view_matrix(const glm::mat4& matrix) {
-    projection_view_matrix_ = matrix;
+void scene::set_view_projection_matrix(const glm::mat4& matrix) {
+    view_projection_matrix_ = matrix;
 }
 
-void scene::update(float dt) {}
+void scene::update(float) {}
 
-void scene::do_draw(const glm::mat4& modelview_matrix) const {
+void scene::do_draw(const glm::mat4&) const {
     const auto c = 0.0;
     glClearColor(c, c, c, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -62,103 +59,9 @@ void scene::do_draw(const glm::mat4& modelview_matrix) const {
     //  TODO Draw objects.
 }
 
-glm::mat4 scene::get_local_modelview_matrix() const { return glm::mat4{}; }
+glm::mat4 scene::get_local_model_matrix() const { return glm::mat4{}; }
 
 }  // namespace view
-
-////////////////////////////////////////////////////////////////////////////////
-
-namespace model {
-
-void scene::set_visible_surface(int surface) {
-    visible_surface_ = surface;
-    notify();
-}
-
-int scene::get_visible_surface() const { return visible_surface_; }
-
-void scene::set_origin(const glm::vec3& origin) {
-    origin_ = origin;
-    recompute_view_matrices();
-    notify();
-}
-
-glm::vec3 scene::get_origin() const { return origin_; }
-
-void scene::set_eye_distance(float distance) {
-    eye_distance_ = std::max(0.0f, distance);
-    recompute_view_matrices();
-    notify();
-}
-
-double scene::get_eye_distance() const { return eye_distance_; }
-
-void scene::set_rotation(const wayverb::core::az_el& az_el) {
-    az_el_ = wayverb::core::az_el{
-            az_el.azimuth,
-            clamp(az_el.elevation, util::make_range(-M_PI / 2, M_PI / 2))};
-    recompute_view_matrices();
-    notify();
-}
-
-wayverb::core::az_el scene::get_rotation() const { return az_el_; }
-
-void scene::set_viewport(const glm::vec2& viewport) {
-    viewport_ = viewport;
-    recompute_projection_matrices();
-    notify();
-}
-
-glm::vec2 scene::get_viewport() const { return viewport_; }
-
-float scene::get_aspect() const { return viewport_.x / viewport_.y; }
-
-float scene::get_item_radius() const { return item_radius_; }
-
-glm::mat4 scene::get_view_matrix() const { return view_matrix_; }
-glm::mat4 scene::get_inverse_view_matrix() const {
-    return inverse_view_matrix_;
-}
-
-glm::mat4 scene::get_projection_matrix() const { return projection_matrix_; }
-glm::mat4 scene::get_inverse_projection_matrix() const {
-    return inverse_projection_matrix_;
-}
-
-glm::mat4 scene::compute_projection_matrix() const {
-    return glm::perspective(45.0f, get_aspect(), 0.05f, 1000.0f);
-}
-
-glm::mat4 scene::compute_view_matrix() const {
-    const glm::vec3 from{0, 0, eye_distance_};
-    const glm::vec3 target{0, 0, 0};
-    const glm::vec3 up{0, 1, 0};
-    return glm::lookAt(from, target, up) *
-           glm::rotate(az_el_.elevation, glm::vec3(1, 0, 0)) *
-           glm::rotate(az_el_.azimuth, glm::vec3(0, 1, 0)) *
-           glm::translate(origin_);
-}
-
-void scene::recompute_view_matrices() {
-    view_matrix_ = compute_view_matrix();
-    inverse_view_matrix_ = glm::inverse(view_matrix_);
-}
-
-void scene::recompute_projection_matrices() {
-    projection_matrix_ = compute_projection_matrix();
-    inverse_projection_matrix_ = glm::inverse(projection_matrix_);
-}
-
-glm::vec3 scene::compute_world_camera_position() const {
-    return inverse_view_matrix_[3];
-}
-
-glm::vec3 scene::compute_world_camera_direction() const {
-    return glm::normalize(
-            glm::vec3{inverse_view_matrix_ * glm::vec4{0, 0, -1, 0}});
-}
-
-}  // namespace model
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -192,7 +95,7 @@ public:
 
 class rotate_action final : public scene::mouse_action {
 public:
-    rotate_action(model::scene& scene)
+    rotate_action(wayverb::combined::model::scene& scene)
             : scene_{scene}
             , initial_{scene_.get_rotation()} {}
 
@@ -212,13 +115,13 @@ public:
     void mouse_up(const MouseEvent&) override {}
 
 private:
-    model::scene& scene_;
+    wayverb::combined::model::scene& scene_;
     wayverb::core::az_el initial_;
 };
 
 class pan_action final : public scene::mouse_action {
 public:
-    pan_action(model::scene& scene)
+    pan_action(wayverb::combined::model::scene& scene)
             : scene_{scene} {}
 
     void mouse_drag(const MouseEvent&) override {
@@ -234,7 +137,7 @@ public:
     void mouse_up(const MouseEvent&) override {}
 
 private:
-    model::scene& scene_;
+    wayverb::combined::model::scene& scene_;
 };
 
 template <typename Item>
@@ -266,10 +169,8 @@ auto make_move_item_action_ptr(T& t) {
     return std::make_unique<move_item_action<T>>(t);
 }
 
-scene::scene(model::scene& temporary,
-             wayverb::combined::model::persistent& persistent)
-        : temporary_{temporary}
-        , persistent_{persistent} {}
+scene::scene(wayverb::combined::model::app& app)
+        : app_{app} {}
 
 void scene::mouse_down(const MouseEvent& e) { mouse_action_ = start_action(e); }
 
@@ -300,7 +201,7 @@ void scene::mouse_wheel_move(const MouseEvent& e, const MouseWheelDetails& d) {
 std::unique_ptr<scene::mouse_action> scene::start_action(const MouseEvent& e) {
     //  If middle and left mouse buttons are pressed, start panning action.
     if (e.mods.isLeftButtonDown() && e.mods.isRightButtonDown()) {
-        return std::make_unique<pan_action>(temporary_);
+        return std::make_unique<pan_action>(app_.scene);
     }
 
     //  If left mouse button is pressed, check for hovered items.
@@ -308,14 +209,13 @@ std::unique_ptr<scene::mouse_action> scene::start_action(const MouseEvent& e) {
     //  Else, do nothing.
     if (e.mods.isLeftButtonDown()) {
         const auto pos = wayverb::core::to_vec2{}(e.getPosition());
-        const auto hovered_source =
-                get_hovered(std::begin(persistent_.sources()),
-                            std::end(persistent_.sources()),
-                            pos);
-        const auto hovered_receiver =
-                get_hovered(std::begin(persistent_.receivers()),
-                            std::end(persistent_.receivers()),
-                            pos);
+        const auto get_hovered_in_range = [this, pos](auto& range) {
+            return get_hovered(std::begin(range), std::end(range), pos);
+        };
+        const auto hovered_source = get_hovered_in_range(
+                app_.project.persistent.sources());
+        const auto hovered_receiver = get_hovered_in_range(
+                app_.project.persistent.receivers());
 
         if (hovered_source.it != nullptr && hovered_receiver.it != nullptr) {
             const auto source_is_closer =
@@ -341,7 +241,7 @@ std::unique_ptr<scene::mouse_action> scene::start_action(const MouseEvent& e) {
 
     //  If middle mouse button is pressed, start rotation action.
     if (e.mods.isRightButtonDown()) {
-        return std::make_unique<rotate_action>(temporary_);
+        return std::make_unique<rotate_action>(app_.scene);
     }
 
     //  If nothing (important) is pressed then do nothing.
@@ -349,15 +249,16 @@ std::unique_ptr<scene::mouse_action> scene::start_action(const MouseEvent& e) {
 }
 
 glm::vec3 scene::compute_world_mouse_direction(const glm::vec2& pos) const {
+    const auto viewport = app_.scene.get_viewport();
     const auto ray_clip =
-            glm::vec4{(2 * pos.x) / temporary_.get_viewport().x - 1,
-                      1 - (2 * pos.y) / temporary_.get_viewport().y,
+            glm::vec4{(2 * pos.x) / viewport.x - 1,
+                      1 - (2 * pos.y) / viewport.y,
                       -1,
                       1};
-    auto ray_eye = temporary_.get_inverse_projection_matrix() * ray_clip;
+    auto ray_eye = app_.scene.get_inverse_projection_matrix() * ray_clip;
     ray_eye = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
     return glm::normalize(
-            glm::vec3{temporary_.get_inverse_view_matrix() * ray_eye});
+            glm::vec3{app_.scene.get_inverse_view_matrix() * ray_eye});
 }
 
 }  // namespace controller

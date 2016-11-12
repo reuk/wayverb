@@ -14,29 +14,11 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-state::state(const core::geo::box& aabb)
-        : type{persistent_t{aabb}, material_presets_t{}, capsule_presets_t{}} {}
-
-persistent& state::persistent() { return get<0>(); }
-const persistent& state::persistent() const { return get<0>(); }
-
-state::material_presets_t& state::material_presets() { return get<1>(); }
-const state::material_presets_t& state::material_presets() const {
-    return get<1>();
-}
-
-state::capsule_presets_t& state::capsule_presets() { return get<2>(); }
-const state::capsule_presets_t& state::capsule_presets() const {
-    return get<2>();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 project::project(const std::string& fpath)
         : scene_data_{is_project_file(fpath) ? compute_model_path(fpath)
                                              : fpath}
         , needs_save_{!is_project_file(fpath)}
-        , state{core::geo::compute_aabb(
+        , persistent{core::geo::compute_aabb(
                   scene_data_.get_scene_data().get_vertices())} {
     if (is_project_file(fpath)) {
         const auto config_file = project::compute_config_path(fpath);
@@ -44,16 +26,16 @@ project::project(const std::string& fpath)
         //  load the config
         std::ifstream stream(config_file);
         cereal::JSONInputArchive archive(stream);
-        archive(state);
+        archive(persistent);
 
     } else {
         const auto& surface_strings =
                 scene_data_.get_scene_data().get_surfaces();
-        state.persistent().materials() = materials_from_names<1>(
-                begin(surface_strings), end(surface_strings));
+        persistent.materials() = materials_from_names<1>(begin(surface_strings),
+                                                         end(surface_strings));
     }
 
-    state.connect([&](auto&) { needs_save_ = true; });
+    persistent.connect([&](auto&) { needs_save_ = true; });
 }
 
 std::string project::compute_model_path(const std::string& root) {
@@ -82,13 +64,15 @@ void project::save_to(const std::string& fpath) {
         //  write config with all current materials to file
         std::ofstream stream(project::compute_config_path(fpath));
         cereal::JSONOutputArchive archive(stream);
-        archive(state);
+        archive(persistent);
 
         needs_save_ = false;
 
         //  TODO register_recent_file(f.getFullPathName().toStdString());
     }
 }
+
+bool project::needs_save() const { return needs_save_; }
 
 core::generic_scene_data<cl_float3, std::string> project::get_scene_data()
         const {
@@ -109,7 +93,7 @@ void app::start_render() {
     //  Collect parameters.
 
     auto scene_data = generate_scene_data();
-    auto params = project.state.persistent();
+    auto params = project.persistent;
 
     //  Start engine in new thread.
     future_ = std::async(
@@ -124,7 +108,7 @@ void app::cancel_render() { engine_.cancel(); }
 
 //  void app::is_rendering() const { engine_.is_running(); }
 
-void app::save(const save_callback& callback) {
+bool app::save(const save_callback& callback) {
     if (project::is_project_file(currently_open_file_)) {
         project.save_to(currently_open_file_);
     } else {
@@ -142,12 +126,13 @@ void app::save_as(std::string name) {
     currently_open_file_ = std::move(name);
 }
 
+bool app::needs_save() const { return project.needs_save(); }
+
 //  DEBUG  /////////////////////////////////////////////////////////////////////
 
 void app::generate_debug_mesh() {
     auto scene_data = generate_scene_data();
-    auto sample_rate =
-            project.state.persistent().waveguide().get_sampling_frequency();
+    auto sample_rate = project.persistent.waveguide().get_sampling_frequency();
     auto speed_of_sound = 340.0;
 
     future_ = std::async(
@@ -200,7 +185,7 @@ core::gpu_scene_data app::generate_scene_data() {
                                  core::surface<core::simulation_bands>>
             material_map;
 
-    for (const auto& i : project.state.persistent().materials()) {
+    for (const auto& i : project.persistent.materials()) {
         material_map[i.get_name()] = i.get_surface();
     }
 

@@ -4,33 +4,22 @@
 
 #include <sstream>
 
-template <typename T>
-class TextDisplayProperty : public PropertyComponent,
-                            public model::BroadcastListener {
+class TextDisplayProperty : public PropertyComponent {
 public:
-    TextDisplayProperty(const String& name,
-                        int height,
-                        model::ValueWrapper<T>& value)
-            : PropertyComponent(name, height)
-            , value(value) {
-        addAndMakeVisible(label);
-        value_connector.trigger();
+    TextDisplayProperty(const String& name, int height)
+            : PropertyComponent{name, height} {
+        addAndMakeVisible(label_);
     }
 
-    void refresh() override {
-    }
+    void refresh() override {}
 
-    void receive_broadcast(model::Broadcaster* b) override {
-        if (b == &value) {
-            std::stringstream ss;
-            ss << value.get();
-            label.setText(ss.str(), dontSendNotification);
-        }
+    template <typename T>
+    void display(const T& t) {
+        std::stringstream ss;
+        ss << t;
+        label_.setText(ss.str(), dontSendNotification);
     }
 
 private:
-    model::ValueWrapper<T>& value;
-    model::BroadcastConnector value_connector{&value, this};
-
-    Label label;
+    Label label_;
 };

@@ -2,6 +2,7 @@
 
 #include "combined/model/material.h"
 #include "combined/model/persistent.h"
+#include "combined/model/scene.h"
 #include "combined/threaded_engine.h"
 
 #include "waveguide/mesh.h"
@@ -14,38 +15,14 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class state final
-        : public owning_member<
-                  state,
-                  persistent,                    // save-file contents
-                  vector<material, 0>,           // preset materials
-                  vector<vector<capsule, 1>, 0>  // preset capsule groups
-                  > {
-public:
-    explicit state(const core::geo::box& aabb);
-
-    using persistent_t = class persistent;
-    using material_presets_t = vector<material, 0>;
-    using capsule_presets_t = vector<vector<capsule, 1>, 0>;
-
-    persistent_t& persistent();
-    const persistent_t& persistent() const;
-
-    material_presets_t& material_presets();
-    const material_presets_t& material_presets() const;
-
-    capsule_presets_t& capsule_presets();
-    const capsule_presets_t& capsule_presets() const;
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
+/// All the stuff that goes into a save-file/project.
+/// Projects consist of a (copy of a) 3d model, along with a json save file.
 class project final {
     const core::scene_data_loader scene_data_;
     bool needs_save_;
 
 public:
-    state state;
+    persistent persistent;
 
     explicit project(const std::string& fpath);
 
@@ -59,11 +36,18 @@ public:
 
     void save_to(const std::string& fpath);
 
+    bool needs_save() const;
+
     core::generic_scene_data<cl_float3, std::string> get_scene_data() const;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/// Holds a project file, along with
+/// a list of preset materials and capsules, which will be loaded from disk,
+/// some events, for updating the ui after long-running operations,
+/// any transient data which needs a home,
+/// an engine instance
 class app final {
 public:
     //  SPECIAL MEMBERS  ///////////////////////////////////////////////////////
@@ -86,9 +70,11 @@ public:
     using save_callback =
             std::function<std::experimental::optional<std::string>()>;
     /// Will call save_callback if a new filepath is required.
-    void save(const save_callback& callback);
+    bool save(const save_callback& callback);
 
     void save_as(std::string name);
+
+    bool needs_save() const;
 
     //  DEBUG  /////////////////////////////////////////////////////////////////
 
@@ -116,7 +102,21 @@ public:
     mesh_generated::connection connect_mesh_generated(
             mesh_generated::callback_type t);
 
+    //  Backing data for rending 3D scene view.
+    //  There are arguably better homes for this, but I'm short on time...
+    scene scene;
+
+    //  Project data.
     project project;
+
+    //  Preset data.
+
+    //  TODO load presets from file
+    using material_presets_t = vector<material, 0>;
+    material_presets_t material_presets;
+
+    using capsule_presets_t = vector<vector<capsule, 1>, 0>;
+    capsule_presets_t capsule_presets;
 
 private:
     core::gpu_scene_data generate_scene_data();
