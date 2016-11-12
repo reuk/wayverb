@@ -8,7 +8,7 @@ class main_window final : public DocumentWindow,
                           public ApplicationCommandTarget {
 public:
     //  load with a custom config too
-    main_window(String name, std::string fname);
+    main_window(ApplicationCommandTarget& next, String name, std::string fname);
     ~main_window() noexcept;
 
     /// Returns true if the object is ready to be deleted.
@@ -51,6 +51,8 @@ public:
 
 private:
     std::experimental::optional<std::string> browse_for_file_to_save();
+
+    ApplicationCommandTarget& next_command_target_;
 
     wayverb::combined::model::app model_;
     MainContentComponent content_component_;

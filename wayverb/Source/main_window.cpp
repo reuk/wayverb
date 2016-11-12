@@ -3,8 +3,11 @@
 #include "main_window.h"
 
 //  init from as much outside info as possible
-main_window::main_window(String name, std::string fname)
+main_window::main_window(ApplicationCommandTarget& next,
+                         String name,
+                         std::string fname)
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
+        , next_command_target_{next}
         , model_{std::move(fname)}
         , content_component_{model_} {
     content_component_.setSize(800, 500);
@@ -128,7 +131,7 @@ bool main_window::perform(const InvocationInfo& info) {
 }
 
 ApplicationCommandTarget* main_window::getNextCommandTarget() {
-    return &wayverb_application::get_app();
+    return &next_command_target_;
 }
 
 void main_window::save() {

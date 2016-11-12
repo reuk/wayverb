@@ -46,12 +46,17 @@ public:
         command_manager_.registerAllCommandsForTarget(this);
         command_manager_.getKeyMappings()->resetToDefaultMappings();
 
+        command_manager_.getKeyMappings()->resetToDefaultMappings();
+
         MenuBarModel::setMacMainMenu(&main_menu_bar_model_, nullptr);
 
         show_hide_load_window();
     }
 
-    ~instance() noexcept { MenuBarModel::setMacMainMenu(nullptr); }
+    ~instance() noexcept {
+        help_window_.deleteAndZero();
+        MenuBarModel::setMacMainMenu(nullptr);
+    }
 
     //  Commands.
 
@@ -207,6 +212,7 @@ private:
     void open_project(const File& file) {
         try {
             auto new_window = std::make_unique<main_window>(
+                    *this,
                     owner_.getApplicationName(),
                     file.getFullPathName().toStdString());
             //  When window asks to close, find it in the set and delete it.
