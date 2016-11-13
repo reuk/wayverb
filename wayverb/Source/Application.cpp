@@ -2,6 +2,7 @@
 #include "AngularLookAndFeel.h"
 #include "CommandIDs.h"
 #include "HelpWindow.h"
+#include "try_and_explain.h"
 
 #include "UtilityComponents/LoadWindow.h"
 
@@ -225,7 +226,7 @@ private:
     };
 
     void open_project(const std::string& fname) {
-        try {
+        try_and_explain([&] {
             auto new_window = std::make_unique<main_window>(
                     *this,
                     owner_.getApplicationName(),
@@ -246,17 +247,7 @@ private:
             main_windows_.insert(std::move(new_window));
             register_recent_file(fname);
             show_hide_load_window();
-        } catch (const std::exception& e) {
-            NativeMessageBox::showMessageBox(
-                    AlertWindow::WarningIcon,
-                    "exception...",
-                    std::string("Encountered an exception: ") + e.what());
-        } catch (...) {
-            NativeMessageBox::showMessageBox(
-                    AlertWindow::WarningIcon,
-                    "exception...",
-                    std::string("Encountered an unknown exception."));
-        }
+        }, "opening project", "Make sure the file is a 3D object or wayverb project.");
     }
 
     void open_project_from_dialog() {

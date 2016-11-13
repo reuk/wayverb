@@ -3,6 +3,7 @@
 #include "core/scene_data.h"
 
 #include "utilities/map_to_vector.h"
+#include "utilities/string_builder.h"
 
 #include "assimp/Exporter.hpp"
 #include "assimp/Importer.hpp"
@@ -13,7 +14,6 @@ namespace wayverb {
 namespace core {
 
 class scene_data_loader::impl final {
-public:
     auto load_from_file(const std::string& scene_file) {
         const auto scene = importer_.ReadFile(
                 scene_file,
@@ -21,9 +21,8 @@ public:
                  aiProcess_FlipUVs));
 
         if (scene == nullptr) {
-            throw std::runtime_error{
-                    "scene pointer is null - couldn't load scene for some "
-                    "reason"};
+            throw std::runtime_error{util::build_string(
+                    "Couldn't load scene.\n", importer_.GetErrorString())};
         }
 
         util::aligned::vector<triangle> triangles{};
@@ -63,26 +62,49 @@ public:
                              mesh_triangles.end());
         }
 
+        if (triangles.empty() || vertices.empty()) {
+            throw std::runtime_error{"no geometry found in scene file"};
+        }
+
         return make_scene_data(std::move(triangles),
                                std::move(vertices),
                                std::move(materials));
     }
 
-    impl(const std::string& scene_file)
-            : data_{load_from_file(scene_file)} {}
+public:
+    impl() = default;
+
+    impl(const std::string& f) { load(f); }
+
+    void load(const std::string& f) { data_ = load_from_file(f); }
 
     void save(const std::string& f) const {
-        Assimp::Exporter().Export(importer_.GetScene(), "obj", f);
+        if (data_) {
+            Assimp::Exporter().Export(importer_.GetScene(), "obj", f);
+        }
     }
 
-    const scene_data& get_scene_data() const { return data_; }
+    const std::experimental::optional<scene_data>& get_scene_data() const {
+        return data_;
+    }
+
+    void clear() { data_ = std::experimental::nullopt; };
+
+    std::string get_extensions() const {
+        aiString str;
+        importer_.GetExtensionList(str);
+        return str.C_Str();
+    }
 
 private:
     Assimp::Importer importer_;
-    scene_data data_;
+    std::experimental::optional<scene_data> data_;
 };
 
-scene_data_loader::scene_data_loader() = default;
+////////////////////////////////////////////////////////////////////////////////
+
+scene_data_loader::scene_data_loader()
+        : pimpl_{std::make_unique<impl>()} {}
 
 scene_data_loader::scene_data_loader(scene_data_loader&&) noexcept = default;
 scene_data_loader& scene_data_loader::operator=(scene_data_loader&&) noexcept =
@@ -92,27 +114,19 @@ scene_data_loader::~scene_data_loader() noexcept = default;
 scene_data_loader::scene_data_loader(const std::string& fpath)
         : pimpl_{std::make_unique<impl>(fpath)} {}
 
-bool scene_data_loader::is_loaded() const { return pimpl_ != nullptr; }
+void scene_data_loader::load(const std::string& f) { pimpl_->load(f); }
 
-void scene_data_loader::load(const std::string& f) {
-    pimpl_ = std::make_unique<impl>(f);
+void scene_data_loader::save(const std::string& f) const { pimpl_->save(f); }
+
+void scene_data_loader::clear() { pimpl_->clear(); }
+
+std::string scene_data_loader::get_extensions() const {
+    return pimpl_->get_extensions();
 }
 
-void scene_data_loader::save(const std::string& f) const {
-    if (is_loaded()) {
-        pimpl_->save(f);
-    } else {
-        throw std::logic_error{"can't save if nothing's been loaded"};
-    }
-}
-
-void scene_data_loader::clear() { pimpl_ = nullptr; }
-
-const scene_data_loader::scene_data& scene_data_loader::get_scene_data() const {
-    if (is_loaded()) {
-        return pimpl_->get_scene_data();
-    }
-    throw std::logic_error{"can't access scene data if nothing's been loaded"};
+const std::experimental::optional<scene_data_loader::scene_data>&
+scene_data_loader::get_scene_data() const {
+    return pimpl_->get_scene_data();
 }
 }  // namespace core
 }  // namespace wayverb

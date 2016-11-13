@@ -5,6 +5,8 @@
 #include "utilities/aligned/unordered_map.h"
 #include "utilities/map_to_vector.h"
 
+#include <experimental/optional>
+
 namespace wayverb {
 namespace core {
 
@@ -21,11 +23,13 @@ public:
     void load(const std::string& f);
     void save(const std::string& f) const;
 
-    bool is_loaded() const;
     void clear();
 
+    /// Get all file extensions that the loader might understand.
+    std::string get_extensions() const;
+
     using scene_data = generic_scene_data<cl_float3, std::string>;
-    const scene_data& get_scene_data() const;
+    const std::experimental::optional<scene_data>& get_scene_data() const;
 
 private:
     class impl;

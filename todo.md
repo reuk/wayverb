@@ -38,14 +38,10 @@ Model View
     Pan.
 
     Make sources and receivers draggable.
-        Can I move the majority of the renderer *data* (matrices etc.) to the
-        message thread?
 
-        This way we can calculate source/position + mouse status entirely on the
-        message thread, and literally just broadcast new positions to the view 
-        when necessary.
+        Highlight when hovered/moved?
 
-        Oh hey it's model-view-controller
+        Make them visible
 
     Improve source/reciever + microphone direction models.
 

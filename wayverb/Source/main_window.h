@@ -26,22 +26,6 @@ public:
     void save();
     void save_as();
 
-    template <typename Callback>
-    void try_and_explain(const Callback& callback,
-                         const std::string& action_name) {
-        try {
-            callback();
-        } catch (const std::exception& e) {
-            AlertWindow::showMessageBoxAsync(
-                    AlertWindow::AlertIconType::WarningIcon,
-                    "warning",
-                    util::build_string("Encountered an error ",
-                                       action_name,
-                                       ":\n",
-                                       e.what()));
-        }
-    }
-
     using wants_to_close = util::event<main_window&>;
     wants_to_close::connection connect_wants_to_close(
             wants_to_close::callback_type callback);
