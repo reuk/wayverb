@@ -3,6 +3,8 @@
 #include "utilities/map_to_vector.h"
 #include "utilities/mapping_iterator_adapter.h"
 
+#include <iostream>
+
 namespace wayverb {
 namespace raytracer {
 namespace image_source {
@@ -135,9 +137,11 @@ private:
             //  This path segment is valid.
             //  Find angle between ray and triangle normal at intersection.
             //  Add appropriate intersection to ret.
-            const auto cos_angle = std::abs(glm::dot(
-                    ray.get_direction(),
-                    core::geo::normal(get_triangle(voxelised, i->index))));
+            const auto cos_angle =
+                    clamp(std::abs(glm::dot(ray.get_direction(),
+                                            core::geo::normal(get_triangle(
+                                                    voxelised, i->index)))),
+                          util::make_range(0.0f, 1.0f));
 
             const auto surface_index = voxelised.get_scene_data()
                                                .get_triangles()[i->index]
