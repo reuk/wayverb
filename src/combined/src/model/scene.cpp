@@ -35,7 +35,7 @@ void scene::set_origin(const glm::vec3& origin) {
 glm::vec3 scene::get_origin() const { return origin_; }
 
 void scene::set_eye_distance(float distance) {
-    eye_distance_ = std::max(0.0f, distance);
+    eye_distance_ = std::max(0.1f, distance);
     recompute_view_matrices();
 }
 

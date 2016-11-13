@@ -109,7 +109,9 @@ void controller::mouse_wheel_move(const MouseEvent& e,
                                   const MouseWheelDetails& d) {
     //  Only zoom if another action is not ongoing.
     if (mouse_action_ == nullptr) {
-        app_.scene.set_eye_distance(app_.scene.get_eye_distance() + d.deltaY);
+        const auto current_distance = app_.scene.get_eye_distance();
+        const auto diff = current_distance * d.deltaY;
+        app_.scene.set_eye_distance(current_distance + diff);
     }
 }
 

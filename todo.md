@@ -14,31 +14,13 @@ Look again at frequency domain test?
 app stuff
 ---------
 
-Make it look like Tron.
-
-Finish adding the help panel info.
-
-Load/save material + receiver presets.
-    Or at least have some good ones compiled-in
-
-Clipping planes for large models.
-    Inifinte perspective doesn't fix this... Not sure what the problem is here.
-
-Window to configure output samplerate/bit-depth before beginning the rendering.
-
-Move node colour processing to vertex shader(s).
-
-Make sure node pressures are zeroed before each run.
-
-Adjust zoom speed based on current zoom distance.
-    i.e. it should probalby be logarithmic.
-
-Use scoped connections to connect debug processing callbacks until they are
-first called.
-
-Improve the source/receiver editors.
-
 Model View
+    Move node colour processing to vertex shader(s).
+
+    Make sure node pressures are zeroed before each run.
+
+    Ensure raytracer reflections are actually working.
+
     Pan.
 
     Easing.
@@ -50,6 +32,24 @@ Model View
         Make them visible
 
     Improve source/reciever + microphone direction models.
+
+    Clipping planes for large models.
+        Inifinte perspective doesn't fix this... Not sure what the problem is here.
+
+    Adjust zoom speed based on current zoom distance.
+
+Make it look like Tron.
+
+Finish adding the help panel info.
+
+Add some capsule group presets.
+
+Window to configure output samplerate/bit-depth before beginning the rendering.
+
+Use scoped connections to connect debug processing callbacks until they are
+first called.
+
+Improve the source/receiver editors.
 
 Fail for really long reverbs i.e. longer than 60 seconds.
     OR disable absorptions lower than (for example) 0.01
