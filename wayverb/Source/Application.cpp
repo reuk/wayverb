@@ -226,28 +226,32 @@ private:
     };
 
     void open_project(const std::string& fname) {
-        try_and_explain([&] {
-            auto new_window = std::make_unique<main_window>(
-                    *this,
-                    owner_.getApplicationName(),
-                    fname);
+        try_and_explain(
+                [&] {
+                    auto new_window = std::make_unique<main_window>(
+                            *this, owner_.getApplicationName(), fname);
 
-            //  When window asks to close, find it in the set and delete it.
-            new_window->connect_wants_to_close([this](auto& window) {
-                //  Look up the window in the list of open windows.
-                const auto it = std::find_if(
-                        cbegin(main_windows_),
-                        cend(main_windows_),
-                        [&](const auto& ptr) { return ptr.get() == &window; });
+                    //  When window asks to close, find it in the set and delete
+                    //  it.
+                    new_window->connect_wants_to_close([this](auto& window) {
+                        //  Look up the window in the list of open windows.
+                        const auto it =
+                                std::find_if(cbegin(main_windows_),
+                                             cend(main_windows_),
+                                             [&](const auto& ptr) {
+                                                 return ptr.get() == &window;
+                                             });
 
-                main_windows_.erase(it);
+                        main_windows_.erase(it);
 
-                show_hide_load_window();
-            });
-            main_windows_.insert(std::move(new_window));
-            register_recent_file(fname);
-            show_hide_load_window();
-        }, "opening project", "Make sure the file is a 3D object or wayverb project.");
+                        show_hide_load_window();
+                    });
+                    main_windows_.insert(std::move(new_window));
+                    register_recent_file(fname);
+                    show_hide_load_window();
+                },
+                "opening project",
+                "Make sure the file is a 3D object or wayverb project.");
     }
 
     void open_project_from_dialog() {
@@ -297,7 +301,10 @@ private:
         }
     }
 
-    static constexpr const char* valid_file_formats = "";
+    static constexpr const char* valid_file_formats =
+            "*.way;*.fbx;*.dae;*.gltf;*.glb;*.blend;*.3ds;*.ase;*.obj;*.ifc;*."
+            "xgl;*.zgl;*.ply;*.dxf;*.lwo;*.lws;*.lxo;*.stl;*.x;*.ac;*.ms3d;*."
+            "cob;*.scn";
 
     wayverb_application& owner_;
 
