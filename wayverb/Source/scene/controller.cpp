@@ -19,13 +19,6 @@ public:
 
     /// Do something when the mouse is moved.
     virtual void mouse_drag(const MouseEvent& e) = 0;
-
-    /// Do something when the mouse is scrolled.
-    virtual void mouse_wheel_move(const MouseEvent& e,
-                                  const MouseWheelDetails& d) = 0;
-
-    /// Sent just before object is destroyed.
-    virtual void mouse_up(const MouseEvent& e) = 0;
 };
 
 class rotate_action final : public controller::mouse_action {
@@ -42,13 +35,6 @@ public:
                 static_cast<float>(diff.y * angle_scale + initial_.elevation)});
     }
 
-    void mouse_wheel_move(const MouseEvent&,
-                          const MouseWheelDetails& d) override {
-        controller_.set_eye_distance(controller_.get_eye_distance() + d.deltaY);
-    }
-
-    void mouse_up(const MouseEvent&) override {}
-
 private:
     wayverb::combined::model::scene& controller_;
     wayverb::core::az_el initial_;
@@ -63,13 +49,6 @@ public:
         //  TODO pan
         //  TODO move origin in the plane of the current orientation
     }
-
-    void mouse_wheel_move(const MouseEvent&,
-                          const MouseWheelDetails& d) override {
-        controller_.set_eye_distance(controller_.get_eye_distance() + d.deltaY);
-    }
-
-    void mouse_up(const MouseEvent&) override {}
 
 private:
     wayverb::combined::model::scene& controller_;
@@ -87,10 +66,7 @@ public:
         //  TODO move item
     }
 
-    void mouse_wheel_move(const MouseEvent&,
-                          const MouseWheelDetails&) override {}
-
-    void mouse_up(const MouseEvent&) override {
+    ~move_item_action() noexcept {
         //  TODO remove highlighting
     }
 
@@ -125,16 +101,15 @@ void controller::mouse_up(const MouseEvent& e) {
     //  If there are still buttons held, start the appropriate action for the
     //  remaining buttons.
     if (mouse_action_) {
-        mouse_action_->mouse_up(e);
         mouse_action_ = nullptr;
     }
-    mouse_action_ = start_action(e);
 }
 
 void controller::mouse_wheel_move(const MouseEvent& e,
                                   const MouseWheelDetails& d) {
-    if (mouse_action_) {
-        mouse_action_->mouse_wheel_move(e, d);
+    //  Only zoom if another action is not ongoing.
+    if (mouse_action_ == nullptr) {
+        app_.scene.set_eye_distance(app_.scene.get_eye_distance() + d.deltaY);
     }
 }
 

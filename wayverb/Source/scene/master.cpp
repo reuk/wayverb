@@ -60,6 +60,8 @@ public:
             view_.command([=](auto& r) { r.set_projection_matrix(matrix); });
         });
 
+        //  TODO Hook up the engine.
+
         //  We want to catch mouse events and dispatch our own commands to the
         //  view, so we'll disable mouse events directly on the view.
         view_.setInterceptsMouseClicks(false, false);
@@ -73,7 +75,6 @@ public:
     }
 
     void mouseDown(const MouseEvent& e) override {
-        std::cout << "mouse down\n" << std::flush;
         controller_.mouse_down(e);
     }
 

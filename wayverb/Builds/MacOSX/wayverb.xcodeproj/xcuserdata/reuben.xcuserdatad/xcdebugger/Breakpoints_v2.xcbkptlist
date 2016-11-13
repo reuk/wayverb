@@ -91,53 +91,5 @@
             endingLineNumber = "196">
          </BreakpointContent>
       </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "../../Source/scene/master.cpp"
-            timestampString = "500737936.841822"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "60"
-            endingLineNumber = "60"
-            landmarkName = "connect_projection_matrix_changed([&amp;](auto matrix) { view_.command([=](auto&amp; r) { r.set_projection_matrix(matrix); }); })"
-            landmarkType = "8">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "scene::master::impl::impl(wayverb::combined::model::app&amp;)::&apos;lambda1&apos;(glm::tmat4x4&lt;float, (glm::precision)0&gt;)::operator()&lt;glm::tmat4x4&lt;float, (glm::precision)0&gt; &gt;(auto, glm::tmat4x4&lt;float, (glm::precision)0&gt;) const"
-                  moduleName = "visualiser"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/reuben/development/waveguide/wayverb/Source/scene/master.cpp"
-                  timestampString = "500738058.807454"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "60"
-                  endingLineNumber = "60"
-                  offsetFromSymbolStart = "36">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "scene::master::impl::impl(wayverb::combined::model::app&amp;)::&apos;lambda1&apos;(scene::view)::operator()&lt;glm::tmat4x4&lt;float, (glm::precision)0&gt; &gt;(auto, scene::view) const::&apos;lambda&apos;(scene::view&amp;)::operator()&lt;scene::view&gt;(scene::view&amp;, &apos;lambda&apos;(scene::view&amp;)) const"
-                  moduleName = "visualiser"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/reuben/development/waveguide/wayverb/Source/scene/master.cpp"
-                  timestampString = "500738058.809051"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "60"
-                  endingLineNumber = "60"
-                  offsetFromSymbolStart = "20">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
    </Breakpoints>
 </Bucket>

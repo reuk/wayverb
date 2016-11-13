@@ -16,6 +16,8 @@ Look again at frequency domain test?
 app stuff
 ---------
 
+Configure view so that model is completely visible when loaded.
+
 Finish adding the help panel info.
 
 Spurious dirty data - asked to save when not strictly required.
