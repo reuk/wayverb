@@ -94,6 +94,9 @@ app::~app() noexcept { cancel_render(); }
 void app::start_render() {
     cancel_render();
 
+    //  Let the world know that we're gonna do some stuff.
+    begun_();
+    
     //  Collect parameters.
 
     auto scene_data = generate_scene_data();
@@ -154,6 +157,10 @@ void app::generate_debug_mesh() {
 
 //  CALLBACKS  /////////////////////////////////////////////////////////////////
 
+app::begun::connection app::connect_begun(begun::callback_type t) {
+    return begun_.connect(std::move(t));
+}
+
 engine_state_changed::connection app::connect_engine_state(
         engine_state_changed::callback_type t) {
     return engine_.add_engine_state_changed_callback(std::move(t));
@@ -177,6 +184,10 @@ raytracer_reflections_generated::connection app::connect_reflections(
 app::encountered_error::connection app::connect_error_handler(
         encountered_error::callback_type t) {
     return engine_.add_encountered_error_callback(std::move(t));
+}
+
+app::finished::connection app::connect_finished(finished::callback_type t) {
+    return engine_.add_finished_callback(std::move(t));
 }
 
 app::mesh_generated::connection app::connect_mesh_generated(

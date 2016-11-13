@@ -86,6 +86,9 @@ public:
 
     //  CALLBACKS  /////////////////////////////////////////////////////////////
 
+    using begun = util::event<>;
+    begun::connection connect_begun(begun::callback_type t);
+
     engine_state_changed::connection connect_engine_state(
             engine_state_changed::callback_type t);
 
@@ -102,9 +105,13 @@ public:
     encountered_error::connection connect_error_handler(
             encountered_error::callback_type t);
 
+    using finished = complete_engine::finished;
+    finished::connection connect_finished(finished::callback_type t);
+
     using mesh_generated = util::event<wayverb::waveguide::mesh>;
     mesh_generated::connection connect_mesh_generated(
             mesh_generated::callback_type t);
+
 
     //  MISC FUNCTIONS  //////////////////////////////////////////////////////// 
 
@@ -130,6 +137,8 @@ private:
     core::gpu_scene_data generate_scene_data();
 
     std::string currently_open_file_;
+
+    begun begun_;
 
     mesh_generated mesh_generated_;
 

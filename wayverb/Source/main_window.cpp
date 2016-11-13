@@ -89,6 +89,8 @@ void main_window::getAllCommands(Array<CommandID>& commands) {
             CommandIDs::idCloseProject,
             CommandIDs::idVisualise,
             CommandIDs::idResetView,
+            CommandIDs::idStartRender,
+            CommandIDs::idCancelRender,
     });
 }
 
@@ -131,6 +133,21 @@ void main_window::getCommandInfo(CommandID command_id,
                            "General",
                            0);
             break;
+
+        case CommandIDs::idStartRender:
+            result.setInfo("Start Render",
+                           "Start rendering acoustics",
+                           "General",
+                           0);
+            break;
+
+        case CommandIDs::idCancelRender:
+            result.setInfo("Cancel Render",
+                           "Cancel ongoing render operation",
+                           "General",
+                           0);
+            break;
+            
     }
 }
 
@@ -153,6 +170,14 @@ bool main_window::perform(const InvocationInfo& info) {
             return true;
 
         case CommandIDs::idResetView: model_.reset_view(); return true;
+
+        case CommandIDs::idStartRender:
+            model_.start_render();
+            return true;
+
+        case CommandIDs::idCancelRender:
+            model_.cancel_render();
+            return true;
 
         default: return false;
     }

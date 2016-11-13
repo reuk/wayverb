@@ -7,14 +7,14 @@ small? Can I get the correct direct/reflected ratios for near and far sources?
 Put a really short hanning window on the beginning of output signals to hide
 dc drift? QUALITY ENGINEERING
 
-Threaded engine - finish completely
-
 Not convinced that waveguide/raytracer levels are matched properly.
 
 Look again at frequency domain test?
 
 app stuff
 ---------
+
+Make it look like Tron.
 
 Finish adding the help panel info.
 

@@ -6,7 +6,7 @@
 #include <type_traits>
 
 MainContentComponent::MainContentComponent(wayverb::combined::model::app& app)
-        : left_panel_{}
+        : left_panel_{app}
         , resizer_bar_{&layout_manager_, 1, true}
         , right_panel_{app} {
     set_help("wayverb", "This is the main wayverb app window.");

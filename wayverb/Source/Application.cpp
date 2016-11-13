@@ -195,6 +195,11 @@ private:
             menu.addCommandItem(&command_manager, CommandIDs::idSaveProject);
             menu.addCommandItem(&command_manager, CommandIDs::idSaveAsProject);
 
+            menu.addSeparator();
+
+            menu.addCommandItem(&command_manager, CommandIDs::idStartRender);
+            menu.addCommandItem(&command_manager, CommandIDs::idCancelRender);
+
 #if !JUCE_MAC
             menu.addSeparator();
             menu.addCommandItem(&command_manager,

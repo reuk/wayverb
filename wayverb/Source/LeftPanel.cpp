@@ -245,10 +245,32 @@ namespace {
 
 }  // namespace
 
-LeftPanel::LeftPanel() {
+LeftPanel::LeftPanel(wayverb::combined::model::app& model)
+        : model_{model} {
     set_help("configuration panel",
              "Use the options in this panel to adjust the various settings of "
              "the simulation.");
+
+    //  Hook up the model callbacks.
+
+    model_.connect_begun([this] {
+        queue_.push([this] {
+            bottom_panel_.set_state(BottomPanel::state::rendering);
+        });
+    });
+
+    model_.connect_engine_state([this](auto state, auto progress) {
+        queue_.push([this, state, progress] {
+            bottom_panel_.set_bar_text(wayverb::combined::to_string(state));
+            bottom_panel_.set_progress(progress);
+        });
+    });
+
+    model_.connect_finished([this] {
+        queue_.push([this] {
+            bottom_panel_.set_state(BottomPanel::state::idle);
+        });
+    });
 
     /*
     {
@@ -320,14 +342,14 @@ LeftPanel::LeftPanel() {
         }
         */
 
-    property_panel.setOpaque(false);
+    property_panel_.setOpaque(false);
 
-    addAndMakeVisible(property_panel);
-    addAndMakeVisible(bottom_panel);
+    addAndMakeVisible(property_panel_);
+    addAndMakeVisible(bottom_panel_);
 }
 
 void LeftPanel::resized() {
     auto panel_height = 30;
-    property_panel.setBounds(getLocalBounds().withTrimmedBottom(panel_height));
-    bottom_panel.setBounds(getLocalBounds().removeFromBottom(panel_height));
+    property_panel_.setBounds(getLocalBounds().withTrimmedBottom(panel_height));
+    bottom_panel_.setBounds(getLocalBounds().removeFromBottom(panel_height));
 }

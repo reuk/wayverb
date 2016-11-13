@@ -1,9 +1,13 @@
 #include "BottomPanel.h"
+#include "Application.h"
+#include "CommandIDs.h"
 
 BottomPanel::BottomPanel()
         : bar_{progress_} {
     addAndMakeVisible(bar_);
     addAndMakeVisible(button_);
+
+    set_state(state::idle);
 }
 
 void BottomPanel::paint(Graphics& g) { g.fillAll(Colours::darkgrey); }
@@ -22,9 +26,12 @@ void BottomPanel::set_bar_text(const std::string& str) {
     bar_.setTextToDisplay(str.c_str());
 }
 void BottomPanel::set_state(state s) {
+    state_ = s;
     switch (s) {
         case state::idle: {
             button_.setButtonText("render");
+            bar_.setTextToDisplay("");
+            progress_ = 0;
             break;
         }
 
@@ -36,6 +43,9 @@ void BottomPanel::set_state(state s) {
 }
 
 //  Controller methods
-void BottomPanel::buttonClicked(Button* b) {
-    //  TODO
+void BottomPanel::buttonClicked(Button*) {
+    wayverb_application::get_command_manager().invokeDirectly(
+            state_ == state::idle ? CommandIDs::idStartRender
+                                  : CommandIDs::idCancelRender,
+            true);
 }

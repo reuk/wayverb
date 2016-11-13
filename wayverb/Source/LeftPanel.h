@@ -2,6 +2,9 @@
 
 #include "BottomPanel.h"
 #include "HelpWindow.h"
+#include "async_work_queue.h"
+
+#include "combined/model/app.h"
 
 class LeftPanel : public Component,
                   public SettableHelpPanelClient {
@@ -21,7 +24,7 @@ public:
         virtual void left_panel_debug_hide_debug_mesh(const LeftPanel*) = 0;
     };
 
-    LeftPanel();
+    LeftPanel(wayverb::combined::model::app& model);
 
     void resized() override;
 
@@ -29,6 +32,9 @@ public:
     void removeListener(Listener* l);
 
 private:
-    PropertyPanel property_panel;
-    BottomPanel bottom_panel;
+    wayverb::combined::model::app& model_;
+    async_work_queue queue_;
+
+    PropertyPanel property_panel_;
+    BottomPanel bottom_panel_;
 };

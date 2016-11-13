@@ -21,8 +21,9 @@ public:
 private:
     //  Controller methods
     void buttonClicked(Button*) override;
-    
-    double progress_{0};
+
+    state state_ = state::idle;
+    double progress_ = 0;
 
     juce::ProgressBar bar_;
     TextButton button_;
