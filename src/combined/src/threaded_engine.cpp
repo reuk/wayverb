@@ -88,19 +88,22 @@ void complete_engine::run(const core::compute_context& compute_context,
                         eng.get_voxels_and_mesh().mesh.get_descriptor());
 
                 //  Register callbacks.
-                const auto engine_state_change_connector =
-                        eng.add_engine_state_changed_callback(
-                                make_forwarding_call(engine_state_changed_));
+                if (!engine_state_changed_.empty()) {
+                    eng.add_engine_state_changed_callback(
+                            make_forwarding_call(engine_state_changed_));
+                }
 
-                const auto node_pressure_connector =
-                        eng.add_waveguide_node_pressures_changed_callback(
-                                make_forwarding_call(
-                                        waveguide_node_pressures_changed_));
+                if (!waveguide_node_pressures_changed_.empty()) {
+                    eng.add_waveguide_node_pressures_changed_callback(
+                            make_forwarding_call(
+                                    waveguide_node_pressures_changed_));
+                }
 
-                const auto raytracer_reflection_connector =
-                        eng.add_raytracer_reflections_generated_callback(
-                                make_forwarding_call(
-                                        raytracer_reflections_generated_));
+                if (!raytracer_reflections_generated_.empty()) {
+                    eng.add_raytracer_reflections_generated_callback(
+                            make_forwarding_call(
+                                    raytracer_reflections_generated_));
+                }
 
                 const auto polymorphic_capsules = util::map_to_vector(
                         std::begin(receiver->capsules()),

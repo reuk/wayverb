@@ -1,5 +1,4 @@
 #include "combined/full_run.h"
-#include "combined/forwarding_call.h"
 #include "combined/waveguide_base.h"
 
 namespace wayverb {
@@ -19,15 +18,7 @@ postprocessing_engine::postprocessing_engine(
                   receiver,
                   environment,
                   raytracer,
-                  std::move(waveguide)}
-        , state_connector_{engine_.add_engine_state_changed_callback(
-                  make_forwarding_call(engine_state_changed_))}
-        , pressure_connector_{engine_.add_waveguide_node_pressures_changed_callback(
-                  make_forwarding_call(waveguide_node_pressures_changed_))}
-        , reflection_connector_{
-                  engine_.add_raytracer_reflections_generated_callback(
-                          make_forwarding_call(
-                                  raytracer_reflections_generated_))} {}
+                  std::move(waveguide)} {}
 
 engine_state_changed::connection
 postprocessing_engine::add_engine_state_changed_callback(

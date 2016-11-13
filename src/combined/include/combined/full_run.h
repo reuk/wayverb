@@ -1,6 +1,7 @@
 #pragma once
 
 #include "combined/capsule_base.h"
+#include "combined/forwarding_call.h"
 #include "combined/engine.h"
 
 #include <experimental/optional>
@@ -32,7 +33,34 @@ public:
     run(It b_capsules,
         It e_capsules,
         double sample_rate,
-        const std::atomic_bool& keep_going) const {
+        const std::atomic_bool& keep_going) {
+        //  Only add engine listeners if things are listening to this object.
+
+        engine_state_changed::scoped_connection state;
+        if (!engine_state_changed_.empty()) {
+            state = engine_state_changed::scoped_connection{
+                    engine_.add_engine_state_changed_callback(
+                            make_forwarding_call(engine_state_changed_))};
+        }
+
+        waveguide_node_pressures_changed::scoped_connection pressures;
+        if (!waveguide_node_pressures_changed_.empty()) {
+            pressures = waveguide_node_pressures_changed::scoped_connection{
+                    engine_.add_waveguide_node_pressures_changed_callback(
+                            make_forwarding_call(
+                                    waveguide_node_pressures_changed_))};
+        }
+
+        raytracer_reflections_generated::scoped_connection reflections;
+        if (!raytracer_reflections_generated_.empty()) {
+            reflections = raytracer_reflections_generated::scoped_connection{
+                    engine_.add_raytracer_reflections_generated_callback(
+                            make_forwarding_call(
+                                    raytracer_reflections_generated_))};
+        }
+
+        //  Start running.
+
         const auto intermediate = engine_.run(keep_going);
 
         if (intermediate == nullptr) {
@@ -77,10 +105,6 @@ private:
     engine_state_changed engine_state_changed_;
     waveguide_node_pressures_changed waveguide_node_pressures_changed_;
     raytracer_reflections_generated raytracer_reflections_generated_;
-
-    engine_state_changed::scoped_connection state_connector_;
-    waveguide_node_pressures_changed::scoped_connection pressure_connector_;
-    raytracer_reflections_generated::scoped_connection reflection_connector_;
 };
 
 }  // namespace combined
