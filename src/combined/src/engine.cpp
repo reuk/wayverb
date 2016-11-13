@@ -98,12 +98,7 @@ public:
             , receiver_{receiver}
             , environment_{environment}
             , raytracer_{raytracer}
-            , waveguide_{std::move(waveguide)} {
-        //  TODO throw this out
-        std::cout << "estimated volume: " << room_volume_ << '\n';
-        std::cout << "exact volume: " << estimate_room_volume(scene_data)
-                  << '\n';
-    }
+            , waveguide_{std::move(waveguide)} {}
 
     std::unique_ptr<intermediate> run(
             const std::atomic_bool& keep_going) const {

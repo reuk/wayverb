@@ -18,6 +18,8 @@ Make it look like Tron.
 
 Enable/disable visualisation.
 
+Native dialogs everywhere.
+
 Finish adding the help panel info.
 
 Load/save material + receiver presets.
