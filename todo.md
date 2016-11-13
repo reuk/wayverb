@@ -16,6 +16,8 @@ Look again at frequency domain test?
 app stuff
 ---------
 
+Mesh object should own its own pressure and colour shaders
+
 Finish adding the help panel info.
 
 Spurious dirty data - asked to save when not strictly required.

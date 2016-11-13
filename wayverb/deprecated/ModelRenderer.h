@@ -29,52 +29,6 @@
 #include <mutex>
 #include <queue>
 
-class MultiMaterialObject : public mglu::drawable {
-public:
-    MultiMaterialObject(
-            const std::shared_ptr<mglu::generic_shader> &generic_shader,
-            const std::shared_ptr<LitSceneShader> &lit_scene_shader,
-            wayverb::core::gpu_scene_data scene_data);
-
-    class SingleMaterialSection : public mglu::drawable {
-    public:
-        SingleMaterialSection(
-                const wayverb::core::gpu_scene_data &scene_data,
-                int material_index);
-
-    private:
-        void do_draw(const glm::mat4 &model_matrix) const override;
-        glm::mat4 get_local_model_matrix() const override;
-
-        static util::aligned::vector<GLuint> get_indices(
-                const wayverb::core::gpu_scene_data &scene_data,
-                int material_index);
-        mglu::static_ibo ibo;
-        GLuint size;
-    };
-
-    void set_highlighted(int material);
-    void set_colour(const glm::vec3 &c);
-
-private:
-    void do_draw(const glm::mat4 &model_matrix) const override;
-    glm::mat4 get_local_model_matrix() const override;
-
-    std::shared_ptr<mglu::generic_shader> generic_shader;
-    std::shared_ptr<LitSceneShader> lit_scene_shader;
-
-    mglu::vao wire_vao;
-    mglu::vao fill_vao;
-    mglu::static_vbo geometry;
-    mglu::static_vbo colors;
-
-    int highlighted{-1};
-
-    util::aligned::vector<SingleMaterialSection> sections;
-};
-
-//----------------------------------------------------------------------------//
-
 class PointObjects final {
 public:
     PointObjects(const std::shared_ptr<mglu::generic_shader> &shader);
@@ -154,6 +108,8 @@ private:
 
     glm::mat4 get_projection_matrix() const;
     glm::mat4 get_view_matrix() const;
+
+
 
     std::shared_ptr<mglu::generic_shader> generic_shader{
             std::make_shared<mglu::generic_shader>()};
