@@ -27,8 +27,7 @@ main_window::main_window(ApplicationCommandTarget& next,
     //  Connect up callbacks
 
     //  If an error happens, display a dialog (make sure the request
-    //  happens on the message thread) and clean up the view
-    //  (so, hide reflections, nodes etc.)
+    //  happens on the message thread)
     model_.connect_error_handler([this](auto err_str) {
         queue_.push([s = std::move(err_str)] {
             AlertWindow::showMessageBoxAsync(
@@ -49,6 +48,9 @@ main_window::main_window(ApplicationCommandTarget& next,
         queue_.push([this] {
             wayverb_application::get_command_manager().commandStatusChanged();
         });
+
+        //  TODO
+        //  tidy up the view, hide reflections + mesh etc.
     });
 
     model_.reset_view();

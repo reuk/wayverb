@@ -54,6 +54,8 @@ AngularLookAndFeel::AngularLookAndFeel() {
               juce::Colours::darkgrey);
     setColour(juce::TextEditor::ColourIds::highlightedTextColourId,
               juce::Colours::white);
+
+    setUsingNativeAlertWindows(true);
 }
 
 void horizontal_line(juce::Graphics& g,

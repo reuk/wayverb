@@ -315,10 +315,11 @@ private:
         }
     }
 
-    static constexpr const char* valid_file_formats =
+    static constexpr const char* valid_file_formats = 
             "*.way;*.fbx;*.dae;*.gltf;*.glb;*.blend;*.3ds;*.ase;*.obj;*.ifc;*."
             "xgl;*.zgl;*.ply;*.dxf;*.lwo;*.lws;*.lxo;*.stl;*.x;*.ac;*.ms3d;*."
             "cob;*.scn";
+
 
     wayverb_application& owner_;
 
