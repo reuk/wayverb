@@ -1,6 +1,6 @@
+#include "main_window.h"
 #include "Application.h"
 #include "CommandIDs.h"
-#include "main_window.h"
 #include "try_and_explain.h"
 
 //  init from as much outside info as possible
@@ -23,6 +23,18 @@ main_window::main_window(ApplicationCommandTarget& next,
     auto& command_manager = wayverb_application::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
     addKeyListener(command_manager.getKeyMappings());
+
+    //  Connect up callbacks
+
+    //  If an error happens, display a dialog (make sure the request
+    //  happens on the message thread) and clean up the view
+    //  (so, hide reflections, nodes etc.)
+    model_.connect_error_handler([this](auto err_str) {
+        engine_callback_queue_.push([s = std::move(err_str)] {
+            AlertWindow::showMessageBoxAsync(
+                    AlertWindow::AlertIconType::WarningIcon, "render error", s);
+        });
+    });
 }
 
 main_window::~main_window() noexcept {
@@ -41,7 +53,9 @@ bool main_window::prepare_to_close() {
 
             case 1:  // yes
                 //  Attempt to save. Show a dialog if something goes wrong.
-                try_and_explain([&] { save(); }, "saving project", "Make sure the destination is writable.");
+                try_and_explain([&] { save(); },
+                                "saving project",
+                                "Make sure the destination is writable.");
 
                 //  If the model still needs saving for some reason (the user
                 //  cancelled, an error ocurred), just return now.
@@ -145,7 +159,8 @@ void main_window::save_as() {
     }
 }
 
-std::experimental::optional<std::string> main_window::browse_for_file_to_save() {
+std::experimental::optional<std::string>
+main_window::browse_for_file_to_save() {
     FileChooser fc{"save location...", File(), "*.way"};
     return fc.browseForFileToSave(true)
                    ? std::experimental::make_optional(

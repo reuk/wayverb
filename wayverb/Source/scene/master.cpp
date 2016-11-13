@@ -104,8 +104,6 @@ public:
                     });
         });
 
-        //  app_.connect_error_handler;
-
         //  We want to catch mouse events and dispatch our own commands to the
         //  view, so we'll disable mouse events directly on the view.
         view_.setInterceptsMouseClicks(false, false);

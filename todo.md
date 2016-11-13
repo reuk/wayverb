@@ -28,8 +28,6 @@ Move node colour processing to vertex shader(s).
 Use scoped connections to connect debug processing callbacks until they are
 first called.
 
-Display reason for quitting if the engine quits early.
-
 Improve the source/receiver editors.
 
 Model View

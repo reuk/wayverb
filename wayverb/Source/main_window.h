@@ -1,6 +1,7 @@
 #pragma once
 
 #include "MainContentComponent.h"
+#include "async_work_queue.h"
 
 #include "combined/model/app.h"
 
@@ -39,6 +40,7 @@ private:
     ApplicationCommandTarget& next_command_target_;
 
     wayverb::combined::model::app model_;
+    async_work_queue engine_callback_queue_;
     MainContentComponent content_component_;
 
     wants_to_close wants_to_close_;
