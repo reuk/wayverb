@@ -61,11 +61,17 @@ constexpr auto to_string(state s) {
     }
 }
 
+/// Args: Current engine state, progress within state.
 using engine_state_changed = util::event<state, double>;
+
+/// Args: Current node pressures, total distanced travelled by sound wave.
 using waveguide_node_pressures_changed =
         util::event<util::aligned::vector<float>, double>;
+
+/// Args: Current reflections, source position.
 using raytracer_reflections_generated = util::event<
-        util::aligned::vector<util::aligned::vector<raytracer::reflection>>>;
+        util::aligned::vector<util::aligned::vector<raytracer::reflection>>,
+        glm::vec3>;
 
 //  postprocessing  ////////////////////////////////////////////////////////////
 

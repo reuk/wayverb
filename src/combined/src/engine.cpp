@@ -133,7 +133,8 @@ public:
 
         engine_state_changed_(state::finishing_raytracer, 1.0);
 
-        raytracer_reflections_generated_(std::move(raytracer_output->visual));
+        raytracer_reflections_generated_(std::move(raytracer_output->visual),
+                                         source_);
 
         //  look for the max time of an impulse
         const auto max_stochastic_time =
@@ -157,8 +158,10 @@ public:
                                 core::read_from_buffer<float>(queue, buffer);
                         const auto time =
                                 step / waveguide_->compute_sampling_frequency();
+                        const auto distance =
+                                time * environment_.speed_of_sound;
                         waveguide_node_pressures_changed_(std::move(pressures),
-                                                          time);
+                                                          distance);
                     }
 
                     engine_state_changed_(state::running_waveguide,
