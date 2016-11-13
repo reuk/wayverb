@@ -21,11 +21,10 @@ public:
     impl(wayverb::combined::model::app& app)
             : app_{app}
             , controller_{app_} {
-
         //  When view is initialised, set the scene correctly
         //  The callback will be run on the main message thread, so we can do
         //  what we like (within reason).
-        view_.connect_context_created([&](auto& renderer) {
+        view_.connect_context_created([&](auto&) {
             //  Get scene data in correct format.
             const auto scene_data = app_.project.get_scene_data();
             auto triangles = scene_data.get_triangles();
@@ -34,29 +33,60 @@ public:
                                         end(scene_data.get_vertices()),
                                         wayverb::core::to_vec3{});
 
-
             //  This command will be run on the graphics thread, so it must
             //  be thread safe.
-            renderer.command(
-                    [ t = std::move(triangles),
-                      v = std::move(vertices) ](auto& r) {
-                        r.set_scene(t.data(), t.size(), v.data(), v.size());
-                    });
+            view_.command([ t = std::move(triangles),
+                            v = std::move(vertices) ](auto& r) {
+                r.set_scene(t.data(), t.size(), v.data(), v.size());
+                //  TODO set up view so that object is centred, completely
+                //  visible, and at a jaunty angle.
+                
+                //  TODO we might need to set other state here too.
+            });
         });
 
+        //  If the model visible surface changes, update the view visible
+        //  surface.
+        app_.scene.connect_visible_surface_changed([&](auto visible) {
+            view_.command([=](auto& r) { r.set_highlighted_surface(visible); });
+        });
+
+        //  If a model matrix changes, update the view matrix.
+        app_.scene.connect_view_matrix_changed([&](auto matrix) {
+            view_.command([=](auto& r) { r.set_view_matrix(matrix); });
+        });
+
+        app_.scene.connect_projection_matrix_changed([&](auto matrix) {
+            view_.command([=](auto& r) { r.set_projection_matrix(matrix); });
+        });
+
+        //  We want to catch mouse events and dispatch our own commands to the
+        //  view, so we'll disable mouse events directly on the view.
+        view_.setInterceptsMouseClicks(false, false);
         //  Make the view visible.
         addAndMakeVisible(view_);
     }
 
-    void resized() override { view_.setBounds(getLocalBounds()); }
+    void resized() override {
+        app_.scene.set_viewport(glm::vec2{getWidth(), getHeight()});
+        view_.setBounds(getLocalBounds());
+    }
 
-    void mouse_down(const MouseEvent& e) { controller_.mouse_down(e); }
+    void mouseDown(const MouseEvent& e) override {
+        std::cout << "mouse down\n" << std::flush;
+        controller_.mouse_down(e);
+    }
 
-    void mouse_drag(const MouseEvent& e) { controller_.mouse_drag(e); }
+    void mouseDrag(const MouseEvent& e) override {
+        controller_.mouse_drag(e);
+    }
 
-    void mouse_up(const MouseEvent& e) { controller_.mouse_up(e); }
+    void mouseUp(const MouseEvent& e) override {
+        controller_.mouse_up(e);
+    }
 
-    void mouse_wheel_move(const MouseEvent& e, const MouseWheelDetails& d) {
+    void mouseWheelMove(const MouseEvent& e,
+                        const MouseWheelDetails& d) override {
         controller_.mouse_wheel_move(e, d);
     }
 
@@ -86,12 +116,5 @@ master::master(wayverb::combined::model::app& app)
 master::~master() noexcept = default;
 
 void master::resized() { pimpl_->setBounds(getLocalBounds()); }
-
-void master::mouseDown(const MouseEvent& e) { pimpl_->mouse_down(e); }
-void master::mouseDrag(const MouseEvent& e) { pimpl_->mouse_drag(e); }
-void master::mouseUp(const MouseEvent& e) { pimpl_->mouse_up(e); }
-void master::mouseWheelMove(const MouseEvent& e, const MouseWheelDetails& d) {
-    pimpl_->mouse_wheel_move(e, d);
-}
 
 }  // namespace scene

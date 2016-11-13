@@ -109,7 +109,9 @@ controller::controller(wayverb::combined::model::app& app)
 
 controller::~controller() noexcept = default;
 
-void controller::mouse_down(const MouseEvent& e) { mouse_action_ = start_action(e); }
+void controller::mouse_down(const MouseEvent& e) {
+    mouse_action_ = start_action(e);
+}
 
 void controller::mouse_drag(const MouseEvent& e) {
     //  Forward the position to the currently engaged action.
@@ -129,16 +131,23 @@ void controller::mouse_up(const MouseEvent& e) {
     mouse_action_ = start_action(e);
 }
 
-void controller::mouse_wheel_move(const MouseEvent& e, const MouseWheelDetails& d) {
+void controller::mouse_wheel_move(const MouseEvent& e,
+                                  const MouseWheelDetails& d) {
     if (mouse_action_) {
         mouse_action_->mouse_wheel_move(e, d);
     }
 }
 
-std::unique_ptr<controller::mouse_action> controller::start_action(const MouseEvent& e) {
+std::unique_ptr<controller::mouse_action> controller::start_action(
+        const MouseEvent& e) {
     //  If middle and left mouse buttons are pressed, start panning action.
-    if (e.mods.isLeftButtonDown() && e.mods.isRightButtonDown()) {
+    if (e.mods.isMiddleButtonDown()) {
         return std::make_unique<pan_action>(app_.scene);
+    }
+
+    //  If middle mouse button is pressed, start rotation action.
+    if (e.mods.isRightButtonDown()) {
+        return std::make_unique<rotate_action>(app_.scene);
     }
 
     //  If left mouse button is pressed, check for hovered items.
@@ -149,10 +158,10 @@ std::unique_ptr<controller::mouse_action> controller::start_action(const MouseEv
         const auto get_hovered_in_range = [this, pos](auto& range) {
             return get_hovered(std::begin(range), std::end(range), pos);
         };
-        const auto hovered_source = get_hovered_in_range(
-                app_.project.persistent.sources());
-        const auto hovered_receiver = get_hovered_in_range(
-                app_.project.persistent.receivers());
+        const auto hovered_source =
+                get_hovered_in_range(app_.project.persistent.sources());
+        const auto hovered_receiver =
+                get_hovered_in_range(app_.project.persistent.receivers());
 
         if (hovered_source.it != nullptr && hovered_receiver.it != nullptr) {
             const auto source_is_closer =
@@ -176,22 +185,15 @@ std::unique_ptr<controller::mouse_action> controller::start_action(const MouseEv
         return nullptr;
     }
 
-    //  If middle mouse button is pressed, start rotation action.
-    if (e.mods.isRightButtonDown()) {
-        return std::make_unique<rotate_action>(app_.scene);
-    }
-
     //  If nothing (important) is pressed then do nothing.
     return nullptr;
 }
 
-glm::vec3 controller::compute_world_mouse_direction(const glm::vec2& pos) const {
+glm::vec3 controller::compute_world_mouse_direction(
+        const glm::vec2& pos) const {
     const auto viewport = app_.scene.get_viewport();
-    const auto ray_clip =
-            glm::vec4{(2 * pos.x) / viewport.x - 1,
-                      1 - (2 * pos.y) / viewport.y,
-                      -1,
-                      1};
+    const auto ray_clip = glm::vec4{
+            (2 * pos.x) / viewport.x - 1, 1 - (2 * pos.y) / viewport.y, -1, 1};
     auto ray_eye = app_.scene.get_inverse_projection_matrix() * ray_clip;
     ray_eye = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
     return glm::normalize(

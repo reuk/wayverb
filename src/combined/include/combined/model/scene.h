@@ -6,6 +6,8 @@
 
 #include "glm/glm.hpp"
 
+#include <experimental/optional>
+
 namespace wayverb {
 namespace combined {
 namespace model {
@@ -15,8 +17,8 @@ class scene final {
 public:
     //  interactive data actions
 
-    void set_visible_surface(int surface);
-    int get_visible_surface() const;
+    void set_visible_surface(std::experimental::optional<size_t> visible);
+    std::experimental::optional<size_t> get_visible_surface() const;
 
     //  view actions - affect the modelview matrix
 
@@ -51,31 +53,33 @@ public:
     glm::vec3 compute_world_camera_direction() const;
     glm::vec3 compute_world_mouse_direction() const;
 
-    using visible_surface_changed = util::event<int>;
+    using visible_surface_changed =
+            util::event<std::experimental::optional<size_t>>;
     visible_surface_changed::connection connect_visible_surface_changed(
             visible_surface_changed::callback_type callback);
 
-    using view_projection_matrix_changed = util::event<glm::mat4>;
-    view_projection_matrix_changed::connection
-    connect_view_projection_matrix_changed(
-            view_projection_matrix_changed::callback_type callback);
+    using view_matrix_changed = util::event<glm::mat4>;
+    view_matrix_changed::connection connect_view_matrix_changed(
+            view_matrix_changed::callback_type callback);
+
+    using projection_matrix_changed = util::event<glm::mat4>;
+    projection_matrix_changed::connection connect_projection_matrix_changed(
+            projection_matrix_changed::callback_type callback);
 
 private:
     glm::mat4 compute_view_matrix() const;
     glm::mat4 compute_projection_matrix() const;
-    glm::mat4 compute_view_projection_matrix() const;
 
     void recompute_view_matrices();
     void recompute_projection_matrices();
-    void recompute_view_projection_matrix();
 
     //  data
 
-    int visible_surface_;
+    std::experimental::optional<size_t> visible_surface_;
 
-    glm::vec3 origin_;
-    float eye_distance_;
-    wayverb::core::az_el az_el_;
+    glm::vec3 origin_{0, 0, 0};
+    float eye_distance_ = 1;
+    wayverb::core::az_el az_el_{0, 0};
 
     const float item_radius_{0.4};
 
@@ -87,12 +91,11 @@ private:
     glm::mat4 projection_matrix_;
     glm::mat4 inverse_projection_matrix_;
 
-    glm::mat4 view_projection_matrix_;
-
     //  events
     
     visible_surface_changed visible_surface_changed_;
-    view_projection_matrix_changed view_projection_matrix_changed_;
+    view_matrix_changed view_matrix_changed_;
+    projection_matrix_changed projection_matrix_changed_;
 };
 
 }  // namespace model
