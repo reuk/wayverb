@@ -21,7 +21,7 @@ auto get_voxelised(const generic_scene_data<Vertex, Surface>& scene) {
 
 TEST(mesh_setup, setup) {
     const auto boundary = get_voxelised(scene_with_extracted_surfaces(
-            scene_data_loader{OBJ_PATH_BEDROOM}.get_scene_data(),
+            *scene_data_loader{OBJ_PATH_BEDROOM}.get_scene_data(),
             util::aligned::unordered_map<std::string,
                                          surface<simulation_bands>>{}));
     const auto m = compute_mesh(compute_context{}, boundary, 0.1, 340);

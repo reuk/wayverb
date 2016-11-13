@@ -52,15 +52,15 @@ TEST(reverb_time, triangles_are_oriented) {
     }
 
     for (const auto& fname : test_scenes) {
-        const auto scene{scene_data_loader{fname}.get_scene_data()};
-        const auto& triangles{scene.get_triangles()};
+        const auto scene = scene_data_loader{fname}.get_scene_data();
+        const auto& triangles = scene->get_triangles();
         ASSERT_TRUE(triangles_are_oriented(triangles.begin(), triangles.end()));
     }
 
     for (const auto& box : test_boxes) {
-        const auto scene{geo::get_scene_data(
-                box, make_surface<simulation_bands>(0.5, 0.5))};
-        const auto& triangles{scene.get_triangles()};
+        const auto scene = geo::get_scene_data(
+                box, make_surface<simulation_bands>(0.5, 0.5));
+        const auto& triangles = scene.get_triangles();
         ASSERT_TRUE(triangles_are_oriented(triangles.begin(), triangles.end()));
     }
 }
@@ -84,17 +84,17 @@ TEST(reverb_time, area) {
 
 TEST(reverb_time, room_volume) {
     for (const auto& box : test_boxes) {
-        const auto scene{geo::get_scene_data(box, 0)};
-        const auto& triangles{scene.get_triangles()};
+        const auto scene = geo::get_scene_data(box, 0);
+        const auto& triangles = scene.get_triangles();
         ASSERT_TRUE(triangles_are_oriented(triangles.begin(), triangles.end()));
-        const auto dim{dimensions(box)};
+        const auto dim = dimensions(box);
         ASSERT_NEAR(estimate_room_volume(scene), dim.x * dim.y * dim.z, 0.0001);
     }
 
     for (const auto& fname : test_scenes) {
         const scene_data_loader loader{fname};
-        const auto& scene{loader.get_scene_data()};
-        const auto volume{estimate_room_volume(scene)};
+        const auto& scene = loader.get_scene_data();
+        const auto volume = estimate_room_volume(*scene);
         std::cout << "volume of model: " << fname << " is: " << volume << '\n';
     }
 }
@@ -102,39 +102,39 @@ TEST(reverb_time, room_volume) {
 TEST(reverb_time, sabine) {
     const geo::box southern_box{glm::vec3{0, 0, 0},
                                 glm::vec3{5.56, 3.97, 2.81}};
-    auto southern_scene{geo::get_scene_data(
-            southern_box, make_surface<simulation_bands>(0, 0))};
+    auto southern_scene = geo::get_scene_data(
+            southern_box, make_surface<simulation_bands>(0, 0));
 
     {
         const bands_type air_absorption{};
-        for (auto i{0u}; i != 10; ++i) {
-            const auto reflection_coefficient{i * 0.1};
+        for (auto i = 0u; i != 10; ++i) {
+            const auto reflection_coefficient = i * 0.1;
             southern_scene.set_surfaces(make_surface<simulation_bands>(
                     1 - pow(reflection_coefficient, 2), 0));
-            const auto t30{sabine_reverb_time(southern_scene, air_absorption) /
-                           2};
+            const auto t30 =
+                    sabine_reverb_time(southern_scene, air_absorption) / 2;
             std::cout << "reflection: " << reflection_coefficient
                       << ", t30: " << t30.s[4] << '\n';
         }
     }
 
     for (const auto& box : test_boxes) {
-        const auto air_absorption{0.0};
-        const auto t0{sabine_reverb_time(
+        const auto air_absorption = 0.0;
+        const auto t0 = sabine_reverb_time(
                 geo::get_scene_data(box, make_surface<1>(0.0001, 0)),
-                air_absorption)};
+                air_absorption);
 
-        const auto t1{sabine_reverb_time(
+        const auto t1 = sabine_reverb_time(
                 geo::get_scene_data(box, make_surface<1>(0.001, 0)),
-                air_absorption)};
+                air_absorption);
 
-        const auto t2{sabine_reverb_time(
+        const auto t2 = sabine_reverb_time(
                 geo::get_scene_data(box, make_surface<1>(0.01, 0)),
-                air_absorption)};
+                air_absorption);
 
-        const auto t3{sabine_reverb_time(
+        const auto t3 = sabine_reverb_time(
                 geo::get_scene_data(box, make_surface<1>(0.1, 0)),
-                air_absorption)};
+                air_absorption);
 
         ASSERT_TRUE(all(t1 < t0));
         ASSERT_TRUE(all(t2 < t1));

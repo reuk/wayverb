@@ -45,7 +45,7 @@ struct mesh_fixture : public ::testing::Test {
     const compute_context cc;
     cl::CommandQueue queue{cc.context, cc.device};
     const vsd voxelised{get_voxelised(scene_with_extracted_surfaces(
-            scene_data_loader{THE_MODEL}.get_scene_data(),
+            *scene_data_loader{THE_MODEL}.get_scene_data(),
             util::aligned::unordered_map<std::string,
                                          surface<simulation_bands>>{}))};
 };

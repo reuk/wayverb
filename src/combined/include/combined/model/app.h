@@ -29,10 +29,14 @@ public:
     static constexpr const char* model_name = "model.model";
     static constexpr const char* config_name = "config.json";
 
+    static constexpr const char* project_extension = "*.way";
+
     static std::string compute_model_path(const std::string& root);
     static std::string compute_config_path(const std::string& root);
 
     static bool is_project_file(const std::string& fpath);
+
+    std::string get_extensions() const;
 
     void save_to(const std::string& fpath);
 

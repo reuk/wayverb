@@ -19,7 +19,7 @@ project::project(const std::string& fpath)
                                              : fpath}
         , needs_save_{!is_project_file(fpath)}
         , persistent{core::geo::compute_aabb(
-                  scene_data_.get_scene_data().get_vertices())} {
+                  scene_data_.get_scene_data()->get_vertices())} {
     if (is_project_file(fpath)) {
         const auto config_file = project::compute_config_path(fpath);
 
@@ -30,7 +30,7 @@ project::project(const std::string& fpath)
 
     } else {
         const auto& surface_strings =
-                scene_data_.get_scene_data().get_surfaces();
+                scene_data_.get_scene_data()->get_surfaces();
         persistent.materials() = materials_from_names<1>(begin(surface_strings),
                                                          end(surface_strings));
     }
@@ -51,7 +51,11 @@ bool project::is_project_file(const std::string& fpath) {
                                     crend(fpath),
                                     [](auto i) { return i == '.'; })
                                .base(),
-                       end(fpath)} == ".way";
+                       end(fpath)} == project_extension;
+}
+
+std::string project::get_extensions() const {
+    return scene_data_.get_extensions() + ';' + project_extension;
 }
 
 void project::save_to(const std::string& fpath) {
@@ -76,7 +80,7 @@ bool project::needs_save() const { return needs_save_; }
 
 core::generic_scene_data<cl_float3, std::string> project::get_scene_data()
         const {
-    return scene_data_.get_scene_data();
+    return *scene_data_.get_scene_data();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -31,7 +31,7 @@ auto get_test_scenes() {
             geo::get_scene_data(
                     geo::box{glm::vec3(0, 0, 0), glm::vec3(3, 3, 3)},
                     std::string{"default"}),
-            scene_data_loader{OBJ_PATH}.get_scene_data()};
+            *scene_data_loader{OBJ_PATH}.get_scene_data()};
 }
 
 TEST(voxel, walk) {

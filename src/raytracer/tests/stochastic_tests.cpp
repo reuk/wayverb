@@ -56,7 +56,7 @@ TEST(stochastic, bad_reflections_vault) {
     const compute_context cc{};
 
     const auto scene = scene_with_extracted_surfaces(
-            scene_data_loader{OBJ_PATH}.get_scene_data(),
+            *scene_data_loader{OBJ_PATH}.get_scene_data(),
             util::aligned::unordered_map<std::string,
                                          surface<simulation_bands>>{});
     const auto voxelised = make_voxelised_scene_data(scene, 5, 0.1f);
