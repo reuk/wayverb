@@ -68,7 +68,7 @@ public:
     //  RENDERING  /////////////////////////////////////////////////////////////
     void start_render();
     void cancel_render();
-    //  void is_rendering() const;
+    bool is_rendering() const;
 
     //  SAVE  //////////////////////////////////////////////////////////////////
     using save_callback =

@@ -113,7 +113,7 @@ void app::start_render() {
 
 void app::cancel_render() { engine_.cancel(); }
 
-//  void app::is_rendering() const { engine_.is_running(); }
+bool app::is_rendering() const { return engine_.is_running(); }
 
 void app::save(const save_callback& callback) {
     if (project::is_project_file(currently_open_file_)) {

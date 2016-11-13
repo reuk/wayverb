@@ -16,6 +16,8 @@ app stuff
 
 Make it look like Tron.
 
+Enable/disable visualisation.
+
 Finish adding the help panel info.
 
 Load/save material + receiver presets.

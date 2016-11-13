@@ -38,7 +38,8 @@ constexpr T pressure_reflectance_to_average_wall_impedance(T t) {
 }
 
 template <typename T>
-constexpr T average_wall_impedance_to_pressure_reflectance(T t, float cos_angle) {
+constexpr T average_wall_impedance_to_pressure_reflectance(T t,
+                                                           float cos_angle) {
     if (cos_angle < 0 || 1 < cos_angle) {
         throw std::runtime_error{"cos angle is outside valid range"};
     }

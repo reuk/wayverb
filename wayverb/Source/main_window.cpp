@@ -30,9 +30,24 @@ main_window::main_window(ApplicationCommandTarget& next,
     //  happens on the message thread) and clean up the view
     //  (so, hide reflections, nodes etc.)
     model_.connect_error_handler([this](auto err_str) {
-        engine_callback_queue_.push([s = std::move(err_str)] {
+        queue_.push([s = std::move(err_str)] {
             AlertWindow::showMessageBoxAsync(
                     AlertWindow::AlertIconType::WarningIcon, "render error", s);
+        });
+    });
+
+    //  When rendering begins or ends, signal that command enablement needs
+    //  updating.
+
+    model_.connect_begun([this] {
+        queue_.push([this] {
+            wayverb_application::get_command_manager().commandStatusChanged();
+        });
+    });
+
+    model_.connect_finished([this] {
+        queue_.push([this] {
+            wayverb_application::get_command_manager().commandStatusChanged();
         });
     });
 
@@ -139,6 +154,7 @@ void main_window::getCommandInfo(CommandID command_id,
                            "Start rendering acoustics",
                            "General",
                            0);
+            result.setActive(!model_.is_rendering());
             break;
 
         case CommandIDs::idCancelRender:
@@ -146,6 +162,7 @@ void main_window::getCommandInfo(CommandID command_id,
                            "Cancel ongoing render operation",
                            "General",
                            0);
+            result.setActive(model_.is_rendering());
             break;
             
     }

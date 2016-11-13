@@ -116,8 +116,11 @@ void complete_engine::run(const core::compute_context& compute_context,
                                        persistent.output().get_sample_rate(),
                                        keep_going_);
 
+                //  If user cancelled while processing the channel, channel
+                //  will be null, but we want to exit before throwing an
+                //  exception.
                 if (!keep_going_) {
-                    throw std::runtime_error{"simulation cancelled"};
+                    break;
                 }
 
                 if (!channel) {
@@ -136,62 +139,60 @@ void complete_engine::run(const core::compute_context& compute_context,
         }
 
         //  If keep going is false now, then the simulation was cancelled.
-        if (!keep_going_) {
-            throw std::runtime_error{"simulation cancelled"};
-        }
+        if (keep_going_) {
+            //  Normalize.
+            const auto make_iterator = [](auto it) {
+                return util::make_mapping_iterator_adapter(std::move(it),
+                                                           max_mag_functor{});
+            };
 
-        //  Normalize.
-        const auto make_iterator = [](auto it) {
-            return util::make_mapping_iterator_adapter(std::move(it),
-                                                       max_mag_functor{});
-        };
+            const auto max_mag =
+                    *std::max_element(make_iterator(begin(all_channels)),
+                                      make_iterator(end(all_channels)));
 
-        const auto max_mag =
-                *std::max_element(make_iterator(begin(all_channels)),
-                                  make_iterator(end(all_channels)));
-
-        if (max_mag == 0.0f) {
-            throw std::runtime_error{"all channels are silent"};
-        }
-
-        const auto factor = 1.0 / max_mag;
-
-        for (auto& channel : all_channels) {
-            for (auto& sample : channel.data) {
-                sample *= factor;
+            if (max_mag == 0.0f) {
+                throw std::runtime_error{"all channels are silent"};
             }
-        }
 
-        //  Write out files.
-        for (const auto& i : all_channels) {
-            const auto file_name =
-                    util::build_string(persistent.output().get_output_folder(),
-                                       '/',
-                                       persistent.output().get_name(),
-                                       '.',
-                                       "s_",
-                                       i.source_name,
-                                       '.',
-                                       "r_",
-                                       i.receiver_name,
-                                       '.',
-                                       "c_",
-                                       i.capsule_name,
-                                       ".wav");
+            const auto factor = 1.0 / max_mag;
 
-            write(file_name,
-                  audio_file::make_audio_file(
-                          i.data, persistent.output().get_sample_rate()),
-                  convert_bit_depth(persistent.output().get_bit_depth()));
+            for (auto& channel : all_channels) {
+                for (auto& sample : channel.data) {
+                    sample *= factor;
+                }
+            }
+
+            //  Write out files.
+            for (const auto& i : all_channels) {
+                const auto file_name = util::build_string(
+                        persistent.output().get_output_folder(),
+                        '/',
+                        persistent.output().get_name(),
+                        '.',
+                        "s_",
+                        i.source_name,
+                        '.',
+                        "r_",
+                        i.receiver_name,
+                        '.',
+                        "c_",
+                        i.capsule_name,
+                        ".wav");
+
+                write(file_name,
+                      audio_file::make_audio_file(
+                              i.data, persistent.output().get_sample_rate()),
+                      convert_bit_depth(persistent.output().get_bit_depth()));
+            }
         }
 
     } catch (const std::exception& e) {
         encountered_error_(e.what());
     }
 
-    finished_();
-
     is_running_ = false;
+
+    finished_();
 }
 
 engine_state_changed::connection
