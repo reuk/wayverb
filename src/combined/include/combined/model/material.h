@@ -12,7 +12,8 @@ class material final : public basic_member<material> {
 public:
     explicit material(std::string name = "new material",
                       core::surface<core::simulation_bands> surface =
-                              core::surface<core::simulation_bands>());
+                              core::make_surface<core::simulation_bands>(0.05,
+                                                                         0.05));
 
     void set_name(std::string name);
     std::string get_name() const;

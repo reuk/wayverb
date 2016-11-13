@@ -21,15 +21,12 @@ Finish adding the help panel info.
 Load/save material + receiver presets.
     Or at least have some good ones compiled-in
 
-Clipping planes.
+Clipping planes for large models.
 
 Move node colour processing to vertex shader(s).
 
 Use scoped connections to connect debug processing callbacks until they are
 first called.
-
-Use appropriate surfaces for newly-loaded models
-    i.e. make sure default constructor for 'material' is sensible
 
 Display reason for quitting if the engine quits early.
 
