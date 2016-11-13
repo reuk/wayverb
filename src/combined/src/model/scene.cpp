@@ -67,7 +67,7 @@ glm::mat4 scene::get_inverse_projection_matrix() const {
 }
 
 glm::mat4 scene::compute_projection_matrix() const {
-    return glm::perspective(45.0f, get_aspect(), 0.05f, 1000.0f);
+    return glm::tweakedInfinitePerspective(45.0f, get_aspect(), 0.01f);
 }
 
 glm::mat4 scene::compute_view_matrix() const {

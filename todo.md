@@ -22,6 +22,7 @@ Load/save material + receiver presets.
     Or at least have some good ones compiled-in
 
 Clipping planes for large models.
+    Inifinte perspective doesn't fix this... Not sure what the problem is here.
 
 Move node colour processing to vertex shader(s).
 
