@@ -47,7 +47,6 @@ public:
 
         LookAndFeel::setDefaultLookAndFeel(&look_and_feel_);
 
-        command_manager_.setFirstCommandTarget(this);
         command_manager_.registerAllCommandsForTarget(this);
         command_manager_.getKeyMappings()->resetToDefaultMappings();
 
@@ -262,7 +261,11 @@ private:
     }
 
     void show_hide_load_window() {
-        load_window_ = ready_to_quit() ? [this] {
+        //  Show load window only if there are no other open windows.
+        //  This instance should handle commands if there are no main windows
+        //  open, otherwise allow the front window to handle commands.
+        if (ready_to_quit()) {
+            load_window_ = [this] {
                 auto ret = std::make_unique<LoadWindow>(
                         owner_.getApplicationName(),
                         DocumentWindow::closeButton,
@@ -270,7 +273,12 @@ private:
                         get_command_manager());
                 ret->addListener(this);
                 return ret;
-            }() : nullptr;
+            }();
+            command_manager_.setFirstCommandTarget(this);
+        } else {
+            load_window_ = nullptr;
+            command_manager_.setFirstCommandTarget(nullptr);
+        }
     }
 
     void show_help_window() {

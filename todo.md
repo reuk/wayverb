@@ -21,8 +21,6 @@ Finish adding the help panel info.
 Load/save material + receiver presets.
     Or at least have some good ones compiled-in
 
-Close and save commands.
-
 Clipping planes.
 
 Move node colour processing to vertex shader(s).
