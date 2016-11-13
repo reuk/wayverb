@@ -42,7 +42,10 @@ public:
 
     //  Scene/surfaces.
 
-    void set_scene(wayverb::core::gpu_scene_data scene);
+    void set_scene(const wayverb::core::triangle* triangles,
+                   size_t num_triangles,
+                   const glm::vec3* vertices,
+                   size_t num_vertices);
 
     void set_highlighted_surface(
             std::experimental::optional<size_t> highlighted);

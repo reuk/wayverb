@@ -1,26 +1,31 @@
 #include "multi_material_object.h"
 
-#include "core/conversions.h"
-
-#include "utilities/map_to_vector.h"
+#include <unordered_set>
 
 multi_material_object::multi_material_object(
-        const std::shared_ptr<mglu::generic_shader> &g,
-        const std::shared_ptr<LitSceneShader> &l,
-        const wayverb::core::gpu_scene_data &scene_data)
-        : generic_shader_{g}
-        , lit_scene_shader_{l} {
-    for (auto i = 0u; i != scene_data.get_surfaces().size(); ++i) {
-        sections_.emplace_back(scene_data, i);
+        const std::shared_ptr<mglu::generic_shader> &generic_shader,
+        const std::shared_ptr<LitSceneShader> &lit_scene_shader,
+        const wayverb::core::triangle *triangles,
+        size_t num_triangles,
+        const glm::vec3 *vertices,
+        size_t num_vertices)
+        : generic_shader_{generic_shader}
+        , lit_scene_shader_{lit_scene_shader} {
+
+    std::unordered_set<size_t> unique_surfaces;
+    for (auto i = triangles, e = triangles + num_triangles; i != e; ++i) {
+        unique_surfaces.insert(i->surface);
     }
 
-    geometry_.data(util::map_to_vector(begin(scene_data.get_vertices()),
-                                       end(scene_data.get_vertices()),
-                                       wayverb::core::to_vec3{}));
+    for (const auto& i : unique_surfaces) {
+        sections_.emplace_back(triangles, num_triangles, i);
+    }
+
+    geometry_.data(vertices, num_vertices);
 
     mglu::check_for_gl_error();
     colors_.data(util::aligned::vector<glm::vec4>(
-            scene_data.get_vertices().size(), glm::vec4(0.5, 0.5, 0.5, 1.0)));
+            num_vertices, glm::vec4(0.5, 0.5, 0.5, 1.0)));
     mglu::check_for_gl_error();
 
     const auto configure_vao = [this](const auto &vao, const auto &shader) {
@@ -40,8 +45,8 @@ multi_material_object::multi_material_object(
         mglu::check_for_gl_error();
     };
 
-    configure_vao(wire_vao_, g);
-    configure_vao(fill_vao_, l);
+    configure_vao(wire_vao_, generic_shader);
+    configure_vao(fill_vao_, lit_scene_shader);
 }
 
 glm::mat4 multi_material_object::get_local_model_matrix() const {
@@ -78,24 +83,11 @@ void multi_material_object::set_highlighted(
 
 ////////////////////////////////////////////////////////////////////////////////
 
-util::aligned::vector<GLuint>
-multi_material_object::single_material_section::get_indices(
-        const wayverb::core::gpu_scene_data &scene_data,
-        size_t material_index) {
-    util::aligned::vector<GLuint> ret;
-    for (const auto &i : scene_data.get_triangles()) {
-        if (i.surface == material_index) {
-            ret.emplace_back(i.v0);
-            ret.emplace_back(i.v1);
-            ret.emplace_back(i.v2);
-        }
-    }
-    return ret;
-}
-
 multi_material_object::single_material_section::single_material_section(
-        const wayverb::core::gpu_scene_data &scene_data, int material_index) {
-    const auto indices = get_indices(scene_data, material_index);
+        const wayverb::core::triangle *triangles,
+        size_t num_triangles,
+        size_t material_index) {
+    const auto indices = get_indices(triangles, num_triangles, material_index);
     size = indices.size();
     ibo.data(indices);
 }
@@ -109,5 +101,21 @@ void multi_material_object::single_material_section::do_draw(
 glm::mat4
 multi_material_object::single_material_section::get_local_model_matrix() const {
     return glm::mat4{};
+}
+
+util::aligned::vector<GLuint>
+multi_material_object::single_material_section::get_indices(
+        const wayverb::core::triangle *triangles,
+        size_t num_triangles,
+        size_t material_index) {
+    util::aligned::vector<GLuint> ret;
+    for (auto i = triangles, e = triangles + num_triangles; i != e; ++i) {
+        if (i->surface == material_index) {
+            ret.emplace_back(i->v0);
+            ret.emplace_back(i->v1);
+            ret.emplace_back(i->v2);
+        }
+    }
+    return ret;
 }
 

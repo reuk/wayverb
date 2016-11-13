@@ -52,9 +52,17 @@ public:
 
     //  Scene/surfaces.
 
-    void set_scene(wayverb::core::gpu_scene_data scene) {
-        model_object_ = std::make_unique<multi_material_object>(
-                generic_shader_, lit_scene_shader_, scene);
+    void set_scene(const wayverb::core::triangle* triangles,
+                   size_t num_triangles,
+                   const glm::vec3* vertices,
+                   size_t num_vertices) {
+        model_object_ =
+                std::make_unique<multi_material_object>(generic_shader_,
+                                                        lit_scene_shader_,
+                                                        triangles,
+                                                        num_triangles,
+                                                        vertices,
+                                                        num_vertices);
         model_object_->set_highlighted(highlighted_);
     }
 
@@ -195,8 +203,11 @@ void view::set_reflections_visible(bool visible) {
     pimpl_->set_reflections_visible(visible);
 }
 
-void view::set_scene(wayverb::core::gpu_scene_data scene) {
-    pimpl_->set_scene(std::move(scene));
+void view::set_scene(const wayverb::core::triangle* triangles,
+                     size_t num_triangles,
+                     const glm::vec3* vertices,
+                     size_t num_vertices) {
+    pimpl_->set_scene(triangles, num_triangles, vertices, num_vertices);
 }
 
 void view::set_highlighted_surface(

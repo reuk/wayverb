@@ -21,14 +21,27 @@ public:
     impl(wayverb::combined::model::app& app)
             : app_{app}
             , controller_{app_} {
-        //  TODO Hook up all the actions so that the view is updated when the
-        //  model changes.
 
-        //  TODO connect to persistent sources/receivers
+        //  When view is initialised, set the scene correctly
+        //  The callback will be run on the main message thread, so we can do
+        //  what we like (within reason).
+        view_.connect_context_created([&](auto& renderer) {
+            //  Get scene data in correct format.
+            const auto scene_data = app_.project.get_scene_data();
+            auto triangles = scene_data.get_triangles();
+            auto vertices =
+                    util::map_to_vector(begin(scene_data.get_vertices()),
+                                        end(scene_data.get_vertices()),
+                                        wayverb::core::to_vec3{});
 
-        //  TODO When the context opens, display the currently loaded scene.
-        view_.connect_context_created([&](auto&) {
 
+            //  This command will be run on the graphics thread, so it must
+            //  be thread safe.
+            renderer.command(
+                    [ t = std::move(triangles),
+                      v = std::move(vertices) ](auto& r) {
+                        r.set_scene(t.data(), t.size(), v.data(), v.size());
+                    });
         });
 
         //  Make the view visible.
@@ -36,6 +49,16 @@ public:
     }
 
     void resized() override { view_.setBounds(getLocalBounds()); }
+
+    void mouse_down(const MouseEvent& e) { controller_.mouse_down(e); }
+
+    void mouse_drag(const MouseEvent& e) { controller_.mouse_drag(e); }
+
+    void mouse_up(const MouseEvent& e) { controller_.mouse_up(e); }
+
+    void mouse_wheel_move(const MouseEvent& e, const MouseWheelDetails& d) {
+        controller_.mouse_wheel_move(e, d);
+    }
 
 private:
     //  We don't directly use the view, because it needs to run on its own gl
@@ -63,5 +86,12 @@ master::master(wayverb::combined::model::app& app)
 master::~master() noexcept = default;
 
 void master::resized() { pimpl_->setBounds(getLocalBounds()); }
+
+void master::mouseDown(const MouseEvent& e) { pimpl_->mouse_down(e); }
+void master::mouseDrag(const MouseEvent& e) { pimpl_->mouse_drag(e); }
+void master::mouseUp(const MouseEvent& e) { pimpl_->mouse_up(e); }
+void master::mouseWheelMove(const MouseEvent& e, const MouseWheelDetails& d) {
+    pimpl_->mouse_wheel_move(e, d);
+}
 
 }  // namespace scene
