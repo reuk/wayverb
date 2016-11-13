@@ -35,6 +35,8 @@ main_window::main_window(ApplicationCommandTarget& next,
                     AlertWindow::AlertIconType::WarningIcon, "render error", s);
         });
     });
+
+    model_.reset_view();
 }
 
 main_window::~main_window() noexcept {
@@ -81,10 +83,13 @@ void main_window::closeButtonPressed() {
 }
 
 void main_window::getAllCommands(Array<CommandID>& commands) {
-    commands.addArray({CommandIDs::idSaveProject,
-                       CommandIDs::idSaveAsProject,
-                       CommandIDs::idCloseProject,
-                       CommandIDs::idVisualise});
+    commands.addArray({
+            CommandIDs::idSaveProject,
+            CommandIDs::idSaveAsProject,
+            CommandIDs::idCloseProject,
+            CommandIDs::idVisualise,
+            CommandIDs::idResetView,
+    });
 }
 
 void main_window::getCommandInfo(CommandID command_id,
@@ -120,9 +125,15 @@ void main_window::getCommandInfo(CommandID command_id,
             //  result.setActive(!wrapper.render_state.is_rendering.get());
             break;
 
-        default: break;
+        case CommandIDs::idResetView:
+            result.setInfo("Reset View",
+                           "Reset the 3D model view to its original position",
+                           "General",
+                           0);
+            break;
     }
 }
+
 bool main_window::perform(const InvocationInfo& info) {
     switch (info.commandID) {
         case CommandIDs::idSaveProject:
@@ -140,6 +151,8 @@ bool main_window::perform(const InvocationInfo& info) {
             //  wrapper.render_state.visualise.set(
             //         !wrapper.render_state.visualise.get());
             return true;
+
+        case CommandIDs::idResetView: model_.reset_view(); return true;
 
         default: return false;
     }

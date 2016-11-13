@@ -43,14 +43,6 @@ public:
                                             end(scene_data.get_vertices()),
                                             wayverb::core::to_vec3{});
 
-        const auto aabb = wayverb::core::geo::compute_aabb(vertices);
-        const auto origin = -centre(aabb);
-        const auto radius = glm::distance(aabb.get_min(), aabb.get_max()) / 2;
-
-        app_.scene.set_origin(origin);
-        app_.scene.set_eye_distance(2 * radius);
-        app_.scene.set_rotation(wayverb::core::az_el{M_PI / 4, M_PI / 6});
-
         //  When view is initialised, set the scene correctly
         //  The callback will be run on the main message thread, so we can do
         //  what we like (within reason).

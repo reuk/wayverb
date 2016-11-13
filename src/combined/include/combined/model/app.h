@@ -106,6 +106,10 @@ public:
     mesh_generated::connection connect_mesh_generated(
             mesh_generated::callback_type t);
 
+    //  MISC FUNCTIONS  //////////////////////////////////////////////////////// 
+
+    void reset_view();
+
     //  Backing data for rending 3D scene view.
     //  There are arguably better homes for this, but I'm short on time...
     scene scene;

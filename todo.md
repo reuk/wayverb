@@ -26,6 +26,9 @@ Clipping planes for large models.
 
 Move node colour processing to vertex shader(s).
 
+Adjust zoom speed based on current zoom distance.
+    i.e. it should probalby be logarithmic.
+
 Use scoped connections to connect debug processing callbacks until they are
 first called.
 
@@ -34,7 +37,7 @@ Improve the source/receiver editors.
 Model View
     Pan.
 
-    Reset view.
+    Easing.
 
     Make sources and receivers draggable.
 

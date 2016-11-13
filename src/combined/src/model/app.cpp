@@ -197,6 +197,25 @@ core::gpu_scene_data app::generate_scene_data() {
                                          material_map);
 }
 
+
+//  MISC FUNCTIONS  ////////////////////////////////////////////////////////////
+
+void app::reset_view() {
+    //  Set up the scene model so that everything is visible.
+    const auto scene_data = project.get_scene_data();
+    const auto vertices = util::map_to_vector(begin(scene_data.get_vertices()),
+                                              end(scene_data.get_vertices()),
+                                              wayverb::core::to_vec3{});
+
+    const auto aabb = wayverb::core::geo::compute_aabb(vertices);
+    const auto origin = -centre(aabb);
+    const auto radius = glm::distance(aabb.get_min(), aabb.get_max()) / 2;
+
+    scene.set_origin(origin);
+    scene.set_eye_distance(2 * radius);
+    scene.set_rotation(wayverb::core::az_el{M_PI / 4, M_PI / 6});
+}
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

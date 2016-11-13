@@ -10,6 +10,7 @@ enum {
     idRender,
     idVisualise,
     idShowHelp,
+    idResetView,
 };
 
 }  // namespace CommandIDs

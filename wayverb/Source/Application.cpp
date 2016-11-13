@@ -205,6 +205,7 @@ private:
         void create_view_menu(ApplicationCommandManager& command_manager,
                               PopupMenu& menu) {
             menu.addCommandItem(&command_manager, CommandIDs::idVisualise);
+            menu.addCommandItem(&command_manager, CommandIDs::idResetView);
             menu.addSeparator();
             menu.addCommandItem(&command_manager, CommandIDs::idShowHelp);
         }
