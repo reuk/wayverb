@@ -12,11 +12,12 @@ class app;
 }
 }
 
-class master_scene_component final : public Component,
-                                     public SettableHelpPanelClient {
+namespace scene {
+
+class master final : public Component, public SettableHelpPanelClient {
 public:
-    master_scene_component(wayverb::combined::model::app& app);
-    ~master_scene_component() noexcept;
+    master(wayverb::combined::model::app& app);
+    ~master() noexcept;
 
     void resized() override;
 
@@ -26,3 +27,5 @@ private:
     class impl;
     std::unique_ptr<impl> pimpl_;
 };
+
+}  // namespace scene

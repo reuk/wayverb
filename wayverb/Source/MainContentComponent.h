@@ -3,7 +3,7 @@
 #include "HelpWindow.h"
 #include "LeftPanel.h"
 
-#include "scene/master_scene_component.h"
+#include "scene/master.h"
 
 class MainContentComponent final : public Component,
                                    public SettableHelpPanelClient {
@@ -18,5 +18,5 @@ private:
 
     LeftPanel left_panel_;
     StretchableLayoutResizerBar resizer_bar_;
-    master_scene_component right_panel_;
+    scene::master right_panel_;
 };

@@ -1,74 +1,9 @@
-#include "mvc.h"
+#include "controller.h"
 
-namespace view {
-
-/*
-void scene::set_node_positions(util::aligned::vector<glm::vec3> positions) {}
-
-void scene::set_node_pressures(util::aligned::vector<float> pressures) {}
-
-void scene::set_node_colours(util::aligned::vector<glm::vec3> colours) {}
-
-void scene::set_nodes_visible(bool visible) {
-    nodes_visible_ = visible;
-}
-
-void scene::set_reflections(
-        util::aligned::vector<util::aligned::vector<
-                wayverb::raytracer::reflection>> reflections,
-        const glm::vec3& source) {}
-
-void scene::set_distance_travelled(double distance) {}
-
-void scene::set_reflections_visible(bool visible) {
-    reflections_visible_ = visible;
-}
-
-void scene::set_scene(wayverb::core::gpu_scene_data scene) {}
-
-void scene::set_highlighted_surface(int surface) {}
-
-void scene::set_emphasis_colour(const glm::vec3& colour) {}
-
-void scene::set_sources(util::aligned::vector<glm::vec3> sources) {}
-
-void scene::set_receivers(util::aligned::vector<glm::vec3> receivers) {}
-*/
-
-void scene::set_view_projection_matrix(const glm::mat4& matrix) {
-    view_projection_matrix_ = matrix;
-}
-
-void scene::update(float) {}
-
-void scene::do_draw(const glm::mat4&) const {
-    const auto c = 0.0;
-    glClearColor(c, c, c, 0);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    glEnable(GL_DEPTH_TEST);
-
-    glEnable(GL_MULTISAMPLE);
-    glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_POLYGON_SMOOTH);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    //  TODO Set up shaders.
-
-    //  TODO Draw objects.
-}
-
-glm::mat4 scene::get_local_model_matrix() const { return glm::mat4{}; }
-
-}  // namespace view
-
-////////////////////////////////////////////////////////////////////////////////
-
-namespace controller {
+namespace scene {
 
 /// A mouse action is a series of movements while a mouse button is held.
-class scene::mouse_action {
+class controller::mouse_action {
 public:
     /// Construct on mouse-down.
     mouse_action() = default;
@@ -93,36 +28,36 @@ public:
     virtual void mouse_up(const MouseEvent& e) = 0;
 };
 
-class rotate_action final : public scene::mouse_action {
+class rotate_action final : public controller::mouse_action {
 public:
-    rotate_action(wayverb::combined::model::scene& scene)
-            : scene_{scene}
-            , initial_{scene_.get_rotation()} {}
+    rotate_action(wayverb::combined::model::scene& controller)
+            : controller_{controller}
+            , initial_{controller_.get_rotation()} {}
 
     void mouse_drag(const MouseEvent& e) override {
         const auto diff = e.getOffsetFromDragStart();
         const auto angle_scale = 0.01;
-        scene_.set_rotation(wayverb::core::az_el{
+        controller_.set_rotation(wayverb::core::az_el{
                 static_cast<float>(diff.x * angle_scale + initial_.azimuth),
                 static_cast<float>(diff.y * angle_scale + initial_.elevation)});
     }
 
     void mouse_wheel_move(const MouseEvent&,
                           const MouseWheelDetails& d) override {
-        scene_.set_eye_distance(scene_.get_eye_distance() + d.deltaY);
+        controller_.set_eye_distance(controller_.get_eye_distance() + d.deltaY);
     }
 
     void mouse_up(const MouseEvent&) override {}
 
 private:
-    wayverb::combined::model::scene& scene_;
+    wayverb::combined::model::scene& controller_;
     wayverb::core::az_el initial_;
 };
 
-class pan_action final : public scene::mouse_action {
+class pan_action final : public controller::mouse_action {
 public:
-    pan_action(wayverb::combined::model::scene& scene)
-            : scene_{scene} {}
+    pan_action(wayverb::combined::model::scene& controller)
+            : controller_{controller} {}
 
     void mouse_drag(const MouseEvent&) override {
         //  TODO pan
@@ -131,17 +66,17 @@ public:
 
     void mouse_wheel_move(const MouseEvent&,
                           const MouseWheelDetails& d) override {
-        scene_.set_eye_distance(scene_.get_eye_distance() + d.deltaY);
+        controller_.set_eye_distance(controller_.get_eye_distance() + d.deltaY);
     }
 
     void mouse_up(const MouseEvent&) override {}
 
 private:
-    wayverb::combined::model::scene& scene_;
+    wayverb::combined::model::scene& controller_;
 };
 
 template <typename Item>
-class move_item_action final : public scene::mouse_action {
+class move_item_action final : public controller::mouse_action {
 public:
     move_item_action(Item& item)
             : item_{item}
@@ -169,21 +104,21 @@ auto make_move_item_action_ptr(T& t) {
     return std::make_unique<move_item_action<T>>(t);
 }
 
-scene::scene(wayverb::combined::model::app& app)
+controller::controller(wayverb::combined::model::app& app)
         : app_{app} {}
 
-scene::~scene() noexcept = default;
+controller::~controller() noexcept = default;
 
-void scene::mouse_down(const MouseEvent& e) { mouse_action_ = start_action(e); }
+void controller::mouse_down(const MouseEvent& e) { mouse_action_ = start_action(e); }
 
-void scene::mouse_drag(const MouseEvent& e) {
+void controller::mouse_drag(const MouseEvent& e) {
     //  Forward the position to the currently engaged action.
     if (mouse_action_) {
         mouse_action_->mouse_drag(e);
     }
 }
 
-void scene::mouse_up(const MouseEvent& e) {
+void controller::mouse_up(const MouseEvent& e) {
     //  If a mouse button is released, quit the current action.
     //  If there are still buttons held, start the appropriate action for the
     //  remaining buttons.
@@ -194,13 +129,13 @@ void scene::mouse_up(const MouseEvent& e) {
     mouse_action_ = start_action(e);
 }
 
-void scene::mouse_wheel_move(const MouseEvent& e, const MouseWheelDetails& d) {
+void controller::mouse_wheel_move(const MouseEvent& e, const MouseWheelDetails& d) {
     if (mouse_action_) {
         mouse_action_->mouse_wheel_move(e, d);
     }
 }
 
-std::unique_ptr<scene::mouse_action> scene::start_action(const MouseEvent& e) {
+std::unique_ptr<controller::mouse_action> controller::start_action(const MouseEvent& e) {
     //  If middle and left mouse buttons are pressed, start panning action.
     if (e.mods.isLeftButtonDown() && e.mods.isRightButtonDown()) {
         return std::make_unique<pan_action>(app_.scene);
@@ -250,7 +185,7 @@ std::unique_ptr<scene::mouse_action> scene::start_action(const MouseEvent& e) {
     return nullptr;
 }
 
-glm::vec3 scene::compute_world_mouse_direction(const glm::vec2& pos) const {
+glm::vec3 controller::compute_world_mouse_direction(const glm::vec2& pos) const {
     const auto viewport = app_.scene.get_viewport();
     const auto ray_clip =
             glm::vec4{(2 * pos.x) / viewport.x - 1,
@@ -263,4 +198,4 @@ glm::vec3 scene::compute_world_mouse_direction(const glm::vec2& pos) const {
             glm::vec3{app_.scene.get_inverse_view_matrix() * ray_eye});
 }
 
-}  // namespace controller
+}  // namespace scene
