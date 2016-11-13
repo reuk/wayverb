@@ -16,10 +16,6 @@ app stuff
 
 Make it look like Tron.
 
-Enable/disable visualisation.
-
-Native dialogs everywhere.
-
 Finish adding the help panel info.
 
 Load/save material + receiver presets.
@@ -28,7 +24,11 @@ Load/save material + receiver presets.
 Clipping planes for large models.
     Inifinte perspective doesn't fix this... Not sure what the problem is here.
 
+Window to configure output samplerate/bit-depth before beginning the rendering.
+
 Move node colour processing to vertex shader(s).
+
+Make sure node pressures are zeroed before each run.
 
 Adjust zoom speed based on current zoom distance.
     i.e. it should probalby be logarithmic.
@@ -55,8 +55,6 @@ Fail for really long reverbs i.e. longer than 60 seconds.
     OR disable absorptions lower than (for example) 0.01
 
 Benchmark gpu vs cpu performance.
-
-Window to configure output samplerate/bit-depth before rendering.
 
 documentation
 -------------

@@ -20,6 +20,13 @@ std::experimental::optional<size_t> scene::get_visible_surface() const {
     return visible_surface_;
 }
 
+void scene::set_visualise(bool visualise) {
+    visualise_ = visualise;
+    visualise_changed_(visualise);
+}
+
+bool scene::get_visualise() const { return visualise_; }
+
 void scene::set_origin(const glm::vec3& origin) {
     origin_ = origin;
     recompute_view_matrices();
@@ -105,6 +112,11 @@ scene::visible_surface_changed::connection
 scene::connect_visible_surface_changed(
         visible_surface_changed::callback_type callback) {
     return visible_surface_changed_.connect(std::move(callback));
+}
+
+scene::visualise_changed::connection scene::connect_visualise_changed(
+        visualise_changed::callback_type callback) {
+    return visualise_changed_.connect(std::move(callback));
 }
 
 scene::view_matrix_changed::connection scene::connect_view_matrix_changed(

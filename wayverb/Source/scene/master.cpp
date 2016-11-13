@@ -67,33 +67,91 @@ public:
 
         //  Hook up the engine.
 
-        //  IMPORTANT app callbacks might be called from any thread - don't
-        //  access unprotected common state inside engine callbacks!
-        app_.connect_node_positions([this](auto descriptor) {
-            view_.command([d = std::move(descriptor)](auto& renderer) {
-                renderer.set_node_positions(
-                        wayverb::waveguide::compute_node_positions(d));
-            });
+        //  We assume this will be called from the message thread.
+        app_.scene.connect_visualise_changed([this](auto should_visualise) {
+            if (should_visualise) {
+                //  IMPORTANT app callbacks might be called from any thread -
+                //  don't
+                //  access unprotected common state inside engine callbacks!
+                positions_changed_ = wayverb::combined::
+                        waveguide_node_positions_changed::scoped_connection{
+                                app_.connect_node_positions([this](
+                                        auto descriptor) {
+                                    view_.command([d = std::move(descriptor)](
+                                            auto& renderer) {
+                                        renderer.set_node_positions(
+                                                wayverb::waveguide::
+                                                        compute_node_positions(
+                                                                d));
+                                    });
+                                })};
+
+                pressures_changed_ = wayverb::combined::
+                        waveguide_node_pressures_changed::scoped_connection{
+                                app_.connect_node_pressures([this](
+                                        auto pressures, auto distance) {
+                                    view_.command([
+                                        p = std::move(pressures),
+                                        d = distance
+                                    ](auto& renderer) {
+                                        renderer.set_node_colours(util::map_to_vector(
+                                                begin(p), end(p), [](auto p) {
+                                                    const auto a = std::abs(p) *
+                                                                   1000.0;
+                                                    return 0 < p ? glm::vec4{a,
+                                                                             a,
+                                                                             0,
+                                                                             a}
+                                                                 : glm::vec4{0,
+                                                                             0,
+                                                                             a,
+                                                                             a};
+                                                }));
+                                        renderer.set_distance_travelled(d);
+                                    });
+                                })};
+
+                reflections_generated_ =
+                        wayverb::combined::raytracer_reflections_generated::
+                                scoped_connection{app_.connect_reflections(
+                                        [this](auto reflections, auto source) {
+                                            view_.command([
+                                                r = std::move(reflections),
+                                                s = source
+                                            ](auto& renderer) {
+                                                renderer.set_reflections(
+                                                        std::move(r), s);
+                                            });
+                                        })};
+
+            } else {
+                positions_changed_ = wayverb::combined::
+                        waveguide_node_positions_changed::scoped_connection{};
+                pressures_changed_ = wayverb::combined::
+                        waveguide_node_pressures_changed::scoped_connection{};
+                reflections_generated_ = wayverb::combined::
+                        raytracer_reflections_generated::scoped_connection{};
+            }
         });
 
-        app_.connect_node_pressures([this](auto pressures, auto distance) {
-            view_.command([ p = std::move(pressures),
-                            d = distance ](auto& renderer) {
-                renderer.set_node_colours(
-                        util::map_to_vector(begin(p), end(p), [](auto p) {
-                            const auto a = std::abs(p) * 1000.0;
-                            return 0 < p ? glm::vec4{a, a, 0, a}
-                                         : glm::vec4{0, 0, a, a};
-                        }));
-                renderer.set_distance_travelled(d);
-            });
-        });
-
-        app_.connect_reflections([this](auto reflections, auto source) {
-            view_.command(
-                    [ r = std::move(reflections), s = source ](auto& renderer) {
-                        renderer.set_reflections(std::move(r), s);
+        app_.connect_begun([this] {
+            queue_.push([this] {
+                if (app_.scene.get_visualise()) {
+                    view_.command([](auto& renderer) {
+                        renderer.set_nodes_visible(true);
+                        renderer.set_reflections_visible(true);
                     });
+                }
+            });
+        });
+
+        app_.connect_finished([this] {
+            queue_.push([this] {
+                view_.command([](auto& renderer) {
+                    renderer.set_nodes_visible(false);
+                    renderer.set_reflections_visible(false);
+                });
+            });
         });
 
         //  We want to catch mouse events and dispatch our own commands to the
@@ -127,10 +185,18 @@ private:
 
     //  Keep a reference to the global model.
     wayverb::combined::model::app& app_;
+    async_work_queue queue_;
 
     //  This object decides how to interpret user input, and updates the models
     //  as appropriate.
     scene::controller controller_;
+
+    wayverb::combined::waveguide_node_positions_changed::scoped_connection
+            positions_changed_;
+    wayverb::combined::waveguide_node_pressures_changed::scoped_connection
+            pressures_changed_;
+    wayverb::combined::raytracer_reflections_generated::scoped_connection
+            reflections_generated_;
 };
 
 master::master(wayverb::combined::model::app& app)

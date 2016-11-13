@@ -20,6 +20,9 @@ public:
     void set_visible_surface(std::experimental::optional<size_t> visible);
     std::experimental::optional<size_t> get_visible_surface() const;
 
+    void set_visualise(bool visualise);
+    bool get_visualise() const;
+
     //  view actions - affect the modelview matrix
 
     void set_origin(const glm::vec3& origin);
@@ -58,6 +61,10 @@ public:
     visible_surface_changed::connection connect_visible_surface_changed(
             visible_surface_changed::callback_type callback);
 
+    using visualise_changed = util::event<bool>;
+    visualise_changed::connection connect_visualise_changed(
+            visualise_changed::callback_type callback);
+
     using view_matrix_changed = util::event<glm::mat4>;
     view_matrix_changed::connection connect_view_matrix_changed(
             view_matrix_changed::callback_type callback);
@@ -77,6 +84,8 @@ private:
 
     std::experimental::optional<size_t> visible_surface_;
 
+    bool visualise_ = true;
+
     glm::vec3 origin_{0, 0, 0};
     float eye_distance_ = 1;
     wayverb::core::az_el az_el_{0, 0};
@@ -92,8 +101,9 @@ private:
     glm::mat4 inverse_projection_matrix_;
 
     //  events
-    
+
     visible_surface_changed visible_surface_changed_;
+    visualise_changed visualise_changed_;
     view_matrix_changed view_matrix_changed_;
     projection_matrix_changed projection_matrix_changed_;
 };

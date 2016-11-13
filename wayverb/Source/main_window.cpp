@@ -54,6 +54,7 @@ main_window::main_window(ApplicationCommandTarget& next,
     });
 
     model_.reset_view();
+    model_.scene.set_visualise(true);
 }
 
 main_window::~main_window() noexcept {
@@ -139,9 +140,7 @@ void main_window::getCommandInfo(CommandID command_id,
                            "Toggle display of ray and wave information",
                            "General",
                            0);
-            //  TODO
-            //  result.setTicked(wrapper.render_state.visualise.get());
-            //  result.setActive(!wrapper.render_state.is_rendering.get());
+            result.setTicked(model_.scene.get_visualise());
             break;
 
         case CommandIDs::idResetView:
@@ -183,9 +182,7 @@ bool main_window::perform(const InvocationInfo& info) {
         case CommandIDs::idCloseProject: closeButtonPressed(); return true;
 
         case CommandIDs::idVisualise:
-            //  TODO
-            //  wrapper.render_state.visualise.set(
-            //         !wrapper.render_state.visualise.get());
+            model_.scene.set_visualise(!model_.scene.get_visualise());
             return true;
 
         case CommandIDs::idResetView: model_.reset_view(); return true;
