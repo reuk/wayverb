@@ -29,7 +29,7 @@ public:
     glm::vec3 get_origin() const;
 
     void set_eye_distance(float distance);
-    double get_eye_distance() const;
+    float get_eye_distance() const;
 
     void set_rotation(const wayverb::core::az_el& az_el);
     wayverb::core::az_el get_rotation() const;
@@ -54,7 +54,7 @@ public:
 
     glm::vec3 compute_world_camera_position() const;
     glm::vec3 compute_world_camera_direction() const;
-    glm::vec3 compute_world_mouse_direction() const;
+    glm::vec3 compute_world_mouse_direction(const glm::vec2& pos) const;
 
     using visible_surface_changed =
             util::event<std::experimental::optional<size_t>>;

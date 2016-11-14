@@ -39,7 +39,7 @@ void scene::set_eye_distance(float distance) {
     recompute_view_matrices();
 }
 
-double scene::get_eye_distance() const { return eye_distance_; }
+float scene::get_eye_distance() const { return eye_distance_; }
 
 void scene::set_rotation(const wayverb::core::az_el& az_el) {
     az_el_ = wayverb::core::az_el{
@@ -106,6 +106,15 @@ glm::vec3 scene::compute_world_camera_position() const {
 glm::vec3 scene::compute_world_camera_direction() const {
     return glm::normalize(
             glm::vec3{inverse_view_matrix_ * glm::vec4{0, 0, -1, 0}});
+}
+
+glm::vec3 scene::compute_world_mouse_direction(const glm::vec2& pos) const {
+    const auto viewport = get_viewport();
+    const auto ray_clip = glm::vec4{
+            (2 * pos.x) / viewport.x - 1, 1 - (2 * pos.y) / viewport.y, -1, 1};
+    auto ray_eye = get_inverse_projection_matrix() * ray_clip;
+    ray_eye = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
+    return glm::normalize(glm::vec3{get_inverse_view_matrix() * ray_eye});
 }
 
 scene::visible_surface_changed::connection

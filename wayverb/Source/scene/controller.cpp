@@ -23,35 +23,51 @@ public:
 
 class rotate_action final : public controller::mouse_action {
 public:
-    rotate_action(wayverb::combined::model::scene& controller)
-            : controller_{controller}
-            , initial_{controller_.get_rotation()} {}
+    rotate_action(wayverb::combined::model::scene& model)
+            : model_{model}
+            , initial_{model_.get_rotation()} {}
 
     void mouse_drag(const MouseEvent& e) override {
         const auto diff = e.getOffsetFromDragStart();
         const auto angle_scale = 0.01;
-        controller_.set_rotation(wayverb::core::az_el{
+        model_.set_rotation(wayverb::core::az_el{
                 static_cast<float>(diff.x * angle_scale + initial_.azimuth),
                 static_cast<float>(diff.y * angle_scale + initial_.elevation)});
     }
 
 private:
-    wayverb::combined::model::scene& controller_;
+    wayverb::combined::model::scene& model_;
     wayverb::core::az_el initial_;
 };
 
 class pan_action final : public controller::mouse_action {
 public:
-    pan_action(wayverb::combined::model::scene& controller)
-            : controller_{controller} {}
+    pan_action(wayverb::combined::model::scene& model)
+            : model_{model}
+            , camera_position_{model_.compute_world_camera_position()}
+            , camera_direction_{model_.compute_world_camera_direction()}
+            , camera_distance_{model_.get_eye_distance()}
+            , initial_position_{model_.get_origin()} {}
 
-    void mouse_drag(const MouseEvent&) override {
-        //  TODO pan
-        //  TODO move origin in the plane of the current orientation
+    void mouse_drag(const MouseEvent& e) override {
+        //  Find mouse position on plane perpendicular to camera direction
+        //  through the rotation origin.
+        const auto initial = compute_world_mouse_position(glm::vec2{e.getMouseDownPosition().x, e.getMouseDownPosition().y});
+        const auto current = compute_world_mouse_position(glm::vec2{e.getPosition().x, e.getPosition().y});
+        model_.set_origin(initial_position_ + current - initial);
     }
 
 private:
-    wayverb::combined::model::scene& controller_;
+    glm::vec3 compute_world_mouse_position(const glm::vec2& mouse_pos) {
+        const auto mouse_direction = model_.compute_world_mouse_direction(mouse_pos);
+        return mouse_direction * camera_distance_ / glm::dot(camera_direction_, mouse_direction);
+    }
+
+    wayverb::combined::model::scene& model_;
+    glm::vec3 camera_position_;
+    glm::vec3 camera_direction_;
+    float camera_distance_;
+    glm::vec3 initial_position_;
 };
 
 template <typename Item>
@@ -164,17 +180,6 @@ std::unique_ptr<controller::mouse_action> controller::start_action(
 
     //  If nothing (important) is pressed then do nothing.
     return nullptr;
-}
-
-glm::vec3 controller::compute_world_mouse_direction(
-        const glm::vec2& pos) const {
-    const auto viewport = app_.scene.get_viewport();
-    const auto ray_clip = glm::vec4{
-            (2 * pos.x) / viewport.x - 1, 1 - (2 * pos.y) / viewport.y, -1, 1};
-    auto ray_eye = app_.scene.get_inverse_projection_matrix() * ray_clip;
-    ray_eye = glm::vec4{ray_eye.x, ray_eye.y, -1, 0};
-    return glm::normalize(
-            glm::vec3{app_.scene.get_inverse_view_matrix() * ray_eye});
 }
 
 }  // namespace scene

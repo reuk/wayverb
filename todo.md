@@ -21,9 +21,8 @@ Model View
 
     Ensure raytracer reflections are actually working.
 
-    Pan.
-
     Easing.
+        Just jam it in the view for the moment.
 
     Make sources and receivers draggable.
 
@@ -35,8 +34,6 @@ Model View
 
     Clipping planes for large models.
         Inifinte perspective doesn't fix this... Not sure what the problem is here.
-
-    Adjust zoom speed based on current zoom distance.
 
 Make it look like Tron.
 

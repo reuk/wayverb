@@ -30,14 +30,12 @@ public:
 private:
     std::unique_ptr<mouse_action> start_action(const MouseEvent& e);
 
-    glm::vec3 compute_world_mouse_direction(const glm::vec2& pos) const;
-
     template <typename It>
     auto get_hovered(It beg, It end, const glm::vec2& mouse_pos) {
         using value_type = std::decay_t<decltype(*beg)>;
 
         const auto origin = app_.scene.compute_world_camera_position();
-        const auto direction = compute_world_mouse_direction(mouse_pos);
+        const auto direction = app_.scene.compute_world_mouse_direction(mouse_pos);
 
         struct intersection {
             value_type* it;
