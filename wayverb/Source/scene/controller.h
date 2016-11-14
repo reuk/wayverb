@@ -20,6 +20,7 @@ public:
     controller(wayverb::combined::model::app& app);
     ~controller() noexcept;
 
+    void mouse_move(const MouseEvent& e);
     void mouse_down(const MouseEvent& e);
     void mouse_drag(const MouseEvent& e);
     void mouse_up(const MouseEvent& e);
@@ -31,7 +32,7 @@ private:
     std::unique_ptr<mouse_action> start_action(const MouseEvent& e);
 
     template <typename It>
-    auto get_hovered(It beg, It end, const glm::vec2& mouse_pos) {
+    auto get_hovered(It beg, It end, const glm::vec2& mouse_pos) const {
         using value_type = std::decay_t<decltype(*beg)>;
 
         const auto origin = app_.scene.compute_world_camera_position();
@@ -59,6 +60,43 @@ private:
         }
 
         return inter;
+    }
+
+    template <typename T>
+    auto do_action_with_closest_thing(const glm::vec2& mouse_pos,
+        wayverb::combined::model::sources& sources,
+        wayverb::combined::model::receivers& receivers,
+        T&& action) const {
+        const auto get_hovered_in_range = [this, mouse_pos](auto& range) {
+            return get_hovered(std::begin(range), std::end(range), mouse_pos);
+        };
+        const auto hovered_source =
+                get_hovered_in_range(app_.project.persistent.sources());
+        const auto hovered_receiver =
+                get_hovered_in_range(app_.project.persistent.receivers());
+
+        using return_type = std::decay_t<decltype(action(*hovered_source.it))>;
+
+        if (hovered_source.it != nullptr && hovered_receiver.it != nullptr) {
+            const auto source_is_closer =
+                    hovered_source.distance < hovered_receiver.distance;
+
+            if (source_is_closer) {
+                return action(*hovered_source.it);
+            }
+
+            return action(*hovered_receiver.it);
+        }
+
+        if (hovered_source.it != nullptr) {
+            return action(*hovered_source.it);
+        }
+
+        if (hovered_receiver.it != nullptr) {
+            return action(*hovered_receiver.it);
+        }
+
+        return return_type{};
     }
 
     wayverb::combined::model::app& app_;

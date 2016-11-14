@@ -19,12 +19,26 @@ class vector final : public basic_member<vector<T, MinimumSize>> {
         explicit item_connection(T t = T())
                 : item{std::move(t)} {}
 
-        item_connection(const item_connection& other)
-                : item{other.item} {}
-        item_connection(item_connection&&) noexcept = default;
+        void swap(item_connection& other) noexcept {
+            using std::swap;
+            swap(item, other.item);
+            swap(connection_, other.connection_);
+        }
 
-        item_connection& operator=(const item_connection& other) = default;
-        item_connection& operator=(item_connection&&) noexcept = default;
+        item_connection(const item_connection& other) : item{other.item} {}
+        item_connection(item_connection&& other) noexcept
+                : item{std::move(other.item)}
+                , connection_{std::move(other.connection_)} {}
+
+        item_connection& operator=(const item_connection& other) {
+            auto copy{other};
+            swap(copy);
+            return *this;
+        }
+        item_connection& operator=(item_connection&& other) noexcept {
+            swap(other);
+            return *this;
+        }
 
         void connect(vector& v) {
             connection_ = typename T::scoped_connection{
@@ -165,7 +179,6 @@ public:
     void load(Archive& archive) {
         archive(data_);
         connect_all();
-        this->notify();
     }
 
     template <typename Archive>

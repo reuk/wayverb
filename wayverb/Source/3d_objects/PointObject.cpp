@@ -46,7 +46,6 @@ RingObject::RingObject(const std::shared_ptr<mglu::generic_shader>& shader,
                               util::aligned::vector<glm::vec4>(pts, color),
                               compute_ring_indices(pts),
                               GL_LINE_STRIP) {
-    set_scale(0.4);
 }
 
 //----------------------------------------------------------------------------//
@@ -58,7 +57,6 @@ LineObject::LineObject(const std::shared_ptr<mglu::generic_shader>& shader,
                               util::aligned::vector<glm::vec4>(2, color),
                               {0, 1},
                               GL_LINES) {
-    set_scale(0.4);
 }
 
 //----------------------------------------------------------------------------//
@@ -69,7 +67,8 @@ PointObject::PointObject(const std::shared_ptr<mglu::generic_shader>& shader,
         , color(color)
         , x_ring(shader, color, RingObject::Axis::x)
         , y_ring(shader, color, RingObject::Axis::y)
-        , z_ring(shader, color, RingObject::Axis::z) {}
+        , z_ring(shader, color, RingObject::Axis::z) {
+}
 
 void PointObject::set_highlight(float amount) {
     x_ring.set_highlight(amount);

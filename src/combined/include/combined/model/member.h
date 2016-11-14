@@ -36,6 +36,7 @@ public:
     }
 
     void notify() { on_change_(*static_cast<Derived*>(this)); }
+    size_t connections() const { return on_change_.size(); }
 
 protected:
     ~basic_member() noexcept = default;
@@ -55,20 +56,17 @@ public:
     owning_member() = default;
 
     explicit owning_member(DataMembers... data_members)
-            : data_members_{std::make_tuple(std::move(data_members)...)}
-            , scoped_connections_{make_connections()} {}
+            : data_members_{std::make_tuple(std::move(data_members)...)} {}
 
     owning_member(const owning_member& other)
-            : data_members_{other.data_members_}
-            , scoped_connections_{make_connections()} {}
+            : data_members_{other.data_members_} {}
 
     owning_member(owning_member&& other) noexcept
             : data_members_{std::move(other.data_members_)} {}
-
+            
     void swap(owning_member& other) noexcept {
         using std::swap;
         swap(data_members_, other.data_members_);
-        swap(scoped_connections_, other.scoped_connections);
     }
 
     owning_member& operator=(const owning_member& other) {
@@ -133,7 +131,7 @@ private:
     }
 
     std::tuple<DataMembers...> data_members_;
-    std::tuple<typename DataMembers::scoped_connection...> scoped_connections_;
+    std::tuple<typename DataMembers::scoped_connection...> scoped_connections_ = make_connections();
 };
 
 }  // namespace model

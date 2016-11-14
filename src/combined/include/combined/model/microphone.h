@@ -21,7 +21,6 @@ public:
     template <typename Archive>
     void load(Archive& archive) {
         archive(microphone_);
-        notify();
     }
 
     template <typename Archive>

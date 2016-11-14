@@ -158,6 +158,8 @@ public:
         view_.setBounds(getLocalBounds());
     }
 
+    void mouseMove(const MouseEvent& e) override { controller_.mouse_move(e); }
+
     void mouseDown(const MouseEvent& e) override { controller_.mouse_down(e); }
 
     void mouseDrag(const MouseEvent& e) override { controller_.mouse_drag(e); }

@@ -35,7 +35,6 @@ public:
     template <typename Archive>
     void load(Archive& archive) {
         archive(output_folder_, name_, sample_rate_, bit_depth_);
-        notify();
     }
 
     template <typename Archive>

@@ -24,7 +24,6 @@ public:
     template <typename Archive>
     void load(Archive& archive) {
         archive(name_, surface_);
-        notify();
     }
 
     template <typename Archive>

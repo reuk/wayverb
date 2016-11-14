@@ -24,7 +24,6 @@ public:
     template <typename Archive>
     void load(Archive& archive) {
         archive(data_.cutoff, data_.usable_portion);
-        notify();
     }
 
     template <typename Archive>
@@ -52,7 +51,6 @@ public:
     template <typename Archive>
     void load(Archive& archive) {
         archive(data_.bands, data_.cutoff, data_.usable_portion);
-        notify();
     }
 
     template <typename Archive>

@@ -20,7 +20,6 @@ public:
     template <typename Archive>
     void load(Archive& archive) {
         archive(aabb_, point_);
-        notify();
     }
 
     template <typename Archive>

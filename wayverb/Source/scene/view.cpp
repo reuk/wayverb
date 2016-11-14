@@ -88,9 +88,12 @@ public:
         sources_ = util::map_to_vector(std::begin(sources),
                                        std::end(sources),
                                        [this](const auto& source) {
-                                           return PointObject{
+                                        const auto a = source.hover_state().get_hovered() ? 1.0 : 0.7;
+                                           PointObject ret{
                                                    generic_shader_,
-                                                   glm::vec4{0.7, 0, 0, 1}};
+                                                   glm::vec4{a, 0, 0, 1}};
+                                            ret.set_scale(source_receiver_radius_);
+                                            return ret;
                                        });
     }
 
@@ -99,7 +102,8 @@ public:
                 std::begin(receivers),
                 std::end(receivers),
                 [this](const auto& receiver) {
-                    PointObject ret{generic_shader_, glm::vec4{0, 0.7, 0.7, 1}};
+                    const auto a = receiver.hover_state().get_hovered() ? 1.0 : 0.7;
+                    PointObject ret{generic_shader_, glm::vec4{0, a, a, 1}};
                     ret.set_pointing(util::map_to_vector(
                             std::begin(receiver.capsules()),
                             std::end(receiver.capsules()),
@@ -109,6 +113,7 @@ public:
                                                 get_orientation(capsule));
                                 return orientation.get_pointing();
                             }));
+                    ret.set_scale(source_receiver_radius_);
                     return ret;
                 });
     }

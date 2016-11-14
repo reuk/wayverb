@@ -14,6 +14,8 @@ Look again at frequency domain test?
 app stuff
 ---------
 
+TODAY: finish model view stuff
+
 'All channels are silent' bug
 
 Model View
@@ -24,7 +26,9 @@ Model View
 
     Improve source/reciever + microphone direction models.
 
-    Throw away ray data / waveguide data if there's too much to render?
+Waveguide growth issue - see: vault model
+
+Throw away ray data / waveguide data if there's too much to render?
 
 Finish adding the help panel info.
 

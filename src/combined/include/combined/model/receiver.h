@@ -2,6 +2,7 @@
 
 #include "combined/model/capsule.h"
 #include "combined/model/constrained_point.h"
+#include "combined/model/hover.h"
 #include "combined/model/vector.h"
 
 #include "cereal/types/base_class.hpp"
@@ -12,7 +13,8 @@ namespace model {
 
 class receiver final : public owning_member<receiver,
                                             constrained_point,
-                                            vector<capsule, 1>> {
+                                            vector<capsule, 1>,
+                                            hover_state> {
     friend class vector<receiver, 1>;
     receiver() = default;
 
@@ -28,18 +30,21 @@ public:
     auto& capsules() { return get<vector<capsule, 1>>(); }
     const auto& capsules() const { return get<vector<capsule, 1>>(); }
 
+    using hover_state_t = class hover_state;
+    auto& hover_state() { return get<hover_state_t>(); }
+    const auto& hover_state() const { return get<hover_state_t>(); }
+
     void set_orientation(float azimuth, float elevation);
     core::orientation get_orientation() const;
 
     template <typename Archive>
     void load(Archive& archive) {
-        archive(cereal::base_class<type>(this), name_, orientation_);
-        notify();
+        archive(position(), capsules(), name_, orientation_);
     }
 
     template <typename Archive>
     void save(Archive& archive) const {
-        archive(cereal::base_class<type>(this), name_, orientation_);
+        archive(position(), capsules(), name_, orientation_);
     }
 
 private:

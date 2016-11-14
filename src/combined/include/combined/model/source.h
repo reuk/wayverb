@@ -1,6 +1,7 @@
 #pragma once
 
 #include "combined/model/constrained_point.h"
+#include "combined/model/hover.h"
 #include "combined/model/vector.h"
 
 #include "core/geo/box.h"
@@ -13,7 +14,8 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class source final : public owning_member<source, constrained_point> {
+class source final
+        : public owning_member<source, constrained_point, hover_state> {
     friend class vector<source, 1>;
     source() = default;
 
@@ -26,14 +28,18 @@ public:
     auto& position() { return get<constrained_point>(); }
     const auto& position() const { return get<constrained_point>(); }
 
+    using hover_state_t = class hover_state;
+    auto& hover_state() { return get<hover_state_t>(); }
+    const auto& hover_state() const { return get<hover_state_t>(); }
+
     template <typename Archive>
     void load(Archive& archive) {
-        archive(cereal::base_class<type>(this), name_);
+        archive(position(), name_);
     }
 
     template <typename Archive>
     void save(Archive& archive) const {
-        archive(cereal::base_class<type>(this), name_);
+        archive(position(), name_);
     }
 
 private:
@@ -74,10 +80,10 @@ public:
 
     bool can_erase() const;
 
-private:
     vector<source, 1>& data();
     const vector<source, 1>& data() const;
 
+private:
     core::geo::box aabb_;
 };
 

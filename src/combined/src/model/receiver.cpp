@@ -8,7 +8,9 @@ namespace combined {
 namespace model {
 
 receiver::receiver(core::geo::box bounds)
-        : type{constrained_point{bounds}, vector<capsule, 1>{}} {}
+        : type{constrained_point{bounds},
+               vector<capsule, 1>{},
+               hover_state_t{}} {}
 
 void receiver::set_name(std::string name) {
     name_ = std::move(name);

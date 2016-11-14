@@ -32,6 +32,23 @@ public:
                 : pimpl_{pimpl}
                 , key_{pimpl->connect(std::move(callback))} {}
 
+        void swap(connection& other) noexcept {
+            using std::swap;
+            swap(pimpl_, other.pimpl_);
+            swap(key_, other.key_);
+        }
+
+        connection(const connection&) = delete;
+        connection(connection&& other) noexcept {
+            swap(other);
+        }
+
+        connection& operator=(const connection&) = delete;
+        connection& operator=(connection&& other) noexcept {
+            swap(other);
+            return *this;
+        }
+
         void disconnect() {
             if (auto p = pimpl_.lock()) {
                 p->disconnect(key_);
@@ -64,11 +81,29 @@ public:
         explicit scoped_connection(connection connection)
                 : connection{std::move(connection)} {}
 
+/*
+        void swap(scoped_connection& other) noexcept {
+            using std::swap;
+            swap(connection, other.connection);
+        }
+
         scoped_connection(const scoped_connection&) = delete;
-        scoped_connection(scoped_connection&&) noexcept = default;
+        scoped_connection(scoped_connection&& other) noexcept {
+            swap(other);
+        }
 
         scoped_connection& operator=(const scoped_connection&) = delete;
-        scoped_connection& operator=(scoped_connection&&) noexcept = default;
+        scoped_connection& operator=(scoped_connection&& other) noexcept {
+            swap(other);
+            return *this;
+        }
+*/
+
+        scoped_connection(const scoped_connection&) = delete;
+        scoped_connection(scoped_connection&& other) noexcept = default;
+
+        scoped_connection& operator=(const scoped_connection&) = delete;
+        scoped_connection& operator=(scoped_connection&& other) noexcept = default;
 
         ~scoped_connection() noexcept { connection.disconnect(); }
 
@@ -85,6 +120,7 @@ public:
     }
 
     bool empty() const { return pimpl_->empty(); }
+    size_t size() const {return pimpl_->size(); }
 
 private:
     class impl final {
@@ -158,6 +194,11 @@ private:
         bool empty() const {
             std::lock_guard<std::mutex> lck{mutex_};
             return slots_.empty();
+        }
+
+        size_t size() const {
+            std::lock_guard<std::mutex> lck{mutex_};
+            return slots_.size();
         }
 
     private:

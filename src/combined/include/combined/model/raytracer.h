@@ -26,7 +26,6 @@ public:
     template <typename Archive>
     void load(Archive& archive) {
         archive(data_.rays, data_.maximum_image_source_order);
-        notify();
     }
 
     template <typename Archive>

@@ -107,6 +107,37 @@ controller::controller(wayverb::combined::model::app& app)
 
 controller::~controller() noexcept = default;
 
+void controller::mouse_move(const MouseEvent& e) {
+    std::cout << "mouse move\n";
+
+    //  We do things like this to minimize redraw requests.
+
+    //  Make a copy of sources and receivers.
+    auto sources = app_.project.persistent.sources();
+    auto receivers = app_.project.persistent.receivers();
+
+    //  Ensure nothing is hovered.
+    for (auto& i : sources) {
+        i.hover_state().set_hovered(false);
+    }
+    for (auto& i : receivers) {
+        i.hover_state().set_hovered(false);
+    }
+    
+    //  look for hovered items, notify if something is hovered.
+    do_action_with_closest_thing(wayverb::core::to_vec2{}(e.getPosition()),
+        sources,
+        receivers,
+        [](auto& i) {
+            i.hover_state().set_hovered(true);
+            return 1;
+        });
+
+    //  Copy sources and receivers back to master model.
+    app_.project.persistent.sources() = sources;
+    app_.project.persistent.receivers() = receivers;
+}
+
 void controller::mouse_down(const MouseEvent& e) {
     mouse_action_ = start_action(e);
 }
@@ -153,35 +184,12 @@ std::unique_ptr<controller::mouse_action> controller::start_action(
     //  If any, start move action with hovered item.
     //  Else, do nothing.
     if (e.mods.isLeftButtonDown()) {
-        const auto pos = wayverb::core::to_vec2{}(e.getPosition());
-        const auto get_hovered_in_range = [this, pos](auto& range) {
-            return get_hovered(std::begin(range), std::end(range), pos);
-        };
-        const auto hovered_source =
-                get_hovered_in_range(app_.project.persistent.sources());
-        const auto hovered_receiver =
-                get_hovered_in_range(app_.project.persistent.receivers());
-
-        if (hovered_source.it != nullptr && hovered_receiver.it != nullptr) {
-            const auto source_is_closer =
-                    hovered_source.distance < hovered_receiver.distance;
-
-            if (source_is_closer) {
-                return make_move_item_action_ptr(*hovered_source.it);
-            }
-
-            return make_move_item_action_ptr(*hovered_receiver.it);
-        }
-
-        if (hovered_source.it != nullptr) {
-            return make_move_item_action_ptr(*hovered_source.it);
-        }
-
-        if (hovered_receiver.it != nullptr) {
-            return make_move_item_action_ptr(*hovered_receiver.it);
-        }
-
-        return nullptr;
+        return do_action_with_closest_thing(wayverb::core::to_vec2{}(e.getPosition()),
+            app_.project.persistent.sources(),
+            app_.project.persistent.receivers(),
+                [](const auto& i) -> std::unique_ptr<mouse_action> {
+                    return make_move_item_action_ptr(i);
+                });
     }
 
     //  If nothing (important) is pressed then do nothing.
