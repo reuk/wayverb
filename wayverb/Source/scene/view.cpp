@@ -3,8 +3,8 @@
 #include "combined/model/scene.h"
 
 #include "../3d_objects/AxesObject.h"
-#include "../3d_objects/PointObject.h"
 #include "../3d_objects/LitSceneShader.h"
+#include "../3d_objects/PointObject.h"
 #include "../3d_objects/mesh_object.h"
 #include "../3d_objects/multi_material_object.h"
 #include "../3d_objects/reflections_object.h"
@@ -84,21 +84,33 @@ public:
 
     //  Sources/receivers.
 
-    void set_sources(std::vector<wayverb::combined::model::source::raw> sources) {
-        sources_ = util::map_to_vector(begin(sources), end(sources), [this](const auto& source) {
-            return PointObject{generic_shader_, glm::vec4{0, 0, 0.7, 1}};
-        });
+    void set_sources(wayverb::combined::model::sources sources) {
+        sources_ = util::map_to_vector(std::begin(sources),
+                                       std::end(sources),
+                                       [this](const auto& source) {
+                                           return PointObject{
+                                                   generic_shader_,
+                                                   glm::vec4{0.7, 0, 0, 1}};
+                                       });
     }
-    
-    void set_receivers(std::vector<wayverb::combined::model::receiver::raw> receivers) {
-        receivers_ = util::map_to_vector(begin(receivers), end(receivers), [this](const auto& receiver) {
-            PointObject ret{generic_shader_, glm::vec4{0.7, 0.7, 0, 1}};
-            ret.set_pointing(util::map_to_vector(begin(receiver.capsules), end(receiver.capsules), [&] (const auto& capsule) {
-                const auto orientation = combine(receiver.orientable, capsule.orientable);
-                return orientation.get_pointing();
-            }));
-            return ret;
-        });
+
+    void set_receivers(wayverb::combined::model::receivers receivers) {
+        receivers_ = util::map_to_vector(
+                std::begin(receivers),
+                std::end(receivers),
+                [this](const auto& receiver) {
+                    PointObject ret{generic_shader_, glm::vec4{0, 0.7, 0.7, 1}};
+                    ret.set_pointing(util::map_to_vector(
+                            std::begin(receiver.capsules()),
+                            std::end(receiver.capsules()),
+                            [&](const auto& capsule) {
+                                const auto orientation =
+                                        combine(receiver.get_orientation(),
+                                                get_orientation(capsule));
+                                return orientation.get_pointing();
+                            }));
+                    return ret;
+                });
     }
 
     void set_source_receiver_radius(float radius) {
@@ -149,8 +161,14 @@ public:
         if (model_object_) {
             model_object_->draw(model_matrix);
         }
-        //  TODO
-        //  point_objects.draw(model_matrix);
+
+        for (const auto& source : sources_) {
+            source.draw(model_matrix);
+        }
+
+        for (const auto& receiver : receivers_) {
+            receiver.draw(model_matrix);
+        }
 
         if (mesh_object_) {
             mesh_object_->draw(model_matrix);
@@ -240,8 +258,12 @@ void view::set_emphasis_colour(const glm::vec3& colour) {
     pimpl_->set_emphasis_colour(colour);
 }
 
-void view::set_sources(std::vector<wayverb::combined::model::source::raw> sources) {pimpl_->set_sources(std::move(sources));}
-void view::set_receivers(std::vector<wayverb::combined::model::receiver::raw> receivers) {pimpl_->set_receivers(std::move(receivers));}
+void view::set_sources(wayverb::combined::model::sources sources) {
+    pimpl_->set_sources(std::move(sources));
+}
+void view::set_receivers(wayverb::combined::model::receivers receivers) {
+    pimpl_->set_receivers(std::move(receivers));
+}
 
 void view::set_view_state(
         const wayverb::combined::model::view_state& view_state) {

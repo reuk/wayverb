@@ -39,18 +39,12 @@ public:
     hrtf_t& hrtf();
     const hrtf_t& hrtf() const;
 
-    struct raw final {
-        std::string name;
-        core::orientation orientation;
-        mode mode;
-    };
-
-    raw get_raw() const;
-
 private:
     std::string name_ = "new capsule";
     mode mode_ = mode::microphone;
 };
+
+core::orientation get_orientation(const capsule& capsule);
 
 }  // namespace model
 }  // namespace combined

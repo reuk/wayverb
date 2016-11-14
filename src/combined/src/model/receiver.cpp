@@ -25,23 +25,6 @@ void receiver::set_orientation(float azimuth, float elevation) {
 
 core::orientation receiver::get_orientation() const { return orientation_; }
 
-receiver::raw receiver::get_raw() const {
-    struct capsule_get_raw final {
-        auto operator()(const capsule& capsule) const {
-            return capsule.get_raw();
-        }
-    };
-
-    auto make_iterator = [](auto it) {
-        return util::make_mapping_iterator_adapter(std::move(it),
-                                                   capsule_get_raw{});
-    };
-
-    std::vector<capsule::raw> raw(make_iterator(std::begin(capsules())),
-                                  make_iterator(std::end(capsules())));
-    return {name_, get_orientation(), position().get(), std::move(raw)};
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 
 receivers::receivers(const core::geo::box& aabb)
@@ -61,22 +44,6 @@ bool receivers::can_erase() const { return data().can_erase(); }
 
 vector<receiver, 1>& receivers::data() { return get<0>(); }
 const vector<receiver, 1>& receivers::data() const { return get<0>(); }
-
-std::vector<receiver::raw> receivers::get_raw() const {
-    struct receiver_get_raw final {
-        auto operator()(const receiver& receiver) const {
-            return receiver.get_raw();
-        }
-    };
-
-    auto make_iterator = [](auto it) {
-        return util::make_mapping_iterator_adapter(std::move(it),
-                                                   receiver_get_raw{});
-    };
-
-    return std::vector<receiver::raw>(make_iterator(cbegin()),
-                                      make_iterator(cend()));
-}
 
 }  // namespace model
 }  // namespace combined

@@ -26,11 +26,11 @@ const microphone& capsule::microphone() const { return get<microphone_t>(); }
 hrtf& capsule::hrtf() { return get<hrtf_t>(); }
 const hrtf& capsule::hrtf() const { return get<hrtf_t>(); }
 
-capsule::raw capsule::get_raw() const {
-    return {name_,
-            mode_ == mode::microphone ? microphone().get().orientation
-                                      : hrtf().get().orientation,
-            mode_};
+core::orientation get_orientation(const capsule& capsule) {
+    switch (capsule.get_mode()) {
+        case capsule::mode::microphone: return microphone().get().orientation;
+        case capsule::mode::hrtf: return hrtf().get().orientation;
+    }
 }
 
 }  // namespace model

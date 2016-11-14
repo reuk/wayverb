@@ -36,13 +36,6 @@ public:
         archive(cereal::base_class<type>(this), name_);
     }
 
-    struct raw final {
-        std::string name;
-        glm::vec3 position;
-    };
-
-    raw get_raw() const;
-
 private:
     std::string name_;
 };
@@ -80,8 +73,6 @@ public:
     void clear();
 
     bool can_erase() const;
-
-    std::vector<source::raw> get_raw() const;
 
 private:
     vector<source, 1>& data();

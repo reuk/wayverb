@@ -42,15 +42,6 @@ public:
         archive(cereal::base_class<type>(this), name_, orientation_);
     }
 
-    struct raw final {
-        std::string name;
-        core::orientation orientation;
-        glm::vec3 position;
-        std::vector<capsule::raw> capsules;
-    };
-
-    raw get_raw() const;
-
 private:
     std::string name_ = "new receiver";
     core::orientation orientation_;
@@ -89,8 +80,6 @@ public:
     void clear();
 
     bool can_erase() const;
-
-    std::vector<receiver::raw> get_raw() const;
 
 private:
     vector<receiver, 1>& data();

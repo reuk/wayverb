@@ -3,7 +3,7 @@
 
 #include "UtilityComponents/connector.h"
 
-#include "core/orientable.h"
+#include "core/orientation.h"
 
 class SphericalEditor : public Component {
 public:

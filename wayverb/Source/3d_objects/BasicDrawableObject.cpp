@@ -11,11 +11,11 @@ glm::vec3 node::get_scale() const { return scale_; }
 void node::set_scale(float s) { scale_ = glm::vec3{s}; }
 void node::set_scale(const glm::vec3& s) { scale_ = s; }
 
-glm::vec3 node::get_pointing() const { return orientable_.get_pointing(); }
-void node::set_pointing(const glm::vec3& u) { orientable_.set_pointing(u); }
+glm::vec3 node::get_pointing() const { return orientation_.get_pointing(); }
+void node::set_pointing(const glm::vec3& u) { orientation_.set_pointing(u); }
 
 glm::mat4 node::get_matrix() const {
-    return glm::translate(get_position()) * orientable_.get_matrix() *
+    return glm::translate(get_position()) * orientation_.get_matrix() *
            glm::scale(get_scale());
 }
 

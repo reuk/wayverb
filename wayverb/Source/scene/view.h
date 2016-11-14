@@ -1,7 +1,7 @@
 #pragma once
 
-#include "combined/model/source.h"
 #include "combined/model/receiver.h"
+#include "combined/model/source.h"
 
 #include "raytracer/cl/reflection.h"
 
@@ -62,8 +62,8 @@ public:
 
     //  Sources/receivers.
 
-    void set_sources(std::vector<wayverb::combined::model::source::raw> sources);
-    void set_receivers(std::vector<wayverb::combined::model::receiver::raw> receivers);
+    void set_sources(wayverb::combined::model::sources sources);
+    void set_receivers(wayverb::combined::model::receivers receivers);
 
     //  Drawing functionality.
 

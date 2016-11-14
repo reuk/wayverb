@@ -128,6 +128,24 @@ public:
             });
         });
 
+        //  When sources or receivers change, update the view.
+        //  Assume model updates come from the message thread.
+        app_.project.persistent.sources().connect([this](auto& sources) {
+            auto copy = sources;
+            view_.command([r = std::move(copy)](auto& renderer) {
+                renderer.set_sources(std::move(r));
+            });
+        });
+        app_.project.persistent.sources().notify();
+
+        app_.project.persistent.receivers().connect([this](auto& receivers) {
+            auto copy = receivers;
+            view_.command([r = std::move(copy)](auto& renderer) {
+                renderer.set_receivers(std::move(r));
+            });
+        });
+        app_.project.persistent.receivers().notify();
+
         //  We want to catch mouse events and dispatch our own commands to the
         //  view, so we'll disable mouse events directly on the view.
         view_.setInterceptsMouseClicks(false, false);
