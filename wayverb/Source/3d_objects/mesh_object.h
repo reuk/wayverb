@@ -15,8 +15,8 @@ public:
         return program_.get_attrib_location("v_position");
     }
 
-    auto get_attrib_location_v_colour() const {
-        return program_.get_attrib_location("v_colour");
+    auto get_attrib_location_v_pressure() const {
+        return program_.get_attrib_location("v_pressure");
     }
 
     void set_model_matrix(const glm::mat4& mat) const;
@@ -40,7 +40,7 @@ public:
                 const glm::vec3* positions,
                 size_t num_positions);
 
-    void set_colours(const glm::vec4* colours, size_t num_colours);
+    void set_pressures(const float* pressures, size_t num_pressures);
 
 private:
     void do_draw(const glm::mat4& matrix) const override;
@@ -50,6 +50,6 @@ private:
 
     mglu::vao vao_;
     mglu::static_vbo geometry_;
-    mglu::dynamic_vbo colours_;
+    mglu::dynamic_vbo pressures_;
     mglu::static_ibo ibo;
 };

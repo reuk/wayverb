@@ -39,9 +39,6 @@ Add some capsule group presets.
 
 Window to configure output samplerate/bit-depth before beginning the rendering.
 
-Use scoped connections to connect debug processing callbacks until they are
-first called.
-
 Improve the source/receiver editors.
 
 Fail for really long reverbs i.e. longer than 60 seconds.

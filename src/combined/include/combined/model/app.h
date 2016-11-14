@@ -80,10 +80,6 @@ public:
 
     bool needs_save() const;
 
-    //  DEBUG  /////////////////////////////////////////////////////////////////
-
-    void generate_debug_mesh();
-
     //  CALLBACKS  /////////////////////////////////////////////////////////////
 
     using begun = util::event<>;
@@ -107,11 +103,6 @@ public:
 
     using finished = complete_engine::finished;
     finished::connection connect_finished(finished::callback_type t);
-
-    using mesh_generated = util::event<wayverb::waveguide::mesh>;
-    mesh_generated::connection connect_mesh_generated(
-            mesh_generated::callback_type t);
-
 
     //  MISC FUNCTIONS  //////////////////////////////////////////////////////// 
 
@@ -139,8 +130,6 @@ private:
     std::string currently_open_file_;
 
     begun begun_;
-
-    mesh_generated mesh_generated_;
 
     complete_engine engine_;
     std::future<void> future_;

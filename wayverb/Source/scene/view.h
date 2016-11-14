@@ -34,7 +34,7 @@ public:
     //  Nodes.
 
     void set_node_positions(util::aligned::vector<glm::vec3> positions);
-    void set_node_colours(util::aligned::vector<glm::vec4> colours);
+    void set_node_pressures(util::aligned::vector<float> pressures);
 
     void set_nodes_visible(bool visible);
 

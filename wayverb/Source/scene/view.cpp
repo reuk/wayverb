@@ -23,9 +23,9 @@ public:
                 mesh_shader_, positions.data(), positions.size());
     }
 
-    void set_node_colours(util::aligned::vector<glm::vec4> colours) {
+    void set_node_pressures(util::aligned::vector<float> pressures) {
         if (mesh_object_) {
-            mesh_object_->set_colours(colours.data(), colours.size());
+            mesh_object_->set_pressures(pressures.data(), pressures.size());
         }
     }
 
@@ -189,8 +189,8 @@ void view::set_node_positions(util::aligned::vector<glm::vec3> positions) {
     pimpl_->set_node_positions(std::move(positions));
 }
 
-void view::set_node_colours(util::aligned::vector<glm::vec4> colours) {
-    pimpl_->set_node_colours(std::move(colours));
+void view::set_node_pressures(util::aligned::vector<float> pressures) {
+    pimpl_->set_node_pressures(std::move(pressures));
 }
 
 void view::set_nodes_visible(bool visible) {

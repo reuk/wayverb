@@ -135,26 +135,6 @@ void app::save_as(std::string name) {
 
 bool app::needs_save() const { return project.needs_save(); }
 
-//  DEBUG  /////////////////////////////////////////////////////////////////////
-
-void app::generate_debug_mesh() {
-    auto scene_data = generate_scene_data();
-    auto sample_rate = project.persistent.waveguide().get_sampling_frequency();
-    auto speed_of_sound = 340.0;
-
-    future_ = std::async(
-            std::launch::async,
-            [ this, s = std::move(scene_data), sample_rate, speed_of_sound ] {
-                auto pair = wayverb::waveguide::compute_voxels_and_mesh(
-                        core::compute_context{},
-                        s,
-                        glm::vec3{},
-                        sample_rate,
-                        speed_of_sound);
-                mesh_generated_(std::move(pair.mesh));
-            });
-}
-
 //  CALLBACKS  /////////////////////////////////////////////////////////////////
 
 app::begun::connection app::connect_begun(begun::callback_type t) {
@@ -188,11 +168,6 @@ app::encountered_error::connection app::connect_error_handler(
 
 app::finished::connection app::connect_finished(finished::callback_type t) {
     return engine_.add_finished_callback(std::move(t));
-}
-
-app::mesh_generated::connection app::connect_mesh_generated(
-        mesh_generated::callback_type t) {
-    return mesh_generated_.connect(std::move(t));
 }
 
 core::gpu_scene_data app::generate_scene_data() {

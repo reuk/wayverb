@@ -94,19 +94,7 @@ public:
                                         p = std::move(pressures),
                                         d = distance
                                     ](auto& renderer) {
-                                        renderer.set_node_colours(util::map_to_vector(
-                                                begin(p), end(p), [](auto p) {
-                                                    const auto a = std::abs(p) *
-                                                                   1000.0;
-                                                    return 0 < p ? glm::vec4{a,
-                                                                             a,
-                                                                             0,
-                                                                             a}
-                                                                 : glm::vec4{0,
-                                                                             0,
-                                                                             a,
-                                                                             a};
-                                                }));
+                                        renderer.set_node_pressures(std::move(p));
                                         renderer.set_distance_travelled(d);
                                     });
                                 })};
