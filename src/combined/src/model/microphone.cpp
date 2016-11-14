@@ -6,8 +6,8 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-void microphone::set_orientation(const core::orientable& o) {
-    microphone_.orientable = o;
+void microphone::set_orientation(const core::orientation& o) {
+    microphone_.orientation = o;
     notify();
 }
 

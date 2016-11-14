@@ -1,4 +1,4 @@
-#include "core/orientable.h"
+#include "core/orientation.h"
 #include "core/az_el.h"
 
 #include "gtest/gtest.h"
@@ -8,7 +8,7 @@
 
 using namespace wayverb::core;
 
-TEST(orientable, compute_azimuth) {
+TEST(orientation, compute_azimuth) {
     const auto test = [](auto pt, auto az) {
         ASSERT_NEAR(compute_azimuth(pt), az, 0.0001);
     };
@@ -20,7 +20,7 @@ TEST(orientable, compute_azimuth) {
     test(glm::vec3{0, 0, 1}, 0);
 }
 
-TEST(orientable, compute_elevation) {
+TEST(orientation, compute_elevation) {
     const auto test = [](auto pt, auto el) {
         ASSERT_NEAR(compute_elevation(pt), el, 0.0001);
     };
@@ -32,7 +32,7 @@ TEST(orientable, compute_elevation) {
     test(glm::vec3{0, 0, 1}, 0);
 }
 
-TEST(orientable, round_trip) {
+TEST(orientation, round_trip) {
     const auto test = [](float az, float el) {
         const auto ret =
                 compute_azimuth_elevation(compute_pointing(az_el{az, el}));
@@ -53,10 +53,10 @@ void near_vectors(const glm::vec3& a, const glm::vec3& b) {
 }
 }//namespace
 
-TEST(orientable, pointing) {
+TEST(orientation, pointing) {
     for (auto i = 0; i != 100; ++i) {
         const auto v = glm::sphericalRand(1.0f);
 
-        near_vectors(transform(orientable{v}, v), glm::vec3{0, 0, 1});
+        near_vectors(transform(orientation{v}, v), glm::vec3{0, 0, 1});
     }
 }

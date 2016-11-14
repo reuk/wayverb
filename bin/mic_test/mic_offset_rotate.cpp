@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
 
     const glm::vec3 receiver{0, 0, 0};
     const wayverb::core::attenuator::microphone mic{
-            wayverb::core::orientable{{0, 0, 1}}, directionality};
+            wayverb::core::orientation{{0, 0, 1}}, directionality};
 
     constexpr auto absorption = 0.001f;
     constexpr auto scattering = 0.0f;

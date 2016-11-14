@@ -30,7 +30,7 @@ struct channel_info final {
 }  // namespace
 
 std::unique_ptr<capsule_base> polymorphic_capsule_model(
-        const model::capsule& i, const core::orientable& orientation) {
+        const model::capsule& i, const core::orientation& orientation) {
     switch (i.get_mode()) {
         case model::capsule::mode::microphone:
             return make_capsule_ptr(i.microphone().get(), orientation);

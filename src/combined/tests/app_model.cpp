@@ -11,7 +11,7 @@ TEST(app_model, copy_assignment) {
 
     wayverb::combined::model::microphone b;
     b.set_shape(1);
-    b.set_orientation(wayverb::core::orientable{
+    b.set_orientation(wayverb::core::orientation{
             compute_pointing(wayverb::core::az_el{M_PI, 0.1})});
 
     a = b;

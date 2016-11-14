@@ -41,7 +41,7 @@ public:
 
     struct raw final {
         std::string name;
-        core::orientable orientable;
+        core::orientation orientation;
         mode mode;
     };
 

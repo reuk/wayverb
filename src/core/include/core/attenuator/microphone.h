@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/orientable.h"
+#include "core/orientation.h"
 
 namespace wayverb {
 namespace core {
@@ -9,8 +9,8 @@ namespace attenuator {
 /// Super-simple class which maintains microphone invariants.
 class microphone final {
 public:
-    using orientable_t = class orientable;
-    explicit microphone(const orientable_t& o = orientable_t(),
+    using orientation_t = class orientation;
+    explicit microphone(const orientation_t& o = orientation_t(),
                         float shape = 0.0f);
 
     float get_shape() const;
@@ -19,7 +19,7 @@ public:
     template <typename Archive>
     void serialize(Archive&);
 
-    orientable_t orientable;
+    orientation_t orientation;
     
 private:
     float shape_{0.0f};

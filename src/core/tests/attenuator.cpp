@@ -21,7 +21,7 @@ inline auto check_nearby_vectors(const glm::vec3& a, const glm::vec3& b) {
 TEST(attenuator, transform) {
     {
         const auto test = [](auto vec) {
-            const auto a = transform(orientable{}, vec);
+            const auto a = transform(orientation{}, vec);
             const auto b = vec;
             check_nearby_vectors(a, b);
         };
@@ -36,7 +36,7 @@ TEST(attenuator, transform) {
 
     {
         const auto test = [](auto a, auto b) {
-            check_nearby_vectors(transform(orientable{{1, 0, 0}, {0, 1, 0}}, a),
+            check_nearby_vectors(transform(orientation{{1, 0, 0}, {0, 1, 0}}, a),
                                  b);
         };
 
@@ -51,7 +51,7 @@ TEST(attenuator, transform) {
     {
         const auto test = [](auto a, auto b) {
             check_nearby_vectors(
-                    transform(orientable{{0, 0, 1}, {0, -1, 0}}, a), b);
+                    transform(orientation{{0, 0, 1}, {0, -1, 0}}, a), b);
         };
 
         test(glm::vec3{1, 0, 0}, glm::vec3{-1, 0, 0});
@@ -65,7 +65,7 @@ TEST(attenuator, transform) {
     {
         const auto test = [](auto a, auto b) {
             check_nearby_vectors(
-                    transform(orientable{{1, 0, 0}, {0, -1, 0}}, a), b);
+                    transform(orientation{{1, 0, 0}, {0, -1, 0}}, a), b);
         };
 
         test(glm::vec3{1, 0, 0}, glm::vec3{0, 0, 1});
@@ -78,12 +78,12 @@ TEST(attenuator, transform) {
 }
 
 TEST(attenuator, hrtf) {
-    ASSERT_NE(attenuation(attenuator::hrtf{orientable{{0, 0, 1}, {0, 1, 0}},
+    ASSERT_NE(attenuation(attenuator::hrtf{orientation{{0, 0, 1}, {0, 1, 0}},
                                            attenuator::hrtf::channel::left},
                           glm::vec3{0, 0, 1}),
               bands_type{});
 
-    ASSERT_NE(attenuation(attenuator::hrtf{orientable{{0, 0, 1}, {0, 1, 0}},
+    ASSERT_NE(attenuation(attenuator::hrtf{orientation{{0, 0, 1}, {0, 1, 0}},
                                            attenuator::hrtf::channel::right},
                           glm::vec3{0, 0, 1}),
               bands_type{});
@@ -91,7 +91,7 @@ TEST(attenuator, hrtf) {
 
 TEST(attenuator, microphone) {
     {
-        const attenuator::microphone mic{orientable{{1, 0, 0}}, 0};
+        const attenuator::microphone mic{orientation{{1, 0, 0}}, 0};
         const auto calculate = [&](const auto& dir) {
             return attenuation(mic, dir);
         };
@@ -105,7 +105,7 @@ TEST(attenuator, microphone) {
     }
 
     {
-        const attenuator::microphone mic{orientable{{1, 0, 0}}, 0.5};
+        const attenuator::microphone mic{orientation{{1, 0, 0}}, 0.5};
         const auto calculate = [&](const auto& dir) {
             return attenuation(mic, dir);
         };
@@ -119,7 +119,7 @@ TEST(attenuator, microphone) {
     }
 
     {
-        const attenuator::microphone mic{orientable{{1, 0, 0}}, 1};
+        const attenuator::microphone mic{orientation{{1, 0, 0}}, 1};
         const auto calculate = [&](const auto& dir) {
             return attenuation(mic, dir);
         };
@@ -138,7 +138,7 @@ TEST(attenuator, hrtf_ear_position) {
 
     const auto test = [&](auto pointing, auto up, auto channel, auto pos) {
         const auto ear_pos = get_ear_position(
-                attenuator::hrtf{orientable{pointing, up}, channel, radius},
+                attenuator::hrtf{orientation{pointing, up}, channel, radius},
                 glm::vec3{0, 0, 0});
         check_nearby_vectors(ear_pos, pos);
     };

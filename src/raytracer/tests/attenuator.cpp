@@ -10,7 +10,7 @@ using namespace wayverb::core;
 
 TEST(attenuator, microphone) {
     {
-        const auto mic = attenuator::microphone{orientable{{1, 0, 0}}, 0};
+        const auto mic = attenuator::microphone{orientation{{1, 0, 0}}, 0};
         const auto receiver = glm::vec3{0, 0, 0};
         const auto calculate = [&](const auto& pos) {
             return attenuate(mic,
@@ -29,7 +29,7 @@ TEST(attenuator, microphone) {
     }
 
     {
-        const auto mic = attenuator::microphone{orientable{{1, 0, 0}}, 0.5};
+        const auto mic = attenuator::microphone{orientation{{1, 0, 0}}, 0.5};
         const auto receiver = glm::vec3{0, 0, 0};
         const auto calculate = [&](const auto& pos) {
             return attenuate(mic,
@@ -48,7 +48,7 @@ TEST(attenuator, microphone) {
     }
 
     {
-        const auto mic = attenuator::microphone{orientable{{1, 0, 0}}, 1};
+        const auto mic = attenuator::microphone{orientation{{1, 0, 0}}, 1};
         const auto receiver = glm::vec3{0, 0, 0};
         const auto calculate = [&](const auto& pos) {
             return attenuate(mic,
@@ -75,10 +75,10 @@ TEST(attenuator, hrtf) {
 
         constexpr auto radius = 0.1f;
 
-        const auto left = attenuator::hrtf{orientable{pointing, up},
+        const auto left = attenuator::hrtf{orientation{pointing, up},
                                            attenuator::hrtf::channel::left,
                                            radius};
-        const auto right = attenuator::hrtf{orientable{pointing, up},
+        const auto right = attenuator::hrtf{orientation{pointing, up},
                                             attenuator::hrtf::channel::right,
                                             radius};
 

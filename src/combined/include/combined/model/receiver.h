@@ -29,7 +29,7 @@ public:
     const auto& capsules() const { return get<vector<capsule, 1>>(); }
 
     void set_orientation(float azimuth, float elevation);
-    core::orientable get_orientation() const;
+    core::orientation get_orientation() const;
 
     template <typename Archive>
     void load(Archive& archive) {
@@ -44,7 +44,7 @@ public:
 
     struct raw final {
         std::string name;
-        glm::vec3 pointing;
+        core::orientation orientation;
         glm::vec3 position;
         std::vector<capsule::raw> capsules;
     };
@@ -53,7 +53,7 @@ public:
 
 private:
     std::string name_ = "new receiver";
-    core::orientable orientation_;
+    core::orientation orientation_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -89,6 +89,8 @@ public:
     void clear();
 
     bool can_erase() const;
+
+    std::vector<receiver::raw> get_raw() const;
 
 private:
     vector<receiver, 1>& data();

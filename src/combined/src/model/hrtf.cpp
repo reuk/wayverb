@@ -6,8 +6,8 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-void hrtf::set_orientation(const core::orientable& o) {
-    hrtf_.orientable = o;
+void hrtf::set_orientation(const core::orientation& o) {
+    hrtf_.orientation = o;
     notify();
 }
 

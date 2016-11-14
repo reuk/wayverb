@@ -98,12 +98,12 @@ private:
         shader_temp(const std::shared_ptr<T>& t)
                 : t(t) {}
         void set_model_matrix(const glm::mat4& m) const override {
-            t->set_model_matrix(m);
+            t.lock()->set_model_matrix(m);
         }
-        scoped get_scoped() const override { return t->get_scoped(); }
+        scoped get_scoped() const override { return t.lock()->get_scoped(); }
 
     private:
-        std::shared_ptr<T> t;
+        std::weak_ptr<T> t;
     };
 
     void do_draw(const glm::mat4& model_matrix) const override;

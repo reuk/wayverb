@@ -1,5 +1,8 @@
 #pragma once
 
+#include "combined/model/source.h"
+#include "combined/model/receiver.h"
+
 #include "raytracer/cl/reflection.h"
 
 #include "core/gpu_scene_data.h"
@@ -59,8 +62,8 @@ public:
 
     //  Sources/receivers.
 
-    // void set_sources(util::aligned::vector<glm::vec3> sources);
-    // void set_receivers(util::aligned::vector<glm::vec3> receivers);
+    void set_sources(std::vector<wayverb::combined::model::source::raw> sources);
+    void set_receivers(std::vector<wayverb::combined::model::receiver::raw> receivers);
 
     //  Drawing functionality.
 

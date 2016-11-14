@@ -89,7 +89,7 @@ TEST(equal_energy, directional) {
 TEST(equal_energy, cardioid) {
     const auto go = [](auto dir) {
         run_test<reflection_processor::make_directional_histogram>(
-                attenuator::microphone{orientable{dir}, 0.5f});
+                attenuator::microphone{orientation{dir}, 0.5f});
     };
     go(glm::vec3{-1, 0, 0});
     go(glm::vec3{1, 0, 0});
@@ -101,7 +101,7 @@ TEST(equal_energy, cardioid) {
 
 TEST(equal_energy, hrtf) {
     run_test<reflection_processor::make_directional_histogram>(
-            attenuator::hrtf{orientable{{-1, 0, 0}, {0, 1, 0}},
+            attenuator::hrtf{orientation{{-1, 0, 0}, {0, 1, 0}},
                              attenuator::hrtf::channel::left});
 }
 

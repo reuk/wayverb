@@ -6,9 +6,9 @@ namespace wayverb {
 namespace core {
 
 /// Invariant: pointing_ is a unit vector.
-class orientable final {
+class orientation final {
 public:
-    explicit orientable(const glm::vec3& pointing = {0, 0, 1},
+    explicit orientation(const glm::vec3& pointing = {0, 0, 1},
                         const glm::vec3& up = {0, 1, 0});
 
     glm::vec3 get_pointing() const;
@@ -27,12 +27,12 @@ private:
     glm::vec3 up_;
 };
 
-orientable combine(const orientable& a, const orientable& b);
+orientation combine(const orientation& a, const orientation& b);
 
 //  Given an object, oriented relative to world-space, and a vector direction
 //  relative to world-space, find the vector direction relative to the 
 //  oriented object.
-glm::vec3 transform(const orientable& orientable, const glm::vec3& vec);
+glm::vec3 transform(const orientation& orientation, const glm::vec3& vec);
 
 }  // namespace core
 }  // namespace wayverb

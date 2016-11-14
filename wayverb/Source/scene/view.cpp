@@ -3,6 +3,7 @@
 #include "combined/model/scene.h"
 
 #include "../3d_objects/AxesObject.h"
+#include "../3d_objects/PointObject.h"
 #include "../3d_objects/LitSceneShader.h"
 #include "../3d_objects/mesh_object.h"
 #include "../3d_objects/multi_material_object.h"
@@ -81,10 +82,28 @@ public:
         lit_scene_shader_->set_colour(colour);
     }
 
-    //  TODO Sources/receivers.
+    //  Sources/receivers.
 
-    // void set_sources(util::aligned::vector<glm::vec3> sources);
-    // void set_receivers(util::aligned::vector<glm::vec3> receivers);
+    void set_sources(std::vector<wayverb::combined::model::source::raw> sources) {
+        sources_ = util::map_to_vector(begin(sources), end(sources), [this](const auto& source) {
+            return PointObject{generic_shader_, glm::vec4{0, 0, 0.7, 1}};
+        });
+    }
+    
+    void set_receivers(std::vector<wayverb::combined::model::receiver::raw> receivers) {
+        receivers_ = util::map_to_vector(begin(receivers), end(receivers), [this](const auto& receiver) {
+            PointObject ret{generic_shader_, glm::vec4{0.7, 0.7, 0, 1}};
+            ret.set_pointing(util::map_to_vector(begin(receiver.capsules), end(receiver.capsules), [&] (const auto& capsule) {
+                const auto orientation = combine(receiver.orientable, capsule.orientable);
+                return orientation.get_pointing();
+            }));
+            return ret;
+        });
+    }
+
+    void set_source_receiver_radius(float radius) {
+        source_receiver_radius_ = radius;
+    }
 
     //  Drawing functionality.
 
@@ -170,6 +189,10 @@ private:
     std::unique_ptr<reflections_object> reflections_object_;
     double distance_ = 0.0;
 
+    util::aligned::vector<PointObject> sources_;
+    util::aligned::vector<PointObject> receivers_;
+    float source_receiver_radius_ = 0.4;
+
     //  PointObjects
     AxesObject axes_{generic_shader_};
 };
@@ -216,6 +239,9 @@ void view::set_highlighted_surface(
 void view::set_emphasis_colour(const glm::vec3& colour) {
     pimpl_->set_emphasis_colour(colour);
 }
+
+void view::set_sources(std::vector<wayverb::combined::model::source::raw> sources) {pimpl_->set_sources(std::move(sources));}
+void view::set_receivers(std::vector<wayverb::combined::model::receiver::raw> receivers) {pimpl_->set_receivers(std::move(receivers));}
 
 void view::set_view_state(
         const wayverb::combined::model::view_state& view_state) {

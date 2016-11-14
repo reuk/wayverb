@@ -1,7 +1,7 @@
 #pragma once
 
 #include "core/cl/scene_structs.h"
-#include "core/orientable.h"
+#include "core/orientation.h"
 
 #include "glm/glm.hpp"
 
@@ -11,11 +11,11 @@ namespace attenuator {
 
 class hrtf final {
 public:
-    using orientable_t = class orientable;
+    using orientation_t = class orientation;
 
     enum class channel { left, right };
 
-    explicit hrtf(const orientable_t& o = orientable_t(),
+    explicit hrtf(const orientation_t& o = orientation_t(),
                   channel channel = channel::left,
                   float radius = 0.1f);
 
@@ -28,7 +28,7 @@ public:
     template <typename Archive>
     void serialize(Archive&);
 
-    orientable_t orientable;
+    orientation_t orientation;
 
 private:
     channel channel_;

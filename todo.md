@@ -19,10 +19,10 @@ app stuff
 Model View
     Make sources and receivers draggable.
 
-        Make them visible
+    Make them visible
 
-        Highlight when hovered/moved?
-            Or add a plane-aligned cursor or something
+    Highlight when hovered/moved?
+        Or add a plane-aligned cursor or something
 
     Improve source/reciever + microphone direction models.
 

@@ -88,8 +88,8 @@ constexpr auto table = generate_hrtf_table();
 
 namespace attenuator {
 
-hrtf::hrtf(const orientable_t& o, channel channel, float radius)
-        : orientable{o}
+hrtf::hrtf(const orientation_t& o, channel channel, float radius)
+        : orientation{o}
         , channel_{channel}
         , radius_{radius} {}
 
@@ -109,7 +109,7 @@ void hrtf::set_radius(float radius) {
 
 bands_type attenuation(const hrtf& hrtf, const glm::vec3& incident) {
     if (const auto l = glm::length(incident)) {
-        const auto transformed = transform(hrtf.orientable, incident / l);
+        const auto transformed = transform(hrtf.orientation, incident / l);
 
         using table = decltype(hrtf_look_up_table::table);
         const auto channels =
@@ -125,7 +125,7 @@ glm::vec3 get_ear_position(const hrtf& hrtf, const glm::vec3& base_position) {
     const auto x = hrtf.get_channel() == hrtf::channel::left
                            ? -hrtf.get_radius()
                            : hrtf.get_radius();
-    return base_position + transform(hrtf.orientable, glm::vec3{x, 0, 0});
+    return base_position + transform(hrtf.orientation, glm::vec3{x, 0, 0});
 }
 
 }  // namespace attenuator

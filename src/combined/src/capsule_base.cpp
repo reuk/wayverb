@@ -4,7 +4,7 @@
 #include "core/attenuator/hrtf.h"
 #include "core/attenuator/microphone.h"
 #include "core/az_el.h"
-#include "core/orientable.h"
+#include "core/orientation.h"
 
 namespace wayverb {
 namespace combined {
@@ -12,9 +12,9 @@ namespace combined {
 template <typename T>
 class capsule final : public capsule_base {
 public:
-    explicit capsule(T attenuator, const core::orientable& orientation)
+    explicit capsule(T attenuator, const core::orientation& orientation)
             : attenuator_{std::move(attenuator)} {
-        attenuator_.orientable = combine(attenuator_.orientable, orientation);
+        attenuator_.orientation = combine(attenuator_.orientation, orientation);
     }
 
     std::unique_ptr<capsule_base> clone() const override {
@@ -33,14 +33,14 @@ private:
 
 std::unique_ptr<capsule_base> make_capsule_ptr(
         const core::attenuator::hrtf& attenuator,
-        const core::orientable& orientation) {
+        const core::orientation& orientation) {
     return std::make_unique<capsule<core::attenuator::hrtf>>(attenuator,
                                                              orientation);
 }
 
 std::unique_ptr<capsule_base> make_capsule_ptr(
         const core::attenuator::microphone& attenuator,
-        const core::orientable& orientation) {
+        const core::orientation& orientation) {
     return std::make_unique<capsule<core::attenuator::microphone>>(attenuator,
                                                                    orientation);
 }

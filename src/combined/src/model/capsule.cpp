@@ -28,8 +28,8 @@ const hrtf& capsule::hrtf() const { return get<hrtf_t>(); }
 
 capsule::raw capsule::get_raw() const {
     return {name_,
-            mode_ == mode::microphone ? microphone().get().orientable
-                                      : hrtf().get().orientable,
+            mode_ == mode::microphone ? microphone().get().orientation
+                                      : hrtf().get().orientation,
             mode_};
 }
 
