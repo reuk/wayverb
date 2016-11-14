@@ -104,7 +104,7 @@ public:
             const std::atomic_bool& keep_going) const {
         //  RAYTRACER  /////////////////////////////////////////////////////////
 
-        const auto rays_to_visualise = std::min(1000ul, raytracer_.rays);
+        const auto rays_to_visualise = std::min(32ul, raytracer_.rays);
 
         engine_state_changed_(state::starting_raytracer, 1.0);
 

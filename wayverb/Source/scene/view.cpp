@@ -112,6 +112,7 @@ public:
         glEnable(GL_MULTISAMPLE);
         glEnable(GL_LINE_SMOOTH);
         glEnable(GL_POLYGON_SMOOTH);
+        glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         const auto config_shader = [this](const auto& shader) {
@@ -131,8 +132,6 @@ public:
         }
         //  TODO
         //  point_objects.draw(model_matrix);
-
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
         if (mesh_object_) {
             mesh_object_->draw(model_matrix);
