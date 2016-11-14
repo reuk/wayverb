@@ -88,25 +88,13 @@ constexpr auto table = generate_hrtf_table();
 
 namespace attenuator {
 
-hrtf::hrtf(const glm::vec3& pointing,
-           const glm::vec3& up,
-           channel channel,
-           float radius)
-        : pointing_{glm::normalize(pointing)}
-        , up_{glm::normalize(up)}
+hrtf::hrtf(const orientable_t& o, channel channel, float radius)
+        : orientable{o}
         , channel_{channel}
         , radius_{radius} {}
 
-glm::vec3 hrtf::get_pointing() const { return pointing_; }
-glm::vec3 hrtf::get_up() const { return up_; }
 hrtf::channel hrtf::get_channel() const { return channel_; }
 float hrtf::get_radius() const { return radius_; }
-
-void hrtf::set_pointing(const glm::vec3& pointing) {
-    pointing_ = glm::normalize(pointing);
-}
-
-void hrtf::set_up(const glm::vec3& up) { up_ = glm::normalize(up); }
 
 void hrtf::set_channel(channel channel) { channel_ = channel; }
 
@@ -119,19 +107,9 @@ void hrtf::set_radius(float radius) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-glm::vec3 transform(const glm::vec3& pointing,
-                    const glm::vec3& up,
-                    const glm::vec3& d) {
-    const auto x = glm::normalize(glm::cross(up, pointing));
-    const auto y = glm::cross(pointing, x);
-    const auto z = pointing;
-    return glm::vec3{glm::dot(x, d), glm::dot(y, d), glm::dot(z, d)};
-}
-
 bands_type attenuation(const hrtf& hrtf, const glm::vec3& incident) {
     if (const auto l = glm::length(incident)) {
-        const auto transformed =
-                transform(hrtf.get_pointing(), hrtf.get_up(), incident / l);
+        const auto transformed = transform(hrtf.orientable, incident / l);
 
         using table = decltype(hrtf_look_up_table::table);
         const auto channels =
@@ -147,8 +125,7 @@ glm::vec3 get_ear_position(const hrtf& hrtf, const glm::vec3& base_position) {
     const auto x = hrtf.get_channel() == hrtf::channel::left
                            ? -hrtf.get_radius()
                            : hrtf.get_radius();
-    return base_position +
-           transform(hrtf.get_pointing(), hrtf.get_up(), glm::vec3{x, 0, 0});
+    return base_position + transform(hrtf.orientable, glm::vec3{x, 0, 0});
 }
 
 }  // namespace attenuator

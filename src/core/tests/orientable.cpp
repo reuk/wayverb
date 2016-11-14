@@ -1,6 +1,10 @@
+#include "core/orientable.h"
 #include "core/az_el.h"
 
 #include "gtest/gtest.h"
+
+#include "glm/gtc/random.hpp"
+#include "glm/gtx/rotate_vector.hpp"
 
 using namespace wayverb::core;
 
@@ -41,4 +45,18 @@ TEST(orientable, round_trip) {
     test(M_PI * 0.5, 0.0);
     test(0.0, -M_PI * 0.49);
     test(0.0, M_PI * 0.49);
+}
+
+namespace {
+void near_vectors(const glm::vec3& a, const glm::vec3& b) {
+    ASSERT_NEAR(glm::distance(a, b), 0, 0.00001);
+}
+}//namespace
+
+TEST(orientable, pointing) {
+    for (auto i = 0; i != 100; ++i) {
+        const auto v = glm::sphericalRand(1.0f);
+
+        near_vectors(transform(orientable{v}, v), glm::vec3{0, 0, 1});
+    }
 }

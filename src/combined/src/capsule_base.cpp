@@ -14,12 +14,7 @@ class capsule final : public capsule_base {
 public:
     explicit capsule(T attenuator, const core::orientable& orientation)
             : attenuator_{std::move(attenuator)} {
-        const auto attenuator_az_el =
-                core::compute_azimuth_elevation(attenuator_.get_pointing());
-        const auto orientation_az_el =
-                core::compute_azimuth_elevation(orientation.get_pointing());
-        attenuator_.set_pointing(
-                compute_pointing(attenuator_az_el + orientation_az_el));
+        attenuator_.orientable = combine(attenuator_.orientable, orientation);
     }
 
     std::unique_ptr<capsule_base> clone() const override {

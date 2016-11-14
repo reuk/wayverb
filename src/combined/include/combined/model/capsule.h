@@ -39,6 +39,14 @@ public:
     hrtf_t& hrtf();
     const hrtf_t& hrtf() const;
 
+    struct raw final {
+        std::string name;
+        core::orientable orientable;
+        mode mode;
+    };
+
+    raw get_raw() const;
+
 private:
     std::string name_ = "new capsule";
     mode mode_ = mode::microphone;

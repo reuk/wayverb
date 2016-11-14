@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/cl/scene_structs.h"
+#include "core/orientable.h"
 
 #include "glm/glm.hpp"
 
@@ -10,37 +11,29 @@ namespace attenuator {
 
 class hrtf final {
 public:
+    using orientable_t = class orientable;
+
     enum class channel { left, right };
 
-    hrtf() = default;
-    hrtf(const glm::vec3& pointing,
-         const glm::vec3& up,
-         channel channel,
-         float radius = 0.1);
+    explicit hrtf(const orientable_t& o = orientable_t(),
+                  channel channel = channel::left,
+                  float radius = 0.1f);
 
-    glm::vec3 get_pointing() const;
-    glm::vec3 get_up() const;
-    channel get_channel() const;
-    float get_radius() const;
-
-    void set_pointing(const glm::vec3& pointing);
-    void set_up(const glm::vec3& up);
     void set_channel(channel channel);
+    channel get_channel() const;
+
     void set_radius(float radius);
+    float get_radius() const;
 
     template <typename Archive>
     void serialize(Archive&);
-    
+
+    orientable_t orientable;
+
 private:
-    glm::vec3 pointing_;
-    glm::vec3 up_;
     channel channel_;
     float radius_;
 };
-
-glm::vec3 transform(const glm::vec3& pointing,
-                    const glm::vec3& up,
-                    const glm::vec3& d);
 
 template <typename T, size_t... Ix>
 constexpr auto to_cl_float_vector(const std::array<T, sizeof...(Ix)>& x,

@@ -13,7 +13,7 @@ class hrtf final : public basic_member<hrtf> {
 public:
     hrtf() = default;
 
-    void set_orientation(float azimuth, float elevation);
+    void set_orientation(const core::orientable& o);
     void set_channel(core::attenuator::hrtf::channel channel);
 
     core::attenuator::hrtf get() const;

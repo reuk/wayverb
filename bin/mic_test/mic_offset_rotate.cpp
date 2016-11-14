@@ -58,7 +58,6 @@ constexpr auto generate_range(util::range<T> r) {
 template <size_t bands, typename Callback>
 auto run_single_angle(float angle,
                       const glm::vec3& receiver,
-                      double sample_rate,
                       const Callback& callback) {
     constexpr auto distance = 1.0;
     const glm::vec3 source{receiver + glm::vec3{distance * std::sin(angle),
@@ -74,14 +73,12 @@ auto run_single_angle(float angle,
 }
 
 template <size_t bands, typename Callback>
-auto run_multiple_angles(const glm::vec3& receiver,
-                         float sample_rate,
-                         const Callback& callback) {
+auto run_multiple_angles(const glm::vec3& receiver, const Callback& callback) {
     constexpr auto test_locations = 16;
     const auto angles =
             generate_range<test_locations>(util::range<double>{0, 2 * M_PI});
     return util::map_to_vector(begin(angles), end(angles), [&](auto angle) {
-        return run_single_angle<bands>(angle, receiver, sample_rate, callback);
+        return run_single_angle<bands>(angle, receiver, callback);
     });
 }
 
@@ -117,8 +114,8 @@ int main(int argc, char** argv) {
     const auto sample_rate = filter_frequency * oversample_ratio * (1 / 0.16);
 
     const glm::vec3 receiver{0, 0, 0};
-    const wayverb::core::attenuator::microphone mic{glm::vec3{0, 0, 1},
-                                                    directionality};
+    const wayverb::core::attenuator::microphone mic{
+            wayverb::core::orientable{{0, 0, 1}}, directionality};
 
     constexpr auto absorption = 0.001f;
     constexpr auto scattering = 0.0f;
@@ -139,8 +136,8 @@ int main(int argc, char** argv) {
 
     const auto run = [&](const auto& name, const auto& callback) {
         const auto output =
-                run_multiple_angles<wayverb::core::simulation_bands>(
-                        receiver, sample_rate, callback);
+                run_multiple_angles<wayverb::core::simulation_bands>(receiver,
+                                                                     callback);
         std::ofstream file{output_folder + "/" + name + ".txt"};
         cereal::JSONOutputArchive archive{file};
         archive(cereal::make_nvp("directionality", directionality),
@@ -158,7 +155,7 @@ int main(int argc, char** argv) {
                 wayverb::waveguide::single_band_parameters{sample_rate, 0.6},
                 2 / env.speed_of_sound,
                 true,
-                [&](auto& queue, const auto& buffer, auto step, auto steps) {
+                [&](auto&, const auto&, auto step, auto steps) {
                     set_progress(pb, step, steps);
                 });
         return wayverb::waveguide::postprocess(

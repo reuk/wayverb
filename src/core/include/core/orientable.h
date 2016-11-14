@@ -8,11 +8,14 @@ namespace core {
 /// Invariant: pointing_ is a unit vector.
 class orientable final {
 public:
-    orientable() = default;
-    explicit orientable(const glm::vec3& pointing);
+    explicit orientable(const glm::vec3& pointing = {0, 0, 1},
+                        const glm::vec3& up = {0, 1, 0});
 
     glm::vec3 get_pointing() const;
     void set_pointing(const glm::vec3& u);
+
+    glm::vec3 get_up() const;
+    void set_up(const glm::vec3& u);
 
     glm::mat4 get_matrix() const;
 
@@ -20,8 +23,16 @@ public:
     void serialize(Archive&);
 
 private:
-    glm::vec3 pointing_{0, 0, 1};
+    glm::vec3 pointing_;
+    glm::vec3 up_;
 };
+
+orientable combine(const orientable& a, const orientable& b);
+
+//  Given an object, oriented relative to world-space, and a vector direction
+//  relative to world-space, find the vector direction relative to the 
+//  oriented object.
+glm::vec3 transform(const orientable& orientable, const glm::vec3& vec);
 
 }  // namespace core
 }  // namespace wayverb

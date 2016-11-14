@@ -58,8 +58,8 @@ flags = [
 '-Ibin/box/include',
 '-Ibuild/include',
 '-Ibuild/dependencies/include',
-'-Ibuild/library/core',
-'-Ibuild/library/waveguide',
+'-Ibuild/src/core',
+'-Ibuild/src/waveguide',
 '-Iwayverb/Source',
 '-Iwayverb/JuceLibraryCode/modules',
 ]

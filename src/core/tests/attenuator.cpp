@@ -3,18 +3,27 @@
 
 #include "gtest/gtest.h"
 
+#include <ostream>
+
 using namespace wayverb::core;
 
+namespace {
+std::ostream& operator<<(std::ostream& os, const glm::vec3& p) {
+    return os << p.x << ", " << p.y << ", " << p.z;
+}
+
 inline auto check_nearby_vectors(const glm::vec3& a, const glm::vec3& b) {
+    std::cout << "a: " << a << ", b: " << b << '\n';
     ASSERT_NEAR(glm::distance(a, b), 0, 0.00001);
+}
 }
 
 TEST(attenuator, transform) {
     {
         const auto test = [](auto vec) {
-            ASSERT_EQ(attenuator::transform(
-                              glm::vec3{0, 0, 1}, glm::vec3{0, 1, 0}, vec),
-                      vec);
+            const auto a = transform(orientable{}, vec);
+            const auto b = vec;
+            check_nearby_vectors(a, b);
         };
 
         test(glm::vec3{1, 0, 0});
@@ -27,10 +36,8 @@ TEST(attenuator, transform) {
 
     {
         const auto test = [](auto a, auto b) {
-            check_nearby_vectors(
-                    attenuator::transform(
-                            glm::vec3{1, 0, 0}, glm::vec3{0, 1, 0}, a),
-                    b);
+            check_nearby_vectors(transform(orientable{{1, 0, 0}, {0, 1, 0}}, a),
+                                 b);
         };
 
         test(glm::vec3{1, 0, 0}, glm::vec3{0, 0, 1});
@@ -44,9 +51,7 @@ TEST(attenuator, transform) {
     {
         const auto test = [](auto a, auto b) {
             check_nearby_vectors(
-                    attenuator::transform(
-                            glm::vec3{0, 0, 1}, glm::vec3{0, -1, 0}, a),
-                    b);
+                    transform(orientable{{0, 0, 1}, {0, -1, 0}}, a), b);
         };
 
         test(glm::vec3{1, 0, 0}, glm::vec3{-1, 0, 0});
@@ -60,9 +65,7 @@ TEST(attenuator, transform) {
     {
         const auto test = [](auto a, auto b) {
             check_nearby_vectors(
-                    attenuator::transform(
-                            glm::vec3{1, 0, 0}, glm::vec3{0, -1, 0}, a),
-                    b);
+                    transform(orientable{{1, 0, 0}, {0, -1, 0}}, a), b);
         };
 
         test(glm::vec3{1, 0, 0}, glm::vec3{0, 0, 1});
@@ -75,13 +78,12 @@ TEST(attenuator, transform) {
 }
 
 TEST(attenuator, hrtf) {
-    ASSERT_NE(attenuation(attenuator::hrtf{glm::vec3{0, 0, 1},
-                                           glm::vec3{0, 1, 0},
+    ASSERT_NE(attenuation(attenuator::hrtf{orientable{{0, 0, 1}, {0, 1, 0}},
                                            attenuator::hrtf::channel::left},
                           glm::vec3{0, 0, 1}),
               bands_type{});
-    ASSERT_NE(attenuation(attenuator::hrtf{glm::vec3{0, 0, 1},
-                                           glm::vec3{0, 1, 0},
+
+    ASSERT_NE(attenuation(attenuator::hrtf{orientable{{0, 0, 1}, {0, 1, 0}},
                                            attenuator::hrtf::channel::right},
                           glm::vec3{0, 0, 1}),
               bands_type{});
@@ -89,7 +91,7 @@ TEST(attenuator, hrtf) {
 
 TEST(attenuator, microphone) {
     {
-        const attenuator::microphone mic{glm::vec3{1, 0, 0}, 0};
+        const attenuator::microphone mic{orientable{{1, 0, 0}}, 0};
         const auto calculate = [&](const auto& dir) {
             return attenuation(mic, dir);
         };
@@ -103,7 +105,7 @@ TEST(attenuator, microphone) {
     }
 
     {
-        const attenuator::microphone mic{glm::vec3{1, 0, 0}, 0.5};
+        const attenuator::microphone mic{orientable{{1, 0, 0}}, 0.5};
         const auto calculate = [&](const auto& dir) {
             return attenuation(mic, dir);
         };
@@ -117,7 +119,7 @@ TEST(attenuator, microphone) {
     }
 
     {
-        const attenuator::microphone mic{glm::vec3{1, 0, 0}, 1};
+        const attenuator::microphone mic{orientable{{1, 0, 0}}, 1};
         const auto calculate = [&](const auto& dir) {
             return attenuation(mic, dir);
         };
@@ -136,7 +138,7 @@ TEST(attenuator, hrtf_ear_position) {
 
     const auto test = [&](auto pointing, auto up, auto channel, auto pos) {
         const auto ear_pos = get_ear_position(
-                attenuator::hrtf{pointing, up, channel, radius},
+                attenuator::hrtf{orientable{pointing, up}, channel, radius},
                 glm::vec3{0, 0, 0});
         check_nearby_vectors(ear_pos, pos);
     };

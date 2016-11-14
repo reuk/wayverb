@@ -1,5 +1,6 @@
 #include "combined/model/receiver.h"
 
+#include "utilities/map_to_vector.h"
 #include "core/az_el.h"
 
 namespace wayverb {
@@ -23,6 +24,26 @@ void receiver::set_orientation(float azimuth, float elevation) {
 }
 
 core::orientable receiver::get_orientation() const { return orientation_; }
+
+receiver::raw receiver::get_raw() const {
+    struct capsule_get_raw final {
+        auto operator()(const capsule& capsule) const {
+            return capsule.get_raw();
+        }
+    };
+
+    auto make_iterator = [](auto it) {
+        return util::make_mapping_iterator_adapter(std::move(it),
+                                                   capsule_get_raw{});
+    };
+
+    std::vector<capsule::raw> raw(make_iterator(std::begin(capsules())),
+                                  make_iterator(std::end(capsules())));
+    return {name_,
+            get_orientation().get_pointing(),
+            position().get(),
+            std::move(raw)};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 

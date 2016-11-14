@@ -6,8 +6,8 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-void microphone::set_orientation(float azimuth, float elevation) {
-    microphone_.set_pointing(compute_pointing(core::az_el{azimuth, elevation}));
+void microphone::set_orientation(const core::orientable& o) {
+    microphone_.orientable = o;
     notify();
 }
 

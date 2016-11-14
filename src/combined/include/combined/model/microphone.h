@@ -13,7 +13,7 @@ class microphone final : public basic_member<microphone> {
 public:
     microphone() = default;
 
-    void set_orientation(float azimuth, float elevation);
+    void set_orientation(const core::orientable& o);
     void set_shape(double shape);
 
     core::attenuator::microphone get() const;

@@ -9,20 +9,19 @@ namespace attenuator {
 /// Super-simple class which maintains microphone invariants.
 class microphone final {
 public:
-    microphone() = default;
-    microphone(const glm::vec3& pointing, float shape);
+    using orientable_t = class orientable;
+    explicit microphone(const orientable_t& o = orientable_t(),
+                        float shape = 0.0f);
 
-    glm::vec3 get_pointing() const;
     float get_shape() const;
-
-    void set_pointing(const glm::vec3& pointing);
     void set_shape(float shape);
 
     template <typename Archive>
     void serialize(Archive&);
+
+    orientable_t orientable;
     
 private:
-    orientable orientable_;
     float shape_{0.0f};
 };
 

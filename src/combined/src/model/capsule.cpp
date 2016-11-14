@@ -26,6 +26,13 @@ const microphone& capsule::microphone() const { return get<microphone_t>(); }
 hrtf& capsule::hrtf() { return get<hrtf_t>(); }
 const hrtf& capsule::hrtf() const { return get<hrtf_t>(); }
 
+capsule::raw capsule::get_raw() const {
+    return {name_,
+            mode_ == mode::microphone ? microphone().get().orientable
+                                      : hrtf().get().orientable,
+            mode_};
+}
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

@@ -6,8 +6,8 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-void hrtf::set_orientation(float azimuth, float elevation) {
-    hrtf_.set_pointing(compute_pointing(core::az_el{azimuth, elevation}));
+void hrtf::set_orientation(const core::orientable& o) {
+    hrtf_.orientable = o;
     notify();
 }
 

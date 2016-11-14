@@ -14,18 +14,19 @@ Look again at frequency domain test?
 app stuff
 ---------
 
+'All channels are silent' bug
+
 Model View
     Make sources and receivers draggable.
+
+        Make them visible
 
         Highlight when hovered/moved?
             Or add a plane-aligned cursor or something
 
-        Make them visible
-
     Improve source/reciever + microphone direction models.
 
-    Clipping planes for large models.
-        Inifinte perspective doesn't fix this... Not sure what the problem is here.
+    Throw away ray data / waveguide data if there's too much to render?
 
 Finish adding the help panel info.
 

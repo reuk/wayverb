@@ -42,6 +42,15 @@ public:
         archive(cereal::base_class<type>(this), name_, orientation_);
     }
 
+    struct raw final {
+        std::string name;
+        glm::vec3 pointing;
+        glm::vec3 position;
+        std::vector<capsule::raw> capsules;
+    };
+
+    raw get_raw() const;
+
 private:
     std::string name_ = "new receiver";
     core::orientable orientation_;

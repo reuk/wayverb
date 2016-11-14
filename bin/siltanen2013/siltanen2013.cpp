@@ -333,21 +333,22 @@ int main(int argc, char** argv) {
                     std::make_tuple("null", wayverb::core::attenuator::null{}),
                     std::make_tuple("omnidirectional",
                                     wayverb::core::attenuator::microphone{
-                                            pointing, 0.0f}) /*,
+                                            wayverb::core::orientable{pointing},
+                                            0.0f}) /*,
 std::make_tuple("cardioid",
-       wayverb::core::attenuator::microphone{pointing, 0.5f}),
+wayverb::core::attenuator::microphone{pointing, 0.5f}),
 std::make_tuple("bidirectional",
-       wayverb::core::attenuator::microphone{pointing, 1.0f}),
+wayverb::core::attenuator::microphone{pointing, 1.0f}),
 std::make_tuple(
 "hrtf_l",
 attenuator::hrtf{pointing,
-                up,
-                wayverb::core::attenuator::hrtf::channel::left}),
+up,
+wayverb::core::attenuator::hrtf::channel::left}),
 std::make_tuple(
 "hrtf_r",
 attenuator::hrtf{pointing,
-                up,
-                wayverb::core::attenuator::hrtf::channel::right})*/
+up,
+wayverb::core::attenuator::hrtf::channel::right})*/
                     ));
 
     return EXIT_SUCCESS;
