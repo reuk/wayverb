@@ -13,6 +13,14 @@
 
 #include <experimental/optional>
 
+namespace wayverb {
+namespace combined {
+namespace model {
+class view_state;
+}
+}
+}
+
 namespace scene {
 
 /// This is the actual opengl view. Use it inside a generic_renderer.
@@ -57,7 +65,8 @@ public:
 
     //  Drawing functionality.
 
-    void set_view_matrix(const glm::mat4& matrix);
+    void set_view_state(const wayverb::combined::model::view_state& view_state);
+
     void set_projection_matrix(const glm::mat4& matrix);
 
     void update(float dt) override;

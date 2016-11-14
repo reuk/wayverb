@@ -28,8 +28,8 @@ public:
         });
 
         //  If a model matrix changes, update the view matrix.
-        app_.scene.connect_view_matrix_changed([&](auto matrix) {
-            view_.command([=](auto& r) { r.set_view_matrix(matrix); });
+        app_.scene.connect_view_state_changed([&](auto state) {
+            view_.command([=](auto& r) { r.set_view_state(state); });
         });
 
         app_.scene.connect_projection_matrix_changed([&](auto matrix) {
@@ -55,11 +55,11 @@ public:
                     view_.command([
                         t = std::move(t),
                         v = std::move(v),
-                        vm = app_.scene.get_view_matrix(),
+                        vs = app_.scene.get_view_state(),
                         pm = app_.scene.get_projection_matrix()
                     ](auto& r) {
                         r.set_scene(t.data(), t.size(), v.data(), v.size());
-                        r.set_view_matrix(vm);
+                        r.set_view_state(vs);
                         r.set_projection_matrix(pm);
                         //  TODO we might need to set other state here too.
                     });

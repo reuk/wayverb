@@ -8,6 +8,14 @@ namespace wayverb {
 namespace core {
 
 struct az_el final {
+    constexpr az_el() = default;
+    constexpr az_el(float both)
+            : azimuth{both}
+            , elevation{both} {}
+    constexpr az_el(float azimuth, float elevation)
+            : azimuth{azimuth}
+            , elevation{elevation} {}
+
     float azimuth{0};
     float elevation{0};
 };

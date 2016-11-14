@@ -52,15 +52,21 @@ public:
     void mouse_drag(const MouseEvent& e) override {
         //  Find mouse position on plane perpendicular to camera direction
         //  through the rotation origin.
-        const auto initial = compute_world_mouse_position(glm::vec2{e.getMouseDownPosition().x, e.getMouseDownPosition().y});
-        const auto current = compute_world_mouse_position(glm::vec2{e.getPosition().x, e.getPosition().y});
+        const auto initial = compute_world_mouse_position(glm::vec2{
+                e.getMouseDownPosition().x, e.getMouseDownPosition().y});
+        const auto current = compute_world_mouse_position(
+                glm::vec2{e.getPosition().x, e.getPosition().y});
+        //  Adjust the model origin based on the difference between the initial
+        //  and current mouse positions.
         model_.set_origin(initial_position_ + current - initial);
     }
 
 private:
     glm::vec3 compute_world_mouse_position(const glm::vec2& mouse_pos) {
-        const auto mouse_direction = model_.compute_world_mouse_direction(mouse_pos);
-        return mouse_direction * camera_distance_ / glm::dot(camera_direction_, mouse_direction);
+        const auto mouse_direction =
+                model_.compute_world_mouse_direction(mouse_pos);
+        return mouse_direction * camera_distance_ /
+               glm::dot(camera_direction_, mouse_direction);
     }
 
     wayverb::combined::model::scene& model_;

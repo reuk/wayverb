@@ -1,5 +1,7 @@
 #include "view.h"
 
+#include "combined/model/scene.h"
+
 #include "../3d_objects/AxesObject.h"
 #include "../3d_objects/LitSceneShader.h"
 #include "../3d_objects/mesh_object.h"
@@ -86,13 +88,18 @@ public:
 
     //  Drawing functionality.
 
-    void set_view_matrix(const glm::mat4& matrix) { view_matrix_ = matrix; }
+    void set_view_state(
+            const wayverb::combined::model::view_state& view_state) {
+        target_view_ = view_state;
+    }
 
     void set_projection_matrix(const glm::mat4& matrix) {
         projection_matrix_ = matrix;
     }
 
-    void update(float) {}
+    void update(float) {
+        current_view_ = ease(current_view_, target_view_, 0.1);
+    }
 
     void do_draw(const glm::mat4& model_matrix) const {
         const auto c = 0.0;
@@ -110,7 +117,7 @@ public:
         const auto config_shader = [this](const auto& shader) {
             const auto s_shader = shader->get_scoped();
             shader->set_model_matrix(glm::mat4{});
-            shader->set_view_matrix(view_matrix_);
+            shader->set_view_matrix(get_view_matrix(current_view_));
             shader->set_projection_matrix(projection_matrix_);
         };
 
@@ -142,7 +149,8 @@ public:
 
 private:
     //  State
-    glm::mat4 view_matrix_;
+    wayverb::combined::model::view_state current_view_;
+    wayverb::combined::model::view_state target_view_;
     glm::mat4 projection_matrix_;
 
     //  Shaders
@@ -219,8 +227,9 @@ void view::set_emphasis_colour(const glm::vec3& colour) {
     pimpl_->set_emphasis_colour(colour);
 }
 
-void view::set_view_matrix(const glm::mat4& matrix) {
-    pimpl_->set_view_matrix(matrix);
+void view::set_view_state(
+        const wayverb::combined::model::view_state& view_state) {
+    pimpl_->set_view_state(view_state);
 }
 
 void view::set_projection_matrix(const glm::mat4& matrix) {

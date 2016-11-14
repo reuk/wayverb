@@ -21,12 +21,10 @@ Model View
 
     Ensure raytracer reflections are actually working.
 
-    Easing.
-        Just jam it in the view for the moment.
-
     Make sources and receivers draggable.
 
         Highlight when hovered/moved?
+            Or add a plane-aligned cursor or something
 
         Make them visible
 
@@ -34,8 +32,6 @@ Model View
 
     Clipping planes for large models.
         Inifinte perspective doesn't fix this... Not sure what the problem is here.
-
-Make it look like Tron.
 
 Finish adding the help panel info.
 
