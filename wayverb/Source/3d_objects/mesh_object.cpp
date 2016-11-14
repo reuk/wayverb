@@ -45,7 +45,7 @@ void main() {
     float c = clamp(scaled * (max_color - min_color) + min_color, min_color, max_color);
     gl_PointSize = p;
 
-    float a = abs(v_pressure) * 1000.0;
+    float a = abs(v_pressure) * 1.0;
     f_color = 0.0 < v_pressure ? vec4(a, 0.0, 0.0, a) : vec4(0.0, a, a, a);
 }
 )";

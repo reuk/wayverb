@@ -36,8 +36,6 @@ public:
     void set_node_positions(util::aligned::vector<glm::vec3> positions);
     void set_node_pressures(util::aligned::vector<float> pressures);
 
-    void set_nodes_visible(bool visible);
-
     //  Reflections.
 
     void set_reflections(util::aligned::vector<util::aligned::vector<
@@ -45,7 +43,8 @@ public:
                          const glm::vec3& source);
     void set_distance_travelled(float distance);
 
-    void set_reflections_visible(bool visible);
+    //  Reset. Will delete current mesh/raytracer state.
+    void clear();
 
     //  Scene/surfaces.
 

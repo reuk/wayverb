@@ -29,8 +29,6 @@ public:
         }
     }
 
-    void set_nodes_visible(bool visible) { nodes_visible_ = visible; }
-
     //  Reflections.
 
     void set_reflections(util::aligned::vector<util::aligned::vector<
@@ -48,8 +46,10 @@ public:
         }
     }
 
-    void set_reflections_visible(bool visible) {
-        reflections_visible_ = visible;
+    void clear() {
+        mesh_object_ = nullptr;
+        reflections_object_ = nullptr;
+        distance_ = 0.0;
     }
 
     //  Scene/surfaces.
@@ -134,11 +134,11 @@ public:
 
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-        if (nodes_visible_ && mesh_object_) {
+        if (mesh_object_) {
             mesh_object_->draw(model_matrix);
         }
 
-        if (reflections_visible_ && reflections_object_) {
+        if (reflections_object_) {
             reflections_object_->draw(model_matrix);
         }
 
@@ -168,10 +168,7 @@ private:
             std::experimental::nullopt;
 
     std::unique_ptr<mesh_object> mesh_object_;
-    bool nodes_visible_ = false;
-
     std::unique_ptr<reflections_object> reflections_object_;
-    bool reflections_visible_ = false;
     double distance_ = 0.0;
 
     //  PointObjects
@@ -193,10 +190,6 @@ void view::set_node_pressures(util::aligned::vector<float> pressures) {
     pimpl_->set_node_pressures(std::move(pressures));
 }
 
-void view::set_nodes_visible(bool visible) {
-    pimpl_->set_nodes_visible(visible);
-}
-
 void view::set_reflections(util::aligned::vector<util::aligned::vector<
                                    wayverb::raytracer::reflection>> reflections,
                            const glm::vec3& source) {
@@ -207,9 +200,7 @@ void view::set_distance_travelled(float distance) {
     pimpl_->set_distance_travelled(distance);
 }
 
-void view::set_reflections_visible(bool visible) {
-    pimpl_->set_reflections_visible(visible);
-}
+void view::clear() { pimpl_->clear(); }
 
 void view::set_scene(const wayverb::core::triangle* triangles,
                      size_t num_triangles,

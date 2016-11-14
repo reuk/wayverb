@@ -122,23 +122,9 @@ public:
             }
         });
 
-        app_.connect_begun([this] {
-            queue_.push([this] {
-                if (app_.scene.get_visualise()) {
-                    view_.command([](auto& renderer) {
-                        renderer.set_nodes_visible(true);
-                        renderer.set_reflections_visible(true);
-                    });
-                }
-            });
-        });
-
         app_.connect_finished([this] {
             queue_.push([this] {
-                view_.command([](auto& renderer) {
-                    renderer.set_nodes_visible(false);
-                    renderer.set_reflections_visible(false);
-                });
+                view_.command([](auto& renderer) { renderer.clear(); });
             });
         });
 

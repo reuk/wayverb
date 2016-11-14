@@ -15,12 +15,6 @@ app stuff
 ---------
 
 Model View
-    Move node colour processing to vertex shader(s).
-
-    Make sure node pressures are zeroed before each run.
-
-    Ensure raytracer reflections are actually working.
-
     Make sources and receivers draggable.
 
         Highlight when hovered/moved?
