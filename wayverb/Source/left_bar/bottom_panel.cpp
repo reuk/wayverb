@@ -1,8 +1,10 @@
-#include "BottomPanel.h"
+#include "bottom_panel.h"
 #include "Application.h"
 #include "CommandIDs.h"
 
-BottomPanel::BottomPanel()
+namespace left_bar {
+
+bottom::bottom()
         : bar_{progress_} {
     addAndMakeVisible(bar_);
     addAndMakeVisible(button_);
@@ -10,9 +12,9 @@ BottomPanel::BottomPanel()
     set_state(state::idle);
 }
 
-void BottomPanel::paint(Graphics& g) { g.fillAll(Colours::darkgrey); }
+void bottom::paint(Graphics& g) { g.fillAll(Colours::darkgrey); }
 
-void BottomPanel::resized() {
+void bottom::resized() {
     const auto button_width = 100;
     auto bounds = getLocalBounds().reduced(2, 2);
 
@@ -21,11 +23,11 @@ void BottomPanel::resized() {
 }
 
 //  View methods
-void BottomPanel::set_progress(double progress) { progress_ = progress; }
-void BottomPanel::set_bar_text(const std::string& str) {
+void bottom::set_progress(double progress) { progress_ = progress; }
+void bottom::set_bar_text(const std::string& str) {
     bar_.setTextToDisplay(str.c_str());
 }
-void BottomPanel::set_state(state s) {
+void bottom::set_state(state s) {
     state_ = s;
     switch (s) {
         case state::idle: {
@@ -43,9 +45,11 @@ void BottomPanel::set_state(state s) {
 }
 
 //  Controller methods
-void BottomPanel::buttonClicked(Button*) {
+void bottom::buttonClicked(Button*) {
     wayverb_application::get_command_manager().invokeDirectly(
             state_ == state::idle ? CommandIDs::idStartRender
                                   : CommandIDs::idCancelRender,
             true);
 }
+
+}//namespace left_bar

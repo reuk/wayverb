@@ -1,12 +1,12 @@
 #pragma once
 
-#include "UtilityComponents/connector.h"
+#include "../UtilityComponents/connector.h"
 
-#include "../JuceLibraryCode/JuceHeader.h"
+namespace left_bar {
 
-class BottomPanel : public Component, public TextButton::Listener {
+class bottom : public Component, public TextButton::Listener {
 public:
-    BottomPanel();
+    bottom();
 
     void paint(Graphics& g) override;
     void resized() override;
@@ -29,3 +29,5 @@ private:
     TextButton button_;
     model::Connector<TextButton> button_connector_{&button_, this};
 };
+
+}//namespace left_bar

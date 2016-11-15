@@ -1,16 +1,53 @@
-#include "LeftPanel.h"
+#include "master.h"
 
-#include "Application.h"
-#include "CommandIDs.h"
-#include "DirectionEditor.h"
-#include "MicrophoneEditor.h"
-#include "PropertyComponentLAF.h"
-#include "SourcesEditor.h"
-#include "SurfacePanel.h"
-#include "TextDisplayProperty.h"
-#include "Vec3Editor.h"
+#include "combined/model/app.h"
 
-namespace {
+namespace left_bar {
+
+/// Jam this in a viewport so that it can be scrolled horizontally in the case
+/// of small screens.
+
+master::master(wayverb::combined::model::app& app)
+        : model_{app} {
+
+    property_panel_.setOpaque(false);
+
+    set_help("configuration panel",
+             "Use the options in this panel to adjust the various settings of "
+             "the simulation.");
+
+    //  Hook up the model callbacks.
+
+    model_.connect_begun([this] {
+        queue_.push([this] {
+            bottom_.set_state(bottom::state::rendering);
+        });
+    });
+
+    model_.connect_engine_state([this](auto state, auto progress) {
+        queue_.push([this, state, progress] {
+            bottom_.set_bar_text(wayverb::combined::to_string(state));
+            bottom_.set_progress(progress);
+        });
+    });
+
+    model_.connect_finished([this] {
+        queue_.push([this] {
+            bottom_.set_state(bottom::state::idle);
+        });
+    });
+
+    addAndMakeVisible(property_panel_);
+    addAndMakeVisible(bottom_);
+}
+
+void master::resized() {
+    const auto bottom_height = 30;
+    property_panel_.setBounds(getLocalBounds().withTrimmedBottom(bottom_height));
+            bottom_.setBounds(getLocalBounds() .removeFromBottom(bottom_height));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 //class ConfigureButton : public ButtonPropertyComponent {
 //public:
@@ -243,113 +280,104 @@ namespace {
 //
 ////----------------------------------------------------------------------------//
 
-}  // namespace
+//master::master(wayverb::combined::model::app& model)
+//        : model_{model} {
+//    set_help("configuration panel",
+//             "Use the options in this panel to adjust the various settings of "
+//             "the simulation.");
+//
+//    //  Hook up the model callbacks.
+//
+//    model_.connect_begun([this] {
+//        queue_.push([this] {
+//            bottom_.set_state(BottomPanel::state::rendering);
+//        });
+//    });
+//
+//    model_.connect_engine_state([this](auto state, auto progress) {
+//        queue_.push([this, state, progress] {
+//            bottom_.set_bar_text(wayverb::combined::to_string(state));
+//            bottom_.set_progress(progress);
+//        });
+//    });
+//
+//    model_.connect_finished([this] {
+//        queue_.push([this] {
+//            bottom_.set_state(BottomPanel::state::idle);
+//        });
+//    });
+//
+//    {
+//        auto sources_property = std::make_unique<SourcesConfigureButton>();
+//        auto receivers_property = std::make_unique<ReceiversConfigureButton>();
+//
+//        property_panel.addSection(
+//                "general",
+//                {static_cast<PropertyComponent*>(sources_property.release()),
+//                 static_cast<PropertyComponent*>(
+//                         receivers_property.release())});
+//    }
+//    
+//        {
+//            Array<PropertyComponent*> materials;
+//            materials.addArray(make_material_buttons());
+//            property_panel.addSection("materials", materials);
+//        }
+//
+//        {
+//            Array<PropertyComponent*> waveguide;
+//            waveguide.addArray({new NumberProperty<float>(
+//                                        "cutoff",
+//                                        model.persistent.app.filter_frequency,
+//                                        20,
+//                                        20000),
+//                                new NumberProperty<float>(
+//                                        "oversample",
+//                                        model.persistent.app.oversample_ratio,
+//                                        1,
+//                                        4)});
+//            waveguide.add(new TextDisplayProperty<int>(
+//                    "waveguide sr / Hz", 20, waveguide_sampling_rate_wrapper));
+//            property_panel.addSection("waveguide", waveguide);
+//        }
+//
+//        {
+//            property_panel.addSection(
+//                    "raytracer",
+//                    {new RayNumberPickerProperty(model.persistent.app.rays)});
+//        }
+//
+//        {
+//            property_panel.addSection(
+//                    "debug",
+//                    {new DebugButton(
+//                             "show closest surfaces",
+//                             [&] {
+//                                 listener_list.call(
+//                                         &Listener::
+//                                                 left_panel_debug_show_closest_surfaces,
+//                                         this);
+//                             }),
+//                     new DebugButton(
+//                             "show boundary types",
+//                             [&] {
+//                                 listener_list.call(
+//                                         &Listener::
+//                                                 left_panel_debug_show_boundary_types,
+//                                         this);
+//                             }),
+//                     new DebugButton("hide", [&] {
+//                         listener_list.call(
+//                                 &Listener::left_panel_debug_hide_debug_mesh,
+//       this);
+//                     })});
+//        }
+//
+//    property_panel_.setOpaque(false);
+//
+//    addAndMakeVisible(property_panel_);
+//    addAndMakeVisible(bottom_);
+//}
 
-LeftPanel::LeftPanel(wayverb::combined::model::app& model)
-        : model_{model} {
-    set_help("configuration panel",
-             "Use the options in this panel to adjust the various settings of "
-             "the simulation.");
 
-    //  Hook up the model callbacks.
-
-    model_.connect_begun([this] {
-        queue_.push([this] {
-            bottom_panel_.set_state(BottomPanel::state::rendering);
-        });
-    });
-
-    model_.connect_engine_state([this](auto state, auto progress) {
-        queue_.push([this, state, progress] {
-            bottom_panel_.set_bar_text(wayverb::combined::to_string(state));
-            bottom_panel_.set_progress(progress);
-        });
-    });
-
-    model_.connect_finished([this] {
-        queue_.push([this] {
-            bottom_panel_.set_state(BottomPanel::state::idle);
-        });
-    });
-
-    /*
-    {
-        auto sources_property = std::make_unique<SourcesConfigureButton>();
-        auto receivers_property = std::make_unique<ReceiversConfigureButton>();
-
-        property_panel.addSection(
-                "general",
-                {static_cast<PropertyComponent*>(sources_property.release()),
-                 static_cast<PropertyComponent*>(
-                         receivers_property.release())});
-    }
-    */
-
-    /*
-        {
-            Array<PropertyComponent*> materials;
-            materials.addArray(make_material_buttons());
-            property_panel.addSection("materials", materials);
-        }
-
-        {
-            Array<PropertyComponent*> waveguide;
-            waveguide.addArray({new NumberProperty<float>(
-                                        "cutoff",
-                                        model.persistent.app.filter_frequency,
-                                        20,
-                                        20000),
-                                new NumberProperty<float>(
-                                        "oversample",
-                                        model.persistent.app.oversample_ratio,
-                                        1,
-                                        4)});
-            waveguide.add(new TextDisplayProperty<int>(
-                    "waveguide sr / Hz", 20, waveguide_sampling_rate_wrapper));
-            property_panel.addSection("waveguide", waveguide);
-        }
-
-        {
-            property_panel.addSection(
-                    "raytracer",
-                    {new RayNumberPickerProperty(model.persistent.app.rays)});
-        }
-
-        {
-            property_panel.addSection(
-                    "debug",
-                    {new DebugButton(
-                             "show closest surfaces",
-                             [&] {
-                                 listener_list.call(
-                                         &Listener::
-                                                 left_panel_debug_show_closest_surfaces,
-                                         this);
-                             }),
-                     new DebugButton(
-                             "show boundary types",
-                             [&] {
-                                 listener_list.call(
-                                         &Listener::
-                                                 left_panel_debug_show_boundary_types,
-                                         this);
-                             }),
-                     new DebugButton("hide", [&] {
-                         listener_list.call(
-                                 &Listener::left_panel_debug_hide_debug_mesh,
-       this);
-                     })});
-        }
-        */
-
-    property_panel_.setOpaque(false);
-
-    addAndMakeVisible(property_panel_);
-    addAndMakeVisible(bottom_panel_);
-}
-
-void LeftPanel::resized() {
-    auto panel_height = 30;
-    property_panel_.setBounds(getLocalBounds().withTrimmedBottom(panel_height));
-    bottom_panel_.setBounds(getLocalBounds().removeFromBottom(panel_height));
-}
+}  // namespace left_bar

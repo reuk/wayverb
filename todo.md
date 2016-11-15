@@ -14,24 +14,51 @@ Look again at frequency domain test?
 app stuff
 ---------
 
-'All channels are silent' bug
+rendering
+    'All channels are silent' bug
+
+    Waveguide growth issue - see: vault model
+
+    Fail for really long reverbs i.e. longer than 60 seconds.
+        OR disable absorptions lower than (for example) 0.01
+
+controls
+    sources editor
+        name
+        position
+
+    capsules editor
+
+        microphone
+            orientation
+            shape
+        hrtf
+            orientation
+            channel
+
+        with presets.
+
+    receivers editor
+        
+        name
+        position
+        orientation
+
+    materials
+
+    waveguide options
+
+    raytracer options
+
+    Window to configure output samplerate/bit-depth before beginning the rendering.
+
+    Show which channel is being rendered, and the total channels to go
 
 Improve source/reciever + microphone direction models.
-
-Waveguide growth issue - see: vault model
 
 Throw away ray data / waveguide data if there's too much to render?
 
 Finish adding the help panel info.
-
-Add some capsule group presets.
-
-Window to configure output samplerate/bit-depth before beginning the rendering.
-
-Improve the source/receiver editors.
-
-Fail for really long reverbs i.e. longer than 60 seconds.
-    OR disable absorptions lower than (for example) 0.01
 
 Benchmark gpu vs cpu performance.
 

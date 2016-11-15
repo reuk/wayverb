@@ -1,8 +1,8 @@
 #pragma once
 
 #include "HelpWindow.h"
-#include "LeftPanel.h"
 
+#include "left_bar/master.h"
 #include "scene/master.h"
 
 class MainContentComponent final : public Component,
@@ -16,7 +16,11 @@ public:
 private:
     StretchableLayoutManager layout_manager_;
 
-    LeftPanel left_panel_;
+    left_bar::master left_bar_master_;
     StretchableLayoutResizerBar resizer_bar_;
-    scene::master right_panel_;
+    scene::master scene_master_;
+
+    Component* components_to_position_[3];
+    static constexpr size_t num_components_ =
+            std::extent<decltype(components_to_position_)>{};
 };
