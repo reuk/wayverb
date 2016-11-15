@@ -45,9 +45,6 @@ namespace left_bar {
 
 master::master(wayverb::combined::model::app& app)
         : model_{app} {
-
-    property_panel_.setOpaque(false);
-
     set_help("configuration panel",
              "Use the options in this panel to adjust the various settings of "
              "the simulation.");
@@ -73,9 +70,11 @@ master::master(wayverb::combined::model::app& app)
         });
     });
 
+    const auto item_height = 150;
+    
     //  Populate the property panel
-
-    property_panel_.addSection("sources", {new wrapped_property_component<sources::master>{200, model_}});
+    property_panel_.addSection("sources", {new wrapped_property_component<sources::master>{item_height, model_}});
+    property_panel_.setOpaque(false);
 
     //  Make components visible
     addAndMakeVisible(property_panel_);

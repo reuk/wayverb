@@ -75,7 +75,6 @@
               file="Source/UtilityComponents/BareBonesVUMeter.cpp"/>
         <FILE id="wg2EsU" name="BareBonesVUMeter.h" compile="0" resource="0"
               file="Source/UtilityComponents/BareBonesVUMeter.h"/>
-        <FILE id="YOqhVS" name="BasicPanel.h" compile="0" resource="0" file="Source/UtilityComponents/BasicPanel.h"/>
         <FILE id="OOE6m1" name="connector.h" compile="0" resource="0" file="Source/UtilityComponents/connector.h"/>
         <FILE id="ZS4jNf" name="DefaultAudio.cpp" compile="1" resource="0"
               file="Source/UtilityComponents/DefaultAudio.cpp"/>

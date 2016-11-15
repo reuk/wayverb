@@ -32,7 +32,7 @@ public:
     using selected_rows_changed = util::event<int>;
     selected_rows_changed::connection connect_selected_rows_changed(
         selected_rows_changed::callback_type callback) {
-        model_.connect_selected_rows_changed(std::move(callback));
+        return model_.connect_selected_rows_changed(std::move(callback));
     }
 
 private:
@@ -69,7 +69,7 @@ private:
 
         selected_rows_changed::connection connect_selected_rows_changed(
             selected_rows_changed::callback_type callback) {
-            selected_rows_changed_.connect(std::move(callback));
+            return selected_rows_changed_.connect(std::move(callback));
         }
 
     private:

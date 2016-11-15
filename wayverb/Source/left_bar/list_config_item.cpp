@@ -22,4 +22,8 @@ void list_config_item::resized() {
     label_.setBounds(bounds.reduced(2, 2));
 }
 
+void list_config_item::buttonClicked(Button* b) {
+    CallOutBox::launchAsynchronously(get_callout_component_().release(), button_.getScreenBounds(), nullptr);
+}
+
 }  // namespace left_bar

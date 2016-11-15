@@ -93,13 +93,19 @@ std::ostream& operator<<(std::ostream& os, const glm::vec3& p) {
 template <typename Item>
 class move_item_action final : public controller::mouse_action {
 public:
-    move_item_action(const wayverb::combined::model::scene& model, Item& item)
+    /// This would be better if we could get a weak_ptr to the item being moved
+    /// That way, if the thing gets deleted, we can just stop trying to update
+    /// it.
+
+    move_item_action(wayverb::combined::model::app& model, Item& item)
             : model_{model}
             , item_{item}
-            , camera_position_{model.compute_world_camera_position()}
-            , camera_direction_{model.compute_world_camera_direction()}
+            , camera_position_{model.scene.compute_world_camera_position()}
+            , camera_direction_{model.scene.compute_world_camera_direction()}
             , initial_position_{item.position().get()}
             , camera_distance_{glm::distance(initial_position_, camera_position_)} {
+        model_.project.persistent.sources().set_busy(true);
+        model_.project.persistent.receivers().set_busy(true);
         item_.hover_state().set_selected(true);
     }
 
@@ -114,17 +120,19 @@ public:
 
     ~move_item_action() noexcept {
         item_.hover_state().set_selected(false);
+        model_.project.persistent.sources().set_busy(false);
+        model_.project.persistent.receivers().set_busy(false);
     }
 
 private:
     glm::vec3 compute_world_mouse_position(const glm::vec2& mouse_pos) {
         const auto mouse_direction =
-                model_.compute_world_mouse_direction(mouse_pos);
+                model_.scene.compute_world_mouse_direction(mouse_pos);
         return camera_position_ + mouse_direction * camera_distance_ /
                glm::dot(camera_direction_, mouse_direction);
     }
 
-    const wayverb::combined::model::scene& model_;
+    wayverb::combined::model::app& model_;
     Item& item_;
     glm::vec3 camera_position_;
     glm::vec3 camera_direction_;
@@ -133,7 +141,7 @@ private:
 };
 
 template <typename T>
-auto make_move_item_action_ptr(const wayverb::combined::model::scene& model, T& t) {
+auto make_move_item_action_ptr(const wayverb::combined::model::app& model, T& t) {
     return std::make_unique<move_item_action<T>>(model, t);
 }
 
@@ -224,7 +232,7 @@ std::unique_ptr<controller::mouse_action> controller::start_action(
             app_.project.persistent.sources(),
             app_.project.persistent.receivers(),
                 [this](auto& i) -> std::unique_ptr<mouse_action> {
-                    return make_move_item_action_ptr(app_.scene, i);
+                    return make_move_item_action_ptr(app_, i);
                 });
     }
 

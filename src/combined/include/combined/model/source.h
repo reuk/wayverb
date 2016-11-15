@@ -83,6 +83,9 @@ public:
     vector<source, 1>& data();
     const vector<source, 1>& data() const;
 
+    void set_busy(bool busy);
+    bool get_busy() const;
+
 private:
     core::geo::box aabb_;
 };

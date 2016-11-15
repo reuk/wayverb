@@ -1,6 +1,5 @@
 #pragma once
 
-#include "BasicPanel.h"
 #include "HelpWindow.h"
 #include "ValueWrapperEditableListBox.h"
 

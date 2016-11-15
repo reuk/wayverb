@@ -86,6 +86,9 @@ public:
 
     bool can_erase() const;
 
+    void set_busy(bool busy);
+    bool get_busy() const;
+
 private:
     vector<receiver, 1>& data();
     const vector<receiver, 1>& data() const;

@@ -36,6 +36,9 @@ bool sources::can_erase() const { return data().can_erase(); }
 vector<source, 1>& sources::data() { return get<0>(); }
 const vector<source, 1>& sources::data() const { return get<0>(); }
 
+void sources::set_busy(bool busy) { data().set_busy(busy); }
+bool sources::get_busy() const { return data().get_busy(); }
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

@@ -114,6 +114,7 @@ public:
     }
 
     void swap(vector& other) noexcept {
+        assert(! busy_);
         using std::swap;
         swap(data_, other.data_);
     }
@@ -154,14 +155,16 @@ public:
 
     template <typename It>
     void insert(It it, T t) {
-        const auto i = data_.emplace(it.base(), std::move(t));
-        i->connect(*this);
-        this->notify();
+        if (!busy_) {
+            const auto i = data_.emplace(it.base(), std::move(t));
+            i->connect(*this);
+            this->notify();
+        }
     }
 
     template <typename It>
     void erase(It it) {
-        if (can_erase()) {
+        if (!busy_ && can_erase()) {
             data_.erase(it.base());
             this->notify();
         }
@@ -171,8 +174,10 @@ public:
     auto empty() const { return data_.empty(); }
 
     void clear() {
-        data_.clear();
-        this->notify();
+        if (!busy_) {
+            data_.clear();
+            this->notify();
+        }
     }
 
     bool can_erase() const { return MinimumSize < size(); }
@@ -188,6 +193,9 @@ public:
         archive(data_);
     }
 
+    void set_busy(bool busy) { busy_ = busy; }
+    bool get_busy() const { return busy_; }
+
 private:
     void connect_all() {
         for (auto& i : data_) {
@@ -196,6 +204,11 @@ private:
     }
 
     util::aligned::vector<item_connection> data_;
+    
+    /// Users can set this to ask that the vector not be updated in a way that
+    /// would invalidate references into it.
+    /// Obviously this is rubbish.
+    bool busy_ = false;
 };
 
 }  // namespace model

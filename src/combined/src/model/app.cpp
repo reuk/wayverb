@@ -71,8 +71,6 @@ void project::save_to(const std::string& fpath) {
         archive(persistent);
 
         needs_save_ = false;
-
-        //  TODO register_recent_file(f.getFullPathName().toStdString());
     }
 }
 

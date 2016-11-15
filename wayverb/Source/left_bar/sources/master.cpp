@@ -6,6 +6,33 @@
 namespace left_bar {
 namespace sources {
 
+class vec3_editor final : public PropertyPanel, public Value::Listener {
+public:
+    vec3_editor(const util::range<glm::vec3>& range) {
+        addProperties({
+            new SliderPropertyComponent{x_, "x", range.get_min().x, range.get_max().x, 0.0},
+            new SliderPropertyComponent{y_, "y", range.get_min().y, range.get_max().y, 0.0},
+            new SliderPropertyComponent{z_, "z", range.get_min().z, range.get_max().z, 0.0},
+        });
+    }
+
+    using value_changed = util::event<glm::vec3>;
+    value_changed::connection connect_value_changed(value_changed::callback_type callback) {
+        return value_changed_.connect(std::move(callback));
+    }
+
+    void valueChanged(Value&) override {
+        value_changed_(glm::vec3(x_.getValue(), y_.getValue(), z_.getValue()));
+    }
+
+private:
+    Value x_;
+    Value y_;
+    Value z_;
+    
+    util::event<glm::vec3> value_changed_;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 
 master::master(wayverb::combined::model::app& app)
