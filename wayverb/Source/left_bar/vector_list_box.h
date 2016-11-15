@@ -13,16 +13,13 @@ namespace left_bar {
 /// Dead simple list box editor.
 /// Listens to a model::vector, and updates if the model changes.
 /// Allows the component for each row to be created using a factory callback.
-template <typename Model>
+template <typename Model, typename View>
 class vector_list_box final : public ListBox {
 public:
     using model_type = Model;
 
-    using new_component_for_row =
-            std::function<std::unique_ptr<Component>(int row, bool selected)>;
-
-    vector_list_box(Model& model, new_component_for_row new_component_for_row)
-            : model_{model, std::move(new_component_for_row)} {
+    vector_list_box(Model& model)
+            : model_{model} {
         /// If model changes, update the listbox view.
         model.connect([this](auto&) { this->updateContent(); });
 
@@ -38,9 +35,8 @@ public:
 private:
     class model final : public ListBoxModel {
     public:
-        model(Model& model, new_component_for_row new_component_for_row)
-                : model_{model}
-                , new_component_for_row_{std::move(new_component_for_row)} {}
+        model(Model& model)
+                : model_{model} {}
 
         int getNumRows() override { return model_.size(); }
 
@@ -53,12 +49,14 @@ private:
         Component* refreshComponentForRow(int row,
                                           bool selected,
                                           Component* existing) override {
-            if (existing) {
+            if (row < getNumRows()) {
+                View * v = existing ? dynamic_cast<View*>(existing) : new View{};
+                v->update(model_[row]);
+                v->setInterceptsMouseClicks(false, true);
+                existing = v;
+            } else {
                 delete existing;
                 existing = nullptr;
-            }
-            if (row < getNumRows()) {
-                existing = new_component_for_row_(row, selected).release();
             }
             return existing;
         }
@@ -74,7 +72,6 @@ private:
 
     private:
         Model& model_;
-        new_component_for_row new_component_for_row_;
         selected_rows_changed selected_rows_changed_;
     };
 

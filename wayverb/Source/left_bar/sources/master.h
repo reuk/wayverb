@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../editable_vector_list_box.h"
+#include "../list_config_item.h"
 
 #include "combined/model/source.h"
 
@@ -23,6 +24,10 @@ namespace sources {
 /// Don't allow sources to be added or removed if any are currently selected/
 /// dragged.
 
+class source_config_item final : public list_config_item<wayverb::combined::model::source> {
+    Component* get_callout_component(wayverb::combined::model::source& model) override;
+};
+
 class master final : public Component {
 public:
     master(wayverb::combined::model::app& app);
@@ -31,7 +36,8 @@ public:
 
 private:
     wayverb::combined::model::app& model_;
-    editable_vector_list_box<wayverb::combined::model::sources> list_box_;
+    editable_vector_list_box<wayverb::combined::model::sources,
+                source_config_item> list_box_;
 };
 
 }  // namespace sources

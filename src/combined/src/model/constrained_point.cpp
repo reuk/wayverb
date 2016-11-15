@@ -19,6 +19,8 @@ void constrained_point::set(const glm::vec3& position) {
 
 glm::vec3 constrained_point::get() const { return point_; }
 
+core::geo::box constrained_point::get_bounds() const { return aabb_; }
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

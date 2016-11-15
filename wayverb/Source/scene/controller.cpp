@@ -141,7 +141,7 @@ private:
 };
 
 template <typename T>
-auto make_move_item_action_ptr(const wayverb::combined::model::app& model, T& t) {
+auto make_move_item_action_ptr(wayverb::combined::model::app& model, T& t) {
     return std::make_unique<move_item_action<T>>(model, t);
 }
 

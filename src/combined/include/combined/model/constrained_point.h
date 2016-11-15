@@ -27,6 +27,8 @@ public:
         archive(aabb_, point_); 
     }
 
+    core::geo::box get_bounds() const;
+
 private:
     core::geo::box aabb_;
     glm::vec3 point_;

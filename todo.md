@@ -27,14 +27,7 @@ rendering
 
     Improve source/reciever + microphone direction models.
 
-Ensure source/receiver editors are locked when mousing in the scene view.
-    Or at least that we can't remove something while it's being dragged around.
-
 controls
-    sources editor
-        name
-        position
-
     capsules editor
 
         microphone

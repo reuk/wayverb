@@ -8,16 +8,13 @@ namespace left_bar {
 
 /// Wraps a list box, giving it add and remove buttons.
 
-template <typename Model>
+template <typename Model, typename View>
 class editable_vector_list_box final : public Component,
                                        public TextButton::Listener {
 public:
-    editable_vector_list_box(
-            Model& model,
-            typename vector_list_box<Model>::new_component_for_row
-                    new_component_for_row)
+    editable_vector_list_box(Model& model)
             : model_{model}
-            , list_box_{model_, std::move(new_component_for_row)} {
+            , list_box_{model_} {
         //  If model changes, update buttons.
         model_.connect([this](auto&) {
             update_buttons();
@@ -64,7 +61,7 @@ private:
     }
 
     Model& model_;
-    vector_list_box<Model> list_box_;
+    vector_list_box<Model, View> list_box_;
 
     TextButton add_button_{"+"};
     model::Connector<TextButton> add_button_connector_{&add_button_, this};
