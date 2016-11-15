@@ -1,5 +1,7 @@
 #pragma once
 
+#include "AngularLookAndFeel.h"
+
 #include "combined/model/vector.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
@@ -36,7 +38,11 @@ private:
 
         int getNumRows() override { return model_.size(); }
 
-        void paintListBoxItem(int, Graphics&, int, int, bool) override {}
+        void paintListBoxItem(int row, Graphics& g, int w, int h, bool selected) override {
+            if (selected) {
+                g.fillAll(Colours::darkgrey.darker());
+            }
+        }
 
         Component* refreshComponentForRow(int row,
                                           bool selected,

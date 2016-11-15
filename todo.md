@@ -22,6 +22,13 @@ rendering
     Fail for really long reverbs i.e. longer than 60 seconds.
         OR disable absorptions lower than (for example) 0.01
 
+    Sometimes gets a bit slow and jittery
+        Throw away ray data / waveguide data if there's too much to render?
+
+    Improve source/reciever + microphone direction models.
+
+Ensure source/receiver editors are locked when mousing in the scene view.
+
 controls
     sources editor
         name
@@ -53,10 +60,6 @@ controls
     Window to configure output samplerate/bit-depth before beginning the rendering.
 
     Show which channel is being rendered, and the total channels to go
-
-Improve source/reciever + microphone direction models.
-
-Throw away ray data / waveguide data if there's too much to render?
 
 Finish adding the help panel info.
 

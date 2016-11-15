@@ -27,6 +27,8 @@ class master final : public Component {
 public:
     master(wayverb::combined::model::app& app);
 
+    void resized() override;
+
 private:
     wayverb::combined::model::app& model_;
     editable_vector_list_box<wayverb::combined::model::sources> list_box_;

@@ -18,6 +18,11 @@ public:
                     new_component_for_row)
             : model_{model}
             , list_box_{model_, std::move(new_component_for_row)} {
+        //  If model changes, update buttons.
+        model_.connect([this](auto&) {
+            sub_button_.setEnabled(model_.can_erase());
+        });
+            
         addAndMakeVisible(list_box_);
         addAndMakeVisible(add_button_);
         addAndMakeVisible(sub_button_);
@@ -37,22 +42,26 @@ public:
             model_.insert(model_.end());
         } else if (b == &sub_button_) {
             const auto to_delete = list_box_.getSelectedRow();
-            list_box_.deselectAllRows();
-            model_.erase(model_.begin() + to_delete);
+            if (0 <= to_delete && to_delete < model_.size()) {
+                list_box_.deselectAllRows();
+                model_.erase(model_.begin() + to_delete);
+            }
         }
     }
 
-    //  TODO only enable sub button if we're actually able to remove something
-    //  from the list.
+    void setRowHeight(int height) {
+        list_box_.setRowHeight(height);
+    }
 
 private:
+
     Model& model_;
     vector_list_box<Model> list_box_;
 
     TextButton add_button_{"+"};
     model::Connector<TextButton> add_button_connector_{&add_button_, this};
 
-    TextButton sub_button_{"+"};
+    TextButton sub_button_{"-"};
     model::Connector<TextButton> sub_button_connector_{&sub_button_, this};
 };
 

@@ -1,9 +1,10 @@
 #pragma once
 
 #include "bottom_panel.h"
-#include "sources/master.h"
 #include "../HelpWindow.h"
 #include "../UtilityComponents/async_work_queue.h"
+
+namespace wayverb { namespace combined { namespace model { class app; } } } 
 
 namespace left_bar {
 

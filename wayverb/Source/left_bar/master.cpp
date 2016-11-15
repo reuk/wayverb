@@ -1,11 +1,47 @@
 #include "master.h"
+#include "AngularLookAndFeel.h"
+
+#include "sources/master.h"
 
 #include "combined/model/app.h"
 
-namespace left_bar {
+namespace {
 
-/// Jam this in a viewport so that it can be scrolled horizontally in the case
-/// of small screens.
+//  Allows a generic component to be placed in a property panel.
+//  Doesn't draw a label.
+template <typename T>
+class wrapped_property_component final : public PropertyComponent {
+public:
+    template <typename... Ts>
+    wrapped_property_component(int height, Ts&&... ts)
+            : PropertyComponent{"empty", height}
+            , content{std::forward<Ts>(ts)...} {
+        setLookAndFeel(&look_and_feel_);
+        addAndMakeVisible(content);
+    }
+
+    void refresh() override {}
+
+    T content;
+private:
+    class look_and_feel final : public AngularLookAndFeel {
+    public:
+        //  Don't bother drawing anything.
+        void drawPropertyComponentBackground(Graphics&, int, int, PropertyComponent&) override {}
+        void drawPropertyComponentLabel(Graphics&, int, int, PropertyComponent&) override {}
+
+        //  Let the content take up the entire space.
+        Rectangle<int> getPropertyComponentContentPosition(PropertyComponent& c) override {
+            return c.getLocalBounds();
+        }
+    };
+    
+    look_and_feel look_and_feel_;
+};
+
+}//namespace 
+
+namespace left_bar {
 
 master::master(wayverb::combined::model::app& app)
         : model_{app} {
@@ -37,6 +73,11 @@ master::master(wayverb::combined::model::app& app)
         });
     });
 
+    //  Populate the property panel
+
+    property_panel_.addSection("sources", {new wrapped_property_component<sources::master>{200, model_}});
+
+    //  Make components visible
     addAndMakeVisible(property_panel_);
     addAndMakeVisible(bottom_);
 }

@@ -1,14 +1,14 @@
 #include "AngularLookAndFeel.h"
 
-const juce::Colour AngularLookAndFeel::emphasis{0xff009900};
+const Colour AngularLookAndFeel::emphasis{0xff009900};
 
-juce::Colour AngularLookAndFeel::create_base_colour(
-        juce::Colour button_colour,
+Colour AngularLookAndFeel::create_base_colour(
+        Colour button_colour,
         bool has_keyboard_focus,
         bool is_mouse_over,
         bool is_button_down) noexcept {
     const float sat = has_keyboard_focus ? 1.3f : 0.9f;
-    const juce::Colour base_colour(button_colour.withMultipliedSaturation(sat));
+    const Colour base_colour(button_colour.withMultipliedSaturation(sat));
 
     if (is_button_down) {
         return base_colour.contrasting(0.2f);
@@ -21,76 +21,78 @@ juce::Colour AngularLookAndFeel::create_base_colour(
 }
 
 AngularLookAndFeel::AngularLookAndFeel() {
-    setColour(juce::ProgressBar::ColourIds::backgroundColourId,
-              juce::Colours::darkgrey);
-    setColour(juce::ProgressBar::ColourIds::foregroundColourId, emphasis);
-    setColour(juce::TextButton::ColourIds::buttonColourId,
-              juce::Colours::darkgrey);
-    setColour(juce::TextButton::ColourIds::buttonOnColourId, emphasis);
-    setColour(juce::TextButton::ColourIds::textColourOnId,
-              juce::Colours::lightgrey);
-    setColour(juce::TextButton::ColourIds::textColourOffId,
-              juce::Colours::lightgrey);
-    setColour(juce::ToggleButton::ColourIds::textColourId,
-              juce::Colours::lightgrey);
-    setColour(juce::Label::ColourIds::textColourId, juce::Colours::lightgrey);
-    setColour(juce::GroupComponent::ColourIds::textColourId,
-              juce::Colours::lightgrey);
-    setColour(juce::PropertyComponent::ColourIds::backgroundColourId,
-              juce::Colours::darkgrey);
-    setColour(juce::PropertyComponent::ColourIds::labelTextColourId,
-              juce::Colours::lightgrey);
-    setColour(juce::BubbleComponent::ColourIds::backgroundColourId,
-              juce::Colours::lightgrey.withAlpha(0.8f));
-    setColour(juce::BubbleComponent::ColourIds::outlineColourId,
-              juce::Colours::black);
-    setColour(juce::Slider::ColourIds::thumbColourId, emphasis);
-    setColour(juce::PopupMenu::ColourIds::highlightedBackgroundColourId,
-              juce::Colours::darkgrey);
-    setColour(juce::ComboBox::ColourIds::arrowColourId,
-              juce::Colours::lightgrey);
-    setColour(juce::TextEditor::ColourIds::textColourId, juce::Colours::black);
-    setColour(juce::TextEditor::ColourIds::highlightColourId,
-              juce::Colours::darkgrey);
-    setColour(juce::TextEditor::ColourIds::highlightedTextColourId,
-              juce::Colours::white);
+    setColour(ProgressBar::ColourIds::backgroundColourId,
+              Colours::darkgrey);
+    setColour(ProgressBar::ColourIds::foregroundColourId, emphasis);
+    setColour(TextButton::ColourIds::buttonColourId,
+              Colours::darkgrey);
+    setColour(TextButton::ColourIds::buttonOnColourId, emphasis);
+    setColour(TextButton::ColourIds::textColourOnId,
+              Colours::lightgrey);
+    setColour(TextButton::ColourIds::textColourOffId,
+              Colours::lightgrey);
+    setColour(ToggleButton::ColourIds::textColourId,
+              Colours::lightgrey);
+    setColour(Label::ColourIds::textColourId, Colours::lightgrey);
+    setColour(GroupComponent::ColourIds::textColourId,
+              Colours::lightgrey);
+    setColour(PropertyComponent::ColourIds::backgroundColourId,
+              Colours::darkgrey);
+    setColour(PropertyComponent::ColourIds::labelTextColourId,
+              Colours::lightgrey);
+    setColour(BubbleComponent::ColourIds::backgroundColourId,
+              Colours::lightgrey.withAlpha(0.8f));
+    setColour(BubbleComponent::ColourIds::outlineColourId,
+              Colours::black);
+    setColour(Slider::ColourIds::thumbColourId, emphasis);
+    setColour(PopupMenu::ColourIds::highlightedBackgroundColourId,
+              Colours::darkgrey);
+    setColour(ComboBox::ColourIds::arrowColourId,
+              Colours::lightgrey);
+    setColour(TextEditor::ColourIds::textColourId, Colours::black);
+    setColour(TextEditor::ColourIds::highlightColourId,
+              Colours::darkgrey);
+    setColour(TextEditor::ColourIds::highlightedTextColourId,
+              Colours::white);
+    setColour(ListBox::backgroundColourId, Colours::darkgrey);
+    setColour(ListBox::textColourId, Colours::lightgrey);
 
     setUsingNativeAlertWindows(true);
 }
 
-void horizontal_line(juce::Graphics& g,
+void horizontal_line(Graphics& g,
                      int y,
                      int left,
                      int right,
-                     const juce::Colour& colour = juce::Colours::white) {
+                     const Colour& colour = Colours::white) {
     if (left < right - 1) {
         g.setColour(colour.withAlpha(0.2f));
         g.drawHorizontalLine(y, left + 1, right - 1);
-        g.setColour(juce::Colours::white.withAlpha(0.1f));
+        g.setColour(Colours::white.withAlpha(0.1f));
         g.drawHorizontalLine(y, left, left + 1);
         g.drawHorizontalLine(y, right - 1, right);
     }
 }
 
-void vertical_line(juce::Graphics& g,
+void vertical_line(Graphics& g,
                    int x,
                    int top,
                    int bottom,
-                   const juce::Colour& colour = juce::Colours::white) {
+                   const Colour& colour = Colours::white) {
     if (top < bottom - 1) {
         g.setColour(colour.withAlpha(0.2f));
         g.drawVerticalLine(x, top + 1, bottom - 1);
-        g.setColour(juce::Colours::white.withAlpha(0.2f));
+        g.setColour(Colours::white.withAlpha(0.2f));
         g.drawVerticalLine(x, top, top + 1);
         g.drawVerticalLine(x, bottom - 1, bottom);
     }
 }
 
-auto matte_outer(juce::Graphics& g,
-                 juce::Rectangle<int>
+auto matte_outer(Graphics& g,
+                 Rectangle<int>
                          bounds,
                  bool vertical,
-                 juce::Colour c = juce::Colours::black) {
+                 Colour c = Colours::black) {
     if (vertical) {
         vertical_line(g, bounds.getX(), bounds.getY(), bounds.getBottom());
         bounds.removeFromLeft(1);
@@ -109,17 +111,17 @@ auto matte_outer(juce::Graphics& g,
     return bounds;
 }
 
-void matte_inner(juce::Graphics& g,
-                 const juce::Rectangle<int>& bounds,
+void matte_inner(Graphics& g,
+                 const Rectangle<int>& bounds,
                  bool vertical,
-                 const juce::Colour& colour) {
+                 const Colour& colour) {
     g.setColour(colour);
     g.fillRect(bounds);
 
-    auto grad = juce::Colours::white.withAlpha(0.2f);
+    auto grad = Colours::white.withAlpha(0.2f);
 
     if (vertical) {
-        g.setGradientFill(juce::ColourGradient(juce::Colours::transparentWhite,
+        g.setGradientFill(ColourGradient(Colours::transparentWhite,
                                                bounds.getX(),
                                                bounds.getY(),
                                                grad,
@@ -135,10 +137,10 @@ void matte_inner(juce::Graphics& g,
                       bounds.getY(),
                       bounds.getHeight() + 1);
     } else {
-        g.setGradientFill(juce::ColourGradient(grad,
+        g.setGradientFill(ColourGradient(grad,
                                                bounds.getX(),
                                                bounds.getY(),
-                                               juce::Colours::transparentWhite,
+                                               Colours::transparentWhite,
                                                bounds.getX(),
                                                bounds.getBottom(),
                                                false));
@@ -151,24 +153,24 @@ void matte_inner(juce::Graphics& g,
     }
 }
 
-void AngularLookAndFeel::matte_background_box(juce::Graphics& g,
-                                              juce::Rectangle<int>
+void AngularLookAndFeel::matte_background_box(Graphics& g,
+                                              Rectangle<int>
                                                       bounds,
                                               bool vertical,
-                                              const juce::Colour& colour) {
+                                              const Colour& colour) {
     bounds = matte_outer(g, bounds, vertical);
     if (vertical) {
         g.setGradientFill(
-                juce::ColourGradient(colour,
+                ColourGradient(colour,
                                      bounds.getX(),
                                      0,
-                                     juce::Colours::black.withAlpha(0.5f),
+                                     Colours::black.withAlpha(0.5f),
                                      bounds.getRight(),
                                      0,
                                      false));
     } else {
         g.setGradientFill(
-                juce::ColourGradient(juce::Colours::black.withAlpha(0.5f),
+                ColourGradient(Colours::black.withAlpha(0.5f),
                                      0,
                                      bounds.getY(),
                                      colour,
@@ -182,11 +184,11 @@ void AngularLookAndFeel::matte_background_box(juce::Graphics& g,
                bounds.getHeight());
 }
 
-void AngularLookAndFeel::matte_foreground_box(juce::Graphics& g,
-                                              juce::Rectangle<int>
+void AngularLookAndFeel::matte_foreground_box(Graphics& g,
+                                              Rectangle<int>
                                                       bounds,
-                                              const juce::Colour& colour) {
-    g.setColour(juce::Colours::black.withAlpha(0.9f));
+                                              const Colour& colour) {
+    g.setColour(Colours::black.withAlpha(0.9f));
     g.drawRect(bounds.getX(),
                bounds.getY(),
                bounds.getWidth(),
@@ -198,38 +200,38 @@ void AngularLookAndFeel::matte_foreground_box(juce::Graphics& g,
     matte_inner(g, bounds, false, colour);
 }
 
-void AngularLookAndFeel::matte_box(juce::Graphics& g,
-                                   const juce::Rectangle<int>& bounds,
+void AngularLookAndFeel::matte_box(Graphics& g,
+                                   const Rectangle<int>& bounds,
                                    bool vertical,
-                                   const juce::Colour& colour) {
+                                   const Colour& colour) {
     matte_inner(g, matte_outer(g, bounds, vertical), vertical, colour);
 }
 
-void AngularLookAndFeel::drawProgressBar(juce::Graphics& g,
-                                         juce::ProgressBar& bar,
+void AngularLookAndFeel::drawProgressBar(Graphics& g,
+                                         ProgressBar& bar,
                                          int width,
                                          int height,
                                          double progress,
-                                         const juce::String& textToShow) {
-    const juce::Colour background(
-            bar.findColour(juce::ProgressBar::backgroundColourId));
-    const juce::Colour foreground(
-            bar.findColour(juce::ProgressBar::foregroundColourId));
+                                         const String& textToShow) {
+    const Colour background(
+            bar.findColour(ProgressBar::backgroundColourId));
+    const Colour foreground(
+            bar.findColour(ProgressBar::foregroundColourId));
 
     //  do the backround
     g.fillAll(background);
 
     matte_background_box(
-            g, juce::Rectangle<int>(0, 0, width, height), false, background);
+            g, Rectangle<int>(0, 0, width, height), false, background);
 
     //  now the bar
     if (0 <= progress && progress < 1) {
         //  solid bar
         matte_foreground_box(
                 g,
-                juce::Rectangle<int>(0,
+                Rectangle<int>(0,
                                      0,
-                                     juce::jlimit(0.0,
+                                     jlimit(0.0,
                                                   static_cast<double>(width),
                                                   progress * width),
                                      height - 1),
@@ -240,9 +242,9 @@ void AngularLookAndFeel::drawProgressBar(juce::Graphics& g,
 
         const int stripeWidth = height * 2;
         const int position =
-                (int)(juce::Time::getMillisecondCounter() / 15) % stripeWidth;
+                (int)(Time::getMillisecondCounter() / 15) % stripeWidth;
 
-        juce::Path p;
+        Path p;
 
         for (float x = (float)(-position); x < width + stripeWidth;
              x += stripeWidth)
@@ -255,12 +257,12 @@ void AngularLookAndFeel::drawProgressBar(juce::Graphics& g,
                                x - stripeWidth * 0.5f,
                                (float)height);
 
-        juce::Image im(juce::Image::ARGB, width, height, true);
+        Image im(Image::ARGB, width, height, true);
 
         {
-            juce::Graphics g2(im);
+            Graphics g2(im);
             matte_foreground_box(g2,
-                                 juce::Rectangle<int>(0, 0, width, height - 1),
+                                 Rectangle<int>(0, 0, width, height - 1),
                                  foreground);
         }
 
@@ -269,7 +271,7 @@ void AngularLookAndFeel::drawProgressBar(juce::Graphics& g,
     }
 
     if (textToShow.isNotEmpty()) {
-        g.setColour(juce::Colours::lightgrey);
+        g.setColour(Colours::lightgrey);
         g.setFont(height * 0.6f);
 
         g.drawText(textToShow,
@@ -277,71 +279,71 @@ void AngularLookAndFeel::drawProgressBar(juce::Graphics& g,
                    0,
                    width,
                    height,
-                   juce::Justification::centred,
+                   Justification::centred,
                    false);
     }
 }
 
-void AngularLookAndFeel::drawButtonBackground(juce::Graphics& g,
-                                              juce::Button& button,
-                                              const juce::Colour& background,
+void AngularLookAndFeel::drawButtonBackground(Graphics& g,
+                                              Button& button,
+                                              const Colour& background,
                                               bool is_mouse_over,
                                               bool is_button_down) {
-    const juce::Colour base_colour(
+    const Colour base_colour(
             create_base_colour(background,
                                button.hasKeyboardFocus(true),
                                is_mouse_over,
                                is_button_down)
                     .withMultipliedAlpha(button.isEnabled() ? 1.0f : 0.5f));
     matte_box(g,
-              juce::Rectangle<int>(0, 0, button.getWidth(), button.getHeight()),
+              Rectangle<int>(0, 0, button.getWidth(), button.getHeight()),
               false,
               base_colour);
 }
 
 void AngularLookAndFeel::drawStretchableLayoutResizerBar(
-        juce::Graphics& g,
+        Graphics& g,
         int w,
         int h,
         bool is_vertical,
         bool is_mouse_over,
         bool is_mouse_dragging) {
     g.fillAll(create_base_colour(
-            juce::Colours::white, false, is_mouse_over, is_mouse_dragging));
+            Colours::white, false, is_mouse_over, is_mouse_dragging));
 }
 
-void AngularLookAndFeel::fillTextEditorBackground(juce::Graphics& g,
+void AngularLookAndFeel::fillTextEditorBackground(Graphics& g,
                                                   int width,
                                                   int height,
-                                                  juce::TextEditor&) {
-    g.setColour(juce::Colours::white);
+                                                  TextEditor&) {
+    g.setColour(Colours::white);
     g.fillRect(1, 1, width - 1, height - 2);
 }
 
-void AngularLookAndFeel::drawTextEditorOutline(juce::Graphics& g,
+void AngularLookAndFeel::drawTextEditorOutline(Graphics& g,
                                                int width,
                                                int height,
-                                               juce::TextEditor& e) {
-    g.setColour(juce::Colours::darkgrey);
+                                               TextEditor& e) {
+    g.setColour(Colours::darkgrey);
     g.drawRect(0, 0, width, height);
     matte_outer(g,
-                juce::Rectangle<int>(0, 0, width, height),
+                Rectangle<int>(0, 0, width, height),
                 false,
-                e.hasKeyboardFocus(true) ? emphasis : juce::Colours::black);
+                e.hasKeyboardFocus(true) ? emphasis : Colours::black);
 }
 
 void AngularLookAndFeel::drawGroupComponentOutline(
-        juce::Graphics& g,
+        Graphics& g,
         int width,
         int height,
-        const juce::String& text,
-        const juce::Justification& position,
-        juce::GroupComponent& group) {
+        const String& text,
+        const Justification& position,
+        GroupComponent& group) {
     const auto text_h = 15.0f;
     const auto indent = 3.0f;
     const auto text_edge_gap = 4.0f;
 
-    juce::Font f(text_h);
+    Font f(text_h);
 
     auto x = indent;
     auto y = f.getAscent() - 3.0f;
@@ -351,22 +353,22 @@ void AngularLookAndFeel::drawGroupComponentOutline(
     float text_w =
             text.isEmpty()
                     ? 0
-                    : juce::jlimit(0.0,
+                    : jlimit(0.0,
                                    fmax(0.0, w - text_edge_gap * 2.0),
                                    f.getStringWidth(text) +
                                                       text_edge_gap * 2.0);
     float text_x = text_edge_gap;
 
-    if (position.testFlags(juce::Justification::horizontallyCentred))
+    if (position.testFlags(Justification::horizontallyCentred))
         text_x = (w - text_w) * 0.5f;
-    else if (position.testFlags(juce::Justification::right))
+    else if (position.testFlags(Justification::right))
         text_x = w - text_w - text_edge_gap;
 
     horizontal_line(g, y + 1, x + text_x + text_w, x + w);
     horizontal_line(g, y + h + 1, x, x + w);
     horizontal_line(g, y + 1, x, x + text_x);
 
-    g.setColour(juce::Colours::black.withAlpha(0.9f));
+    g.setColour(Colours::black.withAlpha(0.9f));
 
     g.drawVerticalLine(x, y, y + h);
     g.drawVerticalLine(x + w, y, y + h);
@@ -377,62 +379,62 @@ void AngularLookAndFeel::drawGroupComponentOutline(
 
     const float alpha = group.isEnabled() ? 1.0f : 0.5f;
 
-    g.setColour(group.findColour(juce::GroupComponent::outlineColourId)
+    g.setColour(group.findColour(GroupComponent::outlineColourId)
                         .withMultipliedAlpha(alpha));
 
-    g.setColour(group.findColour(juce::GroupComponent::textColourId)
+    g.setColour(group.findColour(GroupComponent::textColourId)
                         .withMultipliedAlpha(alpha));
     g.setFont(f);
     g.drawText(text,
-               juce::roundToInt(x + text_x),
+               roundToInt(x + text_x),
                0,
-               juce::roundToInt(text_w),
-               juce::roundToInt(text_h),
-               juce::Justification::centred,
+               roundToInt(text_w),
+               roundToInt(text_h),
+               Justification::centred,
                true);
 }
 
 void AngularLookAndFeel::drawPropertyPanelSectionHeader(
-        juce::Graphics& g,
-        const juce::String& name,
+        Graphics& g,
+        const String& name,
         bool is_open,
         int width,
         int height) {
     //    auto background =
     //        findColour(PropertyComponent::ColourIds::backgroundColourId);
 
-    matte_box(g, juce::Rectangle<int>(0, 0, width, height), false, emphasis);
+    matte_box(g, Rectangle<int>(0, 0, width, height), false, emphasis);
 
     auto button_size = height * 0.75f;
     auto button_indent = (height - button_size) * 0.5f;
 
     drawTreeviewPlusMinusBox(
             g,
-            juce::Rectangle<float>(
+            Rectangle<float>(
                     button_indent, button_indent, button_size, button_size),
-            juce::Colours::white,
+            Colours::white,
             is_open,
             false);
 
     auto text_x = (int)(button_indent * 2.0f + button_size + 2.0f);
 
-    g.setColour(juce::Colours::lightgrey);
-    g.setFont(juce::Font(height * 0.7f, juce::Font::bold));
+    g.setColour(Colours::lightgrey);
+    g.setFont(Font(height * 0.7f, Font::bold));
     g.drawText(name,
                text_x,
                0,
                width - text_x - 4,
                height,
-               juce::Justification::centredLeft,
+               Justification::centredLeft,
                true);
 }
 
 void AngularLookAndFeel::drawPropertyComponentBackground(
-        juce::Graphics& g, int width, int height, juce::PropertyComponent& p) {
+        Graphics& g, int width, int height, PropertyComponent& p) {
 }
 
 void AngularLookAndFeel::drawLinearSliderBackground(
-        juce::Graphics& g,
+        Graphics& g,
         int x,
         int y,
         int width,
@@ -440,18 +442,18 @@ void AngularLookAndFeel::drawLinearSliderBackground(
         float slider_pos,
         float min_slider_pos,
         float max_slider_pos,
-        const juce::Slider::SliderStyle style,
-        juce::Slider&) {
-    if (style == juce::Slider::SliderStyle::LinearVertical) {
-        juce::Rectangle<int> bounds(x, y, width, height);
-        g.setColour(juce::Colours::black.withAlpha(0.5f));
+        const Slider::SliderStyle style,
+        Slider&) {
+    if (style == Slider::SliderStyle::LinearVertical) {
+        Rectangle<int> bounds(x, y, width, height);
+        g.setColour(Colours::black.withAlpha(0.5f));
         g.fillRoundedRectangle(
                 bounds.withSizeKeepingCentre(3, height).toFloat(), 2);
     }
 }
 
 void AngularLookAndFeel::drawLinearSliderThumb(
-        juce::Graphics& g,
+        Graphics& g,
         int x,
         int y,
         int width,
@@ -459,21 +461,21 @@ void AngularLookAndFeel::drawLinearSliderThumb(
         float slider_pos,
         float min_slider_pos,
         float max_slider_pos,
-        const juce::Slider::SliderStyle style,
-        juce::Slider& slider) {
-    juce::Colour thumb_colour = create_base_colour(
-            slider.findColour(juce::Slider::thumbColourId),
+        const Slider::SliderStyle style,
+        Slider& slider) {
+    Colour thumb_colour = create_base_colour(
+            slider.findColour(Slider::thumbColourId),
             slider.hasKeyboardFocus(false) && slider.isEnabled(),
             slider.isMouseOverOrDragging() && slider.isEnabled(),
             slider.isMouseButtonDown() && slider.isEnabled());
-    if (style == juce::Slider::SliderStyle::LinearVertical ||
-        style == juce::Slider::SliderStyle::LinearHorizontal) {
+    if (style == Slider::SliderStyle::LinearVertical ||
+        style == Slider::SliderStyle::LinearHorizontal) {
         const auto slider_radius = (float)(getSliderThumbRadius(slider));
 
-        if (style == juce::Slider::LinearVertical) {
+        if (style == Slider::LinearVertical) {
             matte_foreground_box(
                     g,
-                    juce::Rectangle<int>(x + width * 0.5 - slider_radius,
+                    Rectangle<int>(x + width * 0.5 - slider_radius,
                                          slider_pos - slider_radius + 3,
                                          slider_radius * 2,
                                          slider_radius * 2 - 6),
@@ -485,7 +487,7 @@ void AngularLookAndFeel::drawLinearSliderThumb(
     }
 }
 
-void AngularLookAndFeel::drawComboBox(juce::Graphics& g,
+void AngularLookAndFeel::drawComboBox(Graphics& g,
                                       int width,
                                       int height,
                                       bool button_down,
@@ -493,16 +495,16 @@ void AngularLookAndFeel::drawComboBox(juce::Graphics& g,
                                       int button_y,
                                       int button_w,
                                       int button_h,
-                                      juce::ComboBox& cb) {
-    g.fillAll(juce::Colours::white);
-    g.setColour(juce::Colours::darkgrey);
+                                      ComboBox& cb) {
+    g.fillAll(Colours::white);
+    g.setColour(Colours::darkgrey);
     g.drawRect(0, 0, width, height);
-    matte_outer(g, juce::Rectangle<int>(0, 0, width, height), false);
+    matte_outer(g, Rectangle<int>(0, 0, width, height), false);
 
     matte_foreground_box(
             g,
-            juce::Rectangle<int>(button_x, button_y, button_w, button_h - 1),
-            create_base_colour(juce::Colours::darkgrey,
+            Rectangle<int>(button_x, button_y, button_w, button_h - 1),
+            create_base_colour(Colours::darkgrey,
                                cb.hasKeyboardFocus(true),
                                cb.isMouseOver(),
                                button_down));
@@ -510,7 +512,7 @@ void AngularLookAndFeel::drawComboBox(juce::Graphics& g,
     const float arrowX = 0.3f;
     const float arrowH = 0.2f;
 
-    juce::Path p;
+    Path p;
     p.addTriangle(button_x + button_w * 0.5f,
                   button_y + button_h * (0.45f - arrowH),
                   button_x + button_w * (1.0f - arrowX),
@@ -525,37 +527,37 @@ void AngularLookAndFeel::drawComboBox(juce::Graphics& g,
                   button_x + button_w * arrowX,
                   button_y + button_h * 0.55f);
 
-    g.setColour(cb.findColour(juce::ComboBox::arrowColourId)
+    g.setColour(cb.findColour(ComboBox::arrowColourId)
                         .withMultipliedAlpha(cb.isEnabled() ? 1.0f : 0.3f));
     g.fillPath(p);
 }
 
-void AngularLookAndFeel::drawCallOutBoxBackground(juce::CallOutBox& box,
-                                                  juce::Graphics& g,
-                                                  const juce::Path& path,
-                                                  juce::Image& cachedImage) {
+void AngularLookAndFeel::drawCallOutBoxBackground(CallOutBox& box,
+                                                  Graphics& g,
+                                                  const Path& path,
+                                                  Image& cachedImage) {
     if (cachedImage.isNull()) {
-        cachedImage = juce::Image(
-                juce::Image::ARGB, box.getWidth(), box.getHeight(), true);
-        juce::Graphics g2(cachedImage);
+        cachedImage = Image(
+                Image::ARGB, box.getWidth(), box.getHeight(), true);
+        Graphics g2(cachedImage);
 
-        juce::DropShadow(
-                juce::Colours::black.withAlpha(0.7f), 8, juce::Point<int>(0, 2))
+        DropShadow(
+                Colours::black.withAlpha(0.7f), 8, Point<int>(0, 2))
                 .drawForPath(g2, path);
     }
 
-    g.setColour(juce::Colours::black);
+    g.setColour(Colours::black);
     g.drawImageAt(cachedImage, 0, 0);
 
-    g.setColour(juce::Colours::darkgrey.withAlpha(0.9f));
+    g.setColour(Colours::darkgrey.withAlpha(0.9f));
     g.fillPath(path);
 
-    g.setColour(juce::Colours::white.withAlpha(0.8f));
-    g.strokePath(path, juce::PathStrokeType(2.0f));
+    g.setColour(Colours::white.withAlpha(0.8f));
+    g.strokePath(path, PathStrokeType(2.0f));
 }
 
-void AngularLookAndFeel::drawTickBox(juce::Graphics& g,
-                                     juce::Component& component,
+void AngularLookAndFeel::drawTickBox(Graphics& g,
+                                     Component& component,
                                      float x,
                                      float y,
                                      float w,
@@ -568,16 +570,16 @@ void AngularLookAndFeel::drawTickBox(juce::Graphics& g,
 
     if (ticked) {
         matte_box(g,
-                  juce::Rectangle<int>(
+                  Rectangle<int>(
                           x, y + (h - boxSize) * 0.5f, boxSize, boxSize),
                   false,
                   emphasis);
     } else {
         matte_background_box(
                 g,
-                juce::Rectangle<int>(
+                Rectangle<int>(
                         x, y + (h - boxSize) * 0.5f, boxSize, boxSize),
                 false,
-                juce::Colours::darkgrey);
+                Colours::darkgrey);
     }
 }
