@@ -29,6 +29,12 @@ public:
         setModel(&model_);
     }
 
+    using selected_rows_changed = util::event<int>;
+    selected_rows_changed::connection connect_selected_rows_changed(
+        selected_rows_changed::callback_type callback) {
+        model_.connect_selected_rows_changed(std::move(callback));
+    }
+
 private:
     class model final : public ListBoxModel {
     public:
@@ -57,9 +63,19 @@ private:
             return existing;
         }
 
+        void selectedRowsChanged(int last) override {
+            selected_rows_changed_(last);
+        }
+
+        selected_rows_changed::connection connect_selected_rows_changed(
+            selected_rows_changed::callback_type callback) {
+            selected_rows_changed_.connect(std::move(callback));
+        }
+
     private:
         Model& model_;
         new_component_for_row new_component_for_row_;
+        selected_rows_changed selected_rows_changed_;
     };
 
     model model_;

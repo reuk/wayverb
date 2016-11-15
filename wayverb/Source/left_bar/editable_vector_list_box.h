@@ -20,9 +20,14 @@ public:
             , list_box_{model_, std::move(new_component_for_row)} {
         //  If model changes, update buttons.
         model_.connect([this](auto&) {
-            sub_button_.setEnabled(model_.can_erase());
+            update_buttons();
         });
-            
+
+        //  If selected rows change, update buttons.
+        list_box_.connect_selected_rows_changed([this](auto) {
+            update_buttons();
+        });
+        
         addAndMakeVisible(list_box_);
         addAndMakeVisible(add_button_);
         addAndMakeVisible(sub_button_);
@@ -54,6 +59,9 @@ public:
     }
 
 private:
+    void update_buttons() {
+        sub_button_.setEnabled(model_.can_erase() && list_box_.getSelectedRow() != -1);
+    }
 
     Model& model_;
     vector_list_box<Model> list_box_;
