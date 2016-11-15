@@ -70,10 +70,8 @@ private:
         const auto get_hovered_in_range = [this, mouse_pos](auto& range) {
             return get_hovered(std::begin(range), std::end(range), mouse_pos);
         };
-        const auto hovered_source =
-                get_hovered_in_range(app_.project.persistent.sources());
-        const auto hovered_receiver =
-                get_hovered_in_range(app_.project.persistent.receivers());
+        const auto hovered_source = get_hovered_in_range(sources);
+        const auto hovered_receiver = get_hovered_in_range(receivers);
 
         using return_type = std::decay_t<decltype(action(*hovered_source.it))>;
 

@@ -14,17 +14,9 @@ Look again at frequency domain test?
 app stuff
 ---------
 
-TODAY: finish model view stuff
-
 'All channels are silent' bug
 
-Model View
-    Make sources and receivers draggable.
-
-    Highlight when hovered/moved?
-        Or add a plane-aligned cursor or something
-
-    Improve source/reciever + microphone direction models.
+Improve source/reciever + microphone direction models.
 
 Waveguide growth issue - see: vault model
 

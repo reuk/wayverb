@@ -20,7 +20,7 @@ std::string source::get_name() const { return name_; }
 ////////////////////////////////////////////////////////////////////////////////
 
 sources::sources(const core::geo::box& aabb)
-        : type{vector<source, 1>{}}
+        : type{vector<source, 1>{aabb}}
         , aabb_{aabb} {}
 
 const source& sources::operator[](size_t index) const { return data()[index]; }

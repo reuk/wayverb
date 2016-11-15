@@ -30,7 +30,8 @@ core::orientation receiver::get_orientation() const { return orientation_; }
 ////////////////////////////////////////////////////////////////////////////////
 
 receivers::receivers(const core::geo::box& aabb)
-        : aabb_{aabb} {}
+        : type{vector<receiver, 1>{aabb}}
+        , aabb_{aabb} {}
 
 const receiver& receivers::operator[](size_t index) const {
     return data()[index];

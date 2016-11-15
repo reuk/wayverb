@@ -21,6 +21,8 @@ public:
     virtual void mouse_drag(const MouseEvent& e) = 0;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+
 class rotate_action final : public controller::mouse_action {
 public:
     rotate_action(wayverb::combined::model::scene& model)
@@ -40,14 +42,16 @@ private:
     wayverb::core::az_el initial_;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+
 class pan_action final : public controller::mouse_action {
 public:
     pan_action(wayverb::combined::model::scene& model)
             : model_{model}
             , camera_position_{model_.compute_world_camera_position()}
             , camera_direction_{model_.compute_world_camera_direction()}
-            , camera_distance_{model_.get_eye_distance()}
-            , initial_position_{model_.get_origin()} {}
+            , initial_position_{model_.get_origin()}
+            , camera_distance_{glm::distance(initial_position_, camera_position_)} {}
 
     void mouse_drag(const MouseEvent& e) override {
         //  Find mouse position on plane perpendicular to camera direction
@@ -65,42 +69,75 @@ private:
     glm::vec3 compute_world_mouse_position(const glm::vec2& mouse_pos) {
         const auto mouse_direction =
                 model_.compute_world_mouse_direction(mouse_pos);
-        return mouse_direction * camera_distance_ /
+        return camera_position_ + mouse_direction * camera_distance_ /
                glm::dot(camera_direction_, mouse_direction);
     }
 
     wayverb::combined::model::scene& model_;
     glm::vec3 camera_position_;
     glm::vec3 camera_direction_;
-    float camera_distance_;
     glm::vec3 initial_position_;
+    float camera_distance_;
 };
+
+////////////////////////////////////////////////////////////////////////////////
+
+namespace {
+
+std::ostream& operator<<(std::ostream& os, const glm::vec3& p) {
+    return os << p.x << ", " << p.y << ", " << p.z;
+}
+
+}//namespace
 
 template <typename Item>
 class move_item_action final : public controller::mouse_action {
 public:
-    move_item_action(Item& item)
-            : item_{item}
-            , initial_{item.position().get()} {}
+    move_item_action(const wayverb::combined::model::scene& model, Item& item)
+            : model_{model}
+            , item_{item}
+            , camera_position_{model.compute_world_camera_position()}
+            , camera_direction_{model.compute_world_camera_direction()}
+            , initial_position_{item.position().get()}
+            , camera_distance_{glm::distance(initial_position_, camera_position_)} {
+        item_.hover_state().set_selected(true);
+    }
 
-    void mouse_drag(const MouseEvent&) override {
-        //  TODO highlight item
-        //  TODO move item
+    void mouse_drag(const MouseEvent& e) override {
+        const auto initial = compute_world_mouse_position(glm::vec2{
+                e.getMouseDownPosition().x, e.getMouseDownPosition().y});
+        const auto current = compute_world_mouse_position(
+                glm::vec2{e.getPosition().x, e.getPosition().y});
+        const auto new_pos = initial_position_ + current - initial;
+        item_.position().set(new_pos);
     }
 
     ~move_item_action() noexcept {
-        //  TODO remove highlighting
+        item_.hover_state().set_selected(false);
     }
 
 private:
+    glm::vec3 compute_world_mouse_position(const glm::vec2& mouse_pos) {
+        const auto mouse_direction =
+                model_.compute_world_mouse_direction(mouse_pos);
+        return camera_position_ + mouse_direction * camera_distance_ /
+               glm::dot(camera_direction_, mouse_direction);
+    }
+
+    const wayverb::combined::model::scene& model_;
     Item& item_;
-    glm::vec3 initial_;
+    glm::vec3 camera_position_;
+    glm::vec3 camera_direction_;
+    glm::vec3 initial_position_;
+    float camera_distance_;
 };
 
 template <typename T>
-auto make_move_item_action_ptr(T& t) {
-    return std::make_unique<move_item_action<T>>(t);
+auto make_move_item_action_ptr(const wayverb::combined::model::scene& model, T& t) {
+    return std::make_unique<move_item_action<T>>(model, t);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 controller::controller(wayverb::combined::model::app& app)
         : app_{app} {}
@@ -108,7 +145,6 @@ controller::controller(wayverb::combined::model::app& app)
 controller::~controller() noexcept = default;
 
 void controller::mouse_move(const MouseEvent& e) {
-    std::cout << "mouse move\n";
 
     //  We do things like this to minimize redraw requests.
 
@@ -187,8 +223,8 @@ std::unique_ptr<controller::mouse_action> controller::start_action(
         return do_action_with_closest_thing(wayverb::core::to_vec2{}(e.getPosition()),
             app_.project.persistent.sources(),
             app_.project.persistent.receivers(),
-                [](const auto& i) -> std::unique_ptr<mouse_action> {
-                    return make_move_item_action_ptr(i);
+                [this](auto& i) -> std::unique_ptr<mouse_action> {
+                    return make_move_item_action_ptr(app_.scene, i);
                 });
     }
 

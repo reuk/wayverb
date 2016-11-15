@@ -96,8 +96,9 @@ public:
                           std::is_nothrow_move_assignable<T>{},
                   "T must be nothrow moveable");
 
-    vector()
-            : data_{MinimumSize} {
+    template <typename... Ts>
+    vector(Ts&&... ts)
+            : data_{MinimumSize, item_connection(T(std::forward<Ts>(ts)...))} {
         connect_all();
     }
 
@@ -153,7 +154,8 @@ public:
 
     template <typename It>
     void insert(It it, T t) {
-        data_.emplace(it.base(), *this, std::move(t));
+        const auto i = data_.emplace(it.base(), std::move(t));
+        i->connect(*this);
         this->notify();
     }
 
