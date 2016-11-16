@@ -54,7 +54,7 @@ AngularLookAndFeel::AngularLookAndFeel() {
               Colours::darkgrey);
     setColour(TextEditor::ColourIds::highlightedTextColourId,
               Colours::white);
-    setColour(ListBox::backgroundColourId, Colours::darkgrey);
+    setColour(ListBox::backgroundColourId, Colours::transparentBlack);
     setColour(ListBox::textColourId, Colours::lightgrey);
 
     setUsingNativeAlertWindows(true);

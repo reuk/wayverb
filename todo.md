@@ -27,24 +27,18 @@ rendering
 
     Improve source/reciever + microphone direction models.
 
-Move to internal shared-pointer model
-    Should make interacting with the model safer - can use weak pointers to
-    check for dangly references
-
 Correct capsule orientation in view
 
 controls
     capsules editor
-        microphone
-            orientation
-            shape
         hrtf
             orientation
             channel
 
-        with presets.
+        presets
 
     materials
+        disable absorptions lower than (for example) 0.01
 
     waveguide options
 
@@ -53,9 +47,6 @@ controls
     Window to configure output samplerate/bit-depth before beginning the rendering.
 
     Show which channel is being rendered, and the total channels to go
-
-Fail for really long reverbs i.e. longer than 60 seconds.
-    OR disable absorptions lower than (for example) 0.01
 
 Finish adding the help panel info.
 

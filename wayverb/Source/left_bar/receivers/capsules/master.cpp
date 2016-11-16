@@ -1,4 +1,5 @@
 #include "master.h"
+#include "PolarPatternDisplay.h"
 
 #include "../../azimuth_elevation_property.h"
 #include "../../slider_property.h"
@@ -57,12 +58,14 @@ public:
         auto orientation =
                 std::make_unique<azimuth_elevation_property>("orientation");
         auto shape = std::make_unique<slider_property>("shape", 0, 1);
+        auto display = std::make_unique<PolarPatternProperty>("shape display", 80);
 
         auto update_from_microphone =
-                [ this, o = orientation.get(), s = shape.get() ](auto& mic) {
+                [ this, o = orientation.get(), s = shape.get(), d = display.get() ](auto& mic) {
             o->set(wayverb::core::compute_azimuth_elevation(
                     mic.get().orientation.get_pointing()));
             s->set(mic.get().get_shape());
+            d->set_shape(mic.get().get_shape());
         };
 
         update_from_microphone(model_);
@@ -80,6 +83,7 @@ public:
 
         addProperties({orientation.release()});
         addProperties({shape.release()});
+        addProperties({display.release()});
     }
 
 private:
@@ -104,7 +108,7 @@ public:
 std::unique_ptr<Component> capsule_config_item::get_callout_component(
         wayverb::combined::model::capsule& model) {
     auto ret = std::make_unique<capsule_editor>(model);
-    ret->setSize(200, 200);
+    ret->setSize(300, 200);
     return std::move(ret);
 }
 

@@ -32,3 +32,16 @@ void PolarPatternView::set_shape(double shape) {
     shape_ = shape;
     repaint();
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+PolarPatternProperty::PolarPatternProperty(const String& name, int height)
+        : PropertyComponent{name, height} {
+    addAndMakeVisible(view_);
+}
+    
+void PolarPatternProperty::refresh() {}
+
+void PolarPatternProperty::set_shape(double shape) {
+    view_.set_shape(shape);
+}
