@@ -28,9 +28,6 @@ rendering
 
 controls
     capsules editor
-        correct orientation in view
-            orientation::combine
-
         presets
 
     materials

@@ -12,9 +12,10 @@ namespace model {
 class microphone final : public basic_member<microphone> {
 public:
     microphone() = default;
+    microphone(const core::orientation& o, float shape);
 
     void set_orientation(const core::orientation& o);
-    void set_shape(double shape);
+    void set_shape(float shape);
 
     core::attenuator::microphone get() const;
 

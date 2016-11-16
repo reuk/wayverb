@@ -12,6 +12,7 @@ namespace model {
 class hrtf final : public basic_member<hrtf> {
 public:
     hrtf() = default;
+    hrtf(const core::orientation& o, core::attenuator::hrtf::channel channel);
 
     void set_orientation(const core::orientation& o);
     void set_channel(core::attenuator::hrtf::channel channel);

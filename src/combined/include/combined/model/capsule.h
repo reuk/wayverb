@@ -14,6 +14,13 @@ class capsule final : public owning_member<capsule, microphone, hrtf> {
 public:
     enum class mode { microphone, hrtf };
 
+    using microphone_t = class microphone;
+    using hrtf_t = class hrtf;
+
+    capsule(std::string name, mode mode, microphone_t, hrtf_t);
+    capsule(std::string name, microphone_t);
+    capsule(std::string name, hrtf_t);
+
     void set_name(std::string name);
     std::string get_name() const;
 
@@ -29,9 +36,6 @@ public:
     void save(Archive& archive) const {
         archive(cereal::base_class<type>(this), name_, mode_);
     }
-
-    using microphone_t = class microphone;
-    using hrtf_t = class hrtf;
 
     microphone_t& microphone();
     const microphone_t& microphone() const;

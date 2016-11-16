@@ -113,6 +113,9 @@ public:
                   std::back_inserter(data_));
     }
 
+    explicit vector(std::initializer_list<T> init)
+            : vector(begin(init), end(init)) {}
+
     void swap(vector& other) noexcept {
         assert(! busy_);
         using std::swap;

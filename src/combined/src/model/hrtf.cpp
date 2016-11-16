@@ -6,6 +6,9 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
+hrtf::hrtf(const core::orientation& o, core::attenuator::hrtf::channel channel)
+        : hrtf_{o, channel} {}
+
 void hrtf::set_orientation(const core::orientation& o) {
     hrtf_.orientation = o;
     notify();
