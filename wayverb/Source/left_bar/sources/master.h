@@ -3,15 +3,7 @@
 #include "../editable_vector_list_box.h"
 #include "../list_config_item.h"
 
-namespace wayverb {
-namespace combined {
-namespace model {
-class app;
-class source;
-class sources;
-}
-}
-}
+#include "combined/model/source.h"
 
 namespace left_bar {
 namespace sources {
@@ -26,18 +18,17 @@ namespace sources {
 
 class source_config_item final
         : public list_config_item<wayverb::combined::model::source> {
-    Component* get_callout_component(
+    std::unique_ptr<Component> get_callout_component(
             wayverb::combined::model::source& model) override;
 };
 
 class master final : public Component {
 public:
-    master(wayverb::combined::model::app& app);
+    master(wayverb::combined::model::sources& sources);
 
     void resized() override;
 
 private:
-    wayverb::combined::model::app& model_;
     editable_vector_list_box<wayverb::combined::model::sources,
                              source_config_item>
             list_box_;

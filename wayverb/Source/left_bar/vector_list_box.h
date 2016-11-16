@@ -19,10 +19,8 @@ public:
     using model_type = Model;
 
     vector_list_box(Model& model)
-            : model_{model} {
-        /// If model changes, update the listbox view.
-        model.connect([this](auto&) { this->updateContent(); });
-
+            : model_{model}
+            , connection_{model.connect([this](auto&) { this->updateContent(); })} {
         setModel(&model_);
     }
 
@@ -76,6 +74,7 @@ private:
     };
 
     model model_;
+    typename Model::scoped_connection connection_;
 };
 
 }  // namespace left_bar

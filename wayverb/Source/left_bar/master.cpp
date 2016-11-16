@@ -80,11 +80,11 @@ master::master(wayverb::combined::model::app& app)
     //  Populate the property panel
     property_panel_.addSection("sources",
                                {new wrapped_property_component<sources::master>{
-                                       item_height, model_}});
+                                       item_height, model_.project.persistent.sources()}});
     property_panel_.addSection(
             "receivers",
             {new wrapped_property_component<receivers::master>{item_height,
-                                                               model_}});
+                                                               model_.project.persistent.receivers()}});
     property_panel_.setOpaque(false);
 
     //  Make components visible

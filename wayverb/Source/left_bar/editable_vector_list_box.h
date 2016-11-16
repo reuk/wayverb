@@ -14,11 +14,10 @@ class editable_vector_list_box final : public Component,
 public:
     editable_vector_list_box(Model& model)
             : model_{model}
+            , connection_{model_.connect([this](auto&) {
+                this->update_buttons();
+            })}
             , list_box_{model_} {
-        //  If model changes, update buttons.
-        model_.connect([this](auto&) {
-            update_buttons();
-        });
 
         //  If selected rows change, update buttons.
         list_box_.connect_selected_rows_changed([this](auto) {
@@ -61,6 +60,7 @@ private:
     }
 
     Model& model_;
+    typename Model::scoped_connection connection_;
     vector_list_box<Model, View> list_box_;
 
     TextButton add_button_{"+"};

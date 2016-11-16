@@ -14,22 +14,27 @@ Look again at frequency domain test?
 app stuff
 ---------
 
+If an object listens to a reference which outlives it, the listener connection
+*must be scoped*.
+
 rendering
     'All channels are silent' bug
 
     Waveguide growth issue - see: vault model
-
-    Fail for really long reverbs i.e. longer than 60 seconds.
-        OR disable absorptions lower than (for example) 0.01
 
     Sometimes gets a bit slow and jittery
         Throw away ray data / waveguide data if there's too much to render?
 
     Improve source/reciever + microphone direction models.
 
+Move to internal shared-pointer model
+    Should make interacting with the model safer - can use weak pointers to
+    check for dangly references
+
+Correct capsule orientation in view
+
 controls
     capsules editor
-
         microphone
             orientation
             shape
@@ -38,12 +43,6 @@ controls
             channel
 
         with presets.
-
-    receivers editor
-        
-        name
-        position
-        orientation
 
     materials
 
@@ -54,6 +53,9 @@ controls
     Window to configure output samplerate/bit-depth before beginning the rendering.
 
     Show which channel is being rendered, and the total channels to go
+
+Fail for really long reverbs i.e. longer than 60 seconds.
+    OR disable absorptions lower than (for example) 0.01
 
 Finish adding the help panel info.
 

@@ -4,7 +4,7 @@
 #include "../text_property.h"
 #include "../vec3_property.h"
 
-#include "combined/model/app.h"
+#include "combined/model/source.h"
 
 namespace left_bar {
 namespace sources {
@@ -48,23 +48,17 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Component* source_config_item::get_callout_component(
+std::unique_ptr<Component> source_config_item::get_callout_component(
         wayverb::combined::model::source& model) {
     auto ret = std::make_unique<source_editor>(model);
     ret->setSize(300, ret->getTotalContentHeight());
-    return ret.release();
+    return std::move(ret);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<Component> make_source_editor(
-        wayverb::combined::model::source& source) {
-    return std::make_unique<source_editor>(source);
-}
-
-master::master(wayverb::combined::model::app& app)
-        : model_{app}
-        , list_box_{model_.project.persistent.sources()} {
+master::master(wayverb::combined::model::sources& model)
+        : list_box_{model} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 }

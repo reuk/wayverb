@@ -154,7 +154,7 @@ public:
     auto end() { return make_extractor_iterator(data_.end()); }
 
     template <typename It>
-    void insert(It it, T t) {
+    void insert(It it, T t = T()) {
         if (!busy_) {
             const auto i = data_.emplace(it.base(), std::move(t));
             i->connect(*this);

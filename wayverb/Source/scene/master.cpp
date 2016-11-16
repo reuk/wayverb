@@ -20,22 +20,96 @@ class master::impl final : public Component {
 public:
     impl(wayverb::combined::model::app& app)
             : app_{app}
-            , controller_{app_} {
-        //  If the model visible surface changes, update the view visible
-        //  surface.
-        app_.scene.connect_visible_surface_changed([&](auto visible) {
-            view_.command([=](auto& r) { r.set_highlighted_surface(visible); });
-        });
+            , controller_{app_}
+            , visible_surface_changed_connection_{
+                app.scene.connect_visible_surface_changed([this](auto visible) {
+                    view_.command([=](auto& r) { r.set_highlighted_surface(visible); });
+                })}
+            , view_state_changed_connection_{
+                app.scene.connect_view_state_changed([this](auto state) {
+                    view_.command([=](auto& r) { r.set_view_state(state); });
+                })}
+            , projection_matrix_changed_connection_{
+                app_.scene.connect_projection_matrix_changed([this](auto matrix) {
+                    view_.command([=](auto& r) { r.set_projection_matrix(matrix); });
+                })}
+            , visualise_changed_connection_{
+                 app_.scene.connect_visualise_changed([this](auto should_visualise) {
+                    if (should_visualise) {
+                        //  IMPORTANT app callbacks might be called from any thread -
+                        //  don't access unprotected common state inside engine
+                        //  callbacks!
+                        positions_changed_ = wayverb::combined::
+                                waveguide_node_positions_changed::scoped_connection{
+                                        app_.connect_node_positions([this](
+                                                auto descriptor) {
+                                            view_.command([d = std::move(descriptor)](
+                                                    auto& renderer) {
+                                                renderer.set_node_positions(
+                                                        wayverb::waveguide::
+                                                                compute_node_positions(
+                                                                        d));
+                                            });
+                                        })};
 
-        //  If a model matrix changes, update the view matrix.
-        app_.scene.connect_view_state_changed([&](auto state) {
-            view_.command([=](auto& r) { r.set_view_state(state); });
-        });
+                        pressures_changed_ = wayverb::combined::
+                                waveguide_node_pressures_changed::scoped_connection{
+                                        app_.connect_node_pressures([this](
+                                                auto pressures, auto distance) {
+                                            view_.command([
+                                                p = std::move(pressures),
+                                                d = distance
+                                            ](auto& renderer) {
+                                                renderer.set_node_pressures(std::move(p));
+                                                renderer.set_distance_travelled(d);
+                                            });
+                                        })};
 
-        app_.scene.connect_projection_matrix_changed([&](auto matrix) {
-            view_.command([=](auto& r) { r.set_projection_matrix(matrix); });
-        });
+                        reflections_generated_ =
+                                wayverb::combined::raytracer_reflections_generated::
+                                        scoped_connection{app_.connect_reflections(
+                                                [this](auto reflections, auto source) {
+                                                    view_.command([
+                                                        r = std::move(reflections),
+                                                        s = source
+                                                    ](auto& renderer) {
+                                                        renderer.set_reflections(
+                                                                std::move(r), s);
+                                                    });
+                                                })};
 
+                    } else {
+                        positions_changed_ = wayverb::combined::
+                                waveguide_node_positions_changed::scoped_connection{};
+                        pressures_changed_ = wayverb::combined::
+                                waveguide_node_pressures_changed::scoped_connection{};
+                        reflections_generated_ = wayverb::combined::
+                                raytracer_reflections_generated::scoped_connection{};
+                    }
+                })}
+            , finished_connection_{
+                app_.connect_finished([this] {
+                    queue_.push([this] {
+                        view_.command([](auto& renderer) { renderer.clear(); });
+                    });
+                })}
+            , sources_connection_{
+                //  When sources or receivers change, update the view.
+                //  Assume model updates come from the message thread.
+                app_.project.persistent.sources().connect([this](auto& sources) {
+                    auto copy = sources;
+                    view_.command([r = std::move(copy)](auto& renderer) {
+                        renderer.set_sources(std::move(r));
+                    });
+                })}
+            , receivers_connection_{
+                app_.project.persistent.receivers().connect([this](auto& receivers) {
+                    auto copy = receivers;
+                    view_.command([r = std::move(copy)](auto& renderer) {
+                        renderer.set_receivers(std::move(r));
+                    });
+                })}
+            {
         //  Set up the scene model so that everything is visible.
         const auto scene_data = app_.project.get_scene_data();
         auto triangles = scene_data.get_triangles();
@@ -65,85 +139,7 @@ public:
                     });
                 });
 
-        //  Hook up the engine.
-
-        //  We assume this will be called from the message thread.
-        app_.scene.connect_visualise_changed([this](auto should_visualise) {
-            if (should_visualise) {
-                //  IMPORTANT app callbacks might be called from any thread -
-                //  don't
-                //  access unprotected common state inside engine callbacks!
-                positions_changed_ = wayverb::combined::
-                        waveguide_node_positions_changed::scoped_connection{
-                                app_.connect_node_positions([this](
-                                        auto descriptor) {
-                                    view_.command([d = std::move(descriptor)](
-                                            auto& renderer) {
-                                        renderer.set_node_positions(
-                                                wayverb::waveguide::
-                                                        compute_node_positions(
-                                                                d));
-                                    });
-                                })};
-
-                pressures_changed_ = wayverb::combined::
-                        waveguide_node_pressures_changed::scoped_connection{
-                                app_.connect_node_pressures([this](
-                                        auto pressures, auto distance) {
-                                    view_.command([
-                                        p = std::move(pressures),
-                                        d = distance
-                                    ](auto& renderer) {
-                                        renderer.set_node_pressures(std::move(p));
-                                        renderer.set_distance_travelled(d);
-                                    });
-                                })};
-
-                reflections_generated_ =
-                        wayverb::combined::raytracer_reflections_generated::
-                                scoped_connection{app_.connect_reflections(
-                                        [this](auto reflections, auto source) {
-                                            view_.command([
-                                                r = std::move(reflections),
-                                                s = source
-                                            ](auto& renderer) {
-                                                renderer.set_reflections(
-                                                        std::move(r), s);
-                                            });
-                                        })};
-
-            } else {
-                positions_changed_ = wayverb::combined::
-                        waveguide_node_positions_changed::scoped_connection{};
-                pressures_changed_ = wayverb::combined::
-                        waveguide_node_pressures_changed::scoped_connection{};
-                reflections_generated_ = wayverb::combined::
-                        raytracer_reflections_generated::scoped_connection{};
-            }
-        });
-
-        app_.connect_finished([this] {
-            queue_.push([this] {
-                view_.command([](auto& renderer) { renderer.clear(); });
-            });
-        });
-
-        //  When sources or receivers change, update the view.
-        //  Assume model updates come from the message thread.
-        app_.project.persistent.sources().connect([this](auto& sources) {
-            auto copy = sources;
-            view_.command([r = std::move(copy)](auto& renderer) {
-                renderer.set_sources(std::move(r));
-            });
-        });
         app_.project.persistent.sources().notify();
-
-        app_.project.persistent.receivers().connect([this](auto& receivers) {
-            auto copy = receivers;
-            view_.command([r = std::move(copy)](auto& renderer) {
-                renderer.set_receivers(std::move(r));
-            });
-        });
         app_.project.persistent.receivers().notify();
 
         //  We want to catch mouse events and dispatch our own commands to the
@@ -184,6 +180,20 @@ private:
     //  This object decides how to interpret user input, and updates the models
     //  as appropriate.
     scene::controller controller_;
+
+    wayverb::combined::model::scene::visible_surface_changed::scoped_connection
+            visible_surface_changed_connection_;
+    wayverb::combined::model::scene::view_state_changed::scoped_connection
+            view_state_changed_connection_;
+    wayverb::combined::model::scene::projection_matrix_changed::
+            scoped_connection projection_matrix_changed_connection_;
+    wayverb::combined::model::scene::visualise_changed::scoped_connection
+            visualise_changed_connection_;
+    wayverb::combined::model::app::finished::scoped_connection
+            finished_connection_;
+    wayverb::combined::model::sources::scoped_connection sources_connection_;
+    wayverb::combined::model::receivers::scoped_connection
+            receivers_connection_;
 
     wayverb::combined::waveguide_node_positions_changed::scoped_connection
             positions_changed_;

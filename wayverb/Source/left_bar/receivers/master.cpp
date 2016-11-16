@@ -1,10 +1,14 @@
 #include "master.h"
 
+#include "capsules/master.h"
+
 #include "../azimuth_elevation_property.h"
 #include "../text_property.h"
 #include "../vec3_property.h"
 
-#include "combined/model/app.h"
+#include "combined/model/receiver.h"
+
+#include "core/az_el.h"
 
 namespace left_bar {
 namespace receivers {
@@ -44,7 +48,7 @@ public:
 
         orientation->connect_on_change([this](auto&, auto az_el) {
             receiver_.set_orientation(wayverb::core::orientation{
-                    wayverb::core::compute_pointing(az_el)});
+                    compute_pointing(az_el)});
         });
 
         addProperties({name.release()});
@@ -62,40 +66,36 @@ private:
 class receiver_editor final : public Component {
 public:
     receiver_editor(wayverb::combined::model::receiver& receiver)
-            : properties_{receiver} {
+            : properties_{receiver}
+            , capsules_{receiver.capsules()} {
         addAndMakeVisible(properties_);
+        addAndMakeVisible(capsules_);
     }
 
     void resized() override {
         auto bounds = getLocalBounds();
-        bounds.removeFromRight(150);
+        capsules_.setBounds(bounds.removeFromRight(150));
         properties_.setBounds(bounds);
     }
 
 private:
     receiver_properties properties_;
-    //  TODO capsules::master capsules_;
+    capsules::master capsules_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Component* receiver_config_item::get_callout_component(
+std::unique_ptr<Component> receiver_config_item::get_callout_component(
         wayverb::combined::model::receiver& model) {
     auto ret = std::make_unique<receiver_editor>(model);
     ret->setSize(500, 200);
-    return ret.release();
+    return std::move(ret);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<Component> make_receiver_editor(
-wayverb::combined::model::receiver& receiver) {
-    return std::make_unique<receiver_editor>(receiver);
-}
-
-master::master(wayverb::combined::model::app& app)
-        : model_{app}
-        , list_box_{model_.project.persistent.receivers()} {
+master::master(wayverb::combined::model::receivers& model)
+        : list_box_{model} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 }

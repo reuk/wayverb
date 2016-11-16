@@ -8,7 +8,7 @@ namespace left_bar {
 
 /// Displays a name and a button for further configuration.
 template <typename T>
-class list_config_item : public Component , public TextButton::Listener {
+class list_config_item : public Component, public TextButton::Listener {
 public:
     list_config_item() {
         label_.setInterceptsMouseClicks(false, false);
@@ -19,7 +19,7 @@ public:
 
     list_config_item(const list_config_item&) = delete;
     list_config_item(list_config_item&&) noexcept = delete;
-    
+
     list_config_item& operator=(const list_config_item&) = delete;
     list_config_item& operator=(list_config_item&&) noexcept = delete;
 
@@ -41,12 +41,15 @@ public:
         label_.setBounds(bounds.reduced(2, 2));
     }
 
-    void buttonClicked(Button* b) override {
-        CallOutBox::launchAsynchronously(get_callout_component(*model_), button_.getScreenBounds(), nullptr);
+    void buttonClicked(Button*) override {
+        CallOutBox::launchAsynchronously(
+                get_callout_component(*model_).release(),
+                button_.getScreenBounds(),
+                nullptr);
     }
 
 private:
-    virtual Component* get_callout_component(T& model) = 0;
+    virtual std::unique_ptr<Component> get_callout_component(T& model) = 0;
 
     T* model_ = nullptr;
     Label label_;
