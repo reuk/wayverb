@@ -174,10 +174,9 @@ void controller::mouse_move(const MouseEvent& e) {
         receivers,
         [](auto& i) {
             i.hover_state().set_hovered(true);
-            return 1;
+            return true;
         });
 
-    //  Copy sources and receivers back to master model.
     app_.project.persistent.sources() = sources;
     app_.project.persistent.receivers() = receivers;
 }

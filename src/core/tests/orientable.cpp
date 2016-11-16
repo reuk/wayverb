@@ -1,5 +1,7 @@
-#include "core/orientation.h"
+#include "core/almost_equal.h"
 #include "core/az_el.h"
+#include "core/orientation.h"
+#include "utilities/string_builder.h"
 
 #include "gtest/gtest.h"
 
@@ -48,15 +50,44 @@ TEST(orientation, round_trip) {
 }
 
 namespace {
-void near_vectors(const glm::vec3& a, const glm::vec3& b) {
-    ASSERT_NEAR(glm::distance(a, b), 0, 0.00001);
+
+std::ostream& operator<<(std::ostream& os, const glm::vec3& p) {
+    util::Bracketer b{os};
+    return os << p.x << ", " << p.y << ", " << p.z;
 }
-}//namespace
+
+}  // namespace
 
 TEST(orientation, pointing) {
     for (auto i = 0; i != 100; ++i) {
         const auto v = glm::sphericalRand(1.0f);
 
-        near_vectors(transform(orientation{v}, v), glm::vec3{0, 0, 1});
+        nearby(transform(orientation{v}, v), glm::vec3{0, 0, 1}, 0.00001);
+    }
+}
+
+TEST(orientation, combine) {
+    {
+        const orientation a{glm::vec3{1, 0, 0}};
+        const orientation b{glm::vec3{1, 0, 0}};
+        std::cout << combine(a, b).get_pointing() << '\n';
+    }
+
+    {
+        const orientation a{glm::vec3{-1, 0, 0}};
+        const orientation b{glm::vec3{-1, 0, 0}};
+        std::cout << combine(a, b).get_pointing() << '\n';
+    }
+
+    {
+        const orientation a{glm::vec3{1, 0, 0}};
+        const orientation b{glm::vec3{-1, 0, 0}};
+        std::cout << combine(a, b).get_pointing() << '\n';
+    }
+
+    {
+        const orientation a{glm::vec3{-1, 0, 0}};
+        const orientation b{glm::vec3{1, 0, 0}};
+        std::cout << combine(a, b).get_pointing() << '\n';
     }
 }

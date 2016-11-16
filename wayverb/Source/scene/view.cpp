@@ -109,9 +109,13 @@ public:
                             std::begin(receiver.capsules()),
                             std::end(receiver.capsules()),
                             [&](const auto& capsule) {
+                                const auto receiver_orientation =
+                                                receiver.get_orientation();
+                                const auto capsule_orientation = 
+                                                get_orientation(capsule);
                                 const auto orientation =
-                                        combine(receiver.get_orientation(),
-                                                get_orientation(capsule));
+                                        combine(receiver_orientation,
+                                                capsule_orientation);
                                 return orientation.get_pointing();
                             }));
                     ret.set_scale(source_receiver_radius_);
