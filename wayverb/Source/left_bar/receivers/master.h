@@ -7,27 +7,27 @@ namespace wayverb {
 namespace combined {
 namespace model {
 class app;
-class source;
-class sources;
+class receiver;
+class receivers;
 }
 }
 }
 
 namespace left_bar {
-namespace sources {
+namespace receivers {
 
-/// The heart of the sources component is a list-box.
+/// The heart of the receivers component is a list-box.
 /// This should have buttons for adding and removing items.
 /// If an item is added, show its pop-out immediately, with the name field
 /// selected for editing.
 /// The pop-out should contain name and position editors.
-/// Don't allow sources to be added or removed if any are currently selected/
+/// Don't allow receivers to be added or removed if any are currently selected/
 /// dragged.
 
-class source_config_item final
-        : public list_config_item<wayverb::combined::model::source> {
+class receiver_config_item final
+        : public list_config_item<wayverb::combined::model::receiver> {
     Component* get_callout_component(
-            wayverb::combined::model::source& model) override;
+            wayverb::combined::model::receiver& model) override;
 };
 
 class master final : public Component {
@@ -38,10 +38,10 @@ public:
 
 private:
     wayverb::combined::model::app& model_;
-    editable_vector_list_box<wayverb::combined::model::sources,
-                             source_config_item>
+    editable_vector_list_box<wayverb::combined::model::receivers,
+                             receiver_config_item>
             list_box_;
 };
 
-}  // namespace sources
+}  // namespace receivers
 }  // namespace left_bar

@@ -34,7 +34,7 @@ public:
     auto& hover_state() { return get<hover_state_t>(); }
     const auto& hover_state() const { return get<hover_state_t>(); }
 
-    void set_orientation(float azimuth, float elevation);
+    void set_orientation(const core::orientation &orientation);
     core::orientation get_orientation() const;
 
     template <typename Archive>

@@ -16,7 +16,7 @@ void Vec3Editor::resized() {
 }
 
 Vec3Property::Vec3Property(const String& name)
-        : PropertyComponent(name, 79) {
+        : PropertyComponent(name, 75) {
     addAndMakeVisible(editor);
 }
 

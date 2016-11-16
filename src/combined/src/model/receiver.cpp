@@ -19,9 +19,8 @@ void receiver::set_name(std::string name) {
 
 std::string receiver::get_name() const { return name_; }
 
-void receiver::set_orientation(float azimuth, float elevation) {
-    orientation_.set_pointing(
-            compute_pointing(core::az_el{azimuth, elevation}));
+void receiver::set_orientation(const core::orientation& orientation) {
+    orientation_ = orientation;
     notify();
 }
 

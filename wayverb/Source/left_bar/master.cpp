@@ -1,6 +1,7 @@
 #include "master.h"
 #include "AngularLookAndFeel.h"
 
+#include "receivers/master.h"
 #include "sources/master.h"
 
 #include "combined/model/app.h"
@@ -23,23 +24,31 @@ public:
     void refresh() override {}
 
     T content;
+
 private:
     class look_and_feel final : public AngularLookAndFeel {
     public:
         //  Don't bother drawing anything.
-        void drawPropertyComponentBackground(Graphics&, int, int, PropertyComponent&) override {}
-        void drawPropertyComponentLabel(Graphics&, int, int, PropertyComponent&) override {}
+        void drawPropertyComponentBackground(Graphics&,
+                                             int,
+                                             int,
+                                             PropertyComponent&) override {}
+        void drawPropertyComponentLabel(Graphics&,
+                                        int,
+                                        int,
+                                        PropertyComponent&) override {}
 
         //  Let the content take up the entire space.
-        Rectangle<int> getPropertyComponentContentPosition(PropertyComponent& c) override {
+        Rectangle<int> getPropertyComponentContentPosition(
+                PropertyComponent& c) override {
             return c.getLocalBounds();
         }
     };
-    
+
     look_and_feel look_and_feel_;
 };
 
-}//namespace 
+}  // namespace
 
 namespace left_bar {
 
@@ -52,9 +61,7 @@ master::master(wayverb::combined::model::app& app)
     //  Hook up the model callbacks.
 
     model_.connect_begun([this] {
-        queue_.push([this] {
-            bottom_.set_state(bottom::state::rendering);
-        });
+        queue_.push([this] { bottom_.set_state(bottom::state::rendering); });
     });
 
     model_.connect_engine_state([this](auto state, auto progress) {
@@ -65,15 +72,19 @@ master::master(wayverb::combined::model::app& app)
     });
 
     model_.connect_finished([this] {
-        queue_.push([this] {
-            bottom_.set_state(bottom::state::idle);
-        });
+        queue_.push([this] { bottom_.set_state(bottom::state::idle); });
     });
 
     const auto item_height = 150;
-    
+
     //  Populate the property panel
-    property_panel_.addSection("sources", {new wrapped_property_component<sources::master>{item_height, model_}});
+    property_panel_.addSection("sources",
+                               {new wrapped_property_component<sources::master>{
+                                       item_height, model_}});
+    property_panel_.addSection(
+            "receivers",
+            {new wrapped_property_component<receivers::master>{item_height,
+                                                               model_}});
     property_panel_.setOpaque(false);
 
     //  Make components visible
@@ -83,14 +94,15 @@ master::master(wayverb::combined::model::app& app)
 
 void master::resized() {
     const auto bottom_height = 30;
-    property_panel_.setBounds(getLocalBounds().withTrimmedBottom(bottom_height));
-            bottom_.setBounds(getLocalBounds() .removeFromBottom(bottom_height));
+    property_panel_.setBounds(
+            getLocalBounds().withTrimmedBottom(bottom_height));
+    bottom_.setBounds(getLocalBounds().removeFromBottom(bottom_height));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-//class ConfigureButton : public ButtonPropertyComponent {
-//public:
+// class ConfigureButton : public ButtonPropertyComponent {
+// public:
 //    ConfigureButton(const String& name)
 //            : ButtonPropertyComponent(name, true) {
 //        setLookAndFeel(&pclaf);
@@ -98,20 +110,21 @@ void master::resized() {
 //
 //    String getButtonText() const override { return "..."; }
 //
-//private:
+// private:
 //    PropertyComponentLAF pclaf{200};
 //};
 //
-//class MaterialConfigureButtonComponent : public Component,
+// class MaterialConfigureButtonComponent : public Component,
 //                                         public Button::Listener {
-//public:
+// public:
 //        MaterialConfigureButtonComponent(
 //            int this_surface,
 //            model::ValueWrapper<int>& shown_surface,
 //            model::ValueWrapper<wayverb::core::scene_data_loader::material>&
 //                    value,
 //            model::ValueWrapper<util::aligned::vector<
-//                    wayverb::core::scene_data_loader::material>>& preset_model)
+//                    wayverb::core::scene_data_loader::material>>&
+//                    preset_model)
 //            : this_surface(this_surface)
 //            , shown_surface(shown_surface)
 //            , value(value)
@@ -149,7 +162,7 @@ void master::resized() {
 //    }
 //*/
 //
-//private:
+// private:
 //    TextButton show_button{"show"};
 //    model::Connector<TextButton> show_connector{&show_button, this};
 //
@@ -157,21 +170,23 @@ void master::resized() {
 //    model::Connector<TextButton> more_connector{&more_button, this};
 //};
 //
-//class MaterialConfigureButton : public PropertyComponent,
+// class MaterialConfigureButton : public PropertyComponent,
 //                                public SettableHelpPanelClient {
-//public:
+// public:
 //    MaterialConfigureButton(
 //            int this_surface,
 //            model::ValueWrapper<int>& shown_surface,
 //            model::ValueWrapper<wayverb::core::scene_data_loader::material>&
 //                    value,
 //            model::ValueWrapper<util::aligned::vector<
-//                    wayverb::core::scene_data_loader::material>>& preset_model)
+//                    wayverb::core::scene_data_loader::material>>&
+//                    preset_model)
 //            : PropertyComponent("TODO set name properly")
 //            , contents(this_surface, shown_surface, value, preset_model) {
 //        set_help("surface material",
 //                 "Click 'show' to highlight everwhere this surface can be "
-//                 "found in the model. Click the '...' button to configure how "
+//                 "found in the model. Click the '...' button to configure how
+//                 "
 //                 "this surface should sound.");
 //        setLookAndFeel(&pclaf);
 //        addAndMakeVisible(contents);
@@ -179,12 +194,12 @@ void master::resized() {
 //
 //    void refresh() override {}
 //
-//private:
+// private:
 //    MaterialConfigureButtonComponent contents;
 //    PropertyComponentLAF pclaf{200};
 //};
 //
-//Array<PropertyComponent*> make_material_buttons(
+// Array<PropertyComponent*> make_material_buttons(
 //        model::ValueWrapper<int>& shown_surface,
 //        const model::ValueWrapper<util::aligned::vector<
 //                wayverb::core::scene_data_loader::material>>& model,
@@ -194,7 +209,8 @@ void master::resized() {
 //    auto count = 0;
 //    for (const auto& i : model) {
 //        auto to_add =
-//                new MaterialConfigureButton(count++, shown_surface, *i, preset);
+//                new MaterialConfigureButton(count++, shown_surface, *i,
+//                preset);
 //        ret.add(to_add);
 //    }
 //    return ret;
@@ -202,10 +218,10 @@ void master::resized() {
 //
 ////----------------------------------------------------------------------------//
 //
-//class RayNumberPicker : public Component,
+// class RayNumberPicker : public Component,
 //                        public ComboBox::Listener,
 //                        public model::BroadcastListener {
-//public:
+// public:
 //    RayNumberPicker(model::ValueWrapper<size_t>& value)
 //            : value(value) {
 //        combo_box.addItem("few (1000)", 1000);
@@ -217,7 +233,8 @@ void master::resized() {
 //        addAndMakeVisible(combo_box);
 //    }
 //
-//    virtual ~RayNumberPicker() noexcept { PopupMenu::dismissAllActiveMenus(); }
+//    virtual ~RayNumberPicker() noexcept { PopupMenu::dismissAllActiveMenus();
+//    }
 //
 //    void comboBoxChanged(ComboBox* cb) override {
 //        if (cb == &combo_box) {
@@ -236,7 +253,7 @@ void master::resized() {
 //
 //    void resized() override { combo_box.setBounds(getLocalBounds()); }
 //
-//private:
+// private:
 //    model::ValueWrapper<size_t>& value;
 //    model::BroadcastConnector value_connector{&value, this};
 //
@@ -244,9 +261,9 @@ void master::resized() {
 //    model::Connector<ComboBox> combo_box_connector{&combo_box, this};
 //};
 //
-//class RayNumberPickerProperty : public PropertyComponent,
+// class RayNumberPickerProperty : public PropertyComponent,
 //                                public SettableHelpPanelClient {
-//public:
+// public:
 //    RayNumberPickerProperty(model::ValueWrapper<size_t>& value)
 //            : PropertyComponent("rays")
 //            , picker(value) {
@@ -259,14 +276,14 @@ void master::resized() {
 //
 //    void refresh() override {}
 //
-//private:
+// private:
 //    RayNumberPicker picker;
 //};
 //
 ////----------------------------------------------------------------------------//
 //
-//class SourcesConfigureButton : public ConfigureButton {
-//public:
+// class SourcesConfigureButton : public ConfigureButton {
+// public:
 //    SourcesConfigureButton()
 //            : ConfigureButton("sources") {}
 //
@@ -277,11 +294,11 @@ void master::resized() {
 //                cmp.release(), getScreenBounds(), nullptr);
 //    }
 //
-//private:
+// private:
 //};
 //
-//class ReceiversConfigureButton : public ConfigureButton {
-//public:
+// class ReceiversConfigureButton : public ConfigureButton {
+// public:
 //    ReceiversConfigureButton()
 //            : ConfigureButton{"receivers"} {}
 //
@@ -292,19 +309,19 @@ void master::resized() {
 //                cmp.release(), getScreenBounds(), nullptr);
 //    }
 //
-//private:
+// private:
 //};
 //
 ////----------------------------------------------------------------------------//
 //
-//class DebugButton : public ButtonPropertyComponent {
-//public:
+// class DebugButton : public ButtonPropertyComponent {
+// public:
 //    DebugButton(const std::string& name, const std::function<void()>& f)
 //            : ButtonPropertyComponent("dbg", true)
 //            , button_text(name)
 //            , on_press(f) {}
 //
-//private:
+// private:
 //    void buttonClicked() override {
 //        if (on_press) {
 //            on_press();
@@ -320,10 +337,11 @@ void master::resized() {
 //
 ////----------------------------------------------------------------------------//
 
-//master::master(wayverb::combined::model::app& model)
+// master::master(wayverb::combined::model::app& model)
 //        : model_{model} {
 //    set_help("configuration panel",
-//             "Use the options in this panel to adjust the various settings of "
+//             "Use the options in this panel to adjust the various settings of
+//             "
 //             "the simulation.");
 //
 //    //  Hook up the model callbacks.
@@ -349,7 +367,8 @@ void master::resized() {
 //
 //    {
 //        auto sources_property = std::make_unique<SourcesConfigureButton>();
-//        auto receivers_property = std::make_unique<ReceiversConfigureButton>();
+//        auto receivers_property =
+//        std::make_unique<ReceiversConfigureButton>();
 //
 //        property_panel.addSection(
 //                "general",
@@ -357,7 +376,7 @@ void master::resized() {
 //                 static_cast<PropertyComponent*>(
 //                         receivers_property.release())});
 //    }
-//    
+//
 //        {
 //            Array<PropertyComponent*> materials;
 //            materials.addArray(make_material_buttons());
@@ -377,7 +396,8 @@ void master::resized() {
 //                                        1,
 //                                        4)});
 //            waveguide.add(new TextDisplayProperty<int>(
-//                    "waveguide sr / Hz", 20, waveguide_sampling_rate_wrapper));
+//                    "waveguide sr / Hz", 20,
+//                    waveguide_sampling_rate_wrapper));
 //            property_panel.addSection("waveguide", waveguide);
 //        }
 //
@@ -418,6 +438,5 @@ void master::resized() {
 //    addAndMakeVisible(property_panel_);
 //    addAndMakeVisible(bottom_);
 //}
-
 
 }  // namespace left_bar

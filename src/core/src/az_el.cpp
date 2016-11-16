@@ -1,4 +1,5 @@
 #include "core/az_el.h"
+#include "core/almost_equal.h"
 
 #include "glm/gtx/transform.hpp"
 
@@ -52,12 +53,20 @@ az_el operator/(const az_el& a, const az_el& b) {
 float compute_azimuth(const glm::vec3& pointing) {
     return std::atan2(pointing.x, pointing.z);
 }
+
 float compute_elevation(const glm::vec3& pointing) {
     return std::asin(pointing.y);
 }
+
 az_el compute_azimuth_elevation(const glm::vec3& pointing) {
-    return az_el{compute_azimuth(pointing), compute_elevation(pointing)};
+    az_el ret{compute_azimuth(pointing), compute_elevation(pointing)};
+    if (almost_equal(ret.elevation, static_cast<float>(-M_PI / 2), 10) ||
+        almost_equal(ret.elevation, static_cast<float>(M_PI / 2), 10)) {
+        ret.azimuth = 0;
+    }
+    return ret;
 }
+
 glm::vec3 compute_pointing(const az_el& azel) {
     return glm::vec3(std::sin(azel.azimuth) * std::cos(azel.elevation),
                      std::sin(azel.elevation),
