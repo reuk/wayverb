@@ -22,12 +22,12 @@ public:
 
     template <typename Archive>
     void load(Archive& archive) {
-        archive(cereal::base_class<type>(this), name_, mode_);
+        archive(cereal::base_class<base_type>(this), name_, mode_);
     }
 
     template <typename Archive>
     void save(Archive& archive) const {
-        archive(cereal::base_class<type>(this), name_, mode_);
+        archive(cereal::base_class<base_type>(this), name_, mode_);
     }
 
     using microphone_t = class microphone;

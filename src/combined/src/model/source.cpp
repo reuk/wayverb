@@ -7,7 +7,7 @@ namespace combined {
 namespace model {
 
 source::source(const core::geo::box& aabb)
-        : type{constrained_point{aabb}, hover_state_t{}}
+        : base_type{constrained_point{aabb}, hover_state_t{}}
         , name_{"new source"} {}
 
 void source::set_name(std::string name) {
@@ -20,7 +20,7 @@ std::string source::get_name() const { return name_; }
 ////////////////////////////////////////////////////////////////////////////////
 
 sources::sources(const core::geo::box& aabb)
-        : type{vector<source, 1>{aabb}}
+        : base_type{vector<source, 1>{source{aabb}}}
         , aabb_{aabb} {}
 
 const source& sources::operator[](size_t index) const { return data()[index]; }

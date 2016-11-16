@@ -5,6 +5,7 @@
 #include "core/serialize/surface.h"
 
 #include "cereal/archives/json.hpp"
+#include "cereal/types/memory.hpp"
 #include "cereal/types/string.hpp"
 #include "cereal/types/tuple.hpp"
 
@@ -26,7 +27,7 @@ project::project(const std::string& fpath)
         //  load the config
         std::ifstream stream(config_file);
         cereal::JSONInputArchive archive(stream);
-        archive(persistent);
+        //archive(persistent);
 
     } else {
         const auto& surface_strings =
@@ -68,7 +69,7 @@ void project::save_to(const std::string& fpath) {
         //  write config with all current materials to file
         std::ofstream stream(project::compute_config_path(fpath));
         cereal::JSONOutputArchive archive(stream);
-        archive(persistent);
+        //archive(persistent);
 
         needs_save_ = false;
     }
@@ -94,7 +95,7 @@ void app::start_render() {
 
     //  Let the world know that we're gonna do some stuff.
     begun_();
-    
+
     //  Collect parameters.
 
     auto scene_data = generate_scene_data();
@@ -174,13 +175,12 @@ core::gpu_scene_data app::generate_scene_data() {
             material_map;
 
     for (const auto& i : project.persistent.materials()) {
-        material_map[i.get_name()] = i.get_surface();
+        material_map[i->get_name()] = i->get_surface();
     }
 
     return scene_with_extracted_surfaces(project.get_scene_data(),
                                          material_map);
 }
-
 
 //  MISC FUNCTIONS  ////////////////////////////////////////////////////////////
 

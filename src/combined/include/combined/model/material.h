@@ -40,17 +40,15 @@ private:
 
 template <size_t MinimumSize, typename It>
 vector<material, MinimumSize> materials_from_names(It b, It e) {
-    struct material_from_name final {
-        auto operator()(const std::string& str) const { return material{str}; }
-    };
+    const auto extra = std::distance(b, e) - MinimumSize;
 
-    const auto make_iterator = [&](auto it) {
-        return util::make_mapping_iterator_adapter(std::move(it),
-                                                   material_from_name{});
-    };
+    vector<material, MinimumSize> ret{extra};
 
-    return vector<material, MinimumSize>{make_iterator(std::move(b)),
-                                         make_iterator(std::move(e))};
+    for (auto i = 0; b != e; ++b, ++i) {
+        *ret[i] = material{*b};
+    }
+
+    return ret;
 }
 
 }  // namespace model

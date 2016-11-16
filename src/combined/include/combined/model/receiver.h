@@ -15,10 +15,8 @@ class receiver final : public owning_member<receiver,
                                             constrained_point,
                                             vector<capsule, 1>,
                                             hover_state> {
-    friend class vector<receiver, 1>;
-    receiver() = default;
-
 public:
+    receiver() = default;
     explicit receiver(core::geo::box bounds);
 
     void set_name(std::string name);
@@ -56,6 +54,7 @@ private:
 
 class receivers final : public owning_member<receivers, vector<receiver, 1>> {
 public:
+    receivers() = default;
     explicit receivers(const core::geo::box& aabb);
 
     const receiver& operator[](size_t index) const;

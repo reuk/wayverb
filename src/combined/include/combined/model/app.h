@@ -117,7 +117,6 @@ public:
 
     //  Preset data.
 
-    //  TODO load presets from file
     using material_presets_t = vector<material, 0>;
     material_presets_t material_presets;
 

@@ -16,10 +16,8 @@ namespace model {
 
 class source final
         : public owning_member<source, constrained_point, hover_state> {
-    friend class vector<source, 1>;
-    source() = default;
-
 public:
+    source() = default;
     explicit source(const core::geo::box& aabb);
 
     void set_name(std::string name);
@@ -50,6 +48,7 @@ private:
 
 class sources final : public owning_member<sources, vector<source, 1>> {
 public:
+    sources() = default;
     explicit sources(const core::geo::box& aabb);
 
     const source& operator[](size_t index) const;

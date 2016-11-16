@@ -8,7 +8,7 @@ namespace combined {
 namespace model {
 
 receiver::receiver(core::geo::box bounds)
-        : type{constrained_point{bounds},
+        : base_type{constrained_point{bounds},
                vector<capsule, 1>{},
                hover_state_t{}} {}
 
@@ -30,7 +30,7 @@ core::orientation receiver::get_orientation() const { return orientation_; }
 ////////////////////////////////////////////////////////////////////////////////
 
 receivers::receivers(const core::geo::box& aabb)
-        : type{vector<receiver, 1>{aabb}}
+        : base_type{vector<receiver, 1>{receiver{aabb}}}
         , aabb_{aabb} {}
 
 const receiver& receivers::operator[](size_t index) const {

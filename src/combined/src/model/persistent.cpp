@@ -5,12 +5,12 @@ namespace combined {
 namespace model {
 
 persistent::persistent(core::geo::box aabb)
-        : type{sources_t{aabb},
-               receivers_t{aabb},
-               raytracer_t{},
-               waveguide_t{},
-               output_t{},
-               vector<material, 1>{}} {}
+        : base_type{sources_t{aabb},
+                    receivers_t{aabb},
+                    raytracer_t{},
+                    waveguide_t{},
+                    output_t{},
+                    vector<material, 1>{}} {}
 
 persistent::sources_t& persistent::sources() { return get<0>(); }
 const persistent::sources_t& persistent::sources() const { return get<0>(); }
