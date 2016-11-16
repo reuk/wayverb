@@ -19,7 +19,6 @@ If an object listens to a reference which outlives it, the listener connection
 
 rendering
     'All channels are silent' bug
-
     Waveguide growth issue - see: vault model
 
     Sometimes gets a bit slow and jittery
@@ -27,13 +26,10 @@ rendering
 
     Improve source/reciever + microphone direction models.
 
-Correct capsule orientation in view
-
 controls
     capsules editor
-        hrtf
-            orientation
-            channel
+        correct orientation in view
+            orientation::combine
 
         presets
 
