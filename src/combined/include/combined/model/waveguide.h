@@ -81,22 +81,22 @@ public:
 
     template <typename Archive>
     void load(Archive& archive) {
-        archive(cereal::base_class<type>(this), mode_);
+        archive(cereal::base_class<base_type>(this), mode_);
     }
 
     template <typename Archive>
     void save(Archive& archive) const {
-        archive(cereal::base_class<type>(this), mode_);
+        archive(cereal::base_class<base_type>(this), mode_);
     }
 
     using single_band_t = single_band_waveguide;
     using multiple_band_t = multiple_band_waveguide;
 
-    single_band_t& single_band();
-    const single_band_t& single_band()const;
+    shared_value<single_band_t>& single_band();
+    const shared_value<single_band_t>& single_band() const;
 
-    multiple_band_t& multiple_band();
-    const multiple_band_t& multiple_band()const;
+    shared_value<multiple_band_t>& multiple_band();
+    const shared_value<multiple_band_t>& multiple_band() const;
 
 private:
     mode mode_ = mode::single;

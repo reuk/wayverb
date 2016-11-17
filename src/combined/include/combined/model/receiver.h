@@ -15,9 +15,6 @@ class receiver final : public owning_member<receiver,
                                             constrained_point,
                                             vector<capsule, 1>,
                                             hover_state> {
-    friend class vector<receiver, 1>;
-    receiver() = default;
-
 public:
     explicit receiver(core::geo::box bounds);
 
@@ -33,6 +30,15 @@ public:
     using hover_state_t = class hover_state;
     auto& hover_state() { return get<hover_state_t>(); }
     const auto& hover_state() const { return get<hover_state_t>(); }
+
+
+    template <class Archive>
+    static void load_and_construct(Archive& ar,
+                                   cereal::construct<receiver>& construct) {
+        core::geo::box aabb;
+        ar(aabb);
+        construct(aabb);
+    }
 
     void set_orientation(const core::orientation &orientation);
     core::orientation get_orientation() const;
@@ -58,25 +64,25 @@ class receivers final : public owning_member<receivers, vector<receiver, 1>> {
 public:
     explicit receivers(const core::geo::box& aabb);
 
-    const receiver& operator[](size_t index) const;
-    receiver& operator[](size_t index);
+    const shared_value<receiver>& operator[](size_t index) const;
+    shared_value<receiver>& operator[](size_t index);
 
-    auto cbegin() const { return data().cbegin(); }
-    auto begin() const { return data().begin(); }
-    auto begin() { return data().begin(); }
+    auto cbegin() const { return data()->cbegin(); }
+    auto begin() const { return data()->begin(); }
+    auto begin() { return data()->begin(); }
 
-    auto cend() const { return data().cend(); }
-    auto end() const { return data().end(); }
-    auto end() { return data().end(); }
+    auto cend() const { return data()->cend(); }
+    auto end() const { return data()->end(); }
+    auto end() { return data()->end(); }
 
     template <typename It>
     void insert(It it) {
-        data().insert(std::move(it), receiver{aabb_});
+        data()->insert(std::move(it), receiver{aabb_});
     }
 
     template <typename It>
     void erase(It it) {
-        data().erase(std::move(it));
+        data()->erase(std::move(it));
     }
 
     size_t size() const;
@@ -86,12 +92,17 @@ public:
 
     bool can_erase() const;
 
-    void set_busy(bool busy);
-    bool get_busy() const;
+    template <class Archive>
+    static void load_and_construct(Archive& ar,
+                                   cereal::construct<receivers>& construct) {
+        core::geo::box aabb;
+        ar(aabb);
+        construct(aabb);
+    }
 
 private:
-    vector<receiver, 1>& data();
-    const vector<receiver, 1>& data() const;
+    shared_value<vector<receiver, 1>>& data();
+    const shared_value<vector<receiver, 1>>& data() const;
 
     core::geo::box aabb_;
 };

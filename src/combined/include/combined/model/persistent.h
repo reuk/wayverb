@@ -31,23 +31,23 @@ public:
     using output_t = class output;
     using materials_t = class vector<material, 1>;
 
-    sources_t& sources();
-    const sources_t& sources() const;
+    shared_value<sources_t>& sources();
+    const shared_value<sources_t>& sources() const;
 
-    receivers_t& receivers();
-    const receivers_t& receivers() const;
+    shared_value<receivers_t>& receivers();
+    const shared_value<receivers_t>& receivers() const;
 
-    raytracer_t& raytracer();
-    const raytracer_t& raytracer() const;
+    shared_value<raytracer_t>& raytracer();
+    const shared_value<raytracer_t>& raytracer() const;
 
-    waveguide_t& waveguide();
-    const waveguide_t& waveguide() const;
+    shared_value<waveguide_t>& waveguide();
+    const shared_value<waveguide_t>& waveguide() const;
 
-    output_t& output();
-    const output_t& output() const;
+    shared_value<output_t>& output();
+    const shared_value<output_t>& output() const;
 
-    materials_t& materials();
-    const materials_t& materials() const;
+    shared_value<materials_t>& materials();
+    const shared_value<materials_t>& materials() const;
 };
 
 }  // namespace model

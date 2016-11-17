@@ -1,16 +1,16 @@
 #include "combined/model/receiver.h"
 
-#include "utilities/map_to_vector.h"
 #include "core/az_el.h"
+#include "utilities/map_to_vector.h"
 
 namespace wayverb {
 namespace combined {
 namespace model {
 
 receiver::receiver(core::geo::box bounds)
-        : type{constrained_point{bounds},
-               vector<capsule, 1>{},
-               hover_state_t{}} {}
+        : base_type{constrained_point{bounds},
+                    vector<capsule, 1>{},
+                    hover_state_t{}} {}
 
 void receiver::set_name(std::string name) {
     name_ = std::move(name);
@@ -29,26 +29,27 @@ core::orientation receiver::get_orientation() const { return orientation_; }
 ////////////////////////////////////////////////////////////////////////////////
 
 receivers::receivers(const core::geo::box& aabb)
-        : type{vector<receiver, 1>{aabb}}
+        : base_type{vector<receiver, 1>{receiver{aabb}}}
         , aabb_{aabb} {}
 
-const receiver& receivers::operator[](size_t index) const {
-    return data()[index];
+const shared_value<receiver>& receivers::operator[](size_t index) const {
+    return (*data())[index];
 }
-receiver& receivers::operator[](size_t index) { return data()[index]; }
+shared_value<receiver>& receivers::operator[](size_t index) {
+    return (*data())[index];
+}
 
-size_t receivers::size() const { return data().size(); }
-bool receivers::empty() const { return data().empty(); }
+size_t receivers::size() const { return data()->size(); }
+bool receivers::empty() const { return data()->empty(); }
 
-void receivers::clear() { data().clear(); }
+void receivers::clear() { data()->clear(); }
 
-bool receivers::can_erase() const { return data().can_erase(); }
+bool receivers::can_erase() const { return data()->can_erase(); }
 
-vector<receiver, 1>& receivers::data() { return get<0>(); }
-const vector<receiver, 1>& receivers::data() const { return get<0>(); }
-
-void receivers::set_busy(bool busy) { data().set_busy(busy); }
-bool receivers::get_busy() const { return data().get_busy(); }
+shared_value<vector<receiver, 1>>& receivers::data() { return get<0>(); }
+const shared_value<vector<receiver, 1>>& receivers::data() const {
+    return get<0>();
+}
 
 }  // namespace model
 }  // namespace combined
