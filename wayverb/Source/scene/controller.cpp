@@ -93,47 +93,43 @@ std::ostream& operator<<(std::ostream& os, const glm::vec3& p) {
 template <typename Item>
 class move_item_action final : public controller::mouse_action {
 public:
-    /// This would be better if we could get a weak_ptr to the item being moved
-    /// That way, if the thing gets deleted, we can just stop trying to update
-    /// it.
-
-    move_item_action(wayverb::combined::model::app& model, Item& item)
+    move_item_action(const wayverb::combined::model::scene& model, const std::shared_ptr<Item>& item)
             : model_{model}
             , item_{item}
-            , camera_position_{model.scene.compute_world_camera_position()}
-            , camera_direction_{model.scene.compute_world_camera_direction()}
-            , initial_position_{item.position().get()}
+            , camera_position_{model.compute_world_camera_position()}
+            , camera_direction_{model.compute_world_camera_direction()}
+            , initial_position_{item->position()->get()}
             , camera_distance_{glm::distance(initial_position_, camera_position_)} {
-        model_.project.persistent.sources().set_busy(true);
-        model_.project.persistent.receivers().set_busy(true);
-        item_.hover_state().set_selected(true);
+        item->hover_state()->set_selected(true);
     }
 
     void mouse_drag(const MouseEvent& e) override {
-        const auto initial = compute_world_mouse_position(glm::vec2{
-                e.getMouseDownPosition().x, e.getMouseDownPosition().y});
-        const auto current = compute_world_mouse_position(
-                glm::vec2{e.getPosition().x, e.getPosition().y});
-        const auto new_pos = initial_position_ + current - initial;
-        item_.position().set(new_pos);
+        if (auto strong = item_.lock()) {
+            const auto initial = compute_world_mouse_position(glm::vec2{
+                    e.getMouseDownPosition().x, e.getMouseDownPosition().y});
+            const auto current = compute_world_mouse_position(
+                    glm::vec2{e.getPosition().x, e.getPosition().y});
+            const auto new_pos = initial_position_ + current - initial;
+            strong->position()->set(new_pos);
+        }
     }
 
     ~move_item_action() noexcept {
-        item_.hover_state().set_selected(false);
-        model_.project.persistent.sources().set_busy(false);
-        model_.project.persistent.receivers().set_busy(false);
+        if (auto strong = item_.lock()) {
+            strong->hover_state()->set_selected(false);
+        }
     }
 
 private:
     glm::vec3 compute_world_mouse_position(const glm::vec2& mouse_pos) {
         const auto mouse_direction =
-                model_.scene.compute_world_mouse_direction(mouse_pos);
+                model_.compute_world_mouse_direction(mouse_pos);
         return camera_position_ + mouse_direction * camera_distance_ /
                glm::dot(camera_direction_, mouse_direction);
     }
 
-    wayverb::combined::model::app& model_;
-    Item& item_;
+    const wayverb::combined::model::scene& model_;
+    std::weak_ptr<Item> item_;
     glm::vec3 camera_position_;
     glm::vec3 camera_direction_;
     glm::vec3 initial_position_;
@@ -141,7 +137,7 @@ private:
 };
 
 template <typename T>
-auto make_move_item_action_ptr(wayverb::combined::model::app& model, T& t) {
+auto make_move_item_action_ptr(wayverb::combined::model::scene& model, const std::shared_ptr<T>& t) {
     return std::make_unique<move_item_action<T>>(model, t);
 }
 
@@ -161,19 +157,19 @@ void controller::mouse_move(const MouseEvent& e) {
     auto receivers = app_.project.persistent.receivers();
 
     //  Ensure nothing is hovered.
-    for (auto& i : sources) {
-        i.hover_state().set_hovered(false);
+    for (auto& i : *sources) {
+        i->hover_state()->set_hovered(false);
     }
-    for (auto& i : receivers) {
-        i.hover_state().set_hovered(false);
+    for (auto& i : *receivers) {
+        i->hover_state()->set_hovered(false);
     }
     
     //  look for hovered items, notify if something is hovered.
     do_action_with_closest_thing(wayverb::core::to_vec2{}(e.getPosition()),
-        sources,
-        receivers,
-        [](auto& i) {
-            i.hover_state().set_hovered(true);
+        *sources,
+        *receivers,
+        [](const auto & shared) {
+            shared->hover_state()->set_hovered(true);
             return true;
         });
 
@@ -228,10 +224,10 @@ std::unique_ptr<controller::mouse_action> controller::start_action(
     //  Else, do nothing.
     if (e.mods.isLeftButtonDown()) {
         return do_action_with_closest_thing(wayverb::core::to_vec2{}(e.getPosition()),
-            app_.project.persistent.sources(),
-            app_.project.persistent.receivers(),
-                [this](auto& i) -> std::unique_ptr<mouse_action> {
-                    return make_move_item_action_ptr(app_, i);
+            *app_.project.persistent.sources(),
+            *app_.project.persistent.receivers(),
+                [this](const auto &shared) -> std::unique_ptr<mouse_action> {
+                    return make_move_item_action_ptr(app_.scene, shared);
                 });
     }
 

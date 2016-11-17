@@ -14,6 +14,10 @@ Look again at frequency domain test?
 app stuff
 ---------
 
+Disable controls when rendering.
+
+really test load and save
+
 If an object listens to a reference which outlives it, the listener connection
 *must be scoped*.
 
@@ -25,8 +29,6 @@ rendering
         Throw away ray data / waveguide data if there's too much to render?
 
     Improve source/reciever + microphone direction models.
-
-Disable controls when rendering.
 
 controls
     capsules editor

@@ -2,6 +2,6 @@
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    ::testing::GTEST_FLAG(filter) = "*app_model*";
+    //::testing::GTEST_FLAG(filter) = "*app_model*";
     return RUN_ALL_TESTS();
 }

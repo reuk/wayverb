@@ -31,9 +31,6 @@ public:
     vector()
             : vector{0} {}
 
-    explicit vector(std::initializer_list<T> init)
-            : vector{std::begin(init), std::end(init)} {}
-
 private:
     void swap(vector& other) noexcept {
         using std::swap;
@@ -42,6 +39,17 @@ private:
     }
 
 public:
+    template <typename It>
+    vector(It b, It e)
+            : data_{make_connection_creator_iterator(b),
+                    make_connection_creator_iterator(e)} {
+        assert(MinimumSize <= std::distance(b, e));
+        set_owner();
+    }
+
+    explicit vector(std::initializer_list<T> init)
+            : vector{std::begin(init), std::end(init)} {}
+
     vector(const vector& other)
             : data_{other.data_} {
         set_owner();
@@ -77,7 +85,7 @@ public:
     template <typename It>
     void insert(It it, T t) {
         const auto i = data_.emplace(it.base(), std::move(t));
-        i->connect(*this);
+        i->set_owner(*this);
         this->notify();
     }
 

@@ -38,11 +38,13 @@ void capsule::set_mode(mode mode) {
 
 capsule::mode capsule::get_mode() const { return mode_; }
 
-capsule::microphone_t& capsule::microphone() { return get<0>(); }
-const capsule::microphone_t& capsule::microphone() const { return get<0>(); }
+shared_value<capsule::microphone_t>& capsule::microphone() { return get<0>(); }
+const shared_value<capsule::microphone_t>& capsule::microphone() const {
+    return get<0>();
+}
 
-capsule::hrtf_t& capsule::hrtf() { return get<1>(); }
-const capsule::hrtf_t& capsule::hrtf() const { return get<1>(); }
+shared_value<capsule::hrtf_t>& capsule::hrtf() { return get<1>(); }
+const shared_value<capsule::hrtf_t>& capsule::hrtf() const { return get<1>(); }
 
 core::orientation get_orientation(const capsule& capsule) {
     switch (capsule.get_mode()) {

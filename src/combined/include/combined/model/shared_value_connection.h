@@ -61,6 +61,8 @@ private:
     scoped_connection connection_;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+
 struct item_extractor final {
     template <typename U>
     constexpr const auto& operator()(U&& u) const {
@@ -71,6 +73,21 @@ struct item_extractor final {
 template <typename It>
 auto make_item_extractor_iterator(It it) {
     return util::make_mapping_iterator_adapter(std::move(it), item_extractor{});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+struct connection_creator final {
+    template <typename T>
+    constexpr auto operator()(T t) const {
+        return item_connection<T>{std::move(t)};
+    }
+};
+
+template <typename It>
+auto make_connection_creator_iterator(It it) {
+    return util::make_mapping_iterator_adapter(std::move(it),
+                                               connection_creator{});
 }
 
 }  // namespace model

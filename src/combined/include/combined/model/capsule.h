@@ -20,6 +20,7 @@ public:
     capsule(std::string name, mode mode, microphone_t, hrtf_t);
     capsule(std::string name, microphone_t);
     capsule(std::string name, hrtf_t);
+    capsule() = default;
 
     void set_name(std::string name);
     std::string get_name() const;
@@ -37,14 +38,11 @@ public:
         archive(cereal::base_class<base_type>(this), name_, mode_);
     }
 
-    using microphone_t = shared_value<class microphone>;
-    using hrtf_t = shared_value<class hrtf>;
+    shared_value<microphone_t>& microphone();
+    const shared_value<microphone_t>& microphone() const;
 
-    microphone_t& microphone();
-    const microphone_t& microphone() const;
-
-    hrtf_t& hrtf();
-    const hrtf_t& hrtf() const;
+    shared_value<hrtf_t>& hrtf();
+    const shared_value<hrtf_t>& hrtf() const;
 
 private:
     std::string name_ = "new capsule";

@@ -49,7 +49,7 @@ private:
                                           Component* existing) override {
             if (row < getNumRows()) {
                 View * v = existing ? dynamic_cast<View*>(existing) : new View{};
-                v->update(model_[row]);
+                v->update(*model_[row]);
                 v->setInterceptsMouseClicks(false, true);
                 existing = v;
             } else {

@@ -165,9 +165,9 @@ public:
             , model_{model} {
         addTab("microphone",
                Colours::darkgrey,
-               new microphone_properties{model.microphone()},
+               new microphone_properties{*model.microphone()},
                true);
-        addTab("hrtf", Colours::darkgrey, new hrtf_properties{model.hrtf()}, true);
+        addTab("hrtf", Colours::darkgrey, new hrtf_properties{*model.hrtf()}, true);
 
         auto update_from_capsule = [this](auto& m) {
             switch (m.get_mode()) {
@@ -221,7 +221,11 @@ std::unique_ptr<Component> capsule_config_item::get_callout_component(
 master::master(
         wayverb::combined::model::vector<wayverb::combined::model::capsule, 1>&
                 model)
-        : list_box_{model} {
+        : list_box_{model, [] (auto& model) {
+            model.insert(model.end(), wayverb::combined::model::capsule{});
+        }, [] (auto& model, auto to_erase) {
+            model.erase(model.begin() + to_erase);
+        }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 }

@@ -61,8 +61,7 @@ public:
     T* operator->() const { return get(); }
     T& operator*() const { return *get(); }
 
-    std::shared_ptr<T> get_shared_ptr() const { return value_; }
-    std::weak_ptr<T> get_weak_ptr() const { return value_; }
+    const std::shared_ptr<T>& get_shared_ptr() const { return value_; }
 
     template <typename Archive>
     void load(Archive& archive) {

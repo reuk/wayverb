@@ -12,11 +12,16 @@ template <typename Model, typename View>
 class editable_vector_list_box final : public Component,
                                        public TextButton::Listener {
 public:
-    editable_vector_list_box(Model& model)
+    using insert = std::function<void(Model& model)>;
+    using erase = std::function<void(Model& model, int to_erase)>;
+
+    editable_vector_list_box(Model& model, insert insert, erase erase)
             : model_{model}
             , connection_{model_.connect([this](auto&) {
                 this->update_buttons();
             })}
+            , insert_{std::move(insert)}
+            , erase_{std::move(erase)}
             , list_box_{model_} {
 
         //  If selected rows change, update buttons.
@@ -40,12 +45,12 @@ public:
 
     void buttonClicked(Button* b) override {
         if (b == &add_button_) {
-            model_.insert(model_.end());
+            insert_(model_);
         } else if (b == &sub_button_) {
             const auto to_delete = list_box_.getSelectedRow();
             if (0 <= to_delete && to_delete < model_.size()) {
                 list_box_.deselectAllRows();
-                model_.erase(model_.begin() + to_delete);
+                erase_(model_, to_delete);
             }
         }
     }
@@ -61,6 +66,10 @@ private:
 
     Model& model_;
     typename Model::scoped_connection connection_;
+
+    insert insert_;
+    erase erase_;
+    
     vector_list_box<Model, View> list_box_;
 
     TextButton add_button_{"+"};

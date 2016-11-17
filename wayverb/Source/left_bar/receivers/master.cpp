@@ -20,7 +20,7 @@ public:
             : receiver_{receiver} {
         auto name = std::make_unique<text_property>("name");
         auto position = std::make_unique<vec3_property>(
-                "position", receiver_.position().get_bounds());
+                "position", receiver_.position()->get_bounds());
         auto orientation =
                 std::make_unique<azimuth_elevation_property>("orientation");
 
@@ -31,7 +31,7 @@ public:
             o = orientation.get()
         ](auto& receiver) {
             n->set(receiver.get_name());
-            p->set(receiver.position().get());
+            p->set(receiver.position()->get());
             o->set(wayverb::core::compute_azimuth_elevation(
                     receiver.get_orientation().get_pointing()));
         };
@@ -45,7 +45,7 @@ public:
                 [this](auto&, auto name) { receiver_.set_name(name); });
 
         position->connect_on_change(
-                [this](auto&, auto pos) { receiver_.position().set(pos); });
+                [this](auto&, auto pos) { receiver_.position()->set(pos); });
 
         orientation->connect_on_change([this](auto&, auto az_el) {
             receiver_.set_orientation(wayverb::core::orientation{
@@ -68,7 +68,7 @@ class receiver_editor final : public Component {
 public:
     receiver_editor(wayverb::combined::model::receiver& receiver)
             : properties_{receiver}
-            , capsules_{receiver.capsules()} {
+            , capsules_{*receiver.capsules()} {
         addAndMakeVisible(properties_);
         addAndMakeVisible(capsules_);
         addAndMakeVisible(capsule_presets_);
@@ -99,7 +99,7 @@ std::unique_ptr<Component> receiver_config_item::get_callout_component(
 ////////////////////////////////////////////////////////////////////////////////
 
 master::master(wayverb::combined::model::receivers& model)
-        : list_box_{model} {
+        : list_box_{model, [](auto& model) {model.insert(model.end());}, [](auto& model, auto to_erase){model.erase(model.begin() + to_erase);}} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 }

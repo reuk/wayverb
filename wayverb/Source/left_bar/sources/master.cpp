@@ -16,12 +16,12 @@ public:
         //  Make properties.
         auto name = std::make_unique<text_property>("name");
         auto position = std::make_unique<vec3_property>(
-                "position", source_.position().get_bounds());
+                "position", source_.position()->get_bounds());
 
         auto update_from_source =
                 [ this, n = name.get(), p = position.get() ](auto& source) {
             n->set(source.get_name());
-            p->set(source.position().get());
+            p->set(source.position()->get());
         };
 
         update_from_source(source_);
@@ -35,7 +35,7 @@ public:
                 [this](auto&, auto name) { source_.set_name(name); });
 
         position->connect_on_change(
-                [this](auto&, auto pos) { source_.position().set(pos); });
+                [this](auto&, auto pos) { source_.position()->set(pos); });
 
         addProperties({name.release()});
         addProperties({position.release()});
@@ -58,7 +58,11 @@ std::unique_ptr<Component> source_config_item::get_callout_component(
 ////////////////////////////////////////////////////////////////////////////////
 
 master::master(wayverb::combined::model::sources& model)
-        : list_box_{model} {
+        : list_box_{model, [] (auto& model) {
+            model.insert(model.end());
+        }, [] (auto& model, auto to_erase) {
+            model.erase(model.begin() + to_erase);
+        }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 }

@@ -33,19 +33,19 @@ private:
 
     template <typename It>
     auto get_hovered(It beg, It end, const glm::vec2& mouse_pos) const {
-        using value_type = std::decay_t<decltype(*beg)>;
+        using value_type = std::decay_t<decltype(beg->get_shared_ptr())>;
 
         const auto origin = app_.scene.compute_world_camera_position();
         const auto direction = app_.scene.compute_world_mouse_direction(mouse_pos);
 
         struct intersection {
-            value_type* it;
-            double distance;
+            value_type it;
+            double distance = 0;
         };
 
-        intersection inter{nullptr, 0};
+        intersection inter{};
         for (; beg != end; ++beg) {
-            const auto diff = origin - beg->position().get();
+            const auto diff = origin - (*beg)->position()->get();
             const auto b = glm::dot(direction, diff);
             const auto c = glm::dot(diff, diff) -
                            glm::pow(app_.scene.get_item_radius(), 2);
@@ -54,7 +54,7 @@ private:
                 const auto sq_det = std::sqrt(det);
                 const auto dist = std::min(-b + sq_det, -b - sq_det);
                 if (!inter.it || dist < inter.distance) {
-                    inter = intersection{&(*beg), dist};
+                    inter = intersection{beg->get_shared_ptr(), dist};
                 }
             }
         }
@@ -73,25 +73,25 @@ private:
         const auto hovered_source = get_hovered_in_range(sources);
         const auto hovered_receiver = get_hovered_in_range(receivers);
 
-        using return_type = std::decay_t<decltype(action(*hovered_source.it))>;
+        using return_type = std::decay_t<decltype(action(hovered_source.it))>;
 
-        if (hovered_source.it != nullptr && hovered_receiver.it != nullptr) {
+        if (hovered_source.it && hovered_receiver.it) {
             const auto source_is_closer =
                     hovered_source.distance < hovered_receiver.distance;
 
             if (source_is_closer) {
-                return action(*hovered_source.it);
+                return action(hovered_source.it);
             }
 
-            return action(*hovered_receiver.it);
+            return action(hovered_receiver.it);
         }
 
-        if (hovered_source.it != nullptr) {
-            return action(*hovered_source.it);
+        if (hovered_source.it) {
+            return action(hovered_source.it);
         }
 
-        if (hovered_receiver.it != nullptr) {
-            return action(*hovered_receiver.it);
+        if (hovered_receiver.it) {
+            return action(hovered_receiver.it);
         }
 
         return return_type{};
