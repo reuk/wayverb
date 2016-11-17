@@ -31,6 +31,14 @@ public:
     auto& hover_state() { return get<hover_state_t>(); }
     const auto& hover_state() const { return get<hover_state_t>(); }
 
+    template <class Archive>
+    static void load_and_construct(Archive& ar,
+                                   cereal::construct<receiver>& construct) {
+        core::geo::box aabb;
+        ar(aabb);
+        construct(aabb);
+    }
+
     void set_orientation(float azimuth, float elevation);
     core::orientation get_orientation() const;
 
@@ -82,6 +90,14 @@ public:
     void clear();
 
     bool can_erase() const;
+
+    template <class Archive>
+    static void load_and_construct(Archive& ar,
+                                   cereal::construct<receivers>& construct) {
+        core::geo::box aabb;
+        ar(aabb);
+        construct(aabb);
+    }
 
 private:
     shared_value<vector<receiver, 1>>& data();

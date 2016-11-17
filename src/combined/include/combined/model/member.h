@@ -83,10 +83,12 @@ public:
         set_owner();
     }
 
+    /*
     owning_member(owning_member&& other) noexcept
             : data_members_{std::move(other.data_members_)} {
         set_owner();
     }
+    */
 
 private:
     void swap(owning_member& other) noexcept {
@@ -102,10 +104,12 @@ public:
         return *this;
     }
 
+    /*
     owning_member& operator=(owning_member&& other) noexcept {
         swap(other);
         return *this;
     }
+    */
 
     template <typename Archive>
     void load(Archive& archive) {
@@ -144,7 +148,7 @@ protected:
 private:
     using data_members = std::tuple<item_connection<DataMembers>...>;
 
-    void set_owner() {
+    void set_owner() noexcept {
         util::for_each([this](auto& i) { i.set_owner(*this); }, data_members_);
     }
 

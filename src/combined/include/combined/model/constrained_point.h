@@ -4,6 +4,8 @@
 
 #include "core/geo/box.h"
 
+#include "cereal/access.hpp"
+
 namespace wayverb {
 namespace combined {
 namespace model {
@@ -16,6 +18,14 @@ public:
     void set(const glm::vec3& position);
     glm::vec3 get() const;
 
+    template <class Archive>
+    static void load_and_construct(
+            Archive& ar, cereal::construct<constrained_point>& construct) {
+        core::geo::box aabb;
+        ar(aabb);
+        construct(aabb);
+    }
+
     template <typename Archive>
     void load(Archive& archive) {
         archive(aabb_, point_);
@@ -23,7 +33,7 @@ public:
 
     template <typename Archive>
     void save(Archive& archive) const {
-        archive(aabb_, point_); 
+        archive(aabb_, point_);
     }
 
     core::geo::box get_bounds() const;

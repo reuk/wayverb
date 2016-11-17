@@ -29,6 +29,14 @@ public:
     auto& hover_state() { return get<hover_state_t>(); }
     const auto& hover_state() const { return get<hover_state_t>(); }
 
+    template <class Archive>
+    static void load_and_construct(Archive& ar,
+                                   cereal::construct<source>& construct) {
+        core::geo::box aabb;
+        ar(aabb);
+        construct(aabb);
+    }
+
     template <typename Archive>
     void load(Archive& archive) {
         archive(position(), name_);
@@ -76,6 +84,14 @@ public:
     void clear();
 
     bool can_erase() const;
+
+    template <class Archive>
+    static void load_and_construct(Archive& ar,
+                                   cereal::construct<sources>& construct) {
+        core::geo::box aabb;
+        ar(aabb);
+        construct(aabb);
+    }
 
 private:
     const shared_value<vector<source, 1>>& data() const;

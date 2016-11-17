@@ -38,7 +38,7 @@ public:
     item_connection& operator=(item_connection&&) noexcept = default;
 
     template <typename U>
-    void set_owner(U& owner) {
+    void set_owner(U& owner) noexcept {
         connection_ = scoped_connection{
                 item_->connect([&owner](auto&) { owner.notify(); })};
     }
