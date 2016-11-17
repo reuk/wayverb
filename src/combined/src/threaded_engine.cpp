@@ -58,6 +58,26 @@ void complete_engine::run(const core::compute_context& compute_context,
         is_running_ = true;
         keep_going_ = true;
 
+        //  First, we check that all the sources and receivers are valid, to
+        //  avoid doing useless work.
+
+        {
+            const auto voxelised =
+                    core::make_voxelised_scene_data(scene_data, 5, 0.1f);
+
+            for (const auto& source : *persistent.sources()) {
+                if (!inside(voxelised, source->position()->get())) {
+                    throw std::runtime_error{"source is outside mesh"};
+                }
+            }
+
+            for (const auto& receiver : *persistent.receivers()) {
+                if (!inside(voxelised, receiver->position()->get())) {
+                    throw std::runtime_error{"receiver is outside mesh"};
+                }
+            }
+        }
+
         constexpr core::environment environment{};
 
         const auto poly_waveguide =
@@ -141,12 +161,12 @@ void complete_engine::run(const core::compute_context& compute_context,
             }
         }
 
-        if (all_channels.empty()) {
-            throw std::runtime_error{"no channels were rendered"};
-        }
-
         //  If keep going is false now, then the simulation was cancelled.
         if (keep_going_) {
+            if (all_channels.empty()) {
+                throw std::runtime_error{"no channels were rendered"};
+            }
+
             //  Normalize.
             const auto make_iterator = [](auto it) {
                 return util::make_mapping_iterator_adapter(std::move(it),

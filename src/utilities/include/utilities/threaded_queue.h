@@ -27,9 +27,9 @@ public:
         return ret;
     }
 
-    void clear() const {
+    void clear() {
         const auto lck = threading_policy_.get_lock();
-        queue_.clear();
+        queue_ = std::queue<value_type>{};
     }
 
 private:

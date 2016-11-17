@@ -18,25 +18,13 @@ Disable controls when rendering.
 
 really test load and save
 
-better inside/outside check
-
-If an object listens to a reference which outlives it, the listener connection
-*must be scoped*.
-
 rendering
     'All channels are silent' bug
     Waveguide growth issue - see: vault model
 
-    Sometimes gets a bit slow and jittery
-        Throw away ray data / waveguide data if there's too much to render?
-
     Improve source/reciever + microphone direction models.
 
 controls
-    capsules editor
-        presets
-            Something wrong with vector, not allowing init list construction
-
     materials
         disable absorptions lower than (for example) 0.01 from model
         allow querying allowable range from model

@@ -23,15 +23,15 @@ public:
             , controller_{app_}
             , visible_surface_changed_connection_{
                 app.scene.connect_visible_surface_changed([this](auto visible) {
-                    view_.command([=](auto& r) { r.set_highlighted_surface(visible); });
+                    view_.high_priority_command([=](auto& r) { r.set_highlighted_surface(visible); });
                 })}
             , view_state_changed_connection_{
                 app.scene.connect_view_state_changed([this](auto state) {
-                    view_.command([=](auto& r) { r.set_view_state(state); });
+                    view_.high_priority_command([=](auto& r) { r.set_view_state(state); });
                 })}
             , projection_matrix_changed_connection_{
                 app_.scene.connect_projection_matrix_changed([this](auto matrix) {
-                    view_.command([=](auto& r) { r.set_projection_matrix(matrix); });
+                    view_.high_priority_command([=](auto& r) { r.set_projection_matrix(matrix); });
                 })}
             , visualise_changed_connection_{
                  app_.scene.connect_visualise_changed([this](auto should_visualise) {
@@ -43,7 +43,7 @@ public:
                                 waveguide_node_positions_changed::scoped_connection{
                                         app_.connect_node_positions([this](
                                                 auto descriptor) {
-                                            view_.command([d = std::move(descriptor)](
+                                            view_.high_priority_command([d = std::move(descriptor)](
                                                     auto& renderer) {
                                                 renderer.set_node_positions(
                                                         wayverb::waveguide::
@@ -56,7 +56,7 @@ public:
                                 waveguide_node_pressures_changed::scoped_connection{
                                         app_.connect_node_pressures([this](
                                                 auto pressures, auto distance) {
-                                            view_.command([
+                                            view_.low_priority_command([
                                                 p = std::move(pressures),
                                                 d = distance
                                             ](auto& renderer) {
@@ -69,7 +69,7 @@ public:
                                 wayverb::combined::raytracer_reflections_generated::
                                         scoped_connection{app_.connect_reflections(
                                                 [this](auto reflections, auto source) {
-                                                    view_.command([
+                                                    view_.high_priority_command([
                                                         r = std::move(reflections),
                                                         s = source
                                                     ](auto& renderer) {
@@ -90,7 +90,7 @@ public:
             , finished_connection_{
                 app_.connect_finished([this] {
                     queue_.push([this] {
-                        view_.command([](auto& renderer) { renderer.clear(); });
+                        view_.high_priority_command([](auto& renderer) { renderer.clear(); });
                     });
                 })}
             , sources_connection_{
@@ -98,14 +98,14 @@ public:
                 //  Assume model updates come from the message thread.
                 app_.project.persistent.sources()->connect([this](auto& sources) {
                     auto copy = sources;
-                    view_.command([r = std::move(copy)](auto& renderer) {
+                    view_.high_priority_command([r = std::move(copy)](auto& renderer) {
                         renderer.set_sources(std::move(r));
                     });
                 })}
             , receivers_connection_{
                 app_.project.persistent.receivers()->connect([this](auto& receivers) {
                     auto copy = receivers;
-                    view_.command([r = std::move(copy)](auto& renderer) {
+                    view_.high_priority_command([r = std::move(copy)](auto& renderer) {
                         renderer.set_receivers(std::move(r));
                     });
                 })}
@@ -126,7 +126,7 @@ public:
                     //  Get scene data in correct format.
                     //  This command will be run on the graphics thread, so it
                     //  must be thread safe.
-                    view_.command([
+                    view_.high_priority_command([
                         t = std::move(t),
                         v = std::move(v),
                         vs = app_.scene.get_view_state(),

@@ -225,10 +225,14 @@ public:
 
         connection_ = wayverb::combined::model::capsule::scoped_connection{model_->connect(update_from_capsule)};
 
+        name->connect_on_change([this](auto&, auto name) {
+            model_->set_name(name);
+        });
+
         addProperties({name.release()});
         addProperties({config.release()});
 
-        setSize(300, getTotalContentHeight());
+        setSize(400, getTotalContentHeight());
     }
 
 private:

@@ -26,7 +26,7 @@ auto postprocess(const directional_energy_histogram<Az, El>& histogram,
             std::end(table),
             0ul,
             [&](auto a, const auto& b) {
-                if (b.empty()) {
+                if (std::distance(std::begin(b), std::end(b)) == 0) {
                     return a;
                 }
                 const auto make_size_iterator = [](auto it) {

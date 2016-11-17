@@ -21,8 +21,9 @@ class generic_renderer final : public Component {
                 util::threaded_queue<util::threading_policy::scoped_lock,
                                      std::function<void(Renderer&)>>;
 
-        impl(input_queue& input_queue)
-                : input_queue_{input_queue} {}
+        impl(input_queue& high_queue, input_queue& low_queue)
+                : high_priority_queue_{high_queue}
+                , low_priority_queue_{low_queue} {}
 
         using context_created = util::event<>;
         typename context_created::connection connect_context_created(
@@ -45,9 +46,20 @@ class generic_renderer final : public Component {
         }
 
         void renderOpenGL() override {
-            //  Run all pending commands.
-            while (auto method = input_queue_.pop()) {
+            //  Do all pending high-priority actions
+            while (auto method = high_priority_queue_.pop()) {
                 (*method)(*renderer_);
+            }
+
+            //  Do some of the low-priority actions, but bin any we don't have
+            //  time for.
+            const auto start = std::chrono::system_clock::now();
+            while (auto method = low_priority_queue_.pop()) {
+                (*method)(*renderer_);
+                if (std::chrono::milliseconds{16} < std::chrono::system_clock::now() - start) {
+                    low_priority_queue_.clear();
+                    break;
+                }
             }
 
             //  Update and draw.
@@ -64,7 +76,8 @@ class generic_renderer final : public Component {
 
         std::unique_ptr<Renderer> renderer_;
 
-        input_queue& input_queue_;
+        input_queue& high_priority_queue_;
+        input_queue& low_priority_queue_;
         async_work_queue output_queue_;
 
         context_created context_created_;
@@ -73,7 +86,7 @@ class generic_renderer final : public Component {
 
 public:
     generic_renderer()
-            : impl_{queue_} {
+            : impl_{high_priority_queue_, low_priority_queue_} {
         impl_.connect_context_created([this] { context_created_(*this); });
         impl_.connect_context_closing([this] { context_closing_(*this); });
 
@@ -87,8 +100,12 @@ public:
 
     ~generic_renderer() noexcept { context_.detach(); }
 
-    void command(typename impl::input_queue::value_type command) {
-        queue_.push(std::move(command));
+    void high_priority_command(typename impl::input_queue::value_type command) {
+        high_priority_queue_.push(std::move(command));
+    }
+    
+    void low_priority_command(typename impl::input_queue::value_type command) {
+        low_priority_queue_.push(std::move(command));
     }
 
     using context_created = util::event<generic_renderer<Renderer>&>;
@@ -104,7 +121,8 @@ public:
     }
 
 private:
-    typename impl::input_queue queue_;
+    typename impl::input_queue high_priority_queue_;
+    typename impl::input_queue low_priority_queue_;
 
     OpenGLContext context_;
     impl impl_;
