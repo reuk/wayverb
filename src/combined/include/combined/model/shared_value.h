@@ -7,6 +7,8 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
+#define DEFAULT_MOVE
+
 /// A shared-pointer with value semantics.
 /// Useful for use with `weak_ptr`, checking for ended lifetimes etc.
 template <typename T>
@@ -24,23 +26,34 @@ public:
     shared_value(const shared_value& other)
             : value_{std::make_shared<T>(*other.value_)} {}
 
+#ifdef DEFAULT_MOVE
+    shared_value(shared_value&&) noexcept = default;
+#else
     shared_value(shared_value&& other) noexcept
             : value_{std::make_shared<T>(std::move(*other.value_))} {}
+#endif
 
     //  From shared value
     shared_value& operator=(const shared_value& other) {
         *value_ = *other.value_;
+        value_->notify();
         return *this;
     }
 
+#ifdef DEFAULT_MOVE
+    shared_value& operator=(shared_value&& other) noexcept = default;
+#else
     shared_value& operator=(shared_value&& other) noexcept {
         *value_ = std::move(*other.value_);
+        value_->notify();
         return *this;
     }
+#endif
 
     //  From stack value
-    shared_value& operator=(T other) noexcept {
+    shared_value& operator=(T other) {
         *value_ = std::move(other);
+        value_->notify();
         return *this;
     }
 

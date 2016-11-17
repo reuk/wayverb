@@ -29,7 +29,7 @@ public:
     /// On move construct, object should assume the lifetime of the moved-from
     /// object, and delete any previous internal state.
     /// Here, that means taking the listeners of the moved-from object.
-    basic_member(basic_member&&) noexcept = default;
+    basic_member(basic_member&&) noexcept = delete;
 
     /// On copy assign, assume the values of the copied-from object.
     /// Subclasses will probably want to call notify() to signal that the
@@ -37,7 +37,7 @@ public:
     basic_member& operator=(const basic_member&) { return *this; }
 
     /// On move assign, take the moved-from object's listeners.
-    basic_member& operator=(basic_member&&) noexcept = default;
+    basic_member& operator=(basic_member&&) noexcept = delete;
 
     using on_change = util::event<Derived&>;
     using connection = typename on_change::connection;

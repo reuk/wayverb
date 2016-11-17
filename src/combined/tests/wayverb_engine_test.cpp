@@ -35,7 +35,7 @@ TEST(engine, engine) {
              receiver,
              wayverb::core::environment{},
              simulation_parameters{1 << 16, 5},
-             make_waveguide_ptr(single_band_parameters{10000, 0.5})};
+             make_waveguide_ptr(single_band_parameters{1000, 0.5})};
 
     const engine_state_changed::scoped_connection connection{
             e.add_engine_state_changed_callback([](auto state, auto progress) {

@@ -15,10 +15,6 @@ namespace model {
 template <typename T, size_t MinimumSize>
 class vector final : public basic_member<vector<T, MinimumSize>> {
 public:
-    static_assert(std::is_nothrow_move_constructible<T>{} &&
-                          std::is_nothrow_move_assignable<T>{},
-                  "T must be nothrow moveable");
-
     explicit vector(size_t extra_elements, const T& t)
             : data_{MinimumSize + extra_elements, item_connection<T>{t}} {
         set_owner();

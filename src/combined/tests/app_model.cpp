@@ -28,18 +28,41 @@ TEST(app_model, sources) {
     model::sources sources{geo::box{glm::vec3{-1}, glm::vec3{1}}};
     ASSERT_EQ(sources.connections(), 0);
     ASSERT_EQ(sources[0]->connections(), 1);
+
+    {
+        model::shared_value<model::persistent> p{
+                model::persistent{geo::box{glm::vec3{-1}, glm::vec3{1}}}};
+
+        bool source_changed = false;
+        (*p->sources())[0]->connect([&](auto&) { source_changed = true; });
+
+        auto q = std::move(p);
+
+        ASSERT_FALSE(source_changed);
+
+        (*q->sources())[0]->position()->set({0.5, 0.5, 0.5});
+
+        ASSERT_TRUE(source_changed);
+
+        source_changed = false;
+
+        model::source new_source{geo::box{glm::vec3{-2}, glm::vec3{2}}};
+        (*q->sources())[0] = new_source;
+
+        ASSERT_TRUE(source_changed);
+    }
 }
 
 TEST(app_model, copy_assignment) {
     bool called = false;
 
-    model::microphone a;
+    model::shared_value<model::microphone> a;
 
-    a.connect([&](auto&) { called = true; });
+    a->connect([&](auto&) { called = true; });
 
-    model::microphone b;
-    b.set_shape(1);
-    b.set_orientation(orientation{compute_pointing(az_el{M_PI, 0.1})});
+    model::shared_value<model::microphone> b;
+    b->set_shape(1);
+    b->set_orientation(orientation{compute_pointing(az_el{M_PI, 0.1})});
 
     a = b;
 

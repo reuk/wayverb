@@ -22,7 +22,6 @@ class persistent final : public owning_member<persistent,
                                               output,
                                               vector<material, 1>> {
 public:
-    persistent();
     explicit persistent(core::geo::box aabb);
 
     using sources_t = class sources;
