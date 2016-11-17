@@ -7,6 +7,7 @@
 #include "../vec3_property.h"
 
 #include "combined/model/receiver.h"
+#include "combined/model/capsule_presets.h"
 
 #include "core/az_el.h"
 
@@ -70,17 +71,20 @@ public:
             , capsules_{receiver.capsules()} {
         addAndMakeVisible(properties_);
         addAndMakeVisible(capsules_);
+        addAndMakeVisible(capsule_presets_);
     }
 
     void resized() override {
         auto bounds = getLocalBounds();
         capsules_.setBounds(bounds.removeFromRight(150));
+        capsule_presets_.setBounds(bounds.removeFromBottom(25));
         properties_.setBounds(bounds);
     }
 
 private:
     receiver_properties properties_;
     capsules::master capsules_;
+    ComboBox capsule_presets_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

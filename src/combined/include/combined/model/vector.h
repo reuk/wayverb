@@ -96,9 +96,8 @@ public:
                           std::is_nothrow_move_assignable<T>{},
                   "T must be nothrow moveable");
 
-    template <typename... Ts>
-    vector(Ts&&... ts)
-            : data_{MinimumSize, item_connection(T(std::forward<Ts>(ts)...))} {
+    explicit vector(T t = T())
+            : data_{MinimumSize, item_connection{t}} {
         connect_all();
     }
 
@@ -114,7 +113,7 @@ public:
     }
 
     explicit vector(std::initializer_list<T> init)
-            : vector(begin(init), end(init)) {}
+            : vector{std::begin(init), std::end(init)} {}
 
     void swap(vector& other) noexcept {
         assert(! busy_);

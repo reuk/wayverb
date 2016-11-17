@@ -26,12 +26,16 @@ rendering
 
     Improve source/reciever + microphone direction models.
 
+Disable controls when rendering.
+
 controls
     capsules editor
         presets
+            Something wrong with vector, not allowing init list construction
 
     materials
-        disable absorptions lower than (for example) 0.01
+        disable absorptions lower than (for example) 0.01 from model
+        allow querying allowable range from model
 
     waveguide options
 
