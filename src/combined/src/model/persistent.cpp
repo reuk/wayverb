@@ -12,29 +12,41 @@ persistent::persistent(core::geo::box aabb)
                     output_t{},
                     vector<material, 1>{}} {}
 
-persistent::sources_t& persistent::sources() { return get<0>(); }
-const persistent::sources_t& persistent::sources() const { return get<0>(); }
+shared_value<persistent::sources_t>& persistent::sources() { return get<0>(); }
+const shared_value<persistent::sources_t>& persistent::sources() const {
+    return get<0>();
+}
 
-persistent::receivers_t& persistent::receivers() { return get<1>(); }
-const persistent::receivers_t& persistent::receivers() const {
+shared_value<persistent::receivers_t>& persistent::receivers() {
+    return get<1>();
+}
+const shared_value<persistent::receivers_t>& persistent::receivers() const {
     return get<1>();
 }
 
-persistent::raytracer_t& persistent::raytracer() { return get<2>(); }
-const persistent::raytracer_t& persistent::raytracer() const {
+shared_value<persistent::raytracer_t>& persistent::raytracer() {
+    return get<2>();
+}
+const shared_value<persistent::raytracer_t>& persistent::raytracer() const {
     return get<2>();
 }
 
-persistent::waveguide_t& persistent::waveguide() { return get<3>(); }
-const persistent::waveguide_t& persistent::waveguide() const {
+shared_value<persistent::waveguide_t>& persistent::waveguide() {
+    return get<3>();
+}
+const shared_value<persistent::waveguide_t>& persistent::waveguide() const {
     return get<3>();
 }
 
-persistent::output_t& persistent::output() { return get<4>(); }
-const persistent::output_t& persistent::output() const { return get<4>(); }
+shared_value<persistent::output_t>& persistent::output() { return get<4>(); }
+const shared_value<persistent::output_t>& persistent::output() const {
+    return get<4>();
+}
 
-persistent::materials_t& persistent::materials() { return get<5>(); }
-const persistent::materials_t& persistent::materials() const {
+shared_value<persistent::materials_t>& persistent::materials() {
+    return get<5>();
+}
+const shared_value<persistent::materials_t>& persistent::materials() const {
     return get<5>();
 }
 

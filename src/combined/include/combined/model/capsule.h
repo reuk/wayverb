@@ -30,8 +30,8 @@ public:
         archive(cereal::base_class<base_type>(this), name_, mode_);
     }
 
-    using microphone_t = class microphone;
-    using hrtf_t = class hrtf;
+    using microphone_t = shared_value<class microphone>;
+    using hrtf_t = shared_value<class hrtf>;
 
     microphone_t& microphone();
     const microphone_t& microphone() const;

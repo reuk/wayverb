@@ -17,7 +17,6 @@ namespace model {
 class source final
         : public owning_member<source, constrained_point, hover_state> {
 public:
-    source() = default;
     explicit source(const core::geo::box& aabb);
 
     void set_name(std::string name);
@@ -48,28 +47,27 @@ private:
 
 class sources final : public owning_member<sources, vector<source, 1>> {
 public:
-    sources() = default;
     explicit sources(const core::geo::box& aabb);
 
-    const source& operator[](size_t index) const;
-    source& operator[](size_t index);
+    const shared_value<source>& operator[](size_t index) const;
+    shared_value<source>& operator[](size_t index);
 
-    auto cbegin() const { return data().cbegin(); }
-    auto begin() const { return data().begin(); }
-    auto begin() { return data().begin(); }
+    auto cbegin() const { return data()->cbegin(); }
+    auto begin() const { return data()->begin(); }
+    auto begin() { return data()->begin(); }
 
-    auto cend() const { return data().cend(); }
-    auto end() const { return data().end(); }
-    auto end() { return data().end(); }
+    auto cend() const { return data()->cend(); }
+    auto end() const { return data()->end(); }
+    auto end() { return data()->end(); }
 
     template <typename It>
     void insert(It it) {
-        data().insert(std::move(it), source{aabb_});
+        data()->insert(std::move(it), source{aabb_});
     }
 
     template <typename It>
     void erase(It it) {
-        data().erase(std::move(it));
+        data()->erase(std::move(it));
     }
 
     size_t size() const;
@@ -79,13 +77,10 @@ public:
 
     bool can_erase() const;
 
-    vector<source, 1>& data();
-    const vector<source, 1>& data() const;
-
-    void set_busy(bool busy);
-    bool get_busy() const;
-
 private:
+    const shared_value<vector<source, 1>>& data() const;
+    shared_value<vector<source, 1>>& data();
+
     core::geo::box aabb_;
 };
 

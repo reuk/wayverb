@@ -67,22 +67,24 @@ double waveguide::get_sampling_frequency() const {
     switch (mode_) {
         case mode::single:
             return wayverb::waveguide::compute_sampling_frequency(
-                    get<single_band_waveguide>().get());
+                    get<single_band_waveguide>()->get());
         case mode::multiple:
             return wayverb::waveguide::compute_sampling_frequency(
-                    get<multiple_band_waveguide>().get());
+                    get<multiple_band_waveguide>()->get());
     }
 }
 
-single_band_waveguide& waveguide::single_band() { return get<single_band_t>(); }
-const single_band_waveguide& waveguide::single_band() const {
+shared_value<single_band_waveguide>& waveguide::single_band() {
+    return get<single_band_t>();
+}
+const shared_value<single_band_waveguide>& waveguide::single_band() const {
     return get<single_band_t>();
 }
 
-multiple_band_waveguide& waveguide::multiple_band() {
+shared_value<multiple_band_waveguide>& waveguide::multiple_band() {
     return get<multiple_band_t>();
 }
-const multiple_band_waveguide& waveguide::multiple_band() const {
+const shared_value<multiple_band_waveguide>& waveguide::multiple_band() const {
     return get<multiple_band_t>();
 }
 

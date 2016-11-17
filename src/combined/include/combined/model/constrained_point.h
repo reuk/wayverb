@@ -10,7 +10,6 @@ namespace model {
 
 class constrained_point final : public basic_member<constrained_point> {
 public:
-    constrained_point() = default;
     explicit constrained_point(const core::geo::box& aabb);
     constrained_point(const core::geo::box& aabb, const glm::vec3& point);
 

@@ -20,16 +20,17 @@ void capsule::set_mode(mode mode) {
 
 capsule::mode capsule::get_mode() const { return mode_; }
 
-microphone& capsule::microphone() { return get<microphone_t>(); }
-const microphone& capsule::microphone() const { return get<microphone_t>(); }
+capsule::microphone_t& capsule::microphone() { return get<0>(); }
+const capsule::microphone_t& capsule::microphone() const { return get<0>(); }
 
-hrtf& capsule::hrtf() { return get<hrtf_t>(); }
-const hrtf& capsule::hrtf() const { return get<hrtf_t>(); }
+capsule::hrtf_t& capsule::hrtf() { return get<1>(); }
+const capsule::hrtf_t& capsule::hrtf() const { return get<1>(); }
 
 core::orientation get_orientation(const capsule& capsule) {
     switch (capsule.get_mode()) {
-        case capsule::mode::microphone: return microphone().get().orientation;
-        case capsule::mode::hrtf: return hrtf().get().orientation;
+        case capsule::mode::microphone:
+            return capsule.microphone()->get().orientation;
+        case capsule::mode::hrtf: return capsule.hrtf()->get().orientation;
     }
 }
 

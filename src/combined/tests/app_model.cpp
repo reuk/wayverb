@@ -2,16 +2,19 @@
 
 #include "gtest/gtest.h"
 
+using namespace wayverb::combined;
+using namespace wayverb::core;
+
 TEST(app_model, sources) {
-    const auto quick_check = [] (const auto& i) {
+    const auto quick_check = [](const auto& i) {
         ASSERT_EQ(i.connections(), 0);
-        ASSERT_EQ(i[0].connections(), 1);
+        ASSERT_EQ(i[0]->connections(), 1);
     };
 
-    wayverb::combined::model::vector<wayverb::combined::model::source, 1> a;
+    model::vector<model::source, 1> a{model::source{geo::box{}}};
     quick_check(a);
 
-    wayverb::combined::model::vector<wayverb::combined::model::source, 1> b;
+    model::vector<model::source, 1> b{model::source{geo::box{}}};
     quick_check(b);
 
     a = b;
@@ -22,29 +25,25 @@ TEST(app_model, sources) {
     quick_check(a);
     quick_check(b);
 
-    wayverb::combined::model::sources sources{wayverb::core::geo::box{glm::vec3{-1}, glm::vec3{1}}};
+    model::sources sources{geo::box{glm::vec3{-1}, glm::vec3{1}}};
     ASSERT_EQ(sources.connections(), 0);
-    ASSERT_EQ(sources.data().connections(), 1);
-    ASSERT_EQ(sources[0].connections(), 1);
+    ASSERT_EQ(sources[0]->connections(), 1);
 }
 
 TEST(app_model, copy_assignment) {
     bool called = false;
 
-    wayverb::combined::model::microphone a;
+    model::microphone a;
 
     a.connect([&](auto&) { called = true; });
 
-    wayverb::combined::model::microphone b;
+    model::microphone b;
     b.set_shape(1);
-    b.set_orientation(wayverb::core::orientation{
-            compute_pointing(wayverb::core::az_el{M_PI, 0.1})});
+    b.set_orientation(orientation{compute_pointing(az_el{M_PI, 0.1})});
 
     a = b;
 
     ASSERT_TRUE(called);
 }
 
-TEST(app_model, app_model) {
-
-}
+TEST(app_model, app_model) {}

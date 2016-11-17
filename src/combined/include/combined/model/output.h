@@ -12,12 +12,6 @@ class output final : public basic_member<output> {
 public:
     output() = default;
 
-    output(const output&) = default;
-    output(output&&) noexcept = default;
-
-    output& operator=(const output&) = default;
-    output& operator=(output&&) noexcept = default;
-
     enum class bit_depth { bd16, bd24 };
 
     void set_output_folder(std::string output_folder);

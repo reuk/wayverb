@@ -33,9 +33,9 @@ std::unique_ptr<capsule_base> polymorphic_capsule_model(
         const model::capsule& i, const core::orientation& orientation) {
     switch (i.get_mode()) {
         case model::capsule::mode::microphone:
-            return make_capsule_ptr(i.microphone().get(), orientation);
+            return make_capsule_ptr(i.microphone()->get(), orientation);
         case model::capsule::mode::hrtf:
-            return make_capsule_ptr(i.hrtf().get(), orientation);
+            return make_capsule_ptr(i.hrtf()->get(), orientation);
     }
 }
 
@@ -43,9 +43,9 @@ std::unique_ptr<waveguide_base> polymorphic_waveguide_model(
         const model::waveguide& i) {
     switch (i.get_mode()) {
         case model::waveguide::mode::single:
-            return make_waveguide_ptr(i.single_band().get());
+            return make_waveguide_ptr(i.single_band()->get());
         case model::waveguide::mode::multiple:
-            return make_waveguide_ptr(i.multiple_band().get());
+            return make_waveguide_ptr(i.multiple_band()->get());
     }
 }
 
@@ -61,26 +61,26 @@ void complete_engine::run(const core::compute_context& compute_context,
         constexpr core::environment environment{};
 
         const auto poly_waveguide =
-                polymorphic_waveguide_model(persistent.waveguide());
+                polymorphic_waveguide_model(*persistent.waveguide());
 
         std::vector<channel_info> all_channels;
 
         //  For each source-receiver pair.
-        for (auto source = std::begin(persistent.sources()),
-                  e_source = std::end(persistent.sources());
+        for (auto source = std::begin(*persistent.sources()),
+                  e_source = std::end(*persistent.sources());
              source != e_source && keep_going_;
              ++source) {
-            for (auto receiver = std::begin(persistent.receivers()),
-                      e_receiver = std::end(persistent.receivers());
+            for (auto receiver = std::begin(*persistent.receivers()),
+                      e_receiver = std::end(*persistent.receivers());
                  receiver != e_receiver && keep_going_;
                  ++receiver) {
                 //  Set up an engine to use.
                 postprocessing_engine eng{compute_context,
                                           scene_data,
-                                          source->position().get(),
-                                          receiver->position().get(),
+                                          (*source)->position()->get(),
+                                          (*receiver)->position()->get(),
                                           environment,
-                                          persistent.raytracer().get(),
+                                          persistent.raytracer()->get(),
                                           poly_waveguide->clone()};
 
                 //  Send new node position notification.
@@ -106,17 +106,17 @@ void complete_engine::run(const core::compute_context& compute_context,
                 }
 
                 const auto polymorphic_capsules = util::map_to_vector(
-                        std::begin(receiver->capsules()),
-                        std::end(receiver->capsules()),
+                        std::begin(*(*receiver)->capsules()),
+                        std::end(*(*receiver)->capsules()),
                         [&](const auto& i) {
                             return polymorphic_capsule_model(
-                                    i, receiver->get_orientation());
+                                    *i, (*receiver)->get_orientation());
                         });
 
                 //  Run the simulation, cache the result.
                 auto channel = eng.run(begin(polymorphic_capsules),
                                        end(polymorphic_capsules),
-                                       persistent.output().get_sample_rate(),
+                                       persistent.output()->get_sample_rate(),
                                        keep_going_);
 
                 //  If user cancelled while processing the channel, channel
@@ -130,13 +130,13 @@ void complete_engine::run(const core::compute_context& compute_context,
                     throw std::runtime_error{"encountered unanticipated error"};
                 }
 
-                for (size_t i = 0, e = receiver->capsules().size(); i != e;
+                for (size_t i = 0, e = (*receiver)->capsules()->size(); i != e;
                      ++i) {
-                    all_channels.emplace_back(
-                            channel_info{std::move((*channel)[i]),
-                                         source->get_name(),
-                                         receiver->get_name(),
-                                         receiver->capsules()[i].get_name()});
+                    all_channels.emplace_back(channel_info{
+                            std::move((*channel)[i]),
+                            (*source)->get_name(),
+                            (*receiver)->get_name(),
+                            (*(*receiver)->capsules())[i]->get_name()});
                 }
             }
         }
@@ -168,9 +168,9 @@ void complete_engine::run(const core::compute_context& compute_context,
             //  Write out files.
             for (const auto& i : all_channels) {
                 const auto file_name = util::build_string(
-                        persistent.output().get_output_folder(),
+                        persistent.output()->get_output_folder(),
                         '/',
-                        persistent.output().get_name(),
+                        persistent.output()->get_name(),
                         '.',
                         "s_",
                         i.source_name,
@@ -184,8 +184,8 @@ void complete_engine::run(const core::compute_context& compute_context,
 
                 write(file_name,
                       audio_file::make_audio_file(
-                              i.data, persistent.output().get_sample_rate()),
-                      convert_bit_depth(persistent.output().get_bit_depth()));
+                              i.data, persistent.output()->get_sample_rate()),
+                      convert_bit_depth(persistent.output()->get_bit_depth()));
             }
         }
 

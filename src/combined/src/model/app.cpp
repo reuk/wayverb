@@ -27,7 +27,7 @@ project::project(const std::string& fpath)
         //  load the config
         std::ifstream stream(config_file);
         cereal::JSONInputArchive archive(stream);
-        //archive(persistent);
+        // archive(persistent);
 
     } else {
         const auto& surface_strings =
@@ -69,7 +69,7 @@ void project::save_to(const std::string& fpath) {
         //  write config with all current materials to file
         std::ofstream stream(project::compute_config_path(fpath));
         cereal::JSONOutputArchive archive(stream);
-        //archive(persistent);
+        // archive(persistent);
 
         needs_save_ = false;
     }
@@ -174,7 +174,7 @@ core::gpu_scene_data app::generate_scene_data() {
                                  core::surface<core::simulation_bands>>
             material_map;
 
-    for (const auto& i : project.persistent.materials()) {
+    for (const auto& i : *project.persistent.materials()) {
         material_map[i->get_name()] = i->get_surface();
     }
 

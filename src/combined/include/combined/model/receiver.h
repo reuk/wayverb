@@ -16,7 +16,6 @@ class receiver final : public owning_member<receiver,
                                             vector<capsule, 1>,
                                             hover_state> {
 public:
-    receiver() = default;
     explicit receiver(core::geo::box bounds);
 
     void set_name(std::string name);
@@ -54,28 +53,27 @@ private:
 
 class receivers final : public owning_member<receivers, vector<receiver, 1>> {
 public:
-    receivers() = default;
     explicit receivers(const core::geo::box& aabb);
 
-    const receiver& operator[](size_t index) const;
-    receiver& operator[](size_t index);
+    const shared_value<receiver>& operator[](size_t index) const;
+    shared_value<receiver>& operator[](size_t index);
 
-    auto cbegin() const { return data().cbegin(); }
-    auto begin() const { return data().begin(); }
-    auto begin() { return data().begin(); }
+    auto cbegin() const { return data()->cbegin(); }
+    auto begin() const { return data()->begin(); }
+    auto begin() { return data()->begin(); }
 
-    auto cend() const { return data().cend(); }
-    auto end() const { return data().end(); }
-    auto end() { return data().end(); }
+    auto cend() const { return data()->cend(); }
+    auto end() const { return data()->end(); }
+    auto end() { return data()->end(); }
 
     template <typename It>
     void insert(It it) {
-        data().insert(std::move(it), receiver{aabb_});
+        data()->insert(std::move(it), receiver{aabb_});
     }
 
     template <typename It>
     void erase(It it) {
-        data().erase(std::move(it));
+        data()->erase(std::move(it));
     }
 
     size_t size() const;
@@ -85,12 +83,9 @@ public:
 
     bool can_erase() const;
 
-    void set_busy(bool busy);
-    bool get_busy() const;
-
 private:
-    vector<receiver, 1>& data();
-    const vector<receiver, 1>& data() const;
+    shared_value<vector<receiver, 1>>& data();
+    const shared_value<vector<receiver, 1>>& data() const;
 
     core::geo::box aabb_;
 };
