@@ -11,12 +11,12 @@ namespace sources {
 
 class source_editor final : public PropertyPanel {
 public:
-    source_editor(wayverb::combined::model::source& source)
-            : source_{source} {
+    source_editor(std::shared_ptr<wayverb::combined::model::source> source)
+            : source_{std::move(source)} {
         //  Make properties.
         auto name = std::make_unique<text_property>("name");
         auto position = std::make_unique<vec3_property>(
-                "position", source_.position()->get_bounds());
+                "position", source_->position()->get_bounds());
 
         auto update_from_source =
                 [ this, n = name.get(), p = position.get() ](auto& source) {
@@ -24,44 +24,41 @@ public:
             p->set(source.position()->get());
         };
 
-        update_from_source(source_);
+        update_from_source(*source_);
 
         //  Tell UI objects what to do when the data source changes.
         connection_ = wayverb::combined::model::source::scoped_connection{
-                source_.connect(update_from_source)};
+                source_->connect(update_from_source)};
 
         //  Tell model what to do when the ui is updated by the user.
         name->connect_on_change(
-                [this](auto&, auto name) { source_.set_name(name); });
+                [this](auto&, auto name) { source_->set_name(name); });
 
         position->connect_on_change(
-                [this](auto&, auto pos) { source_.position()->set(pos); });
+                [this](auto&, auto pos) { source_->position()->set(pos); });
 
         addProperties({name.release()});
         addProperties({position.release()});
+
+        setSize(300, getTotalContentHeight());
     }
 
 private:
-    wayverb::combined::model::source& source_;
+    std::shared_ptr<wayverb::combined::model::source> source_;
     wayverb::combined::model::source::scoped_connection connection_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<Component> source_config_item::get_callout_component(
-        wayverb::combined::model::source& model) {
-    auto ret = std::make_unique<source_editor>(model);
-    ret->setSize(300, ret->getTotalContentHeight());
-    return std::move(ret);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 master::master(wayverb::combined::model::sources& model)
-        : list_box_{model, [] (auto& model) {
+        : list_box_{model,
+        [] (auto shared) {
+            return std::make_unique<list_config_item<wayverb::combined::model::source>>(shared, [](auto shared) {
+                return std::make_unique<source_editor>(shared);
+            });
+        },
+        [] (auto& model) {
             model.insert(model.end());
-        }, [] (auto& model, auto to_erase) {
-            model.erase(model.begin() + to_erase);
         }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);

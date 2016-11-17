@@ -89,9 +89,14 @@ auto postprocess(const combined_results<Histogram>& input,
                                                    max_frequency_functor{});
     };
 
-    const auto cutoff = *std::max_element(make_iterator(begin(input.waveguide)),
-                                          make_iterator(end(input.waveguide))) /
-                        output_sample_rate;
+    if (input.waveguide.empty()) {
+        return raytracer_processed;
+    }
+
+    const auto cutoff =
+            *std::max_element(make_iterator(begin(input.waveguide)),
+                              make_iterator(end(input.waveguide))) /
+            output_sample_rate;
     const auto width = 0.2;  //  Wider = more natural-sounding
     return crossover_filter(begin(waveguide_processed),
                             end(waveguide_processed),

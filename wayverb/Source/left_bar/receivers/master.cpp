@@ -64,42 +64,73 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class receiver_editor final : public Component {
+class receiver_editor final : public Component, public ComboBox::Listener {
 public:
-    receiver_editor(wayverb::combined::model::receiver& receiver)
-            : properties_{receiver}
-            , capsules_{*receiver.capsules()} {
+    receiver_editor(const wayverb::combined::model::app::capsule_presets_t& presets,
+                    std::shared_ptr<wayverb::combined::model::receiver> receiver)
+            : receiver_{std::move(receiver)}
+            , properties_{*receiver_}
+            , capsules_{*receiver_->capsules()}
+            , presets_{presets} {
+        combo_box_.setTextWhenNothingSelected("capsule group presets...");
+
+        {
+            auto count = 1;
+            for (const auto& i : presets_) {
+                combo_box_.addItem(i.name, count++);
+            }
+        }
+
         addAndMakeVisible(properties_);
         addAndMakeVisible(capsules_);
-        addAndMakeVisible(capsule_presets_);
+        addAndMakeVisible(combo_box_);
+
+        setSize(500, properties_.getTotalContentHeight());
     }
 
     void resized() override {
         auto bounds = getLocalBounds();
-        capsules_.setBounds(bounds.removeFromRight(150));
-        capsule_presets_.setBounds(bounds.removeFromBottom(25));
+        auto capsule_bounds = bounds.removeFromRight(150);
         properties_.setBounds(bounds);
+
+        combo_box_.setBounds(capsule_bounds.removeFromBottom(25));
+        capsules_.setBounds(capsule_bounds);
+    }
+
+    void comboBoxChanged(ComboBox* cb) override {
+        const auto selected = cb->getSelectedItemIndex();
+        if (selected != -1) {
+            const auto& capsules = presets_[selected].capsules;
+            receiver_->capsules()->clear();
+            for (const auto& capsule : capsules) {
+                receiver_->capsules()->insert(receiver_->capsules()->end(), capsule);
+            }
+        }
+        cb->setSelectedItemIndex(-1, dontSendNotification);
     }
 
 private:
+    std::shared_ptr<wayverb::combined::model::receiver> receiver_;
+    
     receiver_properties properties_;
     capsules::master capsules_;
-    ComboBox capsule_presets_;
+    ComboBox combo_box_;
+    model::Connector<ComboBox> capsule_presets_connector_{&combo_box_, this};
+
+    wayverb::combined::model::app::capsule_presets_t presets_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::unique_ptr<Component> receiver_config_item::get_callout_component(
-        wayverb::combined::model::receiver& model) {
-    auto ret = std::make_unique<receiver_editor>(model);
-    ret->setSize(500, 200);
-    return std::move(ret);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-master::master(wayverb::combined::model::receivers& model)
-        : list_box_{model, [](auto& model) {model.insert(model.end());}, [](auto& model, auto to_erase){model.erase(model.begin() + to_erase);}} {
+master::master(const wayverb::combined::model::app::capsule_presets_t& presets, wayverb::combined::model::receivers& receivers)
+        : list_box_{receivers,
+                    [&presets](auto shared) {
+                        return std::make_unique<list_config_item<wayverb::combined::model::receiver>>(
+                            shared,
+                            [&presets](auto shared) {
+                                return std::make_unique<receiver_editor>(presets, shared);
+                            });
+                    }, [](auto& model) {model.insert(model.end());}} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 }

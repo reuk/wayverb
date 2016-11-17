@@ -5,6 +5,8 @@
 #include "utilities/aligned/vector.h"
 #include "utilities/mapping_iterator_adapter.h"
 
+#include <iostream>
+
 namespace wayverb {
 namespace raytracer {
 
@@ -63,17 +65,19 @@ void incremental_histogram(Ret& ret,
                            It e,
                            double sample_rate,
                            const T& callback) {
-    const auto make_time_iterator = [](auto it) {
-        return util::make_mapping_iterator_adapter(std::move(it),
-                                                   time_functor{});
-    };
-    const auto max_time_in_input =
-            *std::max_element(make_time_iterator(b), make_time_iterator(e));
+    if (std::distance(b, e)) {
+        const auto make_time_iterator = [](auto it) {
+            return util::make_mapping_iterator_adapter(std::move(it),
+                                                       time_functor{});
+        };
+        const auto max_time_in_input =
+                *std::max_element(make_time_iterator(b), make_time_iterator(e));
 
-    resize_if_necessary(ret, std::floor(max_time_in_input * sample_rate) + 1);
+        resize_if_necessary(ret, std::floor(max_time_in_input * sample_rate) + 1);
 
-    for (; b != e; ++b) {
-        callback(*b, sample_rate, ret);
+        for (; b != e; ++b) {
+            callback(*b, sample_rate, ret);
+        }
     }
 }
 

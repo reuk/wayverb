@@ -3,6 +3,7 @@
 
 #include "../../azimuth_elevation_property.h"
 #include "../../slider_property.h"
+#include "../../text_property.h"
 
 #include "combined/model/capsule.h"
 
@@ -127,7 +128,7 @@ public:
         auto shape = std::make_unique<slider_property>("shape", 0, 1);
         auto display = std::make_unique<PolarPatternProperty>("shape display", 80);
 
-        auto update_from_microphone =
+        const auto update_from_microphone =
                 [ this, o = orientation.get(), s = shape.get(), d = display.get() ](auto& mic) {
             o->set(wayverb::core::compute_azimuth_elevation(
                     mic.get().orientation.get_pointing()));
@@ -158,18 +159,19 @@ private:
     wayverb::combined::model::microphone::scoped_connection connection_;
 };
 
-class capsule_editor final : public TabbedComponent {
+class capsule_type_editor final : public TabbedComponent {
 public:
-    capsule_editor(wayverb::combined::model::capsule& model)
+    capsule_type_editor(wayverb::combined::model::capsule& model)
             : TabbedComponent{TabbedButtonBar::Orientation::TabsAtTop}
             , model_{model} {
+
         addTab("microphone",
                Colours::darkgrey,
-               new microphone_properties{*model.microphone()},
+               new microphone_properties{*model_.microphone()},
                true);
-        addTab("hrtf", Colours::darkgrey, new hrtf_properties{*model.hrtf()}, true);
+        addTab("hrtf", Colours::darkgrey, new hrtf_properties{*model_.hrtf()}, true);
 
-        auto update_from_capsule = [this](auto& m) {
+        const auto update_from_capsule = [this](auto& m) {
             switch (m.get_mode()) {
                 case wayverb::combined::model::capsule::mode::microphone:
                     setCurrentTabIndex(0, dontSendNotification);
@@ -181,7 +183,7 @@ public:
         };
 
         update_from_capsule(model_);
-        
+
         connection_ = wayverb::combined::model::capsule::scoped_connection{model_.connect(update_from_capsule)};
 
         initializing_ = false;
@@ -207,24 +209,45 @@ private:
     bool initializing_ = true;
 };
 
-////////////////////////////////////////////////////////////////////////////////
+class capsule_editor final : public PropertyPanel {
+public:
+    capsule_editor(std::shared_ptr<wayverb::combined::model::capsule> model)
+            : model_{std::move(model)} {
+        auto name = std::make_unique<text_property>("name");
+        auto config = std::make_unique<generic_property_component<capsule_type_editor>>(
+                "capsule type", 200, *model_);
 
-std::unique_ptr<Component> capsule_config_item::get_callout_component(
-        wayverb::combined::model::capsule& model) {
-    auto ret = std::make_unique<capsule_editor>(model);
-    ret->setSize(300, 200);
-    return std::move(ret);
-}
+        const auto update_from_capsule = [this, n = name.get()](auto& capsule) {
+            n->set(capsule.get_name());
+        };
+
+        update_from_capsule(*model_);
+
+        connection_ = wayverb::combined::model::capsule::scoped_connection{model_->connect(update_from_capsule)};
+
+        addProperties({name.release()});
+        addProperties({config.release()});
+
+        setSize(300, getTotalContentHeight());
+    }
+
+private:
+    std::shared_ptr<wayverb::combined::model::capsule> model_;
+    wayverb::combined::model::capsule::scoped_connection connection_;
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 
 master::master(
         wayverb::combined::model::vector<wayverb::combined::model::capsule, 1>&
                 model)
-        : list_box_{model, [] (auto& model) {
+        : list_box_{model, [](auto shared) {
+            return std::make_unique<list_config_item<wayverb::combined::model::capsule>>(shared,
+                [] (auto shared) {
+                    return std::make_unique<capsule_editor>(shared);
+                });
+        }, [] (auto& model) {
             model.insert(model.end(), wayverb::combined::model::capsule{});
-        }, [] (auto& model, auto to_erase) {
-            model.erase(model.begin() + to_erase);
         }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);

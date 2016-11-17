@@ -8,21 +8,22 @@ namespace left_bar {
 
 /// Wraps a list box, giving it add and remove buttons.
 
-template <typename Model, typename View>
+template <typename Model>
 class editable_vector_list_box final : public Component,
                                        public TextButton::Listener {
 public:
     using insert = std::function<void(Model& model)>;
-    using erase = std::function<void(Model& model, int to_erase)>;
 
-    editable_vector_list_box(Model& model, insert insert, erase erase)
+    editable_vector_list_box(
+            Model& model,
+            typename vector_list_box<Model>::create_list_item create_list_item,
+            insert insert)
             : model_{model}
             , connection_{model_.connect([this](auto&) {
                 this->update_buttons();
             })}
             , insert_{std::move(insert)}
-            , erase_{std::move(erase)}
-            , list_box_{model_} {
+            , list_box_{model_, std::move(create_list_item)} {
 
         //  If selected rows change, update buttons.
         list_box_.connect_selected_rows_changed([this](auto) {
@@ -50,7 +51,7 @@ public:
             const auto to_delete = list_box_.getSelectedRow();
             if (0 <= to_delete && to_delete < model_.size()) {
                 list_box_.deselectAllRows();
-                erase_(model_, to_delete);
+                model_.erase(model_.begin() + to_delete);
             }
         }
     }
@@ -68,9 +69,8 @@ private:
     typename Model::scoped_connection connection_;
 
     insert insert_;
-    erase erase_;
-    
-    vector_list_box<Model, View> list_box_;
+
+    vector_list_box<Model> list_box_;
 
     TextButton add_button_{"+"};
     model::Connector<TextButton> add_button_connector_{&add_button_, this};

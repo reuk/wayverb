@@ -28,7 +28,8 @@ auto sum_vectors(T t, Ts... ts) {
             [](auto a, auto b) { return std::max(a.size(), b.size()); },
             t,
             ts...);
-    util::for_each_params([&](auto& vec) { vec.resize(max_len); }, t, ts...);
+    util::for_each_params(
+            [&](auto& vec) { vec.resize(max_len, 0.0); }, t, ts...);
     return sum_ranges(begin(t), end(t), begin(ts)...);
 }
 

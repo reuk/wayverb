@@ -39,6 +39,8 @@ private:
     }
 
 public:
+    using value_type = T;
+
     template <typename It>
     vector(It b, It e)
             : data_{make_connection_creator_iterator(b),

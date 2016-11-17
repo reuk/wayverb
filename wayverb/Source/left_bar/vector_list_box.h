@@ -10,16 +10,30 @@
 
 namespace left_bar {
 
+template <typename T>
+class updatable_component : public Component {
+public:
+    using param_type = std::shared_ptr<T>;
+
+    virtual void update(std::shared_ptr<T>) = 0;
+};
+
 /// Dead simple list box editor.
 /// Listens to a model::vector, and updates if the model changes.
 /// Allows the component for each row to be created using a factory callback.
-template <typename Model, typename View>
+template <typename Model>
 class vector_list_box final : public ListBox {
 public:
     using model_type = Model;
+    using value_type = std::decay_t<decltype(*(std::declval<Model>()[0]))>;
+    using updatable = updatable_component<value_type>;
+    using param_type = typename updatable::param_type;
 
-    vector_list_box(Model& model)
-            : model_{model}
+    using create_list_item =
+            std::function<std::unique_ptr<updatable>(param_type)>;
+
+    vector_list_box(Model& model, create_list_item create_list_item)
+            : model_{model, std::move(create_list_item)}
             , connection_{model.connect([this](auto&) { this->updateContent(); })} {
         setModel(&model_);
     }
@@ -33,8 +47,9 @@ public:
 private:
     class model final : public ListBoxModel {
     public:
-        model(Model& model)
-                : model_{model} {}
+        model(Model& model, create_list_item create_list_item)
+                : model_{model}
+                , create_list_item_{std::move(create_list_item)} {}
 
         int getNumRows() override { return model_.size(); }
 
@@ -48,10 +63,13 @@ private:
                                           bool selected,
                                           Component* existing) override {
             if (row < getNumRows()) {
-                View * v = existing ? dynamic_cast<View*>(existing) : new View{};
-                v->update(*model_[row]);
-                v->setInterceptsMouseClicks(false, true);
-                existing = v;
+                const auto& shared = model_[row].get_shared_ptr();
+                if (updatable * v = dynamic_cast<updatable*>(existing)) {
+                    v->update(shared);
+                } else {
+                    existing = create_list_item_(shared).release();
+                    existing->setInterceptsMouseClicks(false, true);
+                }
             } else {
                 delete existing;
                 existing = nullptr;
@@ -71,6 +89,8 @@ private:
     private:
         Model& model_;
         selected_rows_changed selected_rows_changed_;
+
+        create_list_item create_list_item_;
     };
 
     model model_;

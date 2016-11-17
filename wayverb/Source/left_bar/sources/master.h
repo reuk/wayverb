@@ -16,12 +16,6 @@ namespace sources {
 /// Don't allow sources to be added or removed if any are currently selected/
 /// dragged.
 
-class source_config_item final
-        : public list_config_item<wayverb::combined::model::source> {
-    std::unique_ptr<Component> get_callout_component(
-            wayverb::combined::model::source& model) override;
-};
-
 class master final : public Component {
 public:
     master(wayverb::combined::model::sources& sources);
@@ -29,9 +23,7 @@ public:
     void resized() override;
 
 private:
-    editable_vector_list_box<wayverb::combined::model::sources,
-                             source_config_item>
-            list_box_;
+    editable_vector_list_box<wayverb::combined::model::sources> list_box_;
 };
 
 }  // namespace sources

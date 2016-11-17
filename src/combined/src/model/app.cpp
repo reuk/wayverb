@@ -86,6 +86,7 @@ core::generic_scene_data<cl_float3, std::string> project::get_scene_data()
 
 app::app(const std::string& name)
         : project{name}
+        , capsule_presets{wayverb::combined::model::capsule_presets} 
         , currently_open_file_{name} {}
 
 app::~app() noexcept { cancel_render(); }
@@ -110,7 +111,7 @@ void app::start_render() {
             });
 }
 
-void app::cancel_render() { engine_.cancel(); }
+void app::cancel_render() { engine_.cancel(); if (future_.valid()) { future_.get(); } }
 
 bool app::is_rendering() const { return engine_.is_running(); }
 

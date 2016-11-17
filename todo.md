@@ -18,6 +18,8 @@ Disable controls when rendering.
 
 really test load and save
 
+better inside/outside check
+
 If an object listens to a reference which outlives it, the listener connection
 *must be scoped*.
 

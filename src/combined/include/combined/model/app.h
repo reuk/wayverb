@@ -1,5 +1,6 @@
 #pragma once
 
+#include "combined/model/capsule_presets.h"
 #include "combined/model/material.h"
 #include "combined/model/persistent.h"
 #include "combined/model/scene.h"
@@ -120,7 +121,8 @@ public:
     using material_presets_t = vector<material, 0>;
     material_presets_t material_presets;
 
-    using capsule_presets_t = vector<vector<capsule, 1>, 0>;
+    using capsule_presets_t =
+            decltype(wayverb::combined::model::capsule_presets);
     capsule_presets_t capsule_presets;
 
 private:

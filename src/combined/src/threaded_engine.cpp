@@ -141,6 +141,10 @@ void complete_engine::run(const core::compute_context& compute_context,
             }
         }
 
+        if (all_channels.empty()) {
+            throw std::runtime_error{"no channels were rendered"};
+        }
+
         //  If keep going is false now, then the simulation was cancelled.
         if (keep_going_) {
             //  Normalize.

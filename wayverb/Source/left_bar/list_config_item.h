@@ -1,5 +1,7 @@
 #pragma once
 
+#include "vector_list_box.h"
+
 #include "../UtilityComponents/connector.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
@@ -8,13 +10,19 @@ namespace left_bar {
 
 /// Displays a name and a button for further configuration.
 template <typename T>
-class list_config_item : public Component, public TextButton::Listener {
+class list_config_item : public updatable_component<T>, public TextButton::Listener {
 public:
-    list_config_item() {
+    using get_callout_component = std::function<std::unique_ptr<Component>(std::shared_ptr<T>)>;
+
+    list_config_item(std::shared_ptr<T> model, get_callout_component get_callout_component)
+            : model_{std::move(model)}
+            , get_callout_component_{std::move(get_callout_component)} {
         label_.setInterceptsMouseClicks(false, false);
 
-        addAndMakeVisible(label_);
-        addAndMakeVisible(button_);
+        update(model_);
+
+        this->addAndMakeVisible(label_);
+        this->addAndMakeVisible(button_);
     }
 
     list_config_item(const list_config_item&) = delete;
@@ -25,8 +33,8 @@ public:
 
     virtual ~list_config_item() noexcept = default;
 
-    void update(T& model) {
-        model_ = &model;
+    void update(std::shared_ptr<T> model) override {
+        model_ = model;
         set_label(model_->get_name());
     }
 
@@ -35,26 +43,26 @@ public:
     }
 
     void resized() override {
-        const auto button_width = getHeight();
-        auto bounds = getLocalBounds();
+        const auto button_width = this->getHeight();
+        auto bounds = this->getLocalBounds();
         button_.setBounds(bounds.removeFromRight(button_width).reduced(2, 2));
         label_.setBounds(bounds.reduced(2, 2));
     }
 
     void buttonClicked(Button*) override {
         CallOutBox::launchAsynchronously(
-                get_callout_component(*model_).release(),
+                get_callout_component_(model_).release(),
                 button_.getScreenBounds(),
                 nullptr);
     }
 
 private:
-    virtual std::unique_ptr<Component> get_callout_component(T& model) = 0;
-
-    T* model_ = nullptr;
+    std::shared_ptr<T> model_;
     Label label_;
     TextButton button_{"..."};
     model::Connector<TextButton> button_connector_{&button_, this};
+
+    get_callout_component get_callout_component_;
 };
 
 }  // namespace left_bar

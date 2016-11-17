@@ -84,6 +84,7 @@ master::master(wayverb::combined::model::app& app)
     property_panel_.addSection(
             "receivers",
             {new wrapped_property_component<receivers::master>{item_height,
+                                                               model_.capsule_presets,
                                                                *model_.project.persistent.receivers()}});
     property_panel_.setOpaque(false);
 
