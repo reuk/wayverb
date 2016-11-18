@@ -1,6 +1,6 @@
 #include "AngularLookAndFeel.h"
 
-//const Colour AngularLookAndFeel::emphasis{0xff009900};    //  green
+// const Colour AngularLookAndFeel::emphasis{0xff009900};    //  green
 const Colour AngularLookAndFeel::emphasis{0xff8a2be2};  //  blueviolet
 
 Colour AngularLookAndFeel::create_base_colour(Colour button_colour,

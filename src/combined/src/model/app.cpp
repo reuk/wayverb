@@ -98,15 +98,10 @@ void app::start_render() {
     //  Let the world know that we're gonna do some stuff.
     begun_();
 
-    //  Collect parameters.
-
-    auto scene_data = generate_scene_data();
-    auto params = project.persistent;
-
     //  Start engine in new thread.
     future_ = std::async(
             std::launch::async,
-            [ this, s = std::move(scene_data), p = std::move(params) ] {
+            [ this, s = generate_scene_data(), p = project.persistent ] {
                 engine_.run(
                         core::compute_context{}, std::move(s), std::move(p));
             });

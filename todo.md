@@ -28,12 +28,13 @@ rendering
 
     Improve source/reciever + microphone direction models.
 
-material scattering coefficients
+material preset scattering coefficients
+
+render doesn't use interface values
 
 controls
     materials
-        disable absorptions lower than (for example) 0.01 from model
-        allow querying allowable range from model
+        preset options
 
     waveguide options
 

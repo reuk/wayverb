@@ -1,14 +1,23 @@
 #include "master.h"
+#include "generic_property_component.h"
 
 #include <iomanip>
 
 namespace left_bar {
 namespace materials {
 
-class bands_component final : public Component {
+class bands_component final : public Component, public Slider::Listener {
 public:
     bands_component() {
         for (auto& i : sliders_) {
+            i.setSliderStyle(Slider::SliderStyle::LinearVertical);
+            // i.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true,
+            // 0, 0);
+            i.setTextBoxStyle(
+                    Slider::TextEntryBoxPosition::TextBoxBelow, false, 40, 20);
+            //            i.setPopupDisplayEnabled(true, nullptr);
+            i.setRange(0.01, 0.99, 0.01);
+            i.addListener(this);
             addAndMakeVisible(i);
         }
     }
@@ -41,6 +50,8 @@ public:
         }
     }
 
+    void sliderValueChanged(Slider*) override { on_change_(get()); }
+
     using on_change = util::event<wayverb::core::bands_type>;
     on_change::connection connect_on_change(on_change::callback_type callback) {
         return on_change_.connect(std::move(callback));
@@ -60,9 +71,17 @@ public:
         const auto centres = hrtf_data::hrtf_band_centres_hz();
 
         for (auto i = 0; i != wayverb::core::simulation_bands; ++i) {
-            labels_[i].setText(
-                    util::build_string(std::setprecision(2), centres[i]),
-                    dontSendNotification);
+            const auto freq = centres[i];
+            if (1000 <= freq) {
+                labels_[i].setText(
+                        util::build_string(
+                                std::setprecision(3), centres[i] / 1000, "K"),
+                        dontSendNotification);
+            } else {
+                labels_[i].setText(
+                        util::build_string(std::setprecision(3), centres[i]),
+                        dontSendNotification);
+            }
         }
 
         for (auto& i : labels_) {
@@ -97,11 +116,49 @@ public:
 
     material_component(const presets_t& presets, material_t& model)
             : presets_{presets}
-            , model_{model} {}
+            , model_{model} {
+        auto frequencies =
+                std::make_unique<generic_property_component<frequency_labels>>(
+                        "band centres / Hz", 25);
+        auto absorption =
+                std::make_unique<generic_property_component<bands_component>>(
+                        "absorption", 100);
+        auto scattering =
+                std::make_unique<generic_property_component<bands_component>>(
+                        "scattering", 100);
+
+        const auto update_from_material =
+                [ this, a = &absorption->content, s = &scattering->content ](
+                        auto& material) {
+            a->set(material.get_surface().absorption);
+            s->set(material.get_surface().scattering);
+        };
+
+        update_from_material(model_);
+
+        connection_ = material_t::scoped_connection{
+                model_.connect(update_from_material)};
+
+        const auto update_from_controls =
+                [ this, a = &absorption->content, s = &scattering->content ](
+                        auto) {
+            model_.set_surface(
+                    wayverb::core::surface<wayverb::core::simulation_bands>{
+                            a->get(), s->get()});
+        };
+
+        absorption->content.connect_on_change(update_from_controls);
+        scattering->content.connect_on_change(update_from_controls);
+
+        addProperties({frequencies.release()});
+        addProperties({absorption.release()});
+        addProperties({scattering.release()});
+    }
 
 private:
     const presets_t& presets_;
     material_t& model_;
+    material_t::scoped_connection connection_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -116,17 +173,24 @@ public:
             , model_{model}
             , label_{"", model_.get_name()}
             , material_component_{presets, model_} {
+        label_.setJustificationType(Justification::centred);
+
         addAndMakeVisible(label_);
         addAndMakeVisible(material_component_);
+
+        setSize(497,
+                material_component_.getTotalContentHeight() + title_height_);
     }
 
     void resized() override {
         auto bounds = getLocalBounds();
-        label_.setBounds(bounds.removeFromTop(25));
+        label_.setBounds(bounds.removeFromTop(title_height_));
         material_component_.setBounds(bounds);
     }
 
 private:
+    static constexpr auto title_height_ = 25;
+
     const presets_t& presets_;
     material_t& model_;
 

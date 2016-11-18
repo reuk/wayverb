@@ -23,7 +23,7 @@ public:
         auto orientation =
                 std::make_unique<azimuth_elevation_property>("orientation");
 
-        auto update_from_receiver = [
+        const auto update_from_receiver = [
             this,
             n = name.get(),
             p = position.get(),
