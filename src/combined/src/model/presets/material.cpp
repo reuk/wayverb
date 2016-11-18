@@ -1,17 +1,16 @@
-#include "combined/model/material_presets.h"
-#include "combined/model/material.h"
-#include "combined/model/vector.h"
+#include "combined/model/presets/material.h"
 
 namespace wayverb {
 namespace combined {
 namespace model {
+namespace presets {
 
 /// From vorlander2007
 
 /// TODO scattering coefficients
 
 // clang-format off
-const std::vector<material> presets{
+const std::vector<material> materials{
         material{"hard surface - average",                                      {{{0.02, 0.02, 0.02, 0.03, 0.03, 0.04, 0.05, 0.05}}, {{0, 0, 0, 0, 0, 0, 0, 0}}}},
         material{"hard surface - rendered brickwork",                           {{{0.01, 0.01, 0.02, 0.02, 0.03, 0.03, 0.04, 0.04}}, {{0, 0, 0, 0, 0, 0, 0, 0}}}},
         material{"hard surface - rough concrete",                               {{{0.02, 0.02, 0.03, 0.03, 0.03, 0.04, 0.07, 0.07}}, {{0, 0, 0, 0, 0, 0, 0, 0}}}},
@@ -61,6 +60,7 @@ const std::vector<material> presets{
 };
 // clang-format on
 
+}  // namespace presets
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

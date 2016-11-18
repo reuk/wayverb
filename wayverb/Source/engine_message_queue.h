@@ -7,7 +7,6 @@
 namespace detail {
 template <typename T>
 class queue_forwarding_call final {
-
 public:
     constexpr queue_forwarding_call(T& t, async_work_queue& queue)
             : t_{t}
@@ -15,7 +14,7 @@ public:
 
     template <typename... Ts>
     void operator()(Ts... ts) const {
-        this->queue_.push([t = &t_, ts...] { (*t)(ts...); });
+        this->queue_.push([ t = &t_, ts... ] { (*t)(ts...); });
     }
 
 private:

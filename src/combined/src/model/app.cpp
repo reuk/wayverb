@@ -86,7 +86,8 @@ core::generic_scene_data<cl_float3, std::string> project::get_scene_data()
 
 app::app(const std::string& name)
         : project{name}
-        , capsule_presets{wayverb::combined::model::capsule_presets} 
+        , capsule_presets{wayverb::combined::model::presets::capsules}
+        , material_presets{wayverb::combined::model::presets::materials}
         , currently_open_file_{name} {}
 
 app::~app() noexcept { cancel_render(); }

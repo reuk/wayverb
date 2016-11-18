@@ -15,7 +15,7 @@ public:
 
 private:
     wayverb::combined::model::app& model_;
-    
+
     engine_message_queue::begun::scoped_connection begun_connection_;
     engine_message_queue::engine_state_changed::scoped_connection
             engine_state_connection_;

@@ -1,8 +1,9 @@
 #pragma once
 
-#include "combined/model/capsule_presets.h"
 #include "combined/model/material.h"
 #include "combined/model/persistent.h"
+#include "combined/model/presets/capsule.h"
+#include "combined/model/presets/material.h"
 #include "combined/model/scene.h"
 #include "combined/threaded_engine.h"
 
@@ -105,7 +106,7 @@ public:
     using finished = complete_engine::finished;
     finished::connection connect_finished(finished::callback_type t);
 
-    //  MISC FUNCTIONS  //////////////////////////////////////////////////////// 
+    //  MISC FUNCTIONS  ////////////////////////////////////////////////////////
 
     void reset_view();
 
@@ -118,11 +119,12 @@ public:
 
     //  Preset data.
 
-    using material_presets_t = vector<material, 0>;
+    using material_presets_t =
+            decltype(wayverb::combined::model::presets::materials);
     material_presets_t material_presets;
 
     using capsule_presets_t =
-            decltype(wayverb::combined::model::capsule_presets);
+            decltype(wayverb::combined::model::presets::capsules);
     capsule_presets_t capsule_presets;
 
 private:

@@ -15,7 +15,7 @@ class updatable_component : public Component {
 public:
     using param_type = std::shared_ptr<T>;
 
-    virtual void update(std::shared_ptr<T>) = 0;
+    virtual void update(param_type) = 0;
 };
 
 /// Dead simple list box editor.

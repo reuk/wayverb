@@ -53,14 +53,14 @@ glm::mat4 multi_material_object::get_local_model_matrix() const {
 }
 
 void multi_material_object::do_draw(const glm::mat4 &model_matrix) const {
-    for (auto i = 0u; i != sections_.size(); ++i) {
-        if (highlighted_ && i == *highlighted_) {
+    for (const auto &section : sections_) {
+        if (highlighted_ && section.get_material_index() == *highlighted_) {
             if (const auto shader = lit_scene_shader_.lock()) {
                 const auto s_shader = shader->get_scoped();
                 shader->set_model_matrix(model_matrix);
                 const auto s_vao = fill_vao_.get_scoped();
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-                sections_[i].draw(model_matrix);
+                section.draw(model_matrix);
             }
 
         } else {
@@ -69,7 +69,7 @@ void multi_material_object::do_draw(const glm::mat4 &model_matrix) const {
                 shader->set_model_matrix(model_matrix);
                 const auto s_vao = wire_vao_.get_scoped();
                 glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-                sections_[i].draw(model_matrix);
+                section.draw(model_matrix);
             }
         }
     }
@@ -85,16 +85,19 @@ void multi_material_object::set_highlighted(
 multi_material_object::single_material_section::single_material_section(
         const wayverb::core::triangle *triangles,
         size_t num_triangles,
-        size_t material_index) {
-    const auto indices = get_indices(triangles, num_triangles, material_index);
-    size = indices.size();
-    ibo.data(indices);
-}
+        size_t material_index)
+        : material_index_{material_index}
+        , ibo_{get_indices(triangles, num_triangles, material_index_)} {}
 
 void multi_material_object::single_material_section::do_draw(
         const glm::mat4 &) const {
-    ibo.bind();
-    glDrawElements(GL_TRIANGLES, size, GL_UNSIGNED_INT, nullptr);
+    ibo_.bind();
+    glDrawElements(GL_TRIANGLES, ibo_.size(), GL_UNSIGNED_INT, nullptr);
+}
+
+size_t multi_material_object::single_material_section::get_material_index()
+        const {
+    return material_index_;
 }
 
 glm::mat4

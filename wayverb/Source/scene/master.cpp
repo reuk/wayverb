@@ -1,9 +1,10 @@
 #include "master.h"
 
 #include "controller.h"
-#include "view.h"
 #include "engine_message_queue.h"
+#include "view.h"
 
+#include "AngularLookAndFeel.h"
 #include "Application.h"
 #include "CommandIDs.h"
 
@@ -82,7 +83,7 @@ public:
                         positions_changed_     = engine_message_queue::node_positions_changed::scoped_connection{};
                         pressures_changed_     = engine_message_queue::node_pressures_changed::scoped_connection{};
                         reflections_generated_ = engine_message_queue::reflections_generated::scoped_connection{};
-                        //view_.high_priority_command([](auto& renderer) { renderer.clear(); });
+                        view_.high_priority_command([](auto& renderer) { renderer.clear(); });
                     }
                 })}
             , sources_connection_{
@@ -134,6 +135,10 @@ public:
                         r.set_scene(t.data(), t.size(), v.data(), v.size());
                         r.set_view_state(vs);
                         r.set_projection_matrix(pm);
+                        r.set_emphasis_colour(
+                                {AngularLookAndFeel::emphasis.getFloatRed(),
+                                 AngularLookAndFeel::emphasis.getFloatGreen(),
+                                 AngularLookAndFeel::emphasis.getFloatBlue()});
                         //  TODO we might need to set other state here too.
                     });
                 });
@@ -198,9 +203,12 @@ private:
     wayverb::combined::model::receivers::scoped_connection
             receivers_connection_;
 
-    engine_message_queue::node_positions_changed::scoped_connection positions_changed_;
-    engine_message_queue::node_pressures_changed::scoped_connection pressures_changed_;
-    engine_message_queue::reflections_generated::scoped_connection reflections_generated_;
+    engine_message_queue::node_positions_changed::scoped_connection
+            positions_changed_;
+    engine_message_queue::node_pressures_changed::scoped_connection
+            pressures_changed_;
+    engine_message_queue::reflections_generated::scoped_connection
+            reflections_generated_;
     engine_message_queue::begun::scoped_connection begun_;
     engine_message_queue::finished::scoped_connection finished_;
 };

@@ -1,6 +1,7 @@
 #include "master.h"
 #include "AngularLookAndFeel.h"
 
+#include "materials/master.h"
 #include "receivers/master.h"
 #include "sources/master.h"
 
@@ -46,6 +47,21 @@ private:
     look_and_feel look_and_feel_;
 };
 
+Array<PropertyComponent*> make_material_options(
+        wayverb::combined::model::scene& scene,
+        const wayverb::combined::model::app::material_presets_t& presets,
+        const wayverb::combined::model::
+                vector<wayverb::combined::model::material, 1> model) {
+    Array<PropertyComponent*> ret;
+    size_t count = 0;
+    for (const auto& i : model) {
+        ret.add(new wrapped_property_component<
+                left_bar::materials::config_item>(
+                30, scene, presets, i.get_shared_ptr(), count++));
+    }
+    return ret;
+}
+
 }  // namespace
 
 namespace left_bar {
@@ -57,11 +73,11 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
             property_panel_.setEnabled(false);
             bottom_.set_state(bottom::state::rendering);
         })}
-        , engine_state_connection_{queue.connect_engine_state([this](
-                  auto state, auto progress) {
-            bottom_.set_bar_text(wayverb::combined::to_string(state));
-            bottom_.set_progress(progress);
-        })}
+        , engine_state_connection_{queue.connect_engine_state(
+                  [this](auto state, auto progress) {
+                      bottom_.set_bar_text(wayverb::combined::to_string(state));
+                      bottom_.set_progress(progress);
+                  })}
         , finished_connection_{queue.connect_finished([this] {
             //  Re-enable the top panel.
             property_panel_.setEnabled(true);
@@ -84,6 +100,11 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
                     item_height,
                     model_.capsule_presets,
                     *model_.project.persistent.receivers()}});
+    property_panel_.addSection(
+            "materials",
+            make_material_options(app.scene,
+                                  app.material_presets,
+                                  *app.project.persistent.materials()));
     property_panel_.setOpaque(false);
 
     //  Make components visible

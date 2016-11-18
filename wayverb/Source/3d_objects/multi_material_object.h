@@ -48,6 +48,8 @@ private:
                                 size_t num_triangles,
                                 size_t material_index);
 
+        size_t get_material_index() const;
+
     private:
         void do_draw(const glm::mat4 &model_matrix) const override;
         glm::mat4 get_local_model_matrix() const override;
@@ -57,8 +59,8 @@ private:
                 size_t num_triangles,
                 size_t material_index);
 
-        mglu::static_ibo ibo;
-        GLuint size;
+        size_t material_index_;
+        mglu::static_ibo ibo_;
     };
 
     util::aligned::vector<single_material_section> sections_;

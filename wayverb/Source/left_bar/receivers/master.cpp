@@ -6,7 +6,6 @@
 #include "../text_property.h"
 #include "../vec3_property.h"
 
-#include "combined/model/capsule_presets.h"
 #include "combined/model/receiver.h"
 
 #include "core/az_el.h"
