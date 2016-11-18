@@ -23,8 +23,9 @@ public:
     }
 
     T content;
+
 private:
     Label label_;
 };
 
-}//namespace left_bar 
+}  // namespace left_bar

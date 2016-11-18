@@ -4,7 +4,8 @@
 #include <numeric>
 
 namespace {
-util::aligned::vector<glm::vec3> compute_ring_points(int num, RingObject::Axis axis) {
+util::aligned::vector<glm::vec3> compute_ring_points(int num,
+                                                     RingObject::Axis axis) {
     util::aligned::vector<glm::vec3> ret(num);
     for (auto i = 0; i != num; ++i) {
         auto angle = M_PI * 2 * i / num;
@@ -45,8 +46,7 @@ RingObject::RingObject(const std::shared_ptr<mglu::generic_shader>& shader,
                               compute_ring_points(pts, axis),
                               util::aligned::vector<glm::vec4>(pts, color),
                               compute_ring_indices(pts),
-                              GL_LINE_STRIP) {
-}
+                              GL_LINE_STRIP) {}
 
 //----------------------------------------------------------------------------//
 
@@ -56,8 +56,7 @@ LineObject::LineObject(const std::shared_ptr<mglu::generic_shader>& shader,
                               {{0, 0, 0}, {0, 0, 1}},
                               util::aligned::vector<glm::vec4>(2, color),
                               {0, 1},
-                              GL_LINES) {
-}
+                              GL_LINES) {}
 
 //----------------------------------------------------------------------------//
 
@@ -67,8 +66,7 @@ PointObject::PointObject(const std::shared_ptr<mglu::generic_shader>& shader,
         , color(color)
         , x_ring(shader, color, RingObject::Axis::x)
         , y_ring(shader, color, RingObject::Axis::y)
-        , z_ring(shader, color, RingObject::Axis::z) {
-}
+        , z_ring(shader, color, RingObject::Axis::z) {}
 
 void PointObject::set_highlight(float amount) {
     x_ring.set_highlight(amount);
@@ -85,11 +83,10 @@ void PointObject::do_draw(const glm::mat4& model_matrix) const {
     }
 }
 
-glm::mat4 PointObject::get_local_model_matrix() const {
-    return get_matrix();
-}
+glm::mat4 PointObject::get_local_model_matrix() const { return get_matrix(); }
 
-void PointObject::set_pointing(const util::aligned::vector<glm::vec3>& directions) {
+void PointObject::set_pointing(
+        const util::aligned::vector<glm::vec3>& directions) {
     while (directions.size() < lines.size()) {
         lines.pop_back();
     }

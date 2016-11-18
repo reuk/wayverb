@@ -20,6 +20,8 @@ public:
     controller(wayverb::combined::model::app& app);
     ~controller() noexcept;
 
+    void enablement_changed(bool enabled);
+
     void mouse_move(const MouseEvent& e);
     void mouse_down(const MouseEvent& e);
     void mouse_drag(const MouseEvent& e);
@@ -36,7 +38,8 @@ private:
         using value_type = std::decay_t<decltype(beg->get_shared_ptr())>;
 
         const auto origin = app_.scene.compute_world_camera_position();
-        const auto direction = app_.scene.compute_world_mouse_direction(mouse_pos);
+        const auto direction =
+                app_.scene.compute_world_mouse_direction(mouse_pos);
 
         struct intersection {
             value_type it;
@@ -63,10 +66,11 @@ private:
     }
 
     template <typename T>
-    auto do_action_with_closest_thing(const glm::vec2& mouse_pos,
-        wayverb::combined::model::sources& sources,
-        wayverb::combined::model::receivers& receivers,
-        T&& action) const {
+    auto do_action_with_closest_thing(
+            const glm::vec2& mouse_pos,
+            wayverb::combined::model::sources& sources,
+            wayverb::combined::model::receivers& receivers,
+            T&& action) const {
         const auto get_hovered_in_range = [this, mouse_pos](auto& range) {
             return get_hovered(std::begin(range), std::end(range), mouse_pos);
         };
@@ -100,6 +104,8 @@ private:
     wayverb::combined::model::app& app_;
 
     std::unique_ptr<mouse_action> mouse_action_;
+
+    bool allow_edit_ = true;
 };
 
 }  // namespace scene

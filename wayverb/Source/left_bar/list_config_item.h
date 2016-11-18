@@ -10,11 +10,14 @@ namespace left_bar {
 
 /// Displays a name and a button for further configuration.
 template <typename T>
-class list_config_item : public updatable_component<T>, public TextButton::Listener {
+class list_config_item : public updatable_component<T>,
+                         public TextButton::Listener {
 public:
-    using get_callout_component = std::function<std::unique_ptr<Component>(std::shared_ptr<T>)>;
+    using get_callout_component =
+            std::function<std::unique_ptr<Component>(std::shared_ptr<T>)>;
 
-    list_config_item(std::shared_ptr<T> model, get_callout_component get_callout_component)
+    list_config_item(std::shared_ptr<T> model,
+                     get_callout_component get_callout_component)
             : model_{std::move(model)}
             , get_callout_component_{std::move(get_callout_component)} {
         label_.setInterceptsMouseClicks(false, false);

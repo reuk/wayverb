@@ -9,7 +9,7 @@ public:
     PolarPatternView();
     void paint(Graphics& g) override;
 
-    void set_shape (double shape);
+    void set_shape(double shape);
 
 private:
     double shape_{0};

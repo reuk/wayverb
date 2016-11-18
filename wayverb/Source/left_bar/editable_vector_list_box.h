@@ -2,7 +2,7 @@
 
 #include "vector_list_box.h"
 
-#include "../UtilityComponents/connector.h" 
+#include "../UtilityComponents/connector.h"
 
 namespace left_bar {
 
@@ -19,17 +19,14 @@ public:
             typename vector_list_box<Model>::create_list_item create_list_item,
             insert insert)
             : model_{model}
-            , connection_{model_.connect([this](auto&) {
-                this->update_buttons();
-            })}
+            , connection_{model_.connect(
+                      [this](auto&) { this->update_buttons(); })}
             , insert_{std::move(insert)}
             , list_box_{model_, std::move(create_list_item)} {
-
         //  If selected rows change, update buttons.
-        list_box_.connect_selected_rows_changed([this](auto) {
-            update_buttons();
-        });
-        
+        list_box_.connect_selected_rows_changed(
+                [this](auto) { update_buttons(); });
+
         addAndMakeVisible(list_box_);
         addAndMakeVisible(add_button_);
         addAndMakeVisible(sub_button_);
@@ -56,13 +53,12 @@ public:
         }
     }
 
-    void setRowHeight(int height) {
-        list_box_.setRowHeight(height);
-    }
+    void setRowHeight(int height) { list_box_.setRowHeight(height); }
 
 private:
     void update_buttons() {
-        sub_button_.setEnabled(model_.can_erase() && list_box_.getSelectedRow() != -1);
+        sub_button_.setEnabled(model_.can_erase() &&
+                               list_box_.getSelectedRow() != -1);
     }
 
     Model& model_;
@@ -79,4 +75,4 @@ private:
     model::Connector<TextButton> sub_button_connector_{&sub_button_, this};
 };
 
-}//namespace left_bar
+}  // namespace left_bar

@@ -17,9 +17,7 @@ public:
         bool operator!=(const PanelContents& rhs) const;
         bool operator==(const PanelContents& rhs) const;
 
-        auto tie() const {
-            return std::tie(title, text);
-        }
+        auto tie() const { return std::tie(title, text); }
     };
 
     HelpPanel();

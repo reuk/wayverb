@@ -5,46 +5,47 @@
 
 class VolumeComponent : public Component {
 public:
-/*
-    class VolumeSlider : public ValueWrapperSlider<float> {
-    public:
-        VolumeSlider(model::ValueWrapper<float>& value);
+    /*
+        class VolumeSlider : public ValueWrapperSlider<float> {
+        public:
+            VolumeSlider(model::ValueWrapper<float>& value);
 
-        //        float slider_to_value(float t) override;
-        //        float value_to_slider(float t) override;
-    };
+            //        float slider_to_value(float t) override;
+            //        float value_to_slider(float t) override;
+        };
 
-    VolumeComponent(model::ValueWrapper<volume_type>& value);
+        VolumeComponent(model::ValueWrapper<volume_type>& value);
 
-    void resized() override;
+        void resized() override;
 
-private:
-    model::ValueWrapper<volume_type>& value;
+    private:
+        model::ValueWrapper<volume_type>& value;
 
-    VolumeSlider s0;
-    VolumeSlider s1;
-    VolumeSlider s2;
-    VolumeSlider s3;
-    VolumeSlider s4;
-    VolumeSlider s5;
-    VolumeSlider s6;
-    VolumeSlider s7;
+        VolumeSlider s0;
+        VolumeSlider s1;
+        VolumeSlider s2;
+        VolumeSlider s3;
+        VolumeSlider s4;
+        VolumeSlider s5;
+        VolumeSlider s6;
+        VolumeSlider s7;
 
-    std::array<VolumeSlider*, 8> get_slider_array();
-*/
+        std::array<VolumeSlider*, 8> get_slider_array();
+    */
 };
 
 //----------------------------------------------------------------------------//
 
 class VolumeProperty : public PropertyComponent {
 public:
-/*
-    VolumeProperty(const String& name, model::ValueWrapper<volume_type>& value);
-    void refresh() override;
+    /*
+        VolumeProperty(const String& name, model::ValueWrapper<volume_type>&
+    value);
+        void refresh() override;
 
-private:
-    VolumeComponent editor;
-*/
+    private:
+        VolumeComponent editor;
+    */
 };
 
 //----------------------------------------------------------------------------//
@@ -86,70 +87,72 @@ class PresetComponent : public Component,
                         public TextButton::Listener,
                         public SettableHelpPanelClient {
 public:
-/*
-    PresetComponent(model::ValueWrapper<surface>& linked,
-                    model::ValueWrapper<aligned::vector<scene_data::material>>&
-                            preset_model);
-    virtual ~PresetComponent() noexcept;
-    void resized() override;
+    /*
+        PresetComponent(model::ValueWrapper<surface>& linked,
+                        model::ValueWrapper<aligned::vector<scene_data::material>>&
+                                preset_model);
+        virtual ~PresetComponent() noexcept;
+        void resized() override;
 
-    void comboBoxChanged(ComboBox* cb) override;
+        void comboBoxChanged(ComboBox* cb) override;
 
-    void buttonClicked(Button* b) override;
+        void buttonClicked(Button* b) override;
 
-    void receive_broadcast(model::Broadcaster* cb) override;
+        void receive_broadcast(model::Broadcaster* cb) override;
 
-    void textEditorReturnKeyPressed(TextEditor& e) override;
+        void textEditorReturnKeyPressed(TextEditor& e) override;
 
-private:
-    model::ValueWrapper<surface>& linked;
-    model::BroadcastConnector linked_connector{&linked, this};
+    private:
+        model::ValueWrapper<surface>& linked;
+        model::BroadcastConnector linked_connector{&linked, this};
 
-    model::ValueWrapper<aligned::vector<scene_data::material>>& preset_model;
-    model::BroadcastConnector preset_connector{&preset_model, this};
+        model::ValueWrapper<aligned::vector<scene_data::material>>&
+    preset_model;
+        model::BroadcastConnector preset_connector{&preset_model, this};
 
-    ComboBox combo_box;
-    model::Connector<ComboBox> combo_box_connector{&combo_box, this};
+        ComboBox combo_box;
+        model::Connector<ComboBox> combo_box_connector{&combo_box, this};
 
-    TextEditor text_editor;
-    model::Connector<TextEditor> text_editor_connector{&text_editor, this};
+        TextEditor text_editor;
+        model::Connector<TextEditor> text_editor_connector{&text_editor, this};
 
-    TextButton save_button{"save"};
-    model::Connector<TextButton> save_button_connector{&save_button, this};
+        TextButton save_button{"save"};
+        model::Connector<TextButton> save_button_connector{&save_button, this};
 
-    TextButton delete_button{"delete"};
-    model::Connector<TextButton> delete_button_connector{&delete_button, this};
-*/
+        TextButton delete_button{"delete"};
+        model::Connector<TextButton> delete_button_connector{&delete_button,
+    this};
+    */
 };
 
 //----------------------------------------------------------------------------//
 
 class PresetProperty : public PropertyComponent {
 public:
-/*
-    PresetProperty(model::ValueWrapper<surface>& linked,
-                   model::ValueWrapper<aligned::vector<scene_data::material>>&
-                           preset_model);
-    void refresh() override;
+    /*
+        PresetProperty(model::ValueWrapper<surface>& linked,
+                       model::ValueWrapper<aligned::vector<scene_data::material>>&
+                               preset_model);
+        void refresh() override;
 
-private:
-    PresetComponent preset_component;
-*/
+    private:
+        PresetComponent preset_component;
+    */
 };
 
 //----------------------------------------------------------------------------//
 
 class SurfaceComponent : public Component {
 public:
-/*
-    SurfaceComponent(model::ValueWrapper<surface>& value,
-                     model::ValueWrapper<aligned::vector<scene_data::material>>&
-                             preset_model);
-    void resized() override;
+    /*
+        SurfaceComponent(model::ValueWrapper<surface>& value,
+                         model::ValueWrapper<aligned::vector<scene_data::material>>&
+                                 preset_model);
+        void resized() override;
 
-private:
-    PropertyPanel property_panel;
-*/
+    private:
+        PropertyPanel property_panel;
+    */
 };
 
 //----------------------------------------------------------------------------//
@@ -157,17 +160,17 @@ private:
 class SurfaceComponentWithTitle : public Component,
                                   public SettableHelpPanelClient {
 public:
-/*
-    SurfaceComponentWithTitle(
-            model::ValueWrapper<scene_data::material>& value,
-            model::ValueWrapper<aligned::vector<scene_data::material>>&
-                    preset_model);
-    void resized() override;
+    /*
+        SurfaceComponentWithTitle(
+                model::ValueWrapper<scene_data::material>& value,
+                model::ValueWrapper<aligned::vector<scene_data::material>>&
+                        preset_model);
+        void resized() override;
 
-    static constexpr auto title_height = 25;
+        static constexpr auto title_height = 25;
 
-private:
-    Label title;
-    SurfaceComponent surface_component;
-*/
+    private:
+        Label title;
+        SurfaceComponent surface_component;
+    */
 };

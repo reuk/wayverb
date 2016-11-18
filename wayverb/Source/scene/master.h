@@ -12,11 +12,13 @@ class app;
 }
 }
 
+class engine_message_queue;
+
 namespace scene {
 
 class master final : public Component, public SettableHelpPanelClient {
 public:
-    master(wayverb::combined::model::app& app);
+    master(wayverb::combined::model::app& app, engine_message_queue& queue);
     ~master() noexcept;
 
     void resized() override;

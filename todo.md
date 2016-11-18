@@ -20,6 +20,8 @@ really test load and save
 
 rendering
     'All channels are silent' bug
+        propbably due to source and receiver being at same location + hard source
+
     Waveguide growth issue - see: vault model
 
     Improve source/reciever + microphone direction models.

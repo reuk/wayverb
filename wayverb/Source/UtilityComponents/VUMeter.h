@@ -28,8 +28,7 @@ public:
     Meter(T &&strategy, size_t channel)
             : strategy(std::make_unique<TemplateMeterStrategy<T>>(
                       std::forward<T>(strategy)))
-            , channel(channel) {
-    }
+            , channel(channel) {}
 
     void reset();
 
@@ -52,8 +51,7 @@ private:
     template <typename T>
     struct TemplateMeterStrategy : public MeterStrategy {
         TemplateMeterStrategy(T &&t)
-                : t(std::forward<T>(t)) {
-        }
+                : t(std::forward<T>(t)) {}
         float operator()(const float *channel_data,
                          int num_samples) const override {
             return t(channel_data, num_samples);

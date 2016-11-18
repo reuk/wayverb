@@ -52,4 +52,4 @@ void bottom::buttonClicked(Button*) {
             true);
 }
 
-}//namespace left_bar
+}  // namespace left_bar

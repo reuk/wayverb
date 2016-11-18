@@ -30,4 +30,4 @@ private:
     model::Connector<TextButton> button_connector_{&button_, this};
 };
 
-}//namespace left_bar
+}  // namespace left_bar

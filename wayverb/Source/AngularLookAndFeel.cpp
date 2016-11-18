@@ -2,11 +2,10 @@
 
 const Colour AngularLookAndFeel::emphasis{0xff009900};
 
-Colour AngularLookAndFeel::create_base_colour(
-        Colour button_colour,
-        bool has_keyboard_focus,
-        bool is_mouse_over,
-        bool is_button_down) noexcept {
+Colour AngularLookAndFeel::create_base_colour(Colour button_colour,
+                                              bool has_keyboard_focus,
+                                              bool is_mouse_over,
+                                              bool is_button_down) noexcept {
     const float sat = has_keyboard_focus ? 1.3f : 0.9f;
     const Colour base_colour(button_colour.withMultipliedSaturation(sat));
 
@@ -21,39 +20,29 @@ Colour AngularLookAndFeel::create_base_colour(
 }
 
 AngularLookAndFeel::AngularLookAndFeel() {
-    setColour(ProgressBar::ColourIds::backgroundColourId,
-              Colours::darkgrey);
+    setColour(ProgressBar::ColourIds::backgroundColourId, Colours::darkgrey);
     setColour(ProgressBar::ColourIds::foregroundColourId, emphasis);
-    setColour(TextButton::ColourIds::buttonColourId,
-              Colours::darkgrey);
+    setColour(TextButton::ColourIds::buttonColourId, Colours::darkgrey);
     setColour(TextButton::ColourIds::buttonOnColourId, emphasis);
-    setColour(TextButton::ColourIds::textColourOnId,
-              Colours::lightgrey);
-    setColour(TextButton::ColourIds::textColourOffId,
-              Colours::lightgrey);
-    setColour(ToggleButton::ColourIds::textColourId,
-              Colours::lightgrey);
+    setColour(TextButton::ColourIds::textColourOnId, Colours::lightgrey);
+    setColour(TextButton::ColourIds::textColourOffId, Colours::lightgrey);
+    setColour(ToggleButton::ColourIds::textColourId, Colours::lightgrey);
     setColour(Label::ColourIds::textColourId, Colours::lightgrey);
-    setColour(GroupComponent::ColourIds::textColourId,
-              Colours::lightgrey);
+    setColour(GroupComponent::ColourIds::textColourId, Colours::lightgrey);
     setColour(PropertyComponent::ColourIds::backgroundColourId,
               Colours::darkgrey);
     setColour(PropertyComponent::ColourIds::labelTextColourId,
               Colours::lightgrey);
     setColour(BubbleComponent::ColourIds::backgroundColourId,
               Colours::lightgrey.withAlpha(0.8f));
-    setColour(BubbleComponent::ColourIds::outlineColourId,
-              Colours::black);
+    setColour(BubbleComponent::ColourIds::outlineColourId, Colours::black);
     setColour(Slider::ColourIds::thumbColourId, emphasis);
     setColour(PopupMenu::ColourIds::highlightedBackgroundColourId,
               Colours::darkgrey);
-    setColour(ComboBox::ColourIds::arrowColourId,
-              Colours::lightgrey);
+    setColour(ComboBox::ColourIds::arrowColourId, Colours::lightgrey);
     setColour(TextEditor::ColourIds::textColourId, Colours::black);
-    setColour(TextEditor::ColourIds::highlightColourId,
-              Colours::darkgrey);
-    setColour(TextEditor::ColourIds::highlightedTextColourId,
-              Colours::white);
+    setColour(TextEditor::ColourIds::highlightColourId, Colours::darkgrey);
+    setColour(TextEditor::ColourIds::highlightedTextColourId, Colours::white);
     setColour(ListBox::backgroundColourId, Colours::transparentBlack);
     setColour(ListBox::textColourId, Colours::lightgrey);
 
@@ -89,8 +78,7 @@ void vertical_line(Graphics& g,
 }
 
 auto matte_outer(Graphics& g,
-                 Rectangle<int>
-                         bounds,
+                 Rectangle<int> bounds,
                  bool vertical,
                  Colour c = Colours::black) {
     if (vertical) {
@@ -122,12 +110,12 @@ void matte_inner(Graphics& g,
 
     if (vertical) {
         g.setGradientFill(ColourGradient(Colours::transparentWhite,
-                                               bounds.getX(),
-                                               bounds.getY(),
-                                               grad,
-                                               bounds.getRight(),
-                                               bounds.getY(),
-                                               false));
+                                         bounds.getX(),
+                                         bounds.getY(),
+                                         grad,
+                                         bounds.getRight(),
+                                         bounds.getY(),
+                                         false));
         g.fillRect(bounds.getX(),
                    bounds.getY(),
                    bounds.getWidth(),
@@ -138,12 +126,12 @@ void matte_inner(Graphics& g,
                       bounds.getHeight() + 1);
     } else {
         g.setGradientFill(ColourGradient(grad,
-                                               bounds.getX(),
-                                               bounds.getY(),
-                                               Colours::transparentWhite,
-                                               bounds.getX(),
-                                               bounds.getBottom(),
-                                               false));
+                                         bounds.getX(),
+                                         bounds.getY(),
+                                         Colours::transparentWhite,
+                                         bounds.getX(),
+                                         bounds.getBottom(),
+                                         false));
         g.fillRect(bounds.getX(),
                    bounds.getY(),
                    bounds.getWidth(),
@@ -154,29 +142,26 @@ void matte_inner(Graphics& g,
 }
 
 void AngularLookAndFeel::matte_background_box(Graphics& g,
-                                              Rectangle<int>
-                                                      bounds,
+                                              Rectangle<int> bounds,
                                               bool vertical,
                                               const Colour& colour) {
     bounds = matte_outer(g, bounds, vertical);
     if (vertical) {
-        g.setGradientFill(
-                ColourGradient(colour,
-                                     bounds.getX(),
-                                     0,
-                                     Colours::black.withAlpha(0.5f),
-                                     bounds.getRight(),
-                                     0,
-                                     false));
+        g.setGradientFill(ColourGradient(colour,
+                                         bounds.getX(),
+                                         0,
+                                         Colours::black.withAlpha(0.5f),
+                                         bounds.getRight(),
+                                         0,
+                                         false));
     } else {
-        g.setGradientFill(
-                ColourGradient(Colours::black.withAlpha(0.5f),
-                                     0,
-                                     bounds.getY(),
-                                     colour,
-                                     0,
-                                     bounds.getBottom(),
-                                     false));
+        g.setGradientFill(ColourGradient(Colours::black.withAlpha(0.5f),
+                                         0,
+                                         bounds.getY(),
+                                         colour,
+                                         0,
+                                         bounds.getBottom(),
+                                         false));
     }
     g.fillRect(bounds.getX(),
                bounds.getY(),
@@ -185,8 +170,7 @@ void AngularLookAndFeel::matte_background_box(Graphics& g,
 }
 
 void AngularLookAndFeel::matte_foreground_box(Graphics& g,
-                                              Rectangle<int>
-                                                      bounds,
+                                              Rectangle<int> bounds,
                                               const Colour& colour) {
     g.setColour(Colours::black.withAlpha(0.9f));
     g.drawRect(bounds.getX(),
@@ -213,10 +197,8 @@ void AngularLookAndFeel::drawProgressBar(Graphics& g,
                                          int height,
                                          double progress,
                                          const String& textToShow) {
-    const Colour background(
-            bar.findColour(ProgressBar::backgroundColourId));
-    const Colour foreground(
-            bar.findColour(ProgressBar::foregroundColourId));
+    const Colour background(bar.findColour(ProgressBar::backgroundColourId));
+    const Colour foreground(bar.findColour(ProgressBar::foregroundColourId));
 
     //  do the backround
     g.fillAll(background);
@@ -227,15 +209,14 @@ void AngularLookAndFeel::drawProgressBar(Graphics& g,
     //  now the bar
     if (0 <= progress && progress < 1) {
         //  solid bar
-        matte_foreground_box(
-                g,
-                Rectangle<int>(0,
-                                     0,
-                                     jlimit(0.0,
-                                                  static_cast<double>(width),
-                                                  progress * width),
-                                     height - 1),
-                foreground);
+        matte_foreground_box(g,
+                             Rectangle<int>(0,
+                                            0,
+                                            jlimit(0.0,
+                                                   static_cast<double>(width),
+                                                   progress * width),
+                                            height - 1),
+                             foreground);
     } else {
         //  spinny bar
         g.setColour(foreground);
@@ -261,9 +242,8 @@ void AngularLookAndFeel::drawProgressBar(Graphics& g,
 
         {
             Graphics g2(im);
-            matte_foreground_box(g2,
-                                 Rectangle<int>(0, 0, width, height - 1),
-                                 foreground);
+            matte_foreground_box(
+                    g2, Rectangle<int>(0, 0, width, height - 1), foreground);
         }
 
         g.setTiledImageFill(im, 0, 0, 0.85f);
@@ -274,13 +254,8 @@ void AngularLookAndFeel::drawProgressBar(Graphics& g,
         g.setColour(Colours::lightgrey);
         g.setFont(height * 0.6f);
 
-        g.drawText(textToShow,
-                   0,
-                   0,
-                   width,
-                   height,
-                   Justification::centred,
-                   false);
+        g.drawText(
+                textToShow, 0, 0, width, height, Justification::centred, false);
     }
 }
 
@@ -354,9 +329,8 @@ void AngularLookAndFeel::drawGroupComponentOutline(
             text.isEmpty()
                     ? 0
                     : jlimit(0.0,
-                                   fmax(0.0, w - text_edge_gap * 2.0),
-                                   f.getStringWidth(text) +
-                                                      text_edge_gap * 2.0);
+                             fmax(0.0, w - text_edge_gap * 2.0),
+                             f.getStringWidth(text) + text_edge_gap * 2.0);
     float text_x = text_edge_gap;
 
     if (position.testFlags(Justification::horizontallyCentred))
@@ -395,11 +369,7 @@ void AngularLookAndFeel::drawGroupComponentOutline(
 }
 
 void AngularLookAndFeel::drawPropertyPanelSectionHeader(
-        Graphics& g,
-        const String& name,
-        bool is_open,
-        int width,
-        int height) {
+        Graphics& g, const String& name, bool is_open, int width, int height) {
     //    auto background =
     //        findColour(PropertyComponent::ColourIds::backgroundColourId);
 
@@ -429,8 +399,10 @@ void AngularLookAndFeel::drawPropertyPanelSectionHeader(
                true);
 }
 
-void AngularLookAndFeel::drawPropertyComponentBackground(
-        Graphics& g, int width, int height, PropertyComponent& p) {
+void AngularLookAndFeel::drawPropertyComponentBackground(Graphics& g,
+                                                         int width,
+                                                         int height,
+                                                         PropertyComponent& p) {
 }
 
 void AngularLookAndFeel::drawLinearSliderBackground(
@@ -452,17 +424,16 @@ void AngularLookAndFeel::drawLinearSliderBackground(
     }
 }
 
-void AngularLookAndFeel::drawLinearSliderThumb(
-        Graphics& g,
-        int x,
-        int y,
-        int width,
-        int height,
-        float slider_pos,
-        float min_slider_pos,
-        float max_slider_pos,
-        const Slider::SliderStyle style,
-        Slider& slider) {
+void AngularLookAndFeel::drawLinearSliderThumb(Graphics& g,
+                                               int x,
+                                               int y,
+                                               int width,
+                                               int height,
+                                               float slider_pos,
+                                               float min_slider_pos,
+                                               float max_slider_pos,
+                                               const Slider::SliderStyle style,
+                                               Slider& slider) {
     Colour thumb_colour = create_base_colour(
             slider.findColour(Slider::thumbColourId),
             slider.hasKeyboardFocus(false) && slider.isEnabled(),
@@ -473,13 +444,12 @@ void AngularLookAndFeel::drawLinearSliderThumb(
         const auto slider_radius = (float)(getSliderThumbRadius(slider));
 
         if (style == Slider::LinearVertical) {
-            matte_foreground_box(
-                    g,
-                    Rectangle<int>(x + width * 0.5 - slider_radius,
-                                         slider_pos - slider_radius + 3,
-                                         slider_radius * 2,
-                                         slider_radius * 2 - 6),
-                    thumb_colour);
+            matte_foreground_box(g,
+                                 Rectangle<int>(x + width * 0.5 - slider_radius,
+                                                slider_pos - slider_radius + 3,
+                                                slider_radius * 2,
+                                                slider_radius * 2 - 6),
+                                 thumb_colour);
         } else {
             //            auto kx = slider_pos;
             //            auto ky = y + height * 0.5f;
@@ -537,12 +507,10 @@ void AngularLookAndFeel::drawCallOutBoxBackground(CallOutBox& box,
                                                   const Path& path,
                                                   Image& cachedImage) {
     if (cachedImage.isNull()) {
-        cachedImage = Image(
-                Image::ARGB, box.getWidth(), box.getHeight(), true);
+        cachedImage = Image(Image::ARGB, box.getWidth(), box.getHeight(), true);
         Graphics g2(cachedImage);
 
-        DropShadow(
-                Colours::black.withAlpha(0.7f), 8, Point<int>(0, 2))
+        DropShadow(Colours::black.withAlpha(0.7f), 8, Point<int>(0, 2))
                 .drawForPath(g2, path);
     }
 
@@ -570,15 +538,13 @@ void AngularLookAndFeel::drawTickBox(Graphics& g,
 
     if (ticked) {
         matte_box(g,
-                  Rectangle<int>(
-                          x, y + (h - boxSize) * 0.5f, boxSize, boxSize),
+                  Rectangle<int>(x, y + (h - boxSize) * 0.5f, boxSize, boxSize),
                   false,
                   emphasis);
     } else {
         matte_background_box(
                 g,
-                Rectangle<int>(
-                        x, y + (h - boxSize) * 0.5f, boxSize, boxSize),
+                Rectangle<int>(x, y + (h - boxSize) * 0.5f, boxSize, boxSize),
                 false,
                 Colours::darkgrey);
     }

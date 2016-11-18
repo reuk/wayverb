@@ -10,9 +10,7 @@ public:
         setup(property_panel);
     }
 
-    void resized() override {
-        property_panel.setBounds(getLocalBounds());
-    }
+    void resized() override { property_panel.setBounds(getLocalBounds()); }
 
     auto getTotalContentHeight() const {
         return property_panel.getTotalContentHeight();

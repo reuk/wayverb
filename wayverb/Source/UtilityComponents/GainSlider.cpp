@@ -35,13 +35,9 @@ GainSlider::GainSlider(Orientation orientation)
     slider.addListener(this);
 }
 
-GainSlider::~GainSlider() noexcept {
-    slider.removeListener(this);
-}
+GainSlider::~GainSlider() noexcept { slider.removeListener(this); }
 
-void GainSlider::resized() {
-    slider.setBounds(getLocalBounds());
-}
+void GainSlider::resized() { slider.setBounds(getLocalBounds()); }
 
 void GainSlider::sliderValueChanged(juce::Slider* s) {
     if (s == &slider) {
@@ -74,13 +70,9 @@ void GainSlider::set_gain(double g, juce::NotificationType n) {
     slider.setValue(proportion, n);
 }
 
-void GainSlider::addListener(Listener* l) {
-    listener_list.add(l);
-}
+void GainSlider::addListener(Listener* l) { listener_list.add(l); }
 
-void GainSlider::removeListener(Listener* l) {
-    listener_list.remove(l);
-}
+void GainSlider::removeListener(Listener* l) { listener_list.remove(l); }
 
 //  slider range                0       0.5     1
 //  db range                    -100    -10     0

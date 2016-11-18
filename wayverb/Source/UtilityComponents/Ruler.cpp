@@ -9,9 +9,7 @@ Ruler::Ruler(TransportViewManager &m)
         : transport_view_manager(m) {
     transport_view_manager.addListener(this);
 }
-Ruler::~Ruler() noexcept {
-    transport_view_manager.removeListener(this);
-}
+Ruler::~Ruler() noexcept { transport_view_manager.removeListener(this); }
 
 void Ruler::paint(juce::Graphics &g) {
     g.setFillType(juce::FillType(
@@ -46,10 +44,12 @@ void Ruler::paint(juce::Graphics &g) {
     for (auto i = begin;
          i < transport_view_manager.get_visible_range().getEnd();
          i += s) {
-        auto pos = map(i,
-                        util::make_range(transport_view_manager.get_visible_range().getStart(),
-                                         transport_view_manager.get_visible_range().getEnd()),
-                        util::make_range(0, getWidth()));
+        auto pos = map(
+                i,
+                util::make_range(
+                        transport_view_manager.get_visible_range().getStart(),
+                        transport_view_manager.get_visible_range().getEnd()),
+                util::make_range(0, getWidth()));
         g.drawVerticalLine(pos, 2, getHeight() - 2);
         std::stringstream ss;
         ss << std::fixed << std::setprecision(std::max(0.0, -prec)) << i;
@@ -68,22 +68,23 @@ void Ruler::paint(juce::Graphics &g) {
 double Ruler::x_to_time(double x) const {
     return map(x,
                util::make_range(0, getWidth()),
-               util::make_range(transport_view_manager.get_visible_range().getStart(),
-                                transport_view_manager.get_visible_range().getEnd()));
+               util::make_range(
+                       transport_view_manager.get_visible_range().getStart(),
+                       transport_view_manager.get_visible_range().getEnd()));
 }
 
 double Ruler::time_to_x(double time) const {
     return map(time,
-                util::make_range(transport_view_manager.get_visible_range().getStart(),
-                                 transport_view_manager.get_visible_range().getEnd()),
-                util::make_range(0, getWidth()));
+               util::make_range(
+                       transport_view_manager.get_visible_range().getStart(),
+                       transport_view_manager.get_visible_range().getEnd()),
+               util::make_range(0, getWidth()));
 }
 
 struct Ruler::RulerState {
     RulerState(double mouse_down_time, juce::Range<double> visible_range)
             : mouse_down_time(mouse_down_time)
-            , visible_range(visible_range) {
-    }
+            , visible_range(visible_range) {}
     double mouse_down_time;
     juce::Range<double> visible_range;
 };
@@ -99,9 +100,7 @@ void Ruler::mouseDown(const juce::MouseEvent &e) {
     e.source.enableUnboundedMouseMovement(true, false);
 }
 
-void Ruler::mouseUp(const juce::MouseEvent &event) {
-    ruler_state = nullptr;
-}
+void Ruler::mouseUp(const juce::MouseEvent &event) { ruler_state = nullptr; }
 
 void Ruler::mouseExit(const juce::MouseEvent &event) {
     setMouseCursor(juce::MouseCursor::NormalCursor);

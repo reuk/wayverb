@@ -44,20 +44,12 @@ public:
         add_button.setTopLeftPosition(sub_button.getRight() + 2, 0);
     }
 
-    void set_increment(T t) {
-        increment = t;
-    }
+    void set_increment(T t) { increment = t; }
 
-    T get_increment() const {
-        return increment;
-    }
+    T get_increment() const { return increment; }
 
-    void addListener(Listener* l) {
-        listener_list.add(l);
-    }
-    void removeListener(Listener* l) {
-        listener_list.remove(l);
-    }
+    void addListener(Listener* l) { listener_list.add(l); }
+    void removeListener(Listener* l) { listener_list.remove(l); }
 
     void mouseDown(const juce::MouseEvent& e) override {
         dragged = false;
@@ -209,20 +201,14 @@ public:
     void set_value(T x, bool send_changed) {
         set_text(x, false);
         if (send_changed) {
-            //listener_list.call(&Listener::number_editor_value_changed, this);
+            // listener_list.call(&Listener::number_editor_value_changed, this);
         }
     }
-    T get_value() const {
-        return value;
-    }
+    T get_value() const { return value; }
 
-    void set_increment(T t) {
-        inc_dec_buttons.set_increment(t);
-    }
+    void set_increment(T t) { inc_dec_buttons.set_increment(t); }
 
-    T get_increment() const {
-        return inc_dec_buttons.get_increment();
-    }
+    T get_increment() const { return inc_dec_buttons.get_increment(); }
 
 private:
     void set_text(T x, bool send_changed) {

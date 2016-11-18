@@ -43,20 +43,14 @@ void BareBonesVUMeter::paint(juce::Graphics& g) {
 float BareBonesVUMeter::get_abs_level() const {
     return vu_meter.get_abs_level();
 }
-void BareBonesVUMeter::set_abs_level(float l) {
-    vu_meter.set_abs_level(l);
-}
+void BareBonesVUMeter::set_abs_level(float l) { vu_meter.set_abs_level(l); }
 
 float BareBonesVUMeter::get_rms_level() const {
     return vu_meter.get_rms_level();
 }
-void BareBonesVUMeter::set_rms_level(float l) {
-    vu_meter.set_rms_level(l);
-}
+void BareBonesVUMeter::set_rms_level(float l) { vu_meter.set_rms_level(l); }
 
-void BareBonesVUMeter::reset() {
-    vu_meter.reset();
-}
+void BareBonesVUMeter::reset() { vu_meter.reset(); }
 
 void BareBonesVUMeter::vu_meter_levels_changed(DualVUMeter*, float, float) {
     repaint();

@@ -58,8 +58,8 @@ public:
         }
     }
 
-    using on_change = util::event<ear_picker&,
-                                  wayverb::core::attenuator::hrtf::channel>;
+    using on_change =
+            util::event<ear_picker&, wayverb::core::attenuator::hrtf::channel>;
     on_change::connection connect_on_change(on_change::callback_type callback) {
         return on_change_.connect(std::move(callback));
     }
@@ -73,7 +73,7 @@ public:
 private:
     TextButton l_button_{"left"};
     model::Connector<TextButton> l_button_connector_{&l_button_, this};
-    
+
     TextButton r_button_{"right"};
     model::Connector<TextButton> r_button_connector_{&r_button_, this};
 
@@ -86,7 +86,8 @@ public:
             : model_{model} {
         auto orientation =
                 std::make_unique<azimuth_elevation_property>("orientation");
-        auto channel = std::make_unique<generic_property_component<ear_picker>>("ear", 25);
+        auto channel = std::make_unique<generic_property_component<ear_picker>>(
+                "ear", 25);
 
         auto update_from_hrtf =
                 [ this, o = orientation.get(), c = channel.get() ](auto& hrtf) {
@@ -126,10 +127,15 @@ public:
         auto orientation =
                 std::make_unique<azimuth_elevation_property>("orientation");
         auto shape = std::make_unique<slider_property>("shape", 0, 1);
-        auto display = std::make_unique<PolarPatternProperty>("shape display", 80);
+        auto display =
+                std::make_unique<PolarPatternProperty>("shape display", 80);
 
-        const auto update_from_microphone =
-                [ this, o = orientation.get(), s = shape.get(), d = display.get() ](auto& mic) {
+        const auto update_from_microphone = [
+            this,
+            o = orientation.get(),
+            s = shape.get(),
+            d = display.get()
+        ](auto& mic) {
             o->set(wayverb::core::compute_azimuth_elevation(
                     mic.get().orientation.get_pointing()));
             s->set(mic.get().get_shape());
@@ -164,12 +170,14 @@ public:
     capsule_type_editor(wayverb::combined::model::capsule& model)
             : TabbedComponent{TabbedButtonBar::Orientation::TabsAtTop}
             , model_{model} {
-
         addTab("microphone",
                Colours::darkgrey,
                new microphone_properties{*model_.microphone()},
                true);
-        addTab("hrtf", Colours::darkgrey, new hrtf_properties{*model_.hrtf()}, true);
+        addTab("hrtf",
+               Colours::darkgrey,
+               new hrtf_properties{*model_.hrtf()},
+               true);
 
         const auto update_from_capsule = [this](auto& m) {
             switch (m.get_mode()) {
@@ -184,20 +192,24 @@ public:
 
         update_from_capsule(model_);
 
-        connection_ = wayverb::combined::model::capsule::scoped_connection{model_.connect(update_from_capsule)};
+        connection_ = wayverb::combined::model::capsule::scoped_connection{
+                model_.connect(update_from_capsule)};
 
         initializing_ = false;
     }
 
-    void currentTabChanged(int newCurrentTabIndex, const String& name) override {
-        if (! initializing_) {
+    void currentTabChanged(int newCurrentTabIndex,
+                           const String& name) override {
+        if (!initializing_) {
             switch (newCurrentTabIndex) {
                 case 0:
-                    model_.set_mode(wayverb::combined::model::capsule::mode::microphone);
+                    model_.set_mode(wayverb::combined::model::capsule::mode::
+                                            microphone);
                     break;
 
                 case 1:
-                    model_.set_mode(wayverb::combined::model::capsule::mode::hrtf);
+                    model_.set_mode(
+                            wayverb::combined::model::capsule::mode::hrtf);
                     break;
             }
         }
@@ -214,20 +226,22 @@ public:
     capsule_editor(std::shared_ptr<wayverb::combined::model::capsule> model)
             : model_{std::move(model)} {
         auto name = std::make_unique<text_property>("name");
-        auto config = std::make_unique<generic_property_component<capsule_type_editor>>(
+        auto config = std::make_unique<
+                generic_property_component<capsule_type_editor>>(
                 "capsule type", 200, *model_);
 
-        const auto update_from_capsule = [this, n = name.get()](auto& capsule) {
+        const auto update_from_capsule =
+                [ this, n = name.get() ](auto& capsule) {
             n->set(capsule.get_name());
         };
 
         update_from_capsule(*model_);
 
-        connection_ = wayverb::combined::model::capsule::scoped_connection{model_->connect(update_from_capsule)};
+        connection_ = wayverb::combined::model::capsule::scoped_connection{
+                model_->connect(update_from_capsule)};
 
-        name->connect_on_change([this](auto&, auto name) {
-            model_->set_name(name);
-        });
+        name->connect_on_change(
+                [this](auto&, auto name) { model_->set_name(name); });
 
         addProperties({name.release()});
         addProperties({config.release()});
@@ -245,14 +259,19 @@ private:
 master::master(
         wayverb::combined::model::vector<wayverb::combined::model::capsule, 1>&
                 model)
-        : list_box_{model, [](auto shared) {
-            return std::make_unique<list_config_item<wayverb::combined::model::capsule>>(shared,
-                [] (auto shared) {
-                    return std::make_unique<capsule_editor>(shared);
-                });
-        }, [] (auto& model) {
-            model.insert(model.end(), wayverb::combined::model::capsule{});
-        }} {
+        : list_box_{model,
+                    [](auto shared) {
+                        return std::make_unique<list_config_item<
+                                wayverb::combined::model::capsule>>(
+                                shared, [](auto shared) {
+                                    return std::make_unique<capsule_editor>(
+                                            shared);
+                                });
+                    },
+                    [](auto& model) {
+                        model.insert(model.end(),
+                                     wayverb::combined::model::capsule{});
+                    }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 }

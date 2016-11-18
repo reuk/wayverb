@@ -6,8 +6,8 @@
 #include "../text_property.h"
 #include "../vec3_property.h"
 
-#include "combined/model/receiver.h"
 #include "combined/model/capsule_presets.h"
+#include "combined/model/receiver.h"
 
 #include "core/az_el.h"
 
@@ -48,8 +48,8 @@ public:
                 [this](auto&, auto pos) { receiver_.position()->set(pos); });
 
         orientation->connect_on_change([this](auto&, auto az_el) {
-            receiver_.set_orientation(wayverb::core::orientation{
-                    compute_pointing(az_el)});
+            receiver_.set_orientation(
+                    wayverb::core::orientation{compute_pointing(az_el)});
         });
 
         addProperties({name.release()});
@@ -66,8 +66,9 @@ private:
 
 class receiver_editor final : public Component, public ComboBox::Listener {
 public:
-    receiver_editor(const wayverb::combined::model::app::capsule_presets_t& presets,
-                    std::shared_ptr<wayverb::combined::model::receiver> receiver)
+    receiver_editor(
+            const wayverb::combined::model::app::capsule_presets_t& presets,
+            std::shared_ptr<wayverb::combined::model::receiver> receiver)
             : receiver_{std::move(receiver)}
             , properties_{*receiver_}
             , capsules_{*receiver_->capsules()}
@@ -103,7 +104,8 @@ public:
             const auto& capsules = presets_[selected].capsules;
             receiver_->capsules()->clear();
             for (const auto& capsule : capsules) {
-                receiver_->capsules()->insert(receiver_->capsules()->end(), capsule);
+                receiver_->capsules()->insert(receiver_->capsules()->end(),
+                                              capsule);
             }
         }
         cb->setSelectedItemIndex(-1, dontSendNotification);
@@ -111,7 +113,7 @@ public:
 
 private:
     std::shared_ptr<wayverb::combined::model::receiver> receiver_;
-    
+
     receiver_properties properties_;
     capsules::master capsules_;
     ComboBox combo_box_;
@@ -122,15 +124,18 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-master::master(const wayverb::combined::model::app::capsule_presets_t& presets, wayverb::combined::model::receivers& receivers)
+master::master(const wayverb::combined::model::app::capsule_presets_t& presets,
+               wayverb::combined::model::receivers& receivers)
         : list_box_{receivers,
                     [&presets](auto shared) {
-                        return std::make_unique<list_config_item<wayverb::combined::model::receiver>>(
-                            shared,
-                            [&presets](auto shared) {
-                                return std::make_unique<receiver_editor>(presets, shared);
-                            });
-                    }, [](auto& model) {model.insert(model.end());}} {
+                        return std::make_unique<list_config_item<
+                                wayverb::combined::model::receiver>>(
+                                shared, [&presets](auto shared) {
+                                    return std::make_unique<receiver_editor>(
+                                            presets, shared);
+                                });
+                    },
+                    [](auto& model) { model.insert(model.end()); }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 }

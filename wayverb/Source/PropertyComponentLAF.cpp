@@ -1,8 +1,7 @@
 #include "PropertyComponentLAF.h"
 
 PropertyComponentLAF::PropertyComponentLAF(int label_width)
-        : label_width(label_width) {
-}
+        : label_width(label_width) {}
 
 Rectangle<int> PropertyComponentLAF::getPropertyComponentContentPosition(
         PropertyComponent& component) {

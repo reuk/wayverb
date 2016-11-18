@@ -5,9 +5,9 @@
 class AngularLookAndFeel : public juce::LookAndFeel_V3 {
 public:
     static juce::Colour create_base_colour(juce::Colour button_colour,
-                                     bool has_keyboard_focus,
-                                     bool is_mouse_over,
-                                     bool is_button_down) noexcept;
+                                           bool has_keyboard_focus,
+                                           bool is_mouse_over,
+                                           bool is_button_down) noexcept;
     static void matte_background_box(juce::Graphics& g,
                                      juce::Rectangle<int> bounds,
                                      bool vertical,

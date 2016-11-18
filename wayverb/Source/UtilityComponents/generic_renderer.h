@@ -56,7 +56,8 @@ class generic_renderer final : public Component {
             const auto start = std::chrono::system_clock::now();
             while (auto method = low_priority_queue_.pop()) {
                 (*method)(*renderer_);
-                if (std::chrono::milliseconds{16} < std::chrono::system_clock::now() - start) {
+                if (std::chrono::milliseconds{16} <
+                    std::chrono::system_clock::now() - start) {
                     low_priority_queue_.clear();
                     break;
                 }
@@ -103,7 +104,7 @@ public:
     void high_priority_command(typename impl::input_queue::value_type command) {
         high_priority_queue_.push(std::move(command));
     }
-    
+
     void low_priority_command(typename impl::input_queue::value_type command) {
         low_priority_queue_.push(std::move(command));
     }

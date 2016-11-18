@@ -34,13 +34,14 @@ public:
 
     vector_list_box(Model& model, create_list_item create_list_item)
             : model_{model, std::move(create_list_item)}
-            , connection_{model.connect([this](auto&) { this->updateContent(); })} {
+            , connection_{
+                      model.connect([this](auto&) { this->updateContent(); })} {
         setModel(&model_);
     }
 
     using selected_rows_changed = util::event<int>;
     selected_rows_changed::connection connect_selected_rows_changed(
-        selected_rows_changed::callback_type callback) {
+            selected_rows_changed::callback_type callback) {
         return model_.connect_selected_rows_changed(std::move(callback));
     }
 
@@ -53,7 +54,8 @@ private:
 
         int getNumRows() override { return model_.size(); }
 
-        void paintListBoxItem(int row, Graphics& g, int w, int h, bool selected) override {
+        void paintListBoxItem(
+                int row, Graphics& g, int w, int h, bool selected) override {
             if (selected) {
                 g.fillAll(Colours::darkgrey.darker());
             }
@@ -64,7 +66,7 @@ private:
                                           Component* existing) override {
             if (row < getNumRows()) {
                 const auto& shared = model_[row].get_shared_ptr();
-                if (updatable * v = dynamic_cast<updatable*>(existing)) {
+                if (updatable* v = dynamic_cast<updatable*>(existing)) {
                     v->update(shared);
                 } else {
                     existing = create_list_item_(shared).release();
@@ -82,7 +84,7 @@ private:
         }
 
         selected_rows_changed::connection connect_selected_rows_changed(
-            selected_rows_changed::callback_type callback) {
+                selected_rows_changed::callback_type callback) {
             return selected_rows_changed_.connect(std::move(callback));
         }
 

@@ -51,7 +51,8 @@ public:
             , camera_position_{model_.compute_world_camera_position()}
             , camera_direction_{model_.compute_world_camera_direction()}
             , initial_position_{model_.get_origin()}
-            , camera_distance_{glm::distance(initial_position_, camera_position_)} {}
+            , camera_distance_{
+                      glm::distance(initial_position_, camera_position_)} {}
 
     void mouse_drag(const MouseEvent& e) override {
         //  Find mouse position on plane perpendicular to camera direction
@@ -69,8 +70,9 @@ private:
     glm::vec3 compute_world_mouse_position(const glm::vec2& mouse_pos) {
         const auto mouse_direction =
                 model_.compute_world_mouse_direction(mouse_pos);
-        return camera_position_ + mouse_direction * camera_distance_ /
-               glm::dot(camera_direction_, mouse_direction);
+        return camera_position_ +
+               mouse_direction * camera_distance_ /
+                       glm::dot(camera_direction_, mouse_direction);
     }
 
     wayverb::combined::model::scene& model_;
@@ -88,18 +90,20 @@ std::ostream& operator<<(std::ostream& os, const glm::vec3& p) {
     return os << p.x << ", " << p.y << ", " << p.z;
 }
 
-}//namespace
+}  // namespace
 
 template <typename Item>
 class move_item_action final : public controller::mouse_action {
 public:
-    move_item_action(const wayverb::combined::model::scene& model, const std::shared_ptr<Item>& item)
+    move_item_action(const wayverb::combined::model::scene& model,
+                     const std::shared_ptr<Item>& item)
             : model_{model}
             , item_{item}
             , camera_position_{model.compute_world_camera_position()}
             , camera_direction_{model.compute_world_camera_direction()}
             , initial_position_{item->position()->get()}
-            , camera_distance_{glm::distance(initial_position_, camera_position_)} {
+            , camera_distance_{
+                      glm::distance(initial_position_, camera_position_)} {
         item->hover_state()->set_selected(true);
     }
 
@@ -124,8 +128,9 @@ private:
     glm::vec3 compute_world_mouse_position(const glm::vec2& mouse_pos) {
         const auto mouse_direction =
                 model_.compute_world_mouse_direction(mouse_pos);
-        return camera_position_ + mouse_direction * camera_distance_ /
-               glm::dot(camera_direction_, mouse_direction);
+        return camera_position_ +
+               mouse_direction * camera_distance_ /
+                       glm::dot(camera_direction_, mouse_direction);
     }
 
     const wayverb::combined::model::scene& model_;
@@ -137,7 +142,8 @@ private:
 };
 
 template <typename T>
-auto make_move_item_action_ptr(wayverb::combined::model::scene& model, const std::shared_ptr<T>& t) {
+auto make_move_item_action_ptr(wayverb::combined::model::scene& model,
+                               const std::shared_ptr<T>& t) {
     return std::make_unique<move_item_action<T>>(model, t);
 }
 
@@ -148,33 +154,44 @@ controller::controller(wayverb::combined::model::app& app)
 
 controller::~controller() noexcept = default;
 
+void controller::enablement_changed(bool enabled) {
+    allow_edit_ = enabled;
+    if (!allow_edit_) {
+        if (mouse_action_) {
+            mouse_action_ = nullptr;
+        }
+    }
+}
+
 void controller::mouse_move(const MouseEvent& e) {
+    if (allow_edit_) {
+        //  We do things like this to minimize redraw requests.
 
-    //  We do things like this to minimize redraw requests.
+        //  Make a copy of sources and receivers.
+        auto sources = app_.project.persistent.sources();
+        auto receivers = app_.project.persistent.receivers();
 
-    //  Make a copy of sources and receivers.
-    auto sources = app_.project.persistent.sources();
-    auto receivers = app_.project.persistent.receivers();
+        //  Ensure nothing is hovered.
+        for (auto& i : *sources) {
+            i->hover_state()->set_hovered(false);
+        }
+        for (auto& i : *receivers) {
+            i->hover_state()->set_hovered(false);
+        }
 
-    //  Ensure nothing is hovered.
-    for (auto& i : *sources) {
-        i->hover_state()->set_hovered(false);
+        //  look for hovered items, notify if something is hovered.
+        do_action_with_closest_thing(
+                wayverb::core::to_vec2{}(e.getPosition()),
+                *sources,
+                *receivers,
+                [](const auto& shared) {
+                    shared->hover_state()->set_hovered(true);
+                    return true;
+                });
+
+        app_.project.persistent.sources() = sources;
+        app_.project.persistent.receivers() = receivers;
     }
-    for (auto& i : *receivers) {
-        i->hover_state()->set_hovered(false);
-    }
-    
-    //  look for hovered items, notify if something is hovered.
-    do_action_with_closest_thing(wayverb::core::to_vec2{}(e.getPosition()),
-        *sources,
-        *receivers,
-        [](const auto & shared) {
-            shared->hover_state()->set_hovered(true);
-            return true;
-        });
-
-    app_.project.persistent.sources() = sources;
-    app_.project.persistent.receivers() = receivers;
 }
 
 void controller::mouse_down(const MouseEvent& e) {
@@ -222,11 +239,12 @@ std::unique_ptr<controller::mouse_action> controller::start_action(
     //  If left mouse button is pressed, check for hovered items.
     //  If any, start move action with hovered item.
     //  Else, do nothing.
-    if (e.mods.isLeftButtonDown()) {
-        return do_action_with_closest_thing(wayverb::core::to_vec2{}(e.getPosition()),
-            *app_.project.persistent.sources(),
-            *app_.project.persistent.receivers(),
-                [this](const auto &shared) -> std::unique_ptr<mouse_action> {
+    if (allow_edit_ && e.mods.isLeftButtonDown()) {
+        return do_action_with_closest_thing(
+                wayverb::core::to_vec2{}(e.getPosition()),
+                *app_.project.persistent.sources(),
+                *app_.project.persistent.receivers(),
+                [this](const auto& shared) -> std::unique_ptr<mouse_action> {
                     return make_move_item_action_ptr(app_.scene, shared);
                 });
     }

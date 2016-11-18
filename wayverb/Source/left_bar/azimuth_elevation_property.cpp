@@ -9,12 +9,12 @@ namespace left_bar {
 
 namespace {
 constexpr auto elevation_range = util::make_range(-M_PI / 2, M_PI / 2);
-}//namespace
+}  // namespace
 
 azimuth_elevation_editor::azimuth_elevation_editor() {
     auto az = std::make_unique<slider_property>("azimuth", -M_PI, M_PI);
-    auto el =
-            std::make_unique<slider_property>("elevation", elevation_range.get_min(), elevation_range.get_max());
+    auto el = std::make_unique<slider_property>(
+            "elevation", elevation_range.get_min(), elevation_range.get_max());
 
     const auto callback = [this](auto&, auto) { on_change_(*this, get()); };
 
@@ -41,8 +41,7 @@ void azimuth_elevation_editor::set(wayverb::core::az_el az_el) {
 ////////////////////////////////////////////////////////////////////////////////
 
 azimuth_elevation_property::azimuth_elevation_property(const String& name)
-        : PropertyComponent{name, 54}
-{
+        : PropertyComponent{name, 54} {
     editor_.connect_on_change(
             [this](auto&, auto az_el) { on_change_(*this, az_el); });
 

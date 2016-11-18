@@ -2,6 +2,7 @@
 
 #include "controller.h"
 #include "view.h"
+#include "engine_message_queue.h"
 
 #include "Application.h"
 #include "CommandIDs.h"
@@ -18,9 +19,10 @@ namespace scene {
 
 class master::impl final : public Component {
 public:
-    impl(wayverb::combined::model::app& app)
+    impl(wayverb::combined::model::app& app, engine_message_queue& queue)
             : app_{app}
             , controller_{app_}
+            //  These events will come from the message thread.
             , visible_surface_changed_connection_{
                 app.scene.connect_visible_surface_changed([this](auto visible) {
                     view_.high_priority_command([=](auto& r) { r.set_highlighted_surface(visible); });
@@ -33,15 +35,15 @@ public:
                 app_.scene.connect_projection_matrix_changed([this](auto matrix) {
                     view_.high_priority_command([=](auto& r) { r.set_projection_matrix(matrix); });
                 })}
+            //  These events come from the engine, so they must be queued onto the message thread.
             , visualise_changed_connection_{
-                 app_.scene.connect_visualise_changed([this](auto should_visualise) {
+                 app_.scene.connect_visualise_changed([this, &queue](auto should_visualise) {
                     if (should_visualise) {
                         //  IMPORTANT app callbacks might be called from any thread -
                         //  don't access unprotected common state inside engine
                         //  callbacks!
-                        positions_changed_ = wayverb::combined::
-                                waveguide_node_positions_changed::scoped_connection{
-                                        app_.connect_node_positions([this](
+                        positions_changed_ = engine_message_queue::node_positions_changed::scoped_connection{
+                                        queue.connect_node_positions([this](
                                                 auto descriptor) {
                                             view_.high_priority_command([d = std::move(descriptor)](
                                                     auto& renderer) {
@@ -52,9 +54,8 @@ public:
                                             });
                                         })};
 
-                        pressures_changed_ = wayverb::combined::
-                                waveguide_node_pressures_changed::scoped_connection{
-                                        app_.connect_node_pressures([this](
+                        pressures_changed_ = engine_message_queue::node_pressures_changed::scoped_connection{
+                                        queue.connect_node_pressures([this](
                                                 auto pressures, auto distance) {
                                             view_.low_priority_command([
                                                 p = std::move(pressures),
@@ -66,8 +67,7 @@ public:
                                         })};
 
                         reflections_generated_ =
-                                wayverb::combined::raytracer_reflections_generated::
-                                        scoped_connection{app_.connect_reflections(
+                                engine_message_queue::reflections_generated::scoped_connection{queue.connect_reflections(
                                                 [this](auto reflections, auto source) {
                                                     view_.high_priority_command([
                                                         r = std::move(reflections),
@@ -79,19 +79,11 @@ public:
                                                 })};
 
                     } else {
-                        positions_changed_ = wayverb::combined::
-                                waveguide_node_positions_changed::scoped_connection{};
-                        pressures_changed_ = wayverb::combined::
-                                waveguide_node_pressures_changed::scoped_connection{};
-                        reflections_generated_ = wayverb::combined::
-                                raytracer_reflections_generated::scoped_connection{};
+                        positions_changed_     = engine_message_queue::node_positions_changed::scoped_connection{};
+                        pressures_changed_     = engine_message_queue::node_pressures_changed::scoped_connection{};
+                        reflections_generated_ = engine_message_queue::reflections_generated::scoped_connection{};
+                        //view_.high_priority_command([](auto& renderer) { renderer.clear(); });
                     }
-                })}
-            , finished_connection_{
-                app_.connect_finished([this] {
-                    queue_.push([this] {
-                        view_.high_priority_command([](auto& renderer) { renderer.clear(); });
-                    });
                 })}
             , sources_connection_{
                 //  When sources or receivers change, update the view.
@@ -108,6 +100,13 @@ public:
                     view_.high_priority_command([r = std::move(copy)](auto& renderer) {
                         renderer.set_receivers(std::move(r));
                     });
+                })}
+            , begun_{queue.connect_begun([this] {
+                    setEnabled(false);
+                })}
+            , finished_{queue.connect_finished([this] {
+                    setEnabled(true);
+                    view_.high_priority_command([](auto& renderer) { renderer.clear(); });
                 })}
             {
         //  Set up the scene model so that everything is visible.
@@ -154,6 +153,13 @@ public:
         view_.setBounds(getLocalBounds());
     }
 
+    //  Where 'enablement' is the ability of the component to modify the model.
+    //  View updates will still happen if disabled, as they don't affect the
+    //  persistent-data part of the model.
+    void enablementChanged() override {
+        controller_.enablement_changed(isEnabled());
+    }
+
     void mouseMove(const MouseEvent& e) override { controller_.mouse_move(e); }
 
     void mouseDown(const MouseEvent& e) override { controller_.mouse_down(e); }
@@ -175,7 +181,6 @@ private:
 
     //  Keep a reference to the global model.
     wayverb::combined::model::app& app_;
-    async_work_queue queue_;
 
     //  This object decides how to interpret user input, and updates the models
     //  as appropriate.
@@ -189,22 +194,19 @@ private:
             scoped_connection projection_matrix_changed_connection_;
     wayverb::combined::model::scene::visualise_changed::scoped_connection
             visualise_changed_connection_;
-    wayverb::combined::model::app::finished::scoped_connection
-            finished_connection_;
     wayverb::combined::model::sources::scoped_connection sources_connection_;
     wayverb::combined::model::receivers::scoped_connection
             receivers_connection_;
 
-    wayverb::combined::waveguide_node_positions_changed::scoped_connection
-            positions_changed_;
-    wayverb::combined::waveguide_node_pressures_changed::scoped_connection
-            pressures_changed_;
-    wayverb::combined::raytracer_reflections_generated::scoped_connection
-            reflections_generated_;
+    engine_message_queue::node_positions_changed::scoped_connection positions_changed_;
+    engine_message_queue::node_pressures_changed::scoped_connection pressures_changed_;
+    engine_message_queue::reflections_generated::scoped_connection reflections_generated_;
+    engine_message_queue::begun::scoped_connection begun_;
+    engine_message_queue::finished::scoped_connection finished_;
 };
 
-master::master(wayverb::combined::model::app& app)
-        : pimpl_{std::make_unique<impl>(app)} {
+master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
+        : pimpl_{std::make_unique<impl>(app, queue)} {
     set_help("model viewport",
              "This area displays the currently loaded 3D model. Click and drag "
              "to rotate the model, or use the mouse wheel to zoom in and out.");

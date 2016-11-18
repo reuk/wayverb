@@ -25,9 +25,7 @@ const FileDropComponent& LoadWindow::get_content() const {
     return content_component;
 }
 
-FileDropComponent& LoadWindow::get_content() {
-    return content_component;
-}
+FileDropComponent& LoadWindow::get_content() { return content_component; }
 
 void LoadWindow::addListener(FileDropComponent::Listener* l) {
     content_component.addListener(l);

@@ -85,17 +85,17 @@ public:
     //  Sources/receivers.
 
     void set_sources(wayverb::combined::model::sources sources) {
-        sources_ = util::map_to_vector(std::begin(sources),
-                                       std::end(sources),
-                                       [this](const auto& source) {
-                                        const auto a = source->hover_state()->get_hovered() ? 1.0 : 0.7;
-                                           PointObject ret{
-                                                   generic_shader_,
-                                                   glm::vec4{a, 0, 0, 1}};
-                                            ret.set_scale(source_receiver_radius_);
-                                            ret.set_position(source->position()->get());
-                                            return ret;
-                                       });
+        sources_ = util::map_to_vector(
+                std::begin(sources),
+                std::end(sources),
+                [this](const auto& source) {
+                    const auto a =
+                            source->hover_state()->get_hovered() ? 1.0 : 0.7;
+                    PointObject ret{generic_shader_, glm::vec4{a, 0, 0, 1}};
+                    ret.set_scale(source_receiver_radius_);
+                    ret.set_position(source->position()->get());
+                    return ret;
+                });
     }
 
     void set_receivers(wayverb::combined::model::receivers receivers) {
@@ -103,16 +103,17 @@ public:
                 std::begin(receivers),
                 std::end(receivers),
                 [this](const auto& receiver) {
-                    const auto a = receiver->hover_state()->get_hovered() ? 1.0 : 0.7;
+                    const auto a =
+                            receiver->hover_state()->get_hovered() ? 1.0 : 0.7;
                     PointObject ret{generic_shader_, glm::vec4{0, a, a, 1}};
                     ret.set_pointing(util::map_to_vector(
                             std::begin(*receiver->capsules()),
                             std::end(*receiver->capsules()),
                             [&](const auto& capsule) {
                                 const auto receiver_orientation =
-                                                receiver->get_orientation();
-                                const auto capsule_orientation = 
-                                                get_orientation(*capsule);
+                                        receiver->get_orientation();
+                                const auto capsule_orientation =
+                                        get_orientation(*capsule);
                                 const auto orientation =
                                         combine(receiver_orientation,
                                                 capsule_orientation);

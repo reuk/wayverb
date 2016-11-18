@@ -51,9 +51,7 @@ juce::PropertiesFile& StoredSettings::get_project_properties(
     return *p;
 }
 
-void StoredSettings::update_global_preferences() {
-    update_recent_files();
-}
+void StoredSettings::update_global_preferences() { update_recent_files(); }
 
 void StoredSettings::update_recent_files() {
     get_global_properties().setValue("recentFiles", recent_files.toString());
@@ -120,6 +118,4 @@ void StoredSettings::valueTreeChildRemoved(juce::ValueTree&,
 void StoredSettings::valueTreeChildOrderChanged(juce::ValueTree&, int, int) {
     changed();
 }
-void StoredSettings::valueTreeParentChanged(juce::ValueTree&) {
-    changed();
-}
+void StoredSettings::valueTreeParentChanged(juce::ValueTree&) { changed(); }

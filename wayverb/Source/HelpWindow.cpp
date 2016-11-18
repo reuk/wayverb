@@ -3,8 +3,7 @@
 HelpPanel::PanelContents::PanelContents(const std::string& title,
                                         const std::string& text)
         : title(title)
-        , text(text) {
-}
+        , text(text) {}
 
 bool HelpPanel::PanelContents::operator!=(const PanelContents& rhs) const {
     return tie() != rhs.tie();

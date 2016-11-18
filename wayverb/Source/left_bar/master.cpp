@@ -4,8 +4,6 @@
 #include "receivers/master.h"
 #include "sources/master.h"
 
-#include "combined/model/app.h"
-
 namespace {
 
 //  Allows a generic component to be placed in a property panel.
@@ -52,40 +50,40 @@ private:
 
 namespace left_bar {
 
-master::master(wayverb::combined::model::app& app)
-        : model_{app} {
+master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
+        : model_{app}
+        , begun_connection_{queue.connect_begun([this] {
+            //  Disable the top panel so that the user can't muck stuff up.
+            property_panel_.setEnabled(false);
+            bottom_.set_state(bottom::state::rendering);
+        })}
+        , engine_state_connection_{queue.connect_engine_state([this](
+                  auto state, auto progress) {
+            bottom_.set_bar_text(wayverb::combined::to_string(state));
+            bottom_.set_progress(progress);
+        })}
+        , finished_connection_{queue.connect_finished([this] {
+            //  Re-enable the top panel.
+            property_panel_.setEnabled(true);
+            bottom_.set_state(bottom::state::idle);
+        })} {
     set_help("configuration panel",
              "Use the options in this panel to adjust the various settings of "
              "the simulation.");
 
-    //  Hook up the model callbacks.
-
-    model_.connect_begun([this] {
-        queue_.push([this] { bottom_.set_state(bottom::state::rendering); });
-    });
-
-    model_.connect_engine_state([this](auto state, auto progress) {
-        queue_.push([this, state, progress] {
-            bottom_.set_bar_text(wayverb::combined::to_string(state));
-            bottom_.set_progress(progress);
-        });
-    });
-
-    model_.connect_finished([this] {
-        queue_.push([this] { bottom_.set_state(bottom::state::idle); });
-    });
-
     const auto item_height = 150;
 
     //  Populate the property panel
-    property_panel_.addSection("sources",
-                               {new wrapped_property_component<sources::master>{
-                                       item_height, *model_.project.persistent.sources()}});
+    property_panel_.addSection(
+            "sources",
+            {new wrapped_property_component<sources::master>{
+                    item_height, *model_.project.persistent.sources()}});
     property_panel_.addSection(
             "receivers",
-            {new wrapped_property_component<receivers::master>{item_height,
-                                                               model_.capsule_presets,
-                                                               *model_.project.persistent.receivers()}});
+            {new wrapped_property_component<receivers::master>{
+                    item_height,
+                    model_.capsule_presets,
+                    *model_.project.persistent.receivers()}});
     property_panel_.setOpaque(false);
 
     //  Make components visible

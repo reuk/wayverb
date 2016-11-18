@@ -115,48 +115,48 @@ private:
 template <typename T>
 class ListEditorPanel : public Component, public T::Listener {
 public:
-/*
-    using value_type = typename T::value_type;
-    using model_type = typename T::model_type;
-
-    ListEditorPanel(model_type& model)
-            : model(model)
-            , list_box(model) {
-        addAndMakeVisible(list_box);
-    }
-
-    void resized() override {
-        auto bounds = getLocalBounds();
-        list_box.setBounds(bounds.removeFromLeft(150));
-        if (editor) {
-            editor->setBounds(bounds);
-        }
-    }
-*/
-
-    void selectedRowsChanged(T* lb, int last) override {
     /*
-        assert(last < static_cast<int>(model.size()));
-        if (0 <= last) {
-            editor = new_editor(model[last]);
-            addAndMakeVisible(*editor);
-            resized();
-        } else {
-            editor = nullptr;
+        using value_type = typename T::value_type;
+        using model_type = typename T::model_type;
+
+        ListEditorPanel(model_type& model)
+                : model(model)
+                , list_box(model) {
+            addAndMakeVisible(list_box);
+        }
+
+        void resized() override {
+            auto bounds = getLocalBounds();
+            list_box.setBounds(bounds.removeFromLeft(150));
+            if (editor) {
+                editor->setBounds(bounds);
+            }
         }
     */
+
+    void selectedRowsChanged(T* lb, int last) override {
+        /*
+            assert(last < static_cast<int>(model.size()));
+            if (0 <= last) {
+                editor = new_editor(model[last]);
+                addAndMakeVisible(*editor);
+                resized();
+            } else {
+                editor = nullptr;
+            }
+        */
     }
 
 private:
-/*
-    virtual std::unique_ptr<Component> new_editor(
-            model::ValueWrapper<value_type>& v) = 0;
+    /*
+        virtual std::unique_ptr<Component> new_editor(
+                model::ValueWrapper<value_type>& v) = 0;
 
-    model_type& model;
+        model_type& model;
 
-    T list_box;
-    model::Connector<T> list_box_connector{&list_box, this};
+        T list_box;
+        model::Connector<T> list_box_connector{&list_box, this};
 
-    std::unique_ptr<Component> editor;
-*/
+        std::unique_ptr<Component> editor;
+    */
 };

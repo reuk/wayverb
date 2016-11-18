@@ -52,14 +52,15 @@ private:
 
 master::master(wayverb::combined::model::sources& model)
         : list_box_{model,
-        [] (auto shared) {
-            return std::make_unique<list_config_item<wayverb::combined::model::source>>(shared, [](auto shared) {
-                return std::make_unique<source_editor>(shared);
-            });
-        },
-        [] (auto& model) {
-            model.insert(model.end());
-        }} {
+                    [](auto shared) {
+                        return std::make_unique<list_config_item<
+                                wayverb::combined::model::source>>(
+                                shared, [](auto shared) {
+                                    return std::make_unique<source_editor>(
+                                            shared);
+                                });
+                    },
+                    [](auto& model) { model.insert(model.end()); }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 }

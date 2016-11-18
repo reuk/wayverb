@@ -22,7 +22,7 @@ public:
 
     void visible_range_changed(TransportViewManager* r,
                                const juce::Range<double>& range) override;
-    void playhead_time_changed(TransportViewManager *r, double t) override;
+    void playhead_time_changed(TransportViewManager* r, double t) override;
 
     void playhead_dragged(Playhead* p, const juce::MouseEvent& e) override;
 

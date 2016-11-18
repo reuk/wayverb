@@ -10,7 +10,20 @@ main_window::main_window(ApplicationCommandTarget& next,
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
         , next_command_target_{next}
         , model_{std::move(fname)}
-        , content_component_{model_} {
+        , content_component_{model_, engine_message_queue_}
+        , encountered_error_connection_{engine_message_queue_.connect_error_handler(
+                  [this](auto err_str) {
+                      AlertWindow::showMessageBoxAsync(
+                              AlertWindow::AlertIconType::WarningIcon,
+                              "render error",
+                              err_str);
+                  })}
+        , begun_connection_{engine_message_queue_.connect_begun([this] {
+            wayverb_application::get_command_manager().commandStatusChanged();
+        })}
+        , finished_connection_{engine_message_queue_.connect_finished([this] {
+            wayverb_application::get_command_manager().commandStatusChanged();
+        })} {
     content_component_.setSize(800, 500);
     setContentNonOwned(&content_component_, true);
     setUsingNativeTitleBar(true);
@@ -23,35 +36,6 @@ main_window::main_window(ApplicationCommandTarget& next,
     auto& command_manager = wayverb_application::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
     addKeyListener(command_manager.getKeyMappings());
-
-    //  Connect up callbacks
-
-    //  If an error happens, display a dialog (make sure the request
-    //  happens on the message thread)
-    model_.connect_error_handler([this](auto err_str) {
-        queue_.push([s = std::move(err_str)] {
-            AlertWindow::showMessageBoxAsync(
-                    AlertWindow::AlertIconType::WarningIcon, "render error", s);
-        });
-    });
-
-    //  When rendering begins or ends, signal that command enablement needs
-    //  updating.
-
-    model_.connect_begun([this] {
-        queue_.push([this] {
-            wayverb_application::get_command_manager().commandStatusChanged();
-        });
-    });
-
-    model_.connect_finished([this] {
-        queue_.push([this] {
-            wayverb_application::get_command_manager().commandStatusChanged();
-        });
-
-        //  TODO
-        //  tidy up the view, hide reflections + mesh etc.
-    });
 
     model_.reset_view();
     model_.scene.set_visualise(true);
@@ -151,10 +135,8 @@ void main_window::getCommandInfo(CommandID command_id,
             break;
 
         case CommandIDs::idStartRender:
-            result.setInfo("Start Render",
-                           "Start rendering acoustics",
-                           "General",
-                           0);
+            result.setInfo(
+                    "Start Render", "Start rendering acoustics", "General", 0);
             result.setActive(!model_.is_rendering());
             break;
 
@@ -165,7 +147,6 @@ void main_window::getCommandInfo(CommandID command_id,
                            0);
             result.setActive(model_.is_rendering());
             break;
-            
     }
 }
 
@@ -187,13 +168,9 @@ bool main_window::perform(const InvocationInfo& info) {
 
         case CommandIDs::idResetView: model_.reset_view(); return true;
 
-        case CommandIDs::idStartRender:
-            model_.start_render();
-            return true;
+        case CommandIDs::idStartRender: model_.start_render(); return true;
 
-        case CommandIDs::idCancelRender:
-            model_.cancel_render();
-            return true;
+        case CommandIDs::idCancelRender: model_.cancel_render(); return true;
 
         default: return false;
     }

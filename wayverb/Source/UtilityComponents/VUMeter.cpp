@@ -24,17 +24,11 @@ void Meter::do_push_buffer(const float **channel_data,
                       : 0);
 }
 
-void Meter::reset() {
-    target = actual = 0;
-}
+void Meter::reset() { target = actual = 0; }
 
-void Meter::update() {
-    actual += (target - actual) * 0.1;
-}
+void Meter::update() { actual += (target - actual) * 0.1; }
 
-float Meter::get_level() const {
-    return actual;
-}
+float Meter::get_level() const { return actual; }
 
 void Meter::set_level(float f) {
     target = f;
@@ -59,25 +53,15 @@ VUMeter::VUMeter(size_t channel)
     startTimerHz(60);
 }
 
-float VUMeter::get_level() const {
-    return meter.get_level();
-}
+float VUMeter::get_level() const { return meter.get_level(); }
 
-void VUMeter::set_level(float l) {
-    return meter.set_level(l);
-}
+void VUMeter::set_level(float l) { return meter.set_level(l); }
 
-void VUMeter::reset() {
-    meter.reset();
-}
+void VUMeter::reset() { meter.reset(); }
 
-void VUMeter::addListener(Listener *l) {
-    listener_list.add(l);
-}
+void VUMeter::addListener(Listener *l) { listener_list.add(l); }
 
-void VUMeter::removeListener(Listener *l) {
-    listener_list.remove(l);
-}
+void VUMeter::removeListener(Listener *l) { listener_list.remove(l); }
 
 void VUMeter::on_change() {
     listener_list.call(&Listener::vu_meter_level_changed, this, get_level());
@@ -138,26 +122,14 @@ void DualVUMeter::timerCallback() {
     rms_meter.update();
 }
 
-float DualVUMeter::get_abs_level() const {
-    return abs_meter.get_level();
-}
+float DualVUMeter::get_abs_level() const { return abs_meter.get_level(); }
 
-float DualVUMeter::get_rms_level() const {
-    return rms_meter.get_level();
-}
+float DualVUMeter::get_rms_level() const { return rms_meter.get_level(); }
 
-void DualVUMeter::set_abs_level(float l) {
-    abs_meter.set_level(l);
-}
+void DualVUMeter::set_abs_level(float l) { abs_meter.set_level(l); }
 
-void DualVUMeter::set_rms_level(float l) {
-    rms_meter.set_level(l);
-}
+void DualVUMeter::set_rms_level(float l) { rms_meter.set_level(l); }
 
-void DualVUMeter::addListener(Listener *l) {
-    listener_list.add(l);
-}
+void DualVUMeter::addListener(Listener *l) { listener_list.add(l); }
 
-void DualVUMeter::removeListener(Listener *l) {
-    listener_list.remove(l);
-}
+void DualVUMeter::removeListener(Listener *l) { listener_list.remove(l); }

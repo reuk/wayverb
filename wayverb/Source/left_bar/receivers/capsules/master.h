@@ -3,8 +3,8 @@
 #include "../../editable_vector_list_box.h"
 #include "../../list_config_item.h"
 
-#include "combined/model/vector.h"
 #include "combined/model/capsule.h"
+#include "combined/model/vector.h"
 
 namespace left_bar {
 namespace receivers {
@@ -20,7 +20,8 @@ public:
 private:
     editable_vector_list_box<
             wayverb::combined::model::vector<wayverb::combined::model::capsule,
-                                             1>> list_box_;
+                                             1>>
+            list_box_;
 };
 
 }  // namespace capsules

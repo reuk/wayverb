@@ -1,7 +1,7 @@
 #pragma once
 
 #include "MainContentComponent.h"
-#include "async_work_queue.h"
+#include "engine_message_queue.h"
 
 #include "combined/model/app.h"
 
@@ -40,8 +40,14 @@ private:
     ApplicationCommandTarget& next_command_target_;
 
     wayverb::combined::model::app model_;
-    async_work_queue queue_;
+    engine_message_queue engine_message_queue_{model_};
+
     MainContentComponent content_component_;
+
+    engine_message_queue::encountered_error::scoped_connection
+            encountered_error_connection_;
+    engine_message_queue::begun::scoped_connection begun_connection_;
+    engine_message_queue::finished::scoped_connection finished_connection_;
 
     wants_to_close wants_to_close_;
 };

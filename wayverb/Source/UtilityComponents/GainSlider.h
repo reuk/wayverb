@@ -23,10 +23,8 @@ public:
         virtual ~Listener() = default;
 
         virtual void gain_slider_value_changed(GainSlider*) = 0;
-        virtual void gain_slider_drag_started(GainSlider*) {
-        }
-        virtual void gain_slider_drag_ended(GainSlider*) {
-        }
+        virtual void gain_slider_drag_started(GainSlider*) {}
+        virtual void gain_slider_drag_ended(GainSlider*) {}
     };
 
     enum class Orientation { horizontal, vertical };

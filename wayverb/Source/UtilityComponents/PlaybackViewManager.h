@@ -55,8 +55,7 @@ public:
 
         virtual void visible_range_changed(
                 TransportViewManager *r, const juce::Range<double> &range) = 0;
-        virtual void playhead_time_changed(TransportViewManager *r, double t) {
-        }
+        virtual void playhead_time_changed(TransportViewManager *r, double t) {}
     };
 
     TransportViewManager(juce::AudioTransportSource &audio_transport_source);

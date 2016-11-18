@@ -12,12 +12,8 @@ FileDropComponent::~FileDropComponent() noexcept {
     load_button.removeListener(this);
 }
 
-void FileDropComponent::addListener(Listener* l) {
-    listener_list.add(l);
-}
-void FileDropComponent::removeListener(Listener* l) {
-    listener_list.remove(l);
-}
+void FileDropComponent::addListener(Listener* l) { listener_list.add(l); }
+void FileDropComponent::removeListener(Listener* l) { listener_list.remove(l); }
 
 void FileDropComponent::buttonClicked(juce::Button* b) {
     if (b == &load_button) {
@@ -59,19 +55,20 @@ void FileDropComponent::paint(juce::Graphics& g) {
     g.drawFittedText(back_text, text_bounds, juce::Justification::centred, 2);
 }
 
-void FileDropComponent::resized() {
-    load_button.centreWithSize(300, 50);
-}
+void FileDropComponent::resized() { load_button.centreWithSize(300, 50); }
 
 void FileDropComponent::set_valid_file_formats(const std::string& f) {
     valid_file_formats = f;
 }
 
 bool FileDropComponent::isInterestedInFileDrag(const juce::StringArray& files) {
-    juce::WildcardFileFilter filter(valid_file_formats, "*", "valid extensions");
+    juce::WildcardFileFilter filter(
+            valid_file_formats, "*", "valid extensions");
     return files.size() == 1 && filter.isFileSuitable(files[0]);
 }
-void FileDropComponent::fileDragEnter(const juce::StringArray& files, int x, int y) {
+void FileDropComponent::fileDragEnter(const juce::StringArray& files,
+                                      int x,
+                                      int y) {
     file_drag = true;
     repaint();
 }
@@ -79,7 +76,9 @@ void FileDropComponent::fileDragExit(const juce::StringArray& files) {
     file_drag = false;
     repaint();
 }
-void FileDropComponent::filesDropped(const juce::StringArray& files, int x, int y) {
+void FileDropComponent::filesDropped(const juce::StringArray& files,
+                                     int x,
+                                     int y) {
     assert(isInterestedInFileDrag(files));
     file_drag = false;
     repaint();

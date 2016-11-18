@@ -55,12 +55,8 @@ public:
         }
     }
 
-    Broadcaster *const get_broadcaster() const {
-        return cb;
-    }
-    Listener *const get_listener() const {
-        return cl;
-    }
+    Broadcaster *const get_broadcaster() const { return cb; }
+    Listener *const get_listener() const { return cl; }
 
 private:
     Broadcaster *const cb;

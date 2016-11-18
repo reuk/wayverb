@@ -5,7 +5,8 @@
 #include <memory>
 #include <sstream>
 
-TransportDisplay::TransportDisplay(juce::AudioTransportSource& audioTransportSource)
+TransportDisplay::TransportDisplay(
+        juce::AudioTransportSource& audioTransportSource)
         : audioTransportSource(audioTransportSource) {
     label.setColour(juce::Label::textColourId, juce::Colours::lightgrey);
     addAndMakeVisible(label);
@@ -25,9 +26,7 @@ void TransportDisplay::paint(juce::Graphics& g) {
     g.fillRoundedRectangle(0, 1, getWidth(), getHeight() - 2, 4);
 }
 
-void TransportDisplay::resized() {
-    label.setBounds(getLocalBounds());
-}
+void TransportDisplay::resized() { label.setBounds(getLocalBounds()); }
 
 void TransportDisplay::timerCallback() {
     auto time = audioTransportSource.getCurrentPosition();

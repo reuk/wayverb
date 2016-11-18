@@ -11,13 +11,12 @@ multi_material_object::multi_material_object(
         size_t num_vertices)
         : generic_shader_{generic_shader}
         , lit_scene_shader_{lit_scene_shader} {
-
     std::unordered_set<size_t> unique_surfaces;
     for (auto i = triangles, e = triangles + num_triangles; i != e; ++i) {
         unique_surfaces.insert(i->surface);
     }
 
-    for (const auto& i : unique_surfaces) {
+    for (const auto &i : unique_surfaces) {
         sections_.emplace_back(triangles, num_triangles, i);
     }
 
@@ -118,4 +117,3 @@ multi_material_object::single_material_section::get_indices(
     }
     return ret;
 }
-

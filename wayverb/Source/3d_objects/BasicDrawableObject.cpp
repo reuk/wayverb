@@ -24,7 +24,7 @@ glm::mat4 node::get_matrix() const {
 BasicDrawableObject::BasicDrawableObject(BasicDrawableObject&&) noexcept =
         default;
 BasicDrawableObject& BasicDrawableObject::operator=(
-        BasicDrawableObject&&) noexcept           = default;
+        BasicDrawableObject&&) noexcept = default;
 
 void BasicDrawableObject::set_highlight(float amount) {
     colors.data(util::map_to_vector(begin(color_vector),

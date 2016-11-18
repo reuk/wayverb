@@ -17,10 +17,6 @@ void Playhead::mouseDrag(const juce::MouseEvent& e) {
     listener_list.call(&Listener::playhead_dragged, this, e);
 }
 
-void Playhead::addListener(Listener* l) {
-    listener_list.add(l);
-}
+void Playhead::addListener(Listener* l) { listener_list.add(l); }
 
-void Playhead::removeListener(Listener* l) {
-    listener_list.remove(l);
-}
+void Playhead::removeListener(Listener* l) { listener_list.remove(l); }

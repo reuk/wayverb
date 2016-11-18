@@ -8,7 +8,8 @@
 class MainContentComponent final : public Component,
                                    public SettableHelpPanelClient {
 public:
-    MainContentComponent(wayverb::combined::model::app& app);
+    MainContentComponent(wayverb::combined::model::app& app,
+                         engine_message_queue& queue);
 
     void paint(Graphics& g) override;
     void resized() override;

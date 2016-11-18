@@ -14,8 +14,8 @@ void PolarPatternView::paint(Graphics& g) {
     auto segments = 50;
     for (auto i = 0; i != segments; ++i) {
         auto angle = i * M_PI * 2 / (segments - 1);
-        auto rad = std::abs(
-                base_rad * ((1 - shape_) + shape_ * std::cos(angle)));
+        auto rad =
+                std::abs(base_rad * ((1 - shape_) + shape_ * std::cos(angle)));
 
         if (i == 0) {
             p.startNewSubPath(o.x + rad * std::sin(angle),
@@ -39,9 +39,7 @@ PolarPatternProperty::PolarPatternProperty(const String& name, int height)
         : PropertyComponent{name, height} {
     addAndMakeVisible(view_);
 }
-    
+
 void PolarPatternProperty::refresh() {}
 
-void PolarPatternProperty::set_shape(double shape) {
-    view_.set_shape(shape);
-}
+void PolarPatternProperty::set_shape(double shape) { view_.set_shape(shape); }
