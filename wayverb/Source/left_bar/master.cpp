@@ -51,7 +51,7 @@ Array<PropertyComponent*> make_material_options(
         wayverb::combined::model::scene& scene,
         const wayverb::combined::model::app::material_presets_t& presets,
         const wayverb::combined::model::
-                vector<wayverb::combined::model::material, 1> model) {
+                vector<wayverb::combined::model::material, 1>& model) {
     Array<PropertyComponent*> ret;
     size_t count = 0;
     for (const auto& i : model) {

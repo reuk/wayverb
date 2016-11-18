@@ -109,14 +109,13 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class material_component final : public PropertyPanel {
+class material_component final : public PropertyPanel, public ComboBox::Listener {
 public:
     using material_t = wayverb::combined::model::material;
     using presets_t = wayverb::combined::model::app::material_presets_t;
 
     material_component(const presets_t& presets, material_t& model)
-            : presets_{presets}
-            , model_{model} {
+            : presets_{presets}, model_{model} {
         auto frequencies =
                 std::make_unique<generic_property_component<frequency_labels>>(
                         "band centres / Hz", 25);
@@ -126,6 +125,20 @@ public:
         auto scattering =
                 std::make_unique<generic_property_component<bands_component>>(
                         "scattering", 100);
+
+        auto preset_box =
+                std::make_unique<generic_property_component<ComboBox>>(
+                        "presets", 25);
+
+        preset_box->content.setTextWhenNothingSelected("material presets...");
+        preset_box->content.addListener(this);
+
+        {
+            auto count = 1;
+            for (const auto& i : presets) {
+                preset_box->content.addItem(i.get_name(), count++);
+            }
+        }
 
         const auto update_from_material =
                 [ this, a = &absorption->content, s = &scattering->content ](
@@ -153,6 +166,15 @@ public:
         addProperties({frequencies.release()});
         addProperties({absorption.release()});
         addProperties({scattering.release()});
+        addProperties({preset_box.release()});
+    }
+
+    void comboBoxChanged(ComboBox* cb) override {
+        const auto selected = cb->getSelectedItemIndex();
+        if (selected != -1) {
+            model_.set_surface(presets_[selected].get_surface());
+        }
+        cb->setSelectedItemIndex(-1, dontSendNotification);
     }
 
 private:

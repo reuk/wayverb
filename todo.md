@@ -30,12 +30,7 @@ rendering
 
 material preset scattering coefficients
 
-render doesn't use interface values
-
 controls
-    materials
-        preset options
-
     waveguide options
 
     raytracer options
