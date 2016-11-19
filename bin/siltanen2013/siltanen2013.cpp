@@ -29,9 +29,11 @@
 template <typename It>
 void write_tuple(It b, It e, const char* prefix, double sample_rate) {
     for_each(b, e, [&](const auto& i) {
-        write(util::build_string(prefix, ".", i.name, ".wav"),
-              audio_file::make_audio_file(i.value, sample_rate),
-              16);
+        write(util::build_string(prefix, ".", i.name, ".wav").c_str(),
+              i.value,
+              sample_rate,
+              audio_file::format::wav,
+              audio_file::bit_depth::pcm16);
     });
 }
 
@@ -331,10 +333,11 @@ int main(int argc, char** argv) {
 
             std::make_tuple(
                     std::make_tuple("null", wayverb::core::attenuator::null{}),
-                    std::make_tuple("omnidirectional",
-                                    wayverb::core::attenuator::microphone{
-                                            wayverb::core::orientation{pointing},
-                                            0.0f}) /*,
+                    std::make_tuple(
+                            "omnidirectional",
+                            wayverb::core::attenuator::microphone{
+                                    wayverb::core::orientation{pointing},
+                                    0.0f}) /*,
 std::make_tuple("cardioid",
 wayverb::core::attenuator::microphone{pointing, 0.5f}),
 std::make_tuple("bidirectional",

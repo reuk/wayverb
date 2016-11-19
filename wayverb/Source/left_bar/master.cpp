@@ -2,6 +2,7 @@
 #include "AngularLookAndFeel.h"
 
 #include "materials/master.h"
+#include "output/master.h"
 #include "receivers/master.h"
 #include "sources/master.h"
 
@@ -105,6 +106,9 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
             make_material_options(app.scene,
                                   app.material_presets,
                                   *app.project.persistent.materials()));
+    property_panel_.addSection("output",
+                               {new wrapped_property_component<output::master>{
+                                       100, *app.project.persistent.output()}});
     property_panel_.setOpaque(false);
 
     //  Make components visible

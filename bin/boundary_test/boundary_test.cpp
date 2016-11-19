@@ -180,12 +180,18 @@ public:
         write(util::build_string(output_folder_,
                                  "/",
                                  test_name,
-                                 "_windowed_free_field.wav"),
-              audio_file::make_audio_file(free_field_.image, out_sr),
+                                 "_windowed_free_field.wav")
+                      .c_str(),
+              free_field_.image,
+              out_sr,
+              audio_file::format::wav,
               bit_depth);
         write(util::build_string(
-                      output_folder_, "/", test_name, "_windowed_subbed.wav"),
-              audio_file::make_audio_file(subbed, out_sr),
+                      output_folder_, "/", test_name, "_windowed_subbed.wav")
+                      .c_str(),
+              subbed,
+              out_sr,
+              audio_file::format::wav,
               bit_depth);
 
         return subbed;
@@ -193,7 +199,7 @@ public:
 
     static constexpr auto speed_of_sound = 340.0;
     static constexpr auto out_sr = 44100;
-    static constexpr auto bit_depth = 16;
+    static constexpr auto bit_depth = audio_file::bit_depth::pcm16;
     static constexpr auto dim = 300;
     static constexpr auto steps = dim * 1.4;
 
@@ -265,7 +271,7 @@ int main(int argc, char** argv) {
         std::cerr
                 << "expecting an output folder, an azimuth, and an elevation\n";
         std::cerr << "actually found: \n";
-        for (auto i = 0u; i != argc; ++i) {
+        for (auto i = 0; i != argc; ++i) {
             std::cerr << "arg " << i << ": " << argv[i] << '\n';
         }
 

@@ -54,7 +54,9 @@ TEST(multiband_filter, multiband_filter) {
             });
 
     write("multiband_noise.wav",
-          audio_file::make_audio_file(results, sample_rate),
-          16);
+          results,
+          sample_rate,
+          audio_file::format::wav,
+          audio_file::bit_depth::pcm16);
 }
 

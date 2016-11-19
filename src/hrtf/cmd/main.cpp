@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
             const auto full_path = base_path + "/" + entry;
 
-            const auto audio=audio_file::read(full_path);
+            const auto audio = audio_file::read(full_path.c_str());
 
             if (audio.signal.size() != 2) {
                 throw std::runtime_error{"hrtf data files must be stereo"};

@@ -20,12 +20,7 @@ public:
     core::attenuator::hrtf get() const;
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(hrtf_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(hrtf_);
     }
 

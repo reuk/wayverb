@@ -140,20 +140,23 @@ enum class FilterType {
 };
 
 auto compute_coeffs(
-        std::integral_constant<FilterType, FilterType::biquad_cascade> /*unused*/) {
+        std::integral_constant<FilterType,
+                               FilterType::biquad_cascade> /*unused*/) {
     return util::map([](const auto& n) { return get_peak_biquads_array(n); },
                      descriptors);
 }
 
 auto compute_coeffs(
-        std::integral_constant<FilterType, FilterType::single_reflectance> /*unused*/) {
+        std::integral_constant<FilterType,
+                               FilterType::single_reflectance> /*unused*/) {
     return util::map(
             [](const auto& n) { return convolve(get_peak_biquads_array(n)); },
             descriptors);
 }
 
 auto compute_coeffs(
-        std::integral_constant<FilterType, FilterType::single_impedance> /*unused*/) {
+        std::integral_constant<FilterType,
+                               FilterType::single_impedance> /*unused*/) {
     return util::map(
             [](const auto& n) {
                 return to_impedance_coefficients(
@@ -245,8 +248,10 @@ TEST_F(testing_rk_biquad, filtering) {
         return std::isinf(i);
     }));
     write("./filtered_noise.wav",
-          audio_file::make_audio_file(results, testing::sr),
-          16);
+          results,
+          testing::sr,
+          audio_file::format::wav,
+          audio_file::bit_depth::pcm16);
 }
 
 TEST_F(testing_rk_filter, filtering_2) {
@@ -258,8 +263,10 @@ TEST_F(testing_rk_filter, filtering_2) {
         return std::isinf(i);
     }));
     write("./filtered_noise_2.wav",
-          audio_file::make_audio_file(results, testing::sr),
-          16);
+          results,
+          testing::sr,
+          audio_file::format::wav,
+          audio_file::bit_depth::pcm16);
 }
 
 class testing_rk_biquad_quiet : public rk_biquad<QuietNoiseGenerator>,
@@ -276,8 +283,10 @@ TEST_F(testing_rk_biquad_quiet, filtering) {
         return std::isinf(i);
     }));
     write("./filtered_noise_quiet.wav",
-          audio_file::make_audio_file(results, testing::sr),
-          16);
+          results,
+          testing::sr,
+          audio_file::format::wav,
+          audio_file::bit_depth::pcm16);
 }
 
 TEST_F(testing_rk_filter_quiet, filtering_2) {
@@ -289,14 +298,16 @@ TEST_F(testing_rk_filter_quiet, filtering_2) {
         return std::isinf(i);
     }));
     write("./filtered_noise_2_quiet.wav",
-          audio_file::make_audio_file(results, testing::sr),
-          16);
+          results,
+          testing::sr,
+          audio_file::format::wav,
+          audio_file::bit_depth::pcm16);
 }
 
 TEST(compare_filters, compare_filters) {
     const auto test = [](auto biquad, auto filter) {
-        for (auto i = 0; i != biquad.input.size(); ++i) {
-            for (auto j = 0; j != biquad.input[i].size(); ++j) {
+        for (auto i = 0u; i != biquad.input.size(); ++i) {
+            for (auto j = 0u; j != biquad.input[i].size(); ++j) {
                 ASSERT_EQ(biquad.input[i][j], filter.input[i][j]);
             }
         }
@@ -331,15 +342,15 @@ TEST(compare_filters, compare_filters) {
         ASSERT_TRUE(max_diff < 0.001) << max_diff;
 
         write("./buf_1.wav",
-              audio_file::make_audio_file(
-                      std::vector<float>(buf_1.begin(), buf_1.end()),
-                      testing::sr),
-              16);
+              buf_1,
+              testing::sr,
+              audio_file::format::wav,
+              audio_file::bit_depth::pcm16);
         write("./buf_2.wav",
-              audio_file::make_audio_file(
-                      std::vector<float>(buf_2.begin(), buf_2.end()),
-                      testing::sr),
-              16);
+              buf_2,
+              testing::sr,
+              audio_file::format::wav,
+              audio_file::bit_depth::pcm16);
     };
 
     using Imp = ImpulseGenerator<200>;

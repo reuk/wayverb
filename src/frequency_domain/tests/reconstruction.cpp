@@ -43,8 +43,10 @@ TEST(frequency_domain, reconstruction) {
     }
 
     write("input_noise.wav",
-          audio_file::make_audio_file(noise, sample_rate),
-          16);
+          noise,
+          sample_rate,
+          audio_file::format::wav,
+          audio_file::bit_depth::pcm16);
 
     auto multiband_noise =
             frequency_domain::make_multiband<8>(begin(noise), end(noise));
@@ -66,9 +68,11 @@ TEST(frequency_domain, reconstruction) {
         const auto audio = util::map_to_vector(begin(multiband_noise),
                                                end(multiband_noise),
                                                frequency_domain::indexer{band});
-        write(util::build_string("band_", band, ".wav"),
-              audio_file::make_audio_file(audio, sample_rate),
-              16);
+        write(util::build_string("band_", band, ".wav").c_str(),
+              audio,
+              sample_rate,
+              audio_file::format::wav,
+              audio_file::bit_depth::pcm16);
     }
 
     const auto mixed = util::map_to_vector(
@@ -77,6 +81,8 @@ TEST(frequency_domain, reconstruction) {
             });
 
     write("multiband_filtered_noise.wav",
-          audio_file::make_audio_file(mixed, sample_rate),
-          16);
+          mixed,
+          sample_rate,
+          audio_file::format::wav,
+          audio_file::bit_depth::pcm16);
 }

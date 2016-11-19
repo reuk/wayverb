@@ -112,14 +112,9 @@ public:
     */
 
     template <typename Archive>
-    void load(Archive& archive) {
+    void serialize(Archive& archive) {
         archive(data_members_);
         set_owner();
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
-        archive(data_members_);
     }
 
 protected:

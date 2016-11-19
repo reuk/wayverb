@@ -86,25 +86,30 @@ core::generic_scene_data<cl_float3, std::string> project::get_scene_data()
 
 app::app(const std::string& name)
         : project{name}
-        , capsule_presets{wayverb::combined::model::presets::capsules}
         , material_presets{wayverb::combined::model::presets::materials}
+        , capsule_presets{wayverb::combined::model::presets::capsules}
         , currently_open_file_{name} {}
 
 app::~app() noexcept { cancel_render(); }
 
-void app::start_render() {
+void app::start_render(const std::string& output_path) {
     cancel_render();
 
     //  Let the world know that we're gonna do some stuff.
     begun_();
 
     //  Start engine in new thread.
-    future_ = std::async(
-            std::launch::async,
-            [ this, s = generate_scene_data(), p = project.persistent ] {
-                engine_.run(
-                        core::compute_context{}, std::move(s), std::move(p));
-            });
+    future_ = std::async(std::launch::async, [
+        this,
+        s = generate_scene_data(),
+        p = project.persistent,
+        o = output_path
+    ] {
+        engine_.run(core::compute_context{},
+                    std::move(s),
+                    std::move(p),
+                    std::move(o));
+    });
 }
 
 void app::cancel_render() { engine_.cancel(); if (future_.valid()) { future_.get(); } }

@@ -38,12 +38,7 @@ public:
     }
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(position(), name_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(position(), name_);
     }
 

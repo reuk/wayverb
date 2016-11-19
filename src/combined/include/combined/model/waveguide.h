@@ -22,12 +22,7 @@ public:
     waveguide::single_band_parameters get() const;
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(data_.cutoff, data_.usable_portion);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(data_.cutoff, data_.usable_portion);
     }
 
@@ -49,12 +44,7 @@ public:
     waveguide::multiple_band_constant_spacing_parameters get() const;
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(data_.bands, data_.cutoff, data_.usable_portion);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(data_.bands, data_.cutoff, data_.usable_portion);
     }
 
@@ -80,12 +70,7 @@ public:
     double get_sampling_frequency() const;
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(cereal::base_class<base_type>(this), mode_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(cereal::base_class<base_type>(this), mode_);
     }
 

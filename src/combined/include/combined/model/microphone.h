@@ -20,12 +20,7 @@ public:
     core::attenuator::microphone get() const;
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(microphone_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(microphone_);
     }
 

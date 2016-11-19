@@ -47,12 +47,7 @@ public:
     shared_value<T>& get() { return item_; }
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(item_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(item_);
     }
 

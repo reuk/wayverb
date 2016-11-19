@@ -28,7 +28,8 @@ class complete_engine final {
 public:
     void run(const core::compute_context& compute_context,
              const core::gpu_scene_data& scene_data,
-             const model::persistent& persistent);
+             const model::persistent& persistent,
+             const std::string& output_path);
 
     bool is_running() const {
         return is_running_;

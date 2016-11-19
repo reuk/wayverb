@@ -108,10 +108,12 @@ TEST(run_waveguide, run_waveguide) {
 
     auto count = 0ul;
     for (const auto& output_holder : output_holders) {
-        write(util::build_string("waveguide_receiver_", count++, ".wav"),
-              audio_file::make_audio_file(output_holder.get_output(),
-                                          samplerate),
-              16);
+        write(util::build_string("waveguide_receiver_", count++, ".wav")
+                      .c_str(),
+              output_holder.get_output(),
+              samplerate,
+              audio_file::format::wav,
+              audio_file::bit_depth::pcm16);
     }
 
     const auto max_values = util::map_to_vector(

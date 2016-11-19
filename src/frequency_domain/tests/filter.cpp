@@ -18,10 +18,9 @@ TEST(filter, do_nothing) {
 
         auto output{sig};
         fill(output.begin(), output.end(), 0);
-        filter.run(sig.begin(),
-                   sig.end(),
-                   output.begin(),
-                   [](auto cplx, auto freq) { return cplx; });
+        filter.run(sig.begin(), sig.end(), output.begin(), [](auto cplx, auto) {
+            return cplx;
+        });
 
         for (auto i{0ul}, end{sig.size()}; i != end; ++i) {
             ASSERT_NEAR(sig[i], output[i], 0.00001);
@@ -42,10 +41,10 @@ TEST(filter, reduce_magnitude) {
 
         auto output{sig};
         std::fill(output.begin(), output.end(), 0);
-        filter.run(sig.begin(),
-                   sig.end(),
-                   output.begin(),
-                   [=](auto cplx, auto freq) { return cplx * magnitude; });
+        filter.run(
+                sig.begin(), sig.end(), output.begin(), [=](auto cplx, auto) {
+                    return cplx * magnitude;
+                });
 
         for (auto i{0ul}, end{sig.size()}; i != end; ++i) {
             ASSERT_NEAR(sig[i] * magnitude, output[i], 0.00001);
@@ -85,7 +84,11 @@ TEST(filter, lopass) {
                static_cast<float>(frequency_domain::compute_lopass_magnitude(
                        freq, 0.25, 0.05));
     });
-    write("lopass_noise.wav", audio_file::make_audio_file(sig, 44100), 16);
+    write("lopass_noise.wav",
+          sig,
+          44100,
+          audio_file::format::wav,
+          audio_file::bit_depth::pcm16);
 }
 
 TEST(filter, hipass) {
@@ -103,7 +106,12 @@ TEST(filter, hipass) {
                static_cast<float>(frequency_domain::compute_hipass_magnitude(
                        freq, 0.25, 0.05));
     });
-    write("hipass_noise.wav", audio_file::make_audio_file(sig, 44100), 16);
+
+    write("hipass_noise.wav",
+          sig,
+          44100,
+          audio_file::format::wav,
+          audio_file::bit_depth::pcm16);
 }
 
 TEST(filter, transients) {
@@ -116,5 +124,12 @@ TEST(filter, transients) {
                static_cast<float>(frequency_domain::compute_hipass_magnitude(
                        freq, 0.25, 0.05));
     });
-    write("transients.wav", audio_file::make_audio_file(sig, 44100), 16);
+
+    write_interleaved("transients.wav",
+                      sig.data(),
+                      sig.size(),
+                      1,
+                      44100,
+                      audio_file::format::wav,
+                      audio_file::bit_depth::pcm16);
 }

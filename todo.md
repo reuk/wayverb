@@ -9,6 +9,8 @@ dc drift? QUALITY ENGINEERING
 
 Not convinced that waveguide/raytracer levels are matched properly.
 
+Waveguide growth issue - see: vault model
+
 Look again at frequency domain test?
 
 app stuff
@@ -24,16 +26,28 @@ rendering
 
         so: ensure that this is checked-for before rendering
 
-    Waveguide growth issue - see: vault model
-
     Improve source/reciever + microphone direction models.
 
 material preset scattering coefficients
 
 controls
     waveguide options
+        single
+            cutoff
+            usable
+        multiple
+            bands
+            cutoff
+            usable
 
     raytracer options
+        rays (options)
+        max image source order
+
+    output options
+        samplerate (options)
+        bitdepth (options)
+        format (options)
 
     Window to configure output samplerate/bit-depth before beginning the rendering.
 
@@ -75,6 +89,8 @@ Real-time simulation.
 
 Built-in auralization.
 
+Ambisonic output/microphone capsules.
+
 Use Boost Units to validate physical quantities.
 
 Look into other approaches for microphone modelling, which don't affect modal
@@ -82,8 +98,6 @@ response as much.
 
 Fix high memory usage when constructing mesh, i.e. when memory usage doubles
 occasionally due to copying stuff around.
-
-Search for all divides, ensure the denominator can never be zero.
 
 Closest triangle algo is really dumb + slow.
 Fine for the time being, might be a bottleneck in the future.
@@ -97,9 +111,6 @@ Save/load presets from file.
 Variable speed of sound.
 
 Undo/redo.
-
-Correlation meter?
-View - add info panel, correlation meter
 
 Use proper BRDF instead of lambertian diffusion.
 

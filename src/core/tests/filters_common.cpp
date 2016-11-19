@@ -38,9 +38,11 @@ void run_filter(
 
     auto filt = make_series_biquads(coefficients);
     run_two_pass(filt, sig.begin(), sig.end());
-    write(util::build_string(name, ".wav"),
-          audio_file::make_audio_file(sig, sample_rate),
-          bit_depth);
+    write(util::build_string(name, ".wav").c_str(),
+          sig,
+          sample_rate,
+          audio_file::format::wav,
+          audio_file::bit_depth::pcm16);
 }
 
 template <size_t num>

@@ -121,9 +121,11 @@ int main() {
     auto count = 0;
     for (const auto& i : outputs) {
         //  Write out.
-        write(util::build_string("distance_", count, ".wav"),
-              audio_file::make_audio_file(i, sample_rate),
-              16);
+        write(util::build_string("distance_", count, ".wav").c_str(),
+              i,
+              sample_rate,
+              audio_file::format::wav,
+              audio_file::bit_depth::pcm16);
         count += 1;
     }
 

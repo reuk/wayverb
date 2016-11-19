@@ -19,13 +19,17 @@ template <typename T, typename Alloc>
 void write(const std::string& name,
            std::vector<T, Alloc> sig,
            double sample_rate) {
-    const auto bit_depth = 16;
-    write(util::build_string(name, ".wav"),
-          audio_file::make_audio_file(sig, sample_rate),
+    const auto bit_depth = audio_file::bit_depth::pcm16;
+    write(util::build_string(name, ".wav").c_str(),
+          sig,
+          sample_rate,
+          audio_file::format::wav,
           bit_depth);
     wayverb::core::normalize(sig);
-    write(util::build_string("normalised.", name, ".wav"),
-          audio_file::make_audio_file(sig, sample_rate),
+    write(util::build_string("normalised.", name, ".wav").c_str(),
+          sig,
+          sample_rate,
+          audio_file::format::wav,
           bit_depth);
 }
 

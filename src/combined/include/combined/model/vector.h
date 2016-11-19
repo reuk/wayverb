@@ -110,14 +110,9 @@ public:
     bool can_erase() const { return MinimumSize < size(); }
 
     template <typename Archive>
-    void load(Archive& archive) {
+    void serialize(Archive& archive) {
         archive(data_);
         set_owner();
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
-        archive(data_);
     }
 
 private:

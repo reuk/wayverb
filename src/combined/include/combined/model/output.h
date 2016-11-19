@@ -2,6 +2,8 @@
 
 #include "combined/model/member.h"
 
+#include "audio_file/audio_file.h"
+
 #include <string>
 
 namespace wayverb {
@@ -12,41 +14,45 @@ class output final : public basic_member<output> {
 public:
     output() = default;
 
-    enum class bit_depth { bd16, bd24 };
-
-    void set_output_folder(std::string output_folder);
-    std::string get_output_folder() const;
+    enum class sample_rate {
+        sr44_1KHz = 1,
+        sr48KHz,
+        sr88_2KHz,
+        sr96KHz,
+        sr192KHz
+    };
 
     void set_name(std::string name);
     std::string get_name() const;
 
-    void set_sample_rate(double sr);
-    double get_sample_rate() const;
+    void set_bit_depth(audio_file::bit_depth bit_depth);
+    audio_file::bit_depth get_bit_depth() const;
 
-    void set_bit_depth(bit_depth bit_depth);
-    bit_depth get_bit_depth() const;
+    void set_format(audio_file::format format);
+    audio_file::format get_format() const;
 
-    template <typename Archive>
-    void load(Archive& archive) {
-        archive(output_folder_, name_, sample_rate_, bit_depth_);
-    }
+    void set_sample_rate(sample_rate sample_rate);
+    sample_rate get_sample_rate() const;
 
     template <typename Archive>
-    void save(Archive& archive) const {
-        archive(output_folder_, name_, sample_rate_, bit_depth_);
+    void serialize(Archive& archive) {
+        archive(name_, bit_depth_, sample_rate_);
     }
 
 private:
-    std::string output_folder_ = ".";
     std::string name_ = "sig";
-    double sample_rate_ = 44100.0;
-    bit_depth bit_depth_ = bit_depth::bd16;
+    audio_file::bit_depth bit_depth_ = audio_file::bit_depth::pcm16;
+    audio_file::format format_ = audio_file::format::aiff;
+    sample_rate sample_rate_ = sample_rate::sr44_1KHz;
 };
 
-constexpr auto convert_bit_depth(output::bit_depth m) {
-    switch (m) {
-        case output::bit_depth::bd16: return 16;
-        case output::bit_depth::bd24: return 24;
+constexpr auto get_sample_rate(output::sample_rate sr) {
+    switch (sr) {
+        case output::sample_rate::sr44_1KHz: return 44100.0;
+        case output::sample_rate::sr48KHz: return 48000.0;
+        case output::sample_rate::sr88_2KHz: return 88200.0;
+        case output::sample_rate::sr96KHz: return 96000.0;
+        case output::sample_rate::sr192KHz: return 192000.0;
     }
 }
 

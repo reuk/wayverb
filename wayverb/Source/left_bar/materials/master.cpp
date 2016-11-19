@@ -11,11 +11,8 @@ public:
     bands_component() {
         for (auto& i : sliders_) {
             i.setSliderStyle(Slider::SliderStyle::LinearVertical);
-            // i.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true,
-            // 0, 0);
             i.setTextBoxStyle(
                     Slider::TextEntryBoxPosition::TextBoxBelow, false, 40, 20);
-            //            i.setPopupDisplayEnabled(true, nullptr);
             i.setRange(0.01, 0.99, 0.01);
             i.addListener(this);
             addAndMakeVisible(i);
@@ -109,13 +106,15 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class material_component final : public PropertyPanel, public ComboBox::Listener {
+class material_component final : public PropertyPanel,
+                                 public ComboBox::Listener {
 public:
     using material_t = wayverb::combined::model::material;
     using presets_t = wayverb::combined::model::app::material_presets_t;
 
     material_component(const presets_t& presets, material_t& model)
-            : presets_{presets}, model_{model} {
+            : presets_{presets}
+            , model_{model} {
         auto frequencies =
                 std::make_unique<generic_property_component<frequency_labels>>(
                         "band centres / Hz", 25);

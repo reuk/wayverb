@@ -104,17 +104,22 @@ int main() {
         {
             auto mono = dirac_sequence.sequence;
             wayverb::core::normalize(mono);
-            write(util::build_string("raw_dirac.", sample_rate, ".wav"),
-                  audio_file::make_audio_file(mono, dirac_sequence.sample_rate),
-                  16);
+            write(util::build_string("raw_dirac.", sample_rate, ".wav").c_str(),
+                  mono,
+                  dirac_sequence.sample_rate,
+                  audio_file::format::wav,
+                  audio_file::bit_depth::pcm16);
         }
 
         auto processed = wayverb::raytracer::stochastic::postprocessing(
                 histogram, dirac_sequence, environment.acoustic_impedance);
 
-        write(util::build_string("enveloped_dirac.", sample_rate, ".wav"),
-              audio_file::make_audio_file(processed, sample_rate),
-              16);
+        write(util::build_string("enveloped_dirac.", sample_rate, ".wav")
+                      .c_str(),
+              processed,
+              sample_rate,
+              audio_file::format::wav,
+              audio_file::bit_depth::pcm16);
 
         const auto max_raytracer_amplitude = std::accumulate(
                 begin(processed), end(processed), 0.0, [](auto i, double j) {
@@ -134,9 +139,12 @@ int main() {
         }
 
         write(util::build_string(
-                      "normalized_enveloped_dirac.", sample_rate, ".wav"),
-              audio_file::make_audio_file(processed, sample_rate),
-              16);
+                      "normalized_enveloped_dirac.", sample_rate, ".wav")
+                      .c_str(),
+              processed,
+              sample_rate,
+              audio_file::format::wav,
+              audio_file::bit_depth::pcm16);
 
         std::cout << "max raytracer amplitude: " << max_raytracer_amplitude
                   << '\n';

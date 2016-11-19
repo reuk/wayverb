@@ -64,12 +64,7 @@ public:
     const std::shared_ptr<T>& get_shared_ptr() const { return value_; }
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(value_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(value_);
     }
 

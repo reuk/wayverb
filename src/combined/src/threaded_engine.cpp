@@ -53,7 +53,8 @@ std::unique_ptr<waveguide_base> polymorphic_waveguide_model(
 
 void complete_engine::run(const core::compute_context& compute_context,
                           const core::gpu_scene_data& scene_data,
-                          const model::persistent& persistent) {
+                          const model::persistent& persistent,
+                          const std::string& output_path) {
     try {
         is_running_ = true;
         keep_going_ = true;
@@ -134,10 +135,11 @@ void complete_engine::run(const core::compute_context& compute_context,
                         });
 
                 //  Run the simulation, cache the result.
-                auto channel = eng.run(begin(polymorphic_capsules),
-                                       end(polymorphic_capsules),
-                                       persistent.output()->get_sample_rate(),
-                                       keep_going_);
+                auto channel = eng.run(
+                        begin(polymorphic_capsules),
+                        end(polymorphic_capsules),
+                        get_sample_rate(persistent.output()->get_sample_rate()),
+                        keep_going_);
 
                 //  If user cancelled while processing the channel, channel
                 //  will be null, but we want to exit before throwing an
@@ -190,9 +192,10 @@ void complete_engine::run(const core::compute_context& compute_context,
             }
 
             //  Write out files.
+            //  TODO platform-dependent, windows path behaviour is different.
             for (const auto& i : all_channels) {
                 const auto file_name = util::build_string(
-                        persistent.output()->get_output_folder(),
+                        output_path,
                         '/',
                         persistent.output()->get_name(),
                         '.',
@@ -204,12 +207,16 @@ void complete_engine::run(const core::compute_context& compute_context,
                         '.',
                         "c_",
                         i.capsule_name,
-                        ".wav");
+                        ".",
+                        audio_file::get_extension(
+                                persistent.output()->get_format()));
 
-                write(file_name,
-                      audio_file::make_audio_file(
-                              i.data, persistent.output()->get_sample_rate()),
-                      convert_bit_depth(persistent.output()->get_bit_depth()));
+                audio_file::write(
+                        file_name.c_str(),
+                        i.data,
+                        get_sample_rate(persistent.output()->get_sample_rate()),
+                        persistent.output()->get_format(),
+                        persistent.output()->get_bit_depth());
             }
         }
 

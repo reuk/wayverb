@@ -152,10 +152,12 @@ int main(int argc, char** argv) {
 
             {
                 write(util::build_string(
-                              "solution_growth.", i.name, ".transparent.wav"),
-                      audio_file::make_audio_file(postprocessor.get_output(),
-                                                  sampling_frequency),
-                      16);
+                              "solution_growth.", i.name, ".transparent.wav")
+                              .c_str(),
+                      postprocessor.get_output(),
+                      sampling_frequency,
+                      audio_file::format::wav,
+                      audio_file::bit_depth::pcm16);
             }
 
             {
@@ -164,9 +166,12 @@ int main(int argc, char** argv) {
                 wayverb::core::filter::run_two_pass(
                         u, copy.begin(), copy.end());
                 write(util::build_string(
-                              "solution_growth.", i.name, ".dc_blocked.wav"),
-                      audio_file::make_audio_file(copy, sampling_frequency),
-                      16);
+                              "solution_growth.", i.name, ".dc_blocked.wav")
+                              .c_str(),
+                      copy,
+                      sampling_frequency,
+                      audio_file::format::wav,
+                      audio_file::bit_depth::pcm16);
             }
 
             {
@@ -175,9 +180,12 @@ int main(int argc, char** argv) {
                         copy.begin(), copy.end(), sampling_frequency);
                 write(util::build_string("solution_growth.",
                                          i.name,
-                                         ".butterworth_blocked.wav"),
-                      audio_file::make_audio_file(copy, sampling_frequency),
-                      16);
+                                         ".butterworth_blocked.wav")
+                              .c_str(),
+                      copy,
+                      sampling_frequency,
+                      audio_file::format::wav,
+                      audio_file::bit_depth::pcm16);
             }
         }
     } catch (const std::runtime_error& e) {

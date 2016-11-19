@@ -27,12 +27,7 @@ public:
     }
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(aabb_, point_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(aabb_, point_);
     }
 

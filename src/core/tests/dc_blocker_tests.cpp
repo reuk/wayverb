@@ -164,17 +164,22 @@ TEST(dc_blocker, io) {
     };
 
     for (const auto& i : signals) {
-        write(util::build_string("dc_test.input.", i.name, ".wav"),
-              audio_file::make_audio_file(i.kernel, 44100),
-              16);
+        write(util::build_string("dc_test.input.", i.name, ".wav").c_str(),
+              i.kernel,
+              44100,
+              audio_file::format::wav,
+              audio_file::bit_depth::pcm16);
 
         auto run{[&i](auto& filter, const auto& filter_name, auto i) {
             filter::run_two_pass(filter, i.kernel.begin(), i.kernel.end());
             normalize(i.kernel);
             write(util::build_string(
-                          "dc_test.output.", filter_name, ".", i.name, ".wav"),
-                  audio_file::make_audio_file(i.kernel, 44100),
-                  16);
+                          "dc_test.output.", filter_name, ".", i.name, ".wav")
+                          .c_str(),
+                  i.kernel,
+                  44100,
+                  audio_file::format::wav,
+                  audio_file::bit_depth::pcm16);
         }};
 
         {
@@ -311,9 +316,12 @@ TEST(dc_blocker, impulses) {
         {
             const auto output{std::get<0>(i)(input, cutoff, sample_rate)};
             write(util::build_string(
-                          "impulses.dc_blocker.", std::get<1>(i), ".wav"),
-                  audio_file::make_audio_file(output, sample_rate),
-                  16);
+                          "impulses.dc_blocker.", std::get<1>(i), ".wav")
+                          .c_str(),
+                  output,
+                  sample_rate,
+                  audio_file::format::wav,
+                  audio_file::bit_depth::pcm16);
         }
     }
 }
@@ -335,9 +343,12 @@ TEST(dc_blocker, increasing_offset) {
         {
             const auto output{
                     std::get<0>(i)(increasing_offset, cutoff, sample_rate)};
-            write(util::build_string("dc_blocker.", std::get<1>(i), ".wav"),
-                  audio_file::make_audio_file(output, sample_rate),
-                  16);
+            write(util::build_string("dc_blocker.", std::get<1>(i), ".wav")
+                          .c_str(),
+                  output,
+                  sample_rate,
+                  audio_file::format::wav,
+                  audio_file::bit_depth::pcm16);
         }
         {
             auto input{increasing_offset};
@@ -346,9 +357,12 @@ TEST(dc_blocker, increasing_offset) {
                          increasing_offset.crend());
             const auto output{std::get<0>(i)(input, cutoff, sample_rate)};
             write(util::build_string(
-                          "mirrored.dc_blocker.", std::get<1>(i), ".wav"),
-                  audio_file::make_audio_file(output, sample_rate),
-                  16);
+                          "mirrored.dc_blocker.", std::get<1>(i), ".wav")
+                          .c_str(),
+                  output,
+                  sample_rate,
+                  audio_file::format::wav,
+                  audio_file::bit_depth::pcm16);
         }
     }
 }

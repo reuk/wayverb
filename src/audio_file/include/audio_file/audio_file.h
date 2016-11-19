@@ -5,103 +5,142 @@
 
 namespace audio_file {
 
-namespace detail {
+enum class bit_depth { pcm16 = 1, pcm24, pcm32, float32 };
 
+constexpr auto get_description(bit_depth b) {
+    switch (b) {
+        case bit_depth::pcm16: return "signed 16-bit pcm";
+        case bit_depth::pcm24: return "signed 24-bit pcm";
+        case bit_depth::pcm32: return "signed 32-bit pcm";
+        case bit_depth::float32: return "32-bit float";
+    }
+}
+
+enum class format { wav = 1, aiff };
+
+constexpr auto get_extension(format f) {
+    switch (f) {
+        case format::wav: return "wav";
+        case format::aiff: return "aiff";
+    }
+}
+
+/// Given a 2d iterable structure, produce a single interleaved std::vector.
 template <typename It>
-auto interleave(It begin, It end) {
-    const auto channels = std::distance(begin, end);
-    const auto frames = begin->size();
+auto interleave(It b, It e) {
+    using std::cbegin;
+    using std::cend;
 
-    for (auto it = begin; it != end; ++it) {
-        if (it->size() != frames) {
+    using value_type = std::decay_t<decltype(*cbegin(*b))>;
+    using return_type = std::vector<value_type>;
+
+    const auto channels = std::distance(b, e);
+    if (channels <= 0) {
+        return return_type{};
+    }
+
+    const auto frames = std::distance(cbegin(*b), cend(*b));
+    if (frames <= 0) {
+        return return_type{};
+    }
+
+    for (auto it = b; it != e; ++it) {
+        if (std::distance(cbegin(*it), cend(*it)) != frames) {
             throw std::runtime_error{"all channels must have equal length"};
         }
     }
 
-    std::vector<typename std::decay_t<decltype(*begin)>::value_type>
-            interleaved(channels * frames);
+    return_type interleaved(channels * frames);
     for (auto i = 0ul; i != channels; ++i) {
         for (auto j = 0ul; j != frames; ++j) {
-            interleaved[j * channels + i] = begin[i][j];
+            interleaved[j * channels + i] = b[i][j];
         }
     }
     return interleaved;
 }
 
+/// Given a single iterable array of elements, and a channel number, produce
+/// a 2d vector laid out by [channel][sample].
 template <typename It>
-auto deinterleave(It begin, It end, size_t channels) {
+auto deinterleave(It b, It e, size_t channels) {
     if (channels == 0) {
         throw std::runtime_error{"deinterleave: channels must be non-zero"};
     }
-    const auto in_size = std::distance(begin, end);
+    const auto in_size = std::distance(b, e);
     if (in_size % channels) {
         throw std::runtime_error{
                 "input size must be divisible by number of channels"};
     }
+
     const auto frames = in_size / channels;
-    using value_type = std::decay_t<decltype(*begin)>;
+    using value_type = std::decay_t<decltype(*b)>;
     std::vector<std::vector<value_type>> deinterleaved(
             channels, std::vector<value_type>(frames));
 
-    for (auto i = 0ul; begin != end; ++begin, ++i) {
+    for (auto i = 0ul; b != e; ++b, ++i) {
         const auto channel = i % channels;
         const auto sample = i / channels;
-        deinterleaved[channel][sample] = *begin;
+        deinterleaved[channel][sample] = *b;
     }
+
     return deinterleaved;
 }
 
-int get_file_format(const std::string& fname);
-int get_file_depth(int bitDepth);
-
 template <typename T>
-void write_interleaved(const std::string& name,
-                       T data,
+void write_interleaved(const char* fname,
+                       const T* data,
                        size_t num,
                        int channels,
                        int sr,
-                       int ftype,
-                       int bd);
+                       format format,
+                       bit_depth bit_depth);
 
-}  // namespace detail
+template <typename T>
+void write(const char* fname,
+           const T* data,
+           size_t num,
+           int sr,
+           format format,
+           bit_depth bit_depth) {
+    write_interleaved(fname, data, num, 1, sr, format, bit_depth);
+}
 
-template <typename T,
-          typename AllocIn = std::allocator<T>,
-          typename AllocOut = std::allocator<std::vector<T, AllocIn>>>
+template <typename T>
+void write(const char* fname,
+           const T& data,
+           int sr,
+           format format,
+           bit_depth bit_depth) {
+    write(fname, data.data(), data.size(), sr, format, bit_depth);
+}
+
+template <typename T>
 struct audio_file final {
-    std::vector<std::vector<T, AllocIn>, AllocOut> signal;
+    std::vector<std::vector<T>> signal;
     double sample_rate;
 };
 
-template <typename T, typename AllocIn, typename AllocOut>
-auto make_audio_file(std::vector<std::vector<T, AllocIn>, AllocOut> signal,
-                     double sample_rate) {
-    return audio_file<T, AllocIn, AllocOut>{std::move(signal), sample_rate};
-}
+audio_file<double> read(const char* fname);
 
-template <typename T, typename Alloc>
-auto make_audio_file(std::vector<T, Alloc> signal, double sample_rate) {
-    return make_audio_file(
-            std::vector<std::vector<T, Alloc>>{std::move(signal)}, sample_rate);
-}
-
-audio_file<double> read(const std::string& fname);
-
-template <typename value_type, typename AllocIn, typename AllocOut>
-void write(const std::string& fname,
-           const audio_file<value_type, AllocIn, AllocOut>& audio,
-           size_t bit_depth) {
-    const auto format = detail::get_file_format(fname);
-    const auto depth = detail::get_file_depth(bit_depth);
-    const auto interleaved =
-            detail::interleave(audio.signal.begin(), audio.signal.end());
-    detail::write_interleaved(fname,
-                              interleaved.data(),
-                              interleaved.size(),
-                              audio.signal.size(),
-                              audio.sample_rate,
-                              format,
-                              depth);
+template <typename It>
+void write(const char* fname,
+           It b,
+           It e,
+           int sample_rate,
+           format format,
+           bit_depth bit_depth) {
+    const auto channels = std::distance(b, e);
+    if (channels <= 0) {
+        return;
+    }
+    const auto interleaved = interleave(b, e);
+    write_interleaved(fname,
+                      interleaved.data(),
+                      interleaved.size(),
+                      channels,
+                      sample_rate,
+                      format,
+                      bit_depth);
 }
 
 }  // namespace audio_file

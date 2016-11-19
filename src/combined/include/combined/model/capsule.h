@@ -29,12 +29,7 @@ public:
     mode get_mode() const;
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(cereal::base_class<base_type>(this), name_, mode_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(cereal::base_class<base_type>(this), name_, mode_);
     }
 

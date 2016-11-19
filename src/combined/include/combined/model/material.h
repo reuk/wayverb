@@ -22,12 +22,7 @@ public:
     core::surface<core::simulation_bands> get_surface() const;
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(name_, surface_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(name_, surface_);
     }
 

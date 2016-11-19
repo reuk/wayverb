@@ -44,12 +44,7 @@ public:
     core::orientation get_orientation() const;
 
     template <typename Archive>
-    void load(Archive& archive) {
-        archive(position(), capsules(), name_, orientation_);
-    }
-
-    template <typename Archive>
-    void save(Archive& archive) const {
+    void serialize(Archive& archive) {
         archive(position(), capsules(), name_, orientation_);
     }
 
