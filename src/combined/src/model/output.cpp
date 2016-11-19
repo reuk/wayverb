@@ -4,13 +4,6 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-void output::set_name(std::string name) {
-    name_ = std::move(name);
-    notify();
-}
-
-std::string output::get_name() const { return name_; }
-
 void output::set_sample_rate(sample_rate sample_rate) {
     sample_rate_ = sample_rate;
     notify();

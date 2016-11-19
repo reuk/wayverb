@@ -32,5 +32,5 @@ TEST(threaded_engine, threaded_engine) {
                                   << std::setw(10) << progress << std::flush;
                     })};
 
-    complete.run(compute_context{}, scene_data, persistent, ".");
+    complete.run(compute_context{}, scene_data, persistent, ".", "sig");
 }

@@ -22,9 +22,6 @@ public:
         sr192KHz
     };
 
-    void set_name(std::string name);
-    std::string get_name() const;
-
     void set_bit_depth(audio_file::bit_depth bit_depth);
     audio_file::bit_depth get_bit_depth() const;
 
@@ -36,11 +33,10 @@ public:
 
     template <typename Archive>
     void serialize(Archive& archive) {
-        archive(name_, bit_depth_, sample_rate_);
+        archive(bit_depth_, sample_rate_);
     }
 
 private:
-    std::string name_ = "sig";
     audio_file::bit_depth bit_depth_ = audio_file::bit_depth::pcm16;
     audio_file::format format_ = audio_file::format::aiff;
     sample_rate sample_rate_ = sample_rate::sr44_1KHz;

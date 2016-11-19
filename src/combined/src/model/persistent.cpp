@@ -1,5 +1,7 @@
 #include "combined/model/persistent.h"
 
+#include "utilities/string_builder.h"
+
 namespace wayverb {
 namespace combined {
 namespace model {
@@ -48,6 +50,61 @@ shared_value<persistent::materials_t>& persistent::materials() {
 }
 const shared_value<persistent::materials_t>& persistent::materials() const {
     return get<5>();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::string compute_output_file_name(const char* unique,
+                                     const char* source,
+                                     const char* receiver,
+                                     const char* capsule) {
+    return util::build_string(
+            unique, ".s_", source, ".r_", receiver, ".c_", capsule);
+}
+
+std::string compute_output_file_name(const char* unique,
+                                     const source& source,
+                                     const receiver& receiver,
+                                     const capsule& capsule) {
+    return compute_output_file_name(unique,
+                                    source.get_name().c_str(),
+                                    receiver.get_name().c_str(),
+                                    capsule.get_name().c_str());
+}
+
+std::string compute_output_path(const char* directory,
+                                const char* unique,
+                                const source& source,
+                                const receiver& receiver,
+                                const capsule& capsule,
+                                audio_file::format format) {
+    //  TODO platform-dependent, Windows path behaviour is different.
+    return util::build_string(
+            directory,
+            '/',
+            compute_output_file_name(unique, source, receiver, capsule),
+            '.',
+            audio_file::get_extension(format));
+}
+
+std::vector<std::string> compute_all_file_names(const char* directory,
+                                                const char* unique,
+                                                const persistent& persistent) {
+    const auto format = persistent.output()->get_format();
+    std::vector<std::string> ret;
+    for (const auto& source : *persistent.sources()) {
+        for (const auto& receiver : *persistent.receivers()) {
+            for (const auto& capsule : *receiver->capsules()) {
+                ret.emplace_back(compute_output_path(directory,
+                                                     unique,
+                                                     *source,
+                                                     *receiver,
+                                                     *capsule,
+                                                     format));
+            }
+        }
+    }
+    return ret;
 }
 
 }  // namespace model

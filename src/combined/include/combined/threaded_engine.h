@@ -29,15 +29,12 @@ public:
     void run(const core::compute_context& compute_context,
              const core::gpu_scene_data& scene_data,
              const model::persistent& persistent,
-             const std::string& output_path);
+             const char* directory,
+             const char* unique);
 
-    bool is_running() const {
-        return is_running_;
-    }
+    bool is_running() const { return is_running_; }
 
-    void cancel() {
-        keep_going_ = false;
-    }
+    void cancel() { keep_going_ = false; }
 
     engine_state_changed::connection add_engine_state_changed_callback(
             engine_state_changed::callback_type);

@@ -68,7 +68,7 @@ public:
     ~app() noexcept;
 
     //  RENDERING  /////////////////////////////////////////////////////////////
-    void start_render(const std::string& output_path);
+    void start_render(const std::string& output_path, const std::string& unique_id);
     void cancel_render();
     bool is_rendering() const;
 

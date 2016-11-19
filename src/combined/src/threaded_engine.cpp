@@ -22,9 +22,7 @@ struct max_mag_functor final {
 
 struct channel_info final {
     util::aligned::vector<float> data;
-    std::string source_name;
-    std::string receiver_name;
-    std::string capsule_name;
+    std::string file_name;
 };
 
 }  // namespace
@@ -54,7 +52,8 @@ std::unique_ptr<waveguide_base> polymorphic_waveguide_model(
 void complete_engine::run(const core::compute_context& compute_context,
                           const core::gpu_scene_data& scene_data,
                           const model::persistent& persistent,
-                          const std::string& output_path) {
+                          const char* directory,
+                          const char* unique) {
     try {
         is_running_ = true;
         keep_going_ = true;
@@ -156,9 +155,13 @@ void complete_engine::run(const core::compute_context& compute_context,
                      ++i) {
                     all_channels.emplace_back(channel_info{
                             std::move((*channel)[i]),
-                            (*source)->get_name(),
-                            (*receiver)->get_name(),
-                            (*(*receiver)->capsules())[i]->get_name()});
+                            compute_output_path(
+                                    directory,
+                                    unique,
+                                    *(*source),
+                                    *(*receiver),
+                                    *(*(*receiver)->capsules())[i],
+                                    persistent.output()->get_format())});
                 }
             }
         }
@@ -192,27 +195,9 @@ void complete_engine::run(const core::compute_context& compute_context,
             }
 
             //  Write out files.
-            //  TODO platform-dependent, windows path behaviour is different.
             for (const auto& i : all_channels) {
-                const auto file_name = util::build_string(
-                        output_path,
-                        '/',
-                        persistent.output()->get_name(),
-                        '.',
-                        "s_",
-                        i.source_name,
-                        '.',
-                        "r_",
-                        i.receiver_name,
-                        '.',
-                        "c_",
-                        i.capsule_name,
-                        ".",
-                        audio_file::get_extension(
-                                persistent.output()->get_format()));
-
                 audio_file::write(
-                        file_name.c_str(),
+                        i.file_name.c_str(),
                         i.data,
                         get_sample_rate(persistent.output()->get_sample_rate()),
                         persistent.output()->get_format(),

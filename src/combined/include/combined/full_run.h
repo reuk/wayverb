@@ -1,8 +1,8 @@
 #pragma once
 
 #include "combined/capsule_base.h"
-#include "combined/forwarding_call.h"
 #include "combined/engine.h"
+#include "combined/forwarding_call.h"
 
 #include <experimental/optional>
 
@@ -28,11 +28,12 @@ public:
     postprocessing_engine& operator=(postprocessing_engine&&) noexcept = delete;
 
     template <typename It>
-    std::experimental::optional<util::aligned::vector<util::aligned::vector<float>>> run(
-            It b_capsules,
-            It e_capsules,
-            double sample_rate,
-            const std::atomic_bool& keep_going) {
+    std::experimental::optional<
+            util::aligned::vector<util::aligned::vector<float>>>
+    run(It b_capsules,
+        It e_capsules,
+        double sample_rate,
+        const std::atomic_bool& keep_going) {
         //  Only add engine listeners if things are listening to this object.
 
         engine_state_changed::scoped_connection state;

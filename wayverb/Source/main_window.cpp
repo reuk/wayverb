@@ -168,7 +168,35 @@ bool main_window::perform(const InvocationInfo& info) {
 
         case CommandIDs::idResetView: model_.reset_view(); return true;
 
-        case CommandIDs::idStartRender: model_.start_render(); return true;
+        case CommandIDs::idStartRender: {
+            FileChooser fc{"choose output directory..."};
+            if (fc.browseForDirectory()) {
+                const auto dir = fc.getResult().getFullPathName().toStdString();
+                const auto unique = "sig";
+                const auto fnames =
+                        wayverb::combined::model::compute_all_file_names(
+                                dir.c_str(), unique, model_.project.persistent);
+
+                for (const auto fname : fnames) {
+                    if (File(fname).exists()) {
+                        if (AlertWindow::showOkCancelBox(
+                                    AlertWindow::AlertIconType::WarningIcon,
+                                    "overwrite files?",
+                                    "Existing files will be overwritten if you "
+                                    "decide to continue with the rendering "
+                                    "process.")) {
+                            break;
+                        } else {
+                            return true;
+                        }
+                    }
+                }
+
+                model_.start_render(
+                        fc.getResult().getFullPathName().toStdString(), unique);
+            }
+            return true;
+        }
 
         case CommandIDs::idCancelRender: model_.cancel_render(); return true;
 
