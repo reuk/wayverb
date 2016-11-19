@@ -198,8 +198,28 @@ bool main_window::perform(const InvocationInfo& info) {
             */
 
             /// Modal callback 'checks out' the current output state
-            output::get_output_options(model_.output, [this] (auto ret) {
+            output::get_output_options(model_.output, [this](auto ret) {
                 if (ret != 0) {
+                    const auto fnames =
+                            wayverb::combined::model::compute_all_file_names(
+                                    model_.project.persistent, model_.output);
+
+                    for (const auto fname : fnames) {
+                        if (File(fname).exists()) {
+                            if (AlertWindow::showOkCancelBox(
+                                        AlertWindow::AlertIconType::WarningIcon,
+                                        "overwrite files?",
+                                        "Existing files will be overwritten if "
+                                        "you "
+                                        "decide to continue with the rendering "
+                                        "process.")) {
+                                break;
+                            } else {
+                                return;
+                            }
+                        }
+                    }
+
                     model_.start_render();
                 }
             });

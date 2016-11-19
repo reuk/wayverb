@@ -2,14 +2,14 @@
 
 text_property::text_property(const String& name)
         : PropertyComponent{name, 25} {
-    addAndMakeVisible(editor_);
+    addAndMakeVisible(editor);
 }
 
 std::string text_property::get() const {
-    return editor_.getText().toStdString();
+    return editor.getText().toStdString();
 }
 
-void text_property::set(const std::string& s) { editor_.setText(s, false); }
+void text_property::set(const std::string& s) { editor.setText(s, false); }
 
 void text_property::refresh() {}
 

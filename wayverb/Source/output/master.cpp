@@ -4,124 +4,87 @@
 
 #include "../AngularLookAndFeel.h"
 #include "../UtilityComponents/connector.h"
+#include "../generic_combo_box_property.h"
 #include "../text_property.h"
 
 namespace output {
 
 namespace {
 
-class bit_depth_property final : public PropertyComponent,
-                                 public ComboBox::Listener {
+class bit_depth_property final
+        : public generic_combo_box_property<wayverb::combined::model::output,
+                                            audio_file::bit_depth> {
 public:
-    using model_t = wayverb::combined::model::output;
-
     bit_depth_property(model_t& model)
-            : PropertyComponent{"bit depth"}
-            , model_{model}
-            , connection_{model_.connect([this] (auto&) {
-                combo_box_.setSelectedId(static_cast<int>(model_.get_bit_depth()));
-             })} {
-        for (auto i : {audio_file::bit_depth::pcm16,
+            : generic_combo_box_property{
+                      model,
+                      "bit depth",
+                      {audio_file::bit_depth::pcm16,
                        audio_file::bit_depth::pcm24,
                        audio_file::bit_depth::pcm32,
-                       audio_file::bit_depth::float32}) {
-            combo_box_.addItem(audio_file::get_description(i),
-                               static_cast<int>(i));
-        }
-        combo_box_.addListener(this);
-            
-        addAndMakeVisible(combo_box_);
-    }
-    
-    void comboBoxChanged(ComboBox* cb) override {
-        model_.set_bit_depth(static_cast<audio_file::bit_depth>(
-                combo_box_.getSelectedId()));
-    }
-
-    void refresh() override {}
+                       audio_file::bit_depth::float32},
+                      [](auto e) { return audio_file::get_description(e); }} {}
 
 private:
-    model_t& model_;
-    ComboBox combo_box_;
-    model::Connector<ComboBox> combo_box_connector_{&combo_box_, this};
-    
-    model_t::scoped_connection connection_;
+    void set_model(model_t& model, const value_t& e) override {
+        model.set_bit_depth(e);
+    }
+
+    value_t get_model(const model_t& model) const override {
+        return model.get_bit_depth();
+    }
 };
 
-class sample_rate_property final : public PropertyComponent,
-                                   public ComboBox::Listener {
+class sample_rate_property final
+        : public generic_combo_box_property<
+                  wayverb::combined::model::output,
+                  wayverb::combined::model::output::sample_rate> {
 public:
-    using model_t = wayverb::combined::model::output;
-
     sample_rate_property(model_t& model)
-            : PropertyComponent{"sample rate"}
-            , model_{model}
-            , connection_{model_.connect([this] (auto&) {
-                combo_box_.setSelectedId(static_cast<int>(model_.get_sample_rate()));
-             })} {
-        for (auto i : {model_t::sample_rate::sr44_1KHz,
+            : generic_combo_box_property{
+                      model,
+                      "sample rate",
+                      {model_t::sample_rate::sr44_1KHz,
                        model_t::sample_rate::sr48KHz,
                        model_t::sample_rate::sr88_2KHz,
                        model_t::sample_rate::sr96KHz,
-                       model_t::sample_rate::sr192KHz}) {
-            combo_box_.addItem(
-                    util::build_string(
-                            wayverb::combined::model::get_sample_rate(i) / 1000.0,
-                            "KHz"),
-                    static_cast<int>(i));
-        }
-        combo_box_.addListener(this);
-            
-        addAndMakeVisible(combo_box_);
-    }
-    
-    void comboBoxChanged(ComboBox* cb) override {
-        model_.set_sample_rate(static_cast<model_t::sample_rate>(
-                combo_box_.getSelectedId()));
-    }
-
-    void refresh() override {}
+                       model_t::sample_rate::sr192KHz},
+                      [](auto i) {
+                          return util::build_string(
+                                  wayverb::combined::model::get_sample_rate(i) /
+                                          1000.0,
+                                  "KHz");
+                      }} {}
 
 private:
-    model_t& model_;
-    ComboBox combo_box_;
-    model::Connector<ComboBox> combo_box_connector_{&combo_box_, this};
-    
-    model_t::scoped_connection connection_;
+    void set_model(model_t& model, const value_t& e) override {
+        model.set_sample_rate(e);
+    }
+
+    value_t get_model(const model_t& model) const override {
+        return model.get_sample_rate();
+    }
 };
 
-class format_property final : public PropertyComponent,
-                              public ComboBox::Listener {
+class format_property final
+        : public generic_combo_box_property<wayverb::combined::model::output,
+                                            audio_file::format> {
 public:
-    using model_t = wayverb::combined::model::output;
-
     format_property(model_t& model)
-            : PropertyComponent{"format"}
-            , model_{model}
-            , connection_{model_.connect([this] (auto&) {
-                combo_box_.setSelectedId(static_cast<int>(model_.get_format()));
-             })} {
-        for (auto i : {audio_file::format::aiff, audio_file::format::wav}) {
-            combo_box_.addItem(audio_file::get_extension(i), static_cast<int>(i));
-        }
-        combo_box_.addListener(this);
-            
-        addAndMakeVisible(combo_box_);
-    }
-    
-    void comboBoxChanged(ComboBox* cb) override {
-        model_.set_format(static_cast<audio_file::format>(
-                          combo_box_.getSelectedId()));
-    }
-
-    void refresh() override {}
+            : generic_combo_box_property{
+                      model,
+                      "format",
+                      {audio_file::format::aiff, audio_file::format::wav},
+                      [](auto e) { return audio_file::get_extension(e); }} {}
 
 private:
-    model_t& model_;
-    ComboBox combo_box_;
-    model::Connector<ComboBox> combo_box_connector_{&combo_box_, this};
-    
-    model_t::scoped_connection connection_;
+    void set_model(model_t& model, const value_t& e) override {
+        model.set_format(e);
+    }
+
+    value_t get_model(const model_t& model) const override {
+        return model.get_format();
+    }
 };
 
 class directory_component final : public Component, public ButtonListener {
@@ -130,11 +93,15 @@ public:
 
     directory_component(model_t& model)
             : model_{model}
-            , connection_{model_.connect([this] (auto&) {
-                label_.setText(model_.get_output_directory(), dontSendNotification);
+            , connection_{model_.connect([this](auto&) {
+                label_.setText(model_.get_output_directory(),
+                               dontSendNotification);
             })} {
-
-        model_.set_output_directory(File::getSpecialLocation(File::SpecialLocationType::userHomeDirectory).getFullPathName().toStdString());
+        model_.set_output_directory(
+                File::getSpecialLocation(
+                        File::SpecialLocationType::userHomeDirectory)
+                        .getFullPathName()
+                        .toStdString());
 
         addAndMakeVisible(label_);
         addAndMakeVisible(text_button_);
@@ -143,14 +110,17 @@ public:
     void resized() override {
         auto bounds = getLocalBounds().reduced(2, 2);
         const auto button_height = bounds.getHeight();
-        text_button_.setBounds(bounds.removeFromRight(text_button_.getBestWidthForHeight(button_height)));
+        text_button_.setBounds(bounds.removeFromRight(
+                text_button_.getBestWidthForHeight(button_height)));
         label_.setBounds(bounds);
     }
 
     void buttonClicked(Button* b) override {
-        FileChooser fc{"select output directory...", File{model_.get_output_directory()}};
+        FileChooser fc{"select output directory...",
+                       File{model_.get_output_directory()}};
         if (fc.browseForDirectory()) {
-            model_.set_output_directory(fc.getResult().getFullPathName().toStdString());
+            model_.set_output_directory(
+                    fc.getResult().getFullPathName().toStdString());
         }
     }
 
@@ -184,19 +154,22 @@ class config final : public PropertyPanel {
 public:
     using model_t = wayverb::combined::model::output;
 
-    config(model_t& model): model_{model} {
+    config(model_t& model)
+            : model_{model} {
         addProperties({new directory_property{model_}});
 
         auto name_property = new text_property{"name"};
-        name_property->connect_on_change([this] (auto&, auto str) {
-            model_.set_unique_id(str);
-        });
+        name_property->connect_on_change(
+                [this](auto&, auto str) { model_.set_unique_id(str); });
 
-        connection_ = model_t::scoped_connection{model_.connect([this, name_property](auto&) {
-            name_property->set(model_.get_unique_id());
-        })};
+        name_property->editor.setTextToShowWhenEmpty(
+                "this will be used as a prefix for output files",
+                Colours::grey);
 
-        model_.set_unique_id("out");
+        connection_ = model_t::scoped_connection{
+                model_.connect([this, name_property](auto&) {
+                    name_property->set(model_.get_unique_id());
+                })};
 
         addProperties({name_property});
 
@@ -222,10 +195,11 @@ public:
     template <typename... Ts>
     dialog_window(Ts&&... ts)
             : content_{std::forward<Ts>(ts)...} {
-        done_.setColour(TextButton::ColourIds::buttonColourId, AngularLookAndFeel::emphasis);
+        done_.setColour(TextButton::ColourIds::buttonColourId,
+                        AngularLookAndFeel::emphasis);
 
         addAndMakeVisible(content_);
-        
+
         addAndMakeVisible(done_);
         addAndMakeVisible(cancel_);
 
@@ -236,7 +210,7 @@ public:
         auto bounds = getLocalBounds();
         auto button_bounds = bounds.removeFromBottom(button_bar_height_);
         content_.setBounds(bounds);
-        
+
         done_.setBounds(button_bounds.removeFromRight(100).reduced(2, 2));
         cancel_.setBounds(button_bounds.removeFromRight(100).reduced(2, 2));
     }
@@ -253,12 +227,12 @@ public:
 
 private:
     static constexpr auto button_bar_height_ = 25;
-    
+
     T content_;
 
     TextButton done_{"OK"};
     model::Connector<TextButton> done_connector_{&done_, this};
-    
+
     TextButton cancel_{"cancel"};
     model::Connector<TextButton> cancel_connector_{&cancel_, this};
 };
@@ -268,11 +242,10 @@ private:
 template <typename T>
 class generic_modal_callback final : public ModalComponentManager::Callback {
 public:
-    generic_modal_callback(T t): t_{std::move(t)} {}
+    generic_modal_callback(T t)
+            : t_{std::move(t)} {}
 
-    void modalStateFinished(int ret) override {
-        t_(ret);
-    }
+    void modalStateFinished(int ret) override { t_(ret); }
 
 private:
     T t_;
@@ -285,14 +258,13 @@ auto make_generic_modal_callback_ptr(T t) {
 
 void get_output_options(wayverb::combined::model::output& model,
                         output_options_callback callback) {
-
     DialogWindow::LaunchOptions launchOptions;
 
     {
         auto comp = std::make_unique<dialog_window<config>>(model);
         launchOptions.content.setOwned(comp.release());
     }
-    
+
     launchOptions.dialogTitle = "configure output";
     launchOptions.dialogBackgroundColour = Colours::darkgrey;
     launchOptions.escapeKeyTriggersCloseButton = true;
@@ -300,9 +272,10 @@ void get_output_options(wayverb::combined::model::output& model,
     launchOptions.resizable = false;
     launchOptions.useBottomRightCornerResizer = true;
     auto dw = launchOptions.create();
-    dw->enterModalState(true,
-                        make_generic_modal_callback_ptr(std::move(callback)).release(),
-                        true);
+    dw->enterModalState(
+            true,
+            make_generic_modal_callback_ptr(std::move(callback)).release(),
+            true);
 }
 
 }  // namespace output

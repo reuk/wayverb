@@ -40,9 +40,7 @@ controls
             cutoff
             usable
 
-    raytracer options
-        rays (options)
-        max image source order
+    work out why slider buttons don't display
 
     Show which channel is being rendered, and the total channels to go
 

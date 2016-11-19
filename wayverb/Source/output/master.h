@@ -16,6 +16,7 @@ using output_options_callback = std::function<void(int status)>;
 
 /// Fire a modal configurator.
 /// If configuration succeeds, pass the result to the callback.
-void get_output_options(wayverb::combined::model::output& model, output_options_callback);
+void get_output_options(wayverb::combined::model::output& model,
+                        output_options_callback);
 
 }  // namespace output

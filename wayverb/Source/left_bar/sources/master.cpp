@@ -1,8 +1,8 @@
 #include "master.h"
 #include "../list_config_item.h"
 
-#include "text_property.h"
 #include "../vec3_property.h"
+#include "text_property.h"
 
 #include "combined/model/source.h"
 

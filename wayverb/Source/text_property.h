@@ -21,8 +21,9 @@ public:
 
     void textEditorTextChanged(TextEditor&) override;
 
+    TextEditor editor;
+
 private:
-    TextEditor editor_;
-    model::Connector<TextEditor> editor_connector_{&editor_, this};
+    model::Connector<TextEditor> editor_connector_{&editor, this};
     on_change on_change_;
 };

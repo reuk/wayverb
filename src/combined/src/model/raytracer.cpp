@@ -4,18 +4,23 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-void raytracer::set_rays(size_t rays) {
-    data_.rays = rays;
+void raytracer::set_ray_number(ray_number ray_number) {
+    ray_number_ = ray_number;
     notify();
 }
 
-void raytracer::set_max_img_src_order(size_t max) {
-    data_.maximum_image_source_order = max;
+raytracer::ray_number raytracer::get_ray_number() const { return ray_number_; }
+
+void raytracer::set_max_img_src_order(size_t i) {
+    img_src_order_ = i;
     notify();
 }
+
+size_t raytracer::get_max_img_src_order() const { return img_src_order_; }
 
 wayverb::raytracer::simulation_parameters raytracer::get() const {
-    return data_;
+    return {wayverb::combined::model::get_ray_number(ray_number_),
+            img_src_order_};
 }
 
 }  // namespace model

@@ -116,17 +116,17 @@ public:
             : presets_{presets}
             , model_{model} {
         auto frequencies =
-                std::make_unique<generic_property_component<frequency_labels>>(
+                std::make_unique<property_component_adapter<frequency_labels>>(
                         "band centres / Hz", 25);
         auto absorption =
-                std::make_unique<generic_property_component<bands_component>>(
+                std::make_unique<property_component_adapter<bands_component>>(
                         "absorption", 100);
         auto scattering =
-                std::make_unique<generic_property_component<bands_component>>(
+                std::make_unique<property_component_adapter<bands_component>>(
                         "scattering", 100);
 
         auto preset_box =
-                std::make_unique<generic_property_component<ComboBox>>(
+                std::make_unique<property_component_adapter<ComboBox>>(
                         "presets", 25);
 
         preset_box->content.setTextWhenNothingSelected("material presets...");
