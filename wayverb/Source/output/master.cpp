@@ -1,0 +1,308 @@
+#include "master.h"
+
+#include "utilities/string_builder.h"
+
+#include "../AngularLookAndFeel.h"
+#include "../UtilityComponents/connector.h"
+#include "../text_property.h"
+
+namespace output {
+
+namespace {
+
+class bit_depth_property final : public PropertyComponent,
+                                 public ComboBox::Listener {
+public:
+    using model_t = wayverb::combined::model::output;
+
+    bit_depth_property(model_t& model)
+            : PropertyComponent{"bit depth"}
+            , model_{model}
+            , connection_{model_.connect([this] (auto&) {
+                combo_box_.setSelectedId(static_cast<int>(model_.get_bit_depth()));
+             })} {
+        for (auto i : {audio_file::bit_depth::pcm16,
+                       audio_file::bit_depth::pcm24,
+                       audio_file::bit_depth::pcm32,
+                       audio_file::bit_depth::float32}) {
+            combo_box_.addItem(audio_file::get_description(i),
+                               static_cast<int>(i));
+        }
+        combo_box_.addListener(this);
+            
+        addAndMakeVisible(combo_box_);
+    }
+    
+    void comboBoxChanged(ComboBox* cb) override {
+        model_.set_bit_depth(static_cast<audio_file::bit_depth>(
+                combo_box_.getSelectedId()));
+    }
+
+    void refresh() override {}
+
+private:
+    model_t& model_;
+    ComboBox combo_box_;
+    model::Connector<ComboBox> combo_box_connector_{&combo_box_, this};
+    
+    model_t::scoped_connection connection_;
+};
+
+class sample_rate_property final : public PropertyComponent,
+                                   public ComboBox::Listener {
+public:
+    using model_t = wayverb::combined::model::output;
+
+    sample_rate_property(model_t& model)
+            : PropertyComponent{"sample rate"}
+            , model_{model}
+            , connection_{model_.connect([this] (auto&) {
+                combo_box_.setSelectedId(static_cast<int>(model_.get_sample_rate()));
+             })} {
+        for (auto i : {model_t::sample_rate::sr44_1KHz,
+                       model_t::sample_rate::sr48KHz,
+                       model_t::sample_rate::sr88_2KHz,
+                       model_t::sample_rate::sr96KHz,
+                       model_t::sample_rate::sr192KHz}) {
+            combo_box_.addItem(
+                    util::build_string(
+                            wayverb::combined::model::get_sample_rate(i) / 1000.0,
+                            "KHz"),
+                    static_cast<int>(i));
+        }
+        combo_box_.addListener(this);
+            
+        addAndMakeVisible(combo_box_);
+    }
+    
+    void comboBoxChanged(ComboBox* cb) override {
+        model_.set_sample_rate(static_cast<model_t::sample_rate>(
+                combo_box_.getSelectedId()));
+    }
+
+    void refresh() override {}
+
+private:
+    model_t& model_;
+    ComboBox combo_box_;
+    model::Connector<ComboBox> combo_box_connector_{&combo_box_, this};
+    
+    model_t::scoped_connection connection_;
+};
+
+class format_property final : public PropertyComponent,
+                              public ComboBox::Listener {
+public:
+    using model_t = wayverb::combined::model::output;
+
+    format_property(model_t& model)
+            : PropertyComponent{"format"}
+            , model_{model}
+            , connection_{model_.connect([this] (auto&) {
+                combo_box_.setSelectedId(static_cast<int>(model_.get_format()));
+             })} {
+        for (auto i : {audio_file::format::aiff, audio_file::format::wav}) {
+            combo_box_.addItem(audio_file::get_extension(i), static_cast<int>(i));
+        }
+        combo_box_.addListener(this);
+            
+        addAndMakeVisible(combo_box_);
+    }
+    
+    void comboBoxChanged(ComboBox* cb) override {
+        model_.set_format(static_cast<audio_file::format>(
+                          combo_box_.getSelectedId()));
+    }
+
+    void refresh() override {}
+
+private:
+    model_t& model_;
+    ComboBox combo_box_;
+    model::Connector<ComboBox> combo_box_connector_{&combo_box_, this};
+    
+    model_t::scoped_connection connection_;
+};
+
+class directory_component final : public Component, public ButtonListener {
+public:
+    using model_t = wayverb::combined::model::output;
+
+    directory_component(model_t& model)
+            : model_{model}
+            , connection_{model_.connect([this] (auto&) {
+                label_.setText(model_.get_output_directory(), dontSendNotification);
+            })} {
+
+        model_.set_output_directory(File::getSpecialLocation(File::SpecialLocationType::userHomeDirectory).getFullPathName().toStdString());
+
+        addAndMakeVisible(label_);
+        addAndMakeVisible(text_button_);
+    }
+
+    void resized() override {
+        auto bounds = getLocalBounds().reduced(2, 2);
+        const auto button_height = bounds.getHeight();
+        text_button_.setBounds(bounds.removeFromRight(text_button_.getBestWidthForHeight(button_height)));
+        label_.setBounds(bounds);
+    }
+
+    void buttonClicked(Button* b) override {
+        FileChooser fc{"select output directory...", File{model_.get_output_directory()}};
+        if (fc.browseForDirectory()) {
+            model_.set_output_directory(fc.getResult().getFullPathName().toStdString());
+        }
+    }
+
+private:
+    model_t& model_;
+    Label label_;
+    TextButton text_button_{"browse..."};
+    model::Connector<TextButton> text_button_connector_{&text_button_, this};
+
+    model_t::scoped_connection connection_;
+};
+
+class directory_property final : public PropertyComponent {
+public:
+    using model_t = wayverb::combined::model::output;
+    directory_property(model_t& model)
+            : PropertyComponent{"output directory"}
+            , directory_component_{model} {
+        addAndMakeVisible(directory_component_);
+    }
+
+    void refresh() override {}
+
+private:
+    directory_component directory_component_;
+};
+
+}  // namespace
+
+class config final : public PropertyPanel {
+public:
+    using model_t = wayverb::combined::model::output;
+
+    config(model_t& model): model_{model} {
+        addProperties({new directory_property{model_}});
+
+        auto name_property = new text_property{"name"};
+        name_property->connect_on_change([this] (auto&, auto str) {
+            model_.set_unique_id(str);
+        });
+
+        connection_ = model_t::scoped_connection{model_.connect([this, name_property](auto&) {
+            name_property->set(model_.get_unique_id());
+        })};
+
+        model_.set_unique_id("out");
+
+        addProperties({name_property});
+
+        addProperties({new bit_depth_property{model_}});
+        addProperties({new sample_rate_property{model_}});
+        addProperties({new format_property{model_}});
+
+        model_.notify();
+
+        setSize(600, getTotalContentHeight());
+    }
+
+private:
+    model_t& model_;
+    model_t::scoped_connection connection_;
+};
+
+template <typename T>
+class dialog_window final : public Component, public ButtonListener {
+public:
+    using model_t = wayverb::combined::model::output;
+
+    template <typename... Ts>
+    dialog_window(Ts&&... ts)
+            : content_{std::forward<Ts>(ts)...} {
+        done_.setColour(TextButton::ColourIds::buttonColourId, AngularLookAndFeel::emphasis);
+
+        addAndMakeVisible(content_);
+        
+        addAndMakeVisible(done_);
+        addAndMakeVisible(cancel_);
+
+        setSize(content_.getWidth(), content_.getHeight() + button_bar_height_);
+    }
+
+    void resized() override {
+        auto bounds = getLocalBounds();
+        auto button_bounds = bounds.removeFromBottom(button_bar_height_);
+        content_.setBounds(bounds);
+        
+        done_.setBounds(button_bounds.removeFromRight(100).reduced(2, 2));
+        cancel_.setBounds(button_bounds.removeFromRight(100).reduced(2, 2));
+    }
+
+    void buttonClicked(Button* b) override {
+        if (auto dw = findParentComponentOfClass<DialogWindow>()) {
+            if (b == &done_) {
+                dw->exitModalState(1);
+            } else if (b == &cancel_) {
+                dw->exitModalState(0);
+            }
+        }
+    }
+
+private:
+    static constexpr auto button_bar_height_ = 25;
+    
+    T content_;
+
+    TextButton done_{"OK"};
+    model::Connector<TextButton> done_connector_{&done_, this};
+    
+    TextButton cancel_{"cancel"};
+    model::Connector<TextButton> cancel_connector_{&cancel_, this};
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+class generic_modal_callback final : public ModalComponentManager::Callback {
+public:
+    generic_modal_callback(T t): t_{std::move(t)} {}
+
+    void modalStateFinished(int ret) override {
+        t_(ret);
+    }
+
+private:
+    T t_;
+};
+
+template <typename T>
+auto make_generic_modal_callback_ptr(T t) {
+    return std::make_unique<generic_modal_callback<T>>(std::move(t));
+}
+
+void get_output_options(wayverb::combined::model::output& model,
+                        output_options_callback callback) {
+
+    DialogWindow::LaunchOptions launchOptions;
+
+    {
+        auto comp = std::make_unique<dialog_window<config>>(model);
+        launchOptions.content.setOwned(comp.release());
+    }
+    
+    launchOptions.dialogTitle = "configure output";
+    launchOptions.dialogBackgroundColour = Colours::darkgrey;
+    launchOptions.escapeKeyTriggersCloseButton = true;
+    launchOptions.useNativeTitleBar = true;
+    launchOptions.resizable = false;
+    launchOptions.useBottomRightCornerResizer = true;
+    auto dw = launchOptions.create();
+    dw->enterModalState(true,
+                        make_generic_modal_callback_ptr(std::move(callback)).release(),
+                        true);
+}
+
+}  // namespace output

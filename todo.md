@@ -16,25 +16,25 @@ Look again at frequency domain test?
 app stuff
 ---------
 
-Disable controls when rendering.
-
-really test load and save
+Really test load and save.
 
 rendering
     'All channels are silent' bug
         due to source and receiver being at same location + hard source
-
         so: ensure that this is checked-for before rendering
 
-    Improve source/reciever + microphone direction models.
-
 material preset scattering coefficients
+    scattering can go 0-1 whereas absorption should only go 0.01-1
+
+modal dialogs instead of callouts?
 
 controls
     waveguide options
+
         single
             cutoff
             usable
+
         multiple
             bands
             cutoff
@@ -43,13 +43,6 @@ controls
     raytracer options
         rays (options)
         max image source order
-
-    output options
-        samplerate (options)
-        bitdepth (options)
-        format (options)
-
-    Window to configure output samplerate/bit-depth before beginning the rendering.
 
     Show which channel is being rendered, and the total channels to go
 
@@ -77,6 +70,8 @@ Reduce visiblity of methods wherever possible.
 
 nice-to-have
 ============
+
+Improve source/reciever + microphone direction models.
 
 Speed up compile times.
 

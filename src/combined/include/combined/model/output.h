@@ -10,6 +10,11 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
+class persistent;
+class source;
+class receiver;
+class capsule;
+
 class output final : public basic_member<output> {
 public:
     output() = default;
@@ -31,15 +36,19 @@ public:
     void set_sample_rate(sample_rate sample_rate);
     sample_rate get_sample_rate() const;
 
-    template <typename Archive>
-    void serialize(Archive& archive) {
-        archive(bit_depth_, sample_rate_);
-    }
+    void set_output_directory(std::string path);
+    std::string get_output_directory() const;
+
+    void set_unique_id(std::string unique);
+    std::string get_unique_id() const;
 
 private:
     audio_file::bit_depth bit_depth_ = audio_file::bit_depth::pcm16;
     audio_file::format format_ = audio_file::format::aiff;
     sample_rate sample_rate_ = sample_rate::sr44_1KHz;
+
+    std::string output_directory_ = "";
+    std::string unique_id_ = "";
 };
 
 constexpr auto get_sample_rate(output::sample_rate sr) {
@@ -51,6 +60,16 @@ constexpr auto get_sample_rate(output::sample_rate sr) {
         case output::sample_rate::sr192KHz: return 192000.0;
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::string compute_output_path(const source& source,
+                                const receiver& receiver,
+                                const capsule& capsule,
+                                const output& output);
+
+std::vector<std::string> compute_all_file_names(const persistent& persistent,
+                                                const output& output);
 
 }  // namespace model
 }  // namespace combined

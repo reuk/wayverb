@@ -52,8 +52,7 @@ std::unique_ptr<waveguide_base> polymorphic_waveguide_model(
 void complete_engine::run(const core::compute_context& compute_context,
                           const core::gpu_scene_data& scene_data,
                           const model::persistent& persistent,
-                          const char* directory,
-                          const char* unique) {
+                          const model::output& output) {
     try {
         is_running_ = true;
         keep_going_ = true;
@@ -137,7 +136,7 @@ void complete_engine::run(const core::compute_context& compute_context,
                 auto channel = eng.run(
                         begin(polymorphic_capsules),
                         end(polymorphic_capsules),
-                        get_sample_rate(persistent.output()->get_sample_rate()),
+                        get_sample_rate(output.get_sample_rate()),
                         keep_going_);
 
                 //  If user cancelled while processing the channel, channel
@@ -156,12 +155,10 @@ void complete_engine::run(const core::compute_context& compute_context,
                     all_channels.emplace_back(channel_info{
                             std::move((*channel)[i]),
                             compute_output_path(
-                                    directory,
-                                    unique,
                                     *(*source),
                                     *(*receiver),
                                     *(*(*receiver)->capsules())[i],
-                                    persistent.output()->get_format())});
+                                    output)});
                 }
             }
         }
@@ -199,9 +196,9 @@ void complete_engine::run(const core::compute_context& compute_context,
                 audio_file::write(
                         i.file_name.c_str(),
                         i.data,
-                        get_sample_rate(persistent.output()->get_sample_rate()),
-                        persistent.output()->get_format(),
-                        persistent.output()->get_bit_depth());
+                        get_sample_rate(output.get_sample_rate()),
+                        output.get_format(),
+                        output.get_bit_depth());
             }
         }
 

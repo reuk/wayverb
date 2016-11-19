@@ -1,5 +1,5 @@
 #include "master.h"
-#include "generic_property_component.h"
+#include "../../generic_property_component.h"
 
 #include <iomanip>
 

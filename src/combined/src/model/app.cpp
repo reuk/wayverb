@@ -92,8 +92,7 @@ app::app(const std::string& name)
 
 app::~app() noexcept { cancel_render(); }
 
-void app::start_render(const std::string& output_path,
-                       const std::string& unique_id) {
+void app::start_render() {
     cancel_render();
 
     //  Let the world know that we're gonna do some stuff.
@@ -104,22 +103,17 @@ void app::start_render(const std::string& output_path,
         this,
         s = generate_scene_data(),
         p = project.persistent,
-        o = output_path,
-        u = unique_id
+        o = output
     ] {
         engine_.run(core::compute_context{},
                     std::move(s),
                     std::move(p),
-                    o.c_str(),
-                    u.c_str());
+                    o);
     });
 }
 
 void app::cancel_render() {
     engine_.cancel();
-    if (future_.valid()) {
-        future_.get();
-    }
 }
 
 bool app::is_rendering() const { return engine_.is_running(); }

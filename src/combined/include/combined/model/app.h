@@ -68,7 +68,8 @@ public:
     ~app() noexcept;
 
     //  RENDERING  /////////////////////////////////////////////////////////////
-    void start_render(const std::string& output_path, const std::string& unique_id);
+    /// Make sure data member 'output' is set properly before calling this.
+    void start_render();
     void cancel_render();
     bool is_rendering() const;
 
@@ -113,6 +114,8 @@ public:
     //  Backing data for rending 3D scene view.
     //  There are arguably better homes for this, but I'm short on time...
     scene scene;
+
+    output output;
 
     //  Project data.
     project project;

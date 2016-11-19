@@ -29,8 +29,7 @@ public:
     void run(const core::compute_context& compute_context,
              const core::gpu_scene_data& scene_data,
              const model::persistent& persistent,
-             const char* directory,
-             const char* unique);
+             const model::output& output);
 
     bool is_running() const { return is_running_; }
 

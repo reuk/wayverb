@@ -3,6 +3,8 @@
 #include "CommandIDs.h"
 #include "try_and_explain.h"
 
+#include "output/master.h"
+
 //  init from as much outside info as possible
 main_window::main_window(ApplicationCommandTarget& next,
                          String name,
@@ -169,6 +171,7 @@ bool main_window::perform(const InvocationInfo& info) {
         case CommandIDs::idResetView: model_.reset_view(); return true;
 
         case CommandIDs::idStartRender: {
+            /*
             FileChooser fc{"choose output directory..."};
             if (fc.browseForDirectory()) {
                 const auto dir = fc.getResult().getFullPathName().toStdString();
@@ -191,10 +194,15 @@ bool main_window::perform(const InvocationInfo& info) {
                         }
                     }
                 }
-
-                model_.start_render(
-                        fc.getResult().getFullPathName().toStdString(), unique);
             }
+            */
+
+            /// Modal callback 'checks out' the current output state
+            output::get_output_options(model_.output, [this] (auto ret) {
+                if (ret != 0) {
+                    model_.start_render();
+                }
+            });
             return true;
         }
 

@@ -1,7 +1,5 @@
 #include "text_property.h"
 
-namespace left_bar {
-
 text_property::text_property(const String& name)
         : PropertyComponent{name, 25} {
     addAndMakeVisible(editor_);
@@ -20,8 +18,6 @@ text_property::on_change::connection text_property::connect_on_change(
     return on_change_.connect(std::move(callback));
 }
 
-void text_property::textEditorReturnKeyPressed(TextEditor&) {
+void text_property::textEditorTextChanged(TextEditor&) {
     on_change_(*this, get());
 }
-
-}  // namespace left_bar
