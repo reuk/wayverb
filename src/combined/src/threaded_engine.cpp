@@ -2,6 +2,8 @@
 #include "combined/forwarding_call.h"
 #include "combined/waveguide_base.h"
 
+#include "waveguide/config.h"
+
 #include "core/dsp_vector_ops.h"
 #include "core/environment.h"
 
@@ -84,10 +86,33 @@ void complete_engine::do_run(core::compute_context compute_context,
 
         begun_();
 
+        constexpr core::environment environment{};
+
         //  First, we check that all the sources and receivers are valid, to
         //  avoid doing useless work.
 
         {
+            //  Check that no receiver is too close to any source.
+
+            const auto waveguide_sr =
+                    compute_sampling_frequency(*persistent.waveguide());
+            const float mesh_spacing = waveguide::config::grid_spacing(
+                    environment.speed_of_sound, 1 / waveguide_sr);
+
+            for (const auto& source : *persistent.sources()) {
+                for (const auto& receiver : *persistent.receivers()) {
+                    if (distance(source->position()->get(),
+                                 receiver->position()->get()) <= mesh_spacing) {
+                        throw std::runtime_error{
+                                "Placing sources and receivers too close "
+                                "together will produce inaccurate results."};
+                    }
+                }
+            }
+        }
+
+        {
+            //  Check that all sources and receivers are inside the mesh.
             const auto voxelised =
                     core::make_voxelised_scene_data(scene_data, 5, 0.1f);
 
@@ -104,7 +129,7 @@ void complete_engine::do_run(core::compute_context compute_context,
             }
         }
 
-        constexpr core::environment environment{};
+        //  Now we can start rendering.
 
         const auto poly_waveguide =
                 polymorphic_waveguide_model(*persistent.waveguide());

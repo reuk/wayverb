@@ -88,6 +88,18 @@ const shared_value<multiple_band_waveguide>& waveguide::multiple_band() const {
     return get<multiple_band_t>();
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
+double compute_sampling_frequency(const waveguide& waveguide) {
+    switch (waveguide.get_mode()) {
+        case waveguide::mode::single:
+            return compute_sampling_frequency(waveguide.single_band()->get());
+
+        case waveguide::mode::multiple:
+            return compute_sampling_frequency(waveguide.multiple_band()->get());
+    }
+}
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

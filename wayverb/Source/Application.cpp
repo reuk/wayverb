@@ -144,7 +144,7 @@ public:
         return command_manager_;
     }
 
-    LookAndFeel& get_look_and_feel() {return look_and_feel_;}
+    LookAndFeel& get_look_and_feel() { return look_and_feel_; }
 
 private:
     class main_menu_bar_model : public MenuBarModel {
@@ -322,7 +322,8 @@ private:
             "xgl;*.zgl;*.ply;*.dxf;*.lwo;*.lws;*.lxo;*.stl;*.x;*.ac;*.ms3d;*."
             "cob;*.scn";
 
-    class wide_property_component_look_and_feel final : public AngularLookAndFeel {
+    class wide_property_component_look_and_feel final
+            : public AngularLookAndFeel {
     public:
         //  Don't bother drawing anything.
         void drawPropertyComponentBackground(Graphics&,
@@ -344,7 +345,8 @@ private:
     wayverb_application& owner_;
 
     AngularLookAndFeel look_and_feel_;
-    wide_property_component_look_and_feel wide_property_component_look_and_feel_;
+    wide_property_component_look_and_feel
+            wide_property_component_look_and_feel_;
 
     StoredSettings stored_settings_;
 
@@ -438,7 +440,7 @@ LookAndFeel& wayverb_application::get_look_and_feel() {
     jassert(get_app().instance_);
     return get_app().instance_->get_look_and_feel();
 }
-    
+
 ApplicationCommandManager& wayverb_application::get_command_manager() {
     jassert(get_app().instance_);
     return get_app().instance_->get_command_manager();

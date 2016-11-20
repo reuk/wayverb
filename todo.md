@@ -20,24 +20,9 @@ Really test load and save.
     saving + loading need exception handling
     loading crashes
 
-rendering
-    'All channels are silent' bug
-        due to source and receiver being at same location + hard source
-        so: ensure that this is checked-for before rendering
+theme slider text boxes
 
 material preset scattering coefficients (?)
-
-controls
-    waveguide options
-
-        single
-            cutoff
-            usable
-
-        multiple
-            bands
-            cutoff
-            usable
 
 Finish adding the help panel info.
     switch to normal tooltips

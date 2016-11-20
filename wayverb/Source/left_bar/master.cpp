@@ -3,9 +3,9 @@
 
 #include "materials/master.h"
 #include "raytracer/master.h"
-#include "waveguide/master.h"
 #include "receivers/master.h"
 #include "sources/master.h"
+#include "waveguide/master.h"
 
 namespace {
 
@@ -99,10 +99,9 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
              "the simulation.");
 
     //  Populate the property panel
-    property_panel_.addSection(
-            "sources",
-            {new wrapped_property_component<sources::master>{
-                    *model_.project.persistent.sources()}});
+    property_panel_.addSection("sources",
+                               {new wrapped_property_component<sources::master>{
+                                       *model_.project.persistent.sources()}});
     property_panel_.addSection(
             "receivers",
             {new wrapped_property_component<receivers::master>{
@@ -123,7 +122,8 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
 
     property_panel_.addSection(
             "waveguide",
-            {new wrapped_property_component<waveguide::master>{*app.project.persistent.waveguide()}});
+            {new wrapped_property_component<waveguide::master>{
+                    *app.project.persistent.waveguide()}});
 
     property_panel_.setOpaque(false);
 

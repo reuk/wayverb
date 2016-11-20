@@ -8,6 +8,54 @@ namespace left_bar {
 namespace waveguide {
 namespace {
 
+template <typename Model>
+class text_display_property
+        : public generic_property_component<Model, std::string, Label> {
+public:
+    text_display_property(Model& model, const String& name)
+            : generic_property_component<Model, std::string, Label>{
+                      model, name, 25} {}
+
+private:
+    void labelTextChanged(Label*) override {}
+    void set_model(Model& model, const std::string& value) override {}
+    void set_view(const std::string& value) override {
+        this->content.setText(value, dontSendNotification);
+    }
+};
+
+template <typename WaveguideModel>
+class effective_sample_rate_property final
+        : public text_display_property<WaveguideModel> {
+public:
+    effective_sample_rate_property(WaveguideModel& model)
+            : text_display_property<WaveguideModel>{model, "effective sr"} {
+        this->update_from_model();
+    }
+
+private:
+    std::string get_model(const WaveguideModel& model) const override {
+        return util::build_string(
+                compute_sampling_frequency(model.get()),
+                " Hz");
+    }
+};
+
+template <typename WaveguideModel>
+class memory_usage_property final
+        : public text_display_property<WaveguideModel> {
+public:
+    memory_usage_property(WaveguideModel& model)
+            : text_display_property<WaveguideModel>{model, "memory usage"} {
+        this->update_from_model();
+    }
+
+private:
+    std::string get_model(const WaveguideModel& model) const override {
+        return util::build_string(estimate_memory_usage(model.get()), " Mb");
+    }
+};
+
 class single_properties final : public PropertyPanel {
 public:
     using model_t = wayverb::combined::model::single_band_waveguide;
@@ -16,7 +64,9 @@ public:
         addProperties(
                 {static_cast<PropertyComponent*>(new cutoff_property{model}),
                  static_cast<PropertyComponent*>(
-                         new usable_portion_property{model})});
+                         new usable_portion_property{model}),
+                 static_cast<PropertyComponent*>(
+                         new effective_sample_rate_property<model_t>{model})});
     }
 
 private:
@@ -24,8 +74,8 @@ private:
     public:
         cutoff_property(model_t& model)
                 : generic_slider_property{model, "cutoff / Hz", 20, 20000, 1} {
-        update_from_model();
-                }
+            update_from_model();
+        }
 
     private:
         void set_model(model_t& model, const double& value) override {
@@ -42,8 +92,8 @@ private:
     public:
         usable_portion_property(model_t& model)
                 : generic_slider_property{model, "usable portion", 0.1, 0.6} {
-        update_from_model();
-                }
+            update_from_model();
+        }
 
     private:
         void set_model(model_t& model, const double& value) override {
@@ -65,7 +115,9 @@ public:
                 {static_cast<PropertyComponent*>(new bands_property{model}),
                  static_cast<PropertyComponent*>(new cutoff_property{model}),
                  static_cast<PropertyComponent*>(
-                         new usable_portion_property{model})});
+                         new usable_portion_property{model}),
+                 static_cast<PropertyComponent*>(
+                         new effective_sample_rate_property<model_t>{model})});
     }
 
 private:
@@ -73,8 +125,8 @@ private:
     public:
         bands_property(model_t& model)
                 : generic_slider_property{model, "bands", 1, 8, 1} {
-        update_from_model();
-    }
+            update_from_model();
+        }
 
     private:
         void set_model(model_t& model, const double& value) override {
@@ -90,8 +142,8 @@ private:
     public:
         cutoff_property(model_t& model)
                 : generic_slider_property{model, "cutoff / Hz", 20, 20000, 1} {
-        update_from_model();
-                }
+            update_from_model();
+        }
 
     private:
         void set_model(model_t& model, const double& value) override {
@@ -108,8 +160,8 @@ private:
     public:
         usable_portion_property(model_t& model)
                 : generic_slider_property{model, "usable portion", 0.1, 0.6} {
-        update_from_model();
-                }
+            update_from_model();
+        }
 
     private:
         void set_model(model_t& model, const double& value) override {
@@ -132,8 +184,11 @@ master::master(model_t& model)
     auto single = std::make_unique<single_properties>(*model_.single_band());
     auto multi = std::make_unique<multiple_properties>(*model_.multiple_band());
 
-    setSize(300, std::max(single->getTotalContentHeight(), multi->getTotalContentHeight()) + getTabBarDepth() + 2);
-        
+    setSize(300,
+            std::max(single->getTotalContentHeight(),
+                     multi->getTotalContentHeight()) +
+                    getTabBarDepth() + 2);
+
     addTab("single", Colours::darkgrey, single.release(), true);
     addTab("multi", Colours::darkgrey, multi.release(), true);
 

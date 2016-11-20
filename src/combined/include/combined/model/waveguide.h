@@ -87,6 +87,8 @@ private:
     mode mode_ = mode::single;
 };
 
+double compute_sampling_frequency(const waveguide& waveguide);
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb
