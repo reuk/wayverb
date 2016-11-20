@@ -14,7 +14,11 @@ public:
             double max,
             double inc = 0)
             : generic_property_component<Model, double, Slider>{
-                      model, name, 25} {
+                      model,
+                      name,
+                      25,
+                      Slider::SliderStyle::IncDecButtons,
+                      Slider::TextEntryBoxPosition::TextBoxLeft} {
         this->content.setIncDecButtonsMode(
                 Slider::IncDecButtonMode::incDecButtonsDraggable_AutoDirection);
         this->content.setRange(min, max, inc);

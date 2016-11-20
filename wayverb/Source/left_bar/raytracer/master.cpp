@@ -12,14 +12,21 @@ namespace left_bar {
 namespace raytracer {
 
 ray_number_property::ray_number_property(model_t& model)
-        : generic_combo_box_property{
-                  model,
-                  "rays",
-                  {model_t::ray_number::r1e3,
-                   model_t::ray_number::r1e4,
-                   model_t::ray_number::r1e5,
-                   model_t::ray_number::r1e6},
-                  [](auto e) { return util::build_string(get_ray_number_description(e) , "\t(" , std::setprecision(1), std::scientific, get_ray_number(e) , ')'); }} {
+        : generic_combo_box_property{model,
+                                     "rays",
+                                     {model_t::ray_number::r1e3,
+                                      model_t::ray_number::r1e4,
+                                      model_t::ray_number::r1e5,
+                                      model_t::ray_number::r1e6},
+                                     [](auto e) {
+                                         return util::build_string(
+                                                 get_ray_number_description(e),
+                                                 " (",
+                                                 std::scientific,
+                                                 std::setprecision(0),
+                                                 static_cast<double>(get_ray_number(e)),
+                                                 ')');
+                                     }} {
     update_from_model();
 }
 

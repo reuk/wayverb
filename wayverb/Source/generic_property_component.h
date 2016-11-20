@@ -53,6 +53,6 @@ private:
     model_t& model_;
 
     model::Connector<Content> content_connector_{&this->content, this};
-    typename model_t::scoped_connection connection_{model_.connect(
-            [this](auto& model) { this->update_from_model(); })};
+    typename model_t::scoped_connection connection_{
+            model_.connect([this](auto& model) { this->update_from_model(); })};
 };

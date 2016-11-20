@@ -106,11 +106,13 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
             make_material_options(app.scene,
                                   app.material_presets,
                                   *app.project.persistent.materials()));
-    property_panel_.addSection("raytracer",
-                               {static_cast<PropertyComponent*>(new raytracer::ray_number_property{
-                                        *app.project.persistent.raytracer()}),
-                                static_cast<PropertyComponent*>(new raytracer::img_src_order_property{
-                                        *app.project.persistent.raytracer()})});
+    property_panel_.addSection(
+            "raytracer",
+            {static_cast<PropertyComponent*>(new raytracer::ray_number_property{
+                     *app.project.persistent.raytracer()}),
+             static_cast<PropertyComponent*>(
+                     new raytracer::img_src_order_property{
+                             *app.project.persistent.raytracer()})});
 
     property_panel_.setOpaque(false);
 
