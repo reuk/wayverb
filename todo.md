@@ -1,3 +1,14 @@
+critical
+========
+
+Not convinced that waveguide/raytracer levels are matched properly.
+
+Waveguide growth issue - see: vault model
+
+load/save
+    saving + loading need exception handling
+    loading crashes
+
 important
 =========
 
@@ -7,20 +18,10 @@ small? Can I get the correct direct/reflected ratios for near and far sources?
 Put a really short hanning window on the beginning of output signals to hide
 dc drift? QUALITY ENGINEERING
 
-Not convinced that waveguide/raytracer levels are matched properly.
-
-Waveguide growth issue - see: vault model
-
 Look again at frequency domain test?
 
 app stuff
 ---------
-
-Really test load and save.
-    saving + loading need exception handling
-    loading crashes
-
-theme slider text boxes
 
 material preset scattering coefficients (?)
 

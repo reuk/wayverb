@@ -12,10 +12,14 @@ public:
         done_.setColour(TextButton::ColourIds::buttonColourId,
                         AngularLookAndFeel::emphasis);
 
-        addAndMakeVisible(*content_);
-
         addAndMakeVisible(done_);
+        done_.setExplicitFocusOrder(1);
+
         addAndMakeVisible(cancel_);
+        done_.setExplicitFocusOrder(2);
+
+        addAndMakeVisible(*content_);
+        done_.setExplicitFocusOrder(3);
 
         setSize(content_->getWidth(),
                 content_->getHeight() + button_bar_height_);
@@ -67,9 +71,12 @@ public:
         done_.setColour(TextButton::ColourIds::buttonColourId,
                         AngularLookAndFeel::emphasis);
 
-        addAndMakeVisible(*content_);
-
         addAndMakeVisible(done_);
+        done_.setExplicitFocusOrder(1);
+        
+        addAndMakeVisible(*content_);
+        content_->setExplicitFocusOrder(2);
+
 
         setSize(content_->getWidth(),
                 content_->getHeight() + button_bar_height_);
