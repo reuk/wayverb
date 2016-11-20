@@ -75,8 +75,14 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
             bottom_.set_state(bottom::state::rendering);
         })}
         , engine_state_connection_{queue.connect_engine_state(
-                  [this](auto state, auto progress) {
-                      bottom_.set_bar_text(wayverb::combined::to_string(state));
+                  [this](auto run, auto runs, auto state, auto progress) {
+                      bottom_.set_bar_text(util::build_string(
+                              "run ",
+                              run + 1,
+                              " / ",
+                              runs,
+                              ": ",
+                              wayverb::combined::to_string(state)));
                       bottom_.set_progress(progress);
                   })}
         , finished_connection_{queue.connect_finished([this] {

@@ -171,7 +171,6 @@ bool main_window::perform(const InvocationInfo& info) {
         case CommandIDs::idResetView: model_.reset_view(); return true;
 
         case CommandIDs::idStartRender: {
-
             /// Modal callback 'checks out' the current output state
             output::get_output_options(model_.output, [this](auto ret) {
                 if (ret != 0) {
@@ -223,11 +222,13 @@ void main_window::save_as() {
 
 std::experimental::optional<std::string>
 main_window::browse_for_file_to_save() {
-    FileChooser fc{"save location...", File(), wayverb::combined::model::project::project_wildcard};
+    FileChooser fc{"save location...",
+                   File(),
+                   wayverb::combined::model::project::project_wildcard};
     if (fc.browseForFileToSave(true)) {
-         const auto path = fc.getResult();
-         path.createDirectory();
-         return path.getFullPathName().toStdString();
+        const auto path = fc.getResult();
+        path.createDirectory();
+        return path.getFullPathName().toStdString();
     }
     return std::experimental::nullopt;
 }

@@ -39,8 +39,6 @@ controls
             cutoff
             usable
 
-    Show which channel is being rendered, and the total channels to go
-
 Finish adding the help panel info.
     switch to normal tooltips
 

@@ -40,22 +40,23 @@ public:
     using begun = wayverb::combined::model::app::begun;
     begun::connection connect_begun(begun::callback_type t);
 
-    using engine_state_changed = wayverb::combined::engine_state_changed;
+    using engine_state_changed =
+            wayverb::combined::model::app::engine_state_changed;
     engine_state_changed::connection connect_engine_state(
             engine_state_changed::callback_type t);
 
     using node_positions_changed =
-            wayverb::combined::waveguide_node_positions_changed;
+            wayverb::combined::model::app::waveguide_node_positions_changed;
     node_positions_changed::connection connect_node_positions(
             node_positions_changed::callback_type t);
 
     using node_pressures_changed =
-            wayverb::combined::waveguide_node_pressures_changed;
+            wayverb::combined::model::app::waveguide_node_pressures_changed;
     node_pressures_changed::connection connect_node_pressures(
             node_pressures_changed::callback_type t);
 
     using reflections_generated =
-            wayverb::combined::raytracer_reflections_generated;
+            wayverb::combined::model::app::raytracer_reflections_generated;
     reflections_generated::connection connect_reflections(
             reflections_generated::callback_type t);
 
