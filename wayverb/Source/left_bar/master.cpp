@@ -88,7 +88,7 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
              "Use the options in this panel to adjust the various settings of "
              "the simulation.");
 
-    const auto item_height = 150;
+    const auto item_height = 100;
 
     //  Populate the property panel
     property_panel_.addSection(

@@ -24,7 +24,6 @@ rendering
         so: ensure that this is checked-for before rendering
 
 material preset scattering coefficients
-    scattering can go 0-1 whereas absorption should only go 0.01-1
 
 modal dialogs instead of callouts?
 

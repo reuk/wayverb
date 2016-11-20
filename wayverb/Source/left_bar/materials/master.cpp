@@ -8,12 +8,12 @@ namespace materials {
 
 class bands_component final : public Component, public Slider::Listener {
 public:
-    bands_component() {
+    bands_component(double min, double max, double inc) {
         for (auto& i : sliders_) {
             i.setSliderStyle(Slider::SliderStyle::LinearVertical);
             i.setTextBoxStyle(
                     Slider::TextEntryBoxPosition::TextBoxBelow, false, 40, 20);
-            i.setRange(0.01, 0.99, 0.01);
+            i.setRange(min, max, inc);
             i.addListener(this);
             addAndMakeVisible(i);
         }
@@ -120,10 +120,10 @@ public:
                         "band centres / Hz", 25);
         auto absorption =
                 std::make_unique<property_component_adapter<bands_component>>(
-                        "absorption", 100);
+                        "absorption", 100, 0.01, 1.0, 0.01);
         auto scattering =
                 std::make_unique<property_component_adapter<bands_component>>(
-                        "scattering", 100);
+                        "scattering", 100, 0.0, 1.0, 0.01);
 
         auto preset_box =
                 std::make_unique<property_component_adapter<ComboBox>>(

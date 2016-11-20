@@ -15,6 +15,8 @@ public:
             double inc = 0)
             : generic_property_component<Model, double, Slider>{
                       model, name, 25} {
+        this->content.setIncDecButtonsMode(
+                Slider::IncDecButtonMode::incDecButtonsDraggable_AutoDirection);
         this->content.setRange(min, max, inc);
     }
 
