@@ -3,6 +3,7 @@
 #include "vector_list_box.h"
 
 #include "../UtilityComponents/connector.h"
+#include "../modal_dialog.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
@@ -53,10 +54,9 @@ public:
     }
 
     void buttonClicked(Button*) override {
-        CallOutBox::launchAsynchronously(
-                get_callout_component_(model_).release(),
-                button_.getScreenBounds(),
-                nullptr);
+        begin_modal_dialog("",
+                           make_done_window_ptr(get_callout_component_(model_)),
+                           [](auto) {});
     }
 
 private:

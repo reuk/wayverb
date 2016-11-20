@@ -25,8 +25,6 @@ rendering
 
 material preset scattering coefficients
 
-modal dialogs instead of callouts?
-
 controls
     waveguide options
 
@@ -38,8 +36,6 @@ controls
             bands
             cutoff
             usable
-
-    work out why slider buttons don't display
 
     Show which channel is being rendered, and the total channels to go
 

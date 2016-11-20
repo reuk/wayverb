@@ -1,5 +1,7 @@
 #include "master.h"
+
 #include "../../generic_property_component.h"
+#include "../../modal_dialog.h"
 
 #include <iomanip>
 
@@ -166,6 +168,8 @@ public:
         addProperties({absorption.release()});
         addProperties({scattering.release()});
         addProperties({preset_box.release()});
+
+        setSize(497, getTotalContentHeight());
     }
 
     void comboBoxChanged(ComboBox* cb) override {
@@ -180,43 +184,6 @@ private:
     const presets_t& presets_;
     material_t& model_;
     material_t::scoped_connection connection_;
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
-class material_component_with_title final : public Component {
-public:
-    using material_t = wayverb::combined::model::material;
-    using presets_t = wayverb::combined::model::app::material_presets_t;
-
-    material_component_with_title(const presets_t& presets, material_t& model)
-            : presets_{presets}
-            , model_{model}
-            , label_{"", model_.get_name()}
-            , material_component_{presets, model_} {
-        label_.setJustificationType(Justification::centred);
-
-        addAndMakeVisible(label_);
-        addAndMakeVisible(material_component_);
-
-        setSize(497,
-                material_component_.getTotalContentHeight() + title_height_);
-    }
-
-    void resized() override {
-        auto bounds = getLocalBounds();
-        label_.setBounds(bounds.removeFromTop(title_height_));
-        material_component_.setBounds(bounds);
-    }
-
-private:
-    static constexpr auto title_height_ = 25;
-
-    const presets_t& presets_;
-    material_t& model_;
-
-    Label label_;
-    material_component material_component_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -256,10 +223,11 @@ void config_item::buttonClicked(Button* b) {
                 b->getToggleState() ? std::experimental::nullopt
                                     : std::experimental::make_optional(index_));
     } else if (b == &config_button_) {
-        CallOutBox::launchAsynchronously(
-                new material_component_with_title{presets_, *model_},
-                config_button_.getScreenBounds(),
-                nullptr);
+        begin_modal_dialog(
+                model_->get_name(),
+                make_done_window_ptr(std::make_unique<material_component>(
+                        presets_, *model_)),
+                [](auto) {});
     }
 }
 

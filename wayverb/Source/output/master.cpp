@@ -187,95 +187,12 @@ private:
     model_t::scoped_connection connection_;
 };
 
-template <typename T>
-class dialog_window final : public Component, public ButtonListener {
-public:
-    using model_t = wayverb::combined::model::output;
-
-    template <typename... Ts>
-    dialog_window(Ts&&... ts)
-            : content_{std::forward<Ts>(ts)...} {
-        done_.setColour(TextButton::ColourIds::buttonColourId,
-                        AngularLookAndFeel::emphasis);
-
-        addAndMakeVisible(content_);
-
-        addAndMakeVisible(done_);
-        addAndMakeVisible(cancel_);
-
-        setSize(content_.getWidth(), content_.getHeight() + button_bar_height_);
-    }
-
-    void resized() override {
-        auto bounds = getLocalBounds();
-        auto button_bounds = bounds.removeFromBottom(button_bar_height_);
-        content_.setBounds(bounds);
-
-        done_.setBounds(button_bounds.removeFromRight(100).reduced(2, 2));
-        cancel_.setBounds(button_bounds.removeFromRight(100).reduced(2, 2));
-    }
-
-    void buttonClicked(Button* b) override {
-        if (auto dw = findParentComponentOfClass<DialogWindow>()) {
-            if (b == &done_) {
-                dw->exitModalState(1);
-            } else if (b == &cancel_) {
-                dw->exitModalState(0);
-            }
-        }
-    }
-
-private:
-    static constexpr auto button_bar_height_ = 25;
-
-    T content_;
-
-    TextButton done_{"OK"};
-    model::Connector<TextButton> done_connector_{&done_, this};
-
-    TextButton cancel_{"cancel"};
-    model::Connector<TextButton> cancel_connector_{&cancel_, this};
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
-template <typename T>
-class generic_modal_callback final : public ModalComponentManager::Callback {
-public:
-    generic_modal_callback(T t)
-            : t_{std::move(t)} {}
-
-    void modalStateFinished(int ret) override { t_(ret); }
-
-private:
-    T t_;
-};
-
-template <typename T>
-auto make_generic_modal_callback_ptr(T t) {
-    return std::make_unique<generic_modal_callback<T>>(std::move(t));
-}
-
 void get_output_options(wayverb::combined::model::output& model,
-                        output_options_callback callback) {
-    DialogWindow::LaunchOptions launchOptions;
-
-    {
-        auto comp = std::make_unique<dialog_window<config>>(model);
-        launchOptions.content.setOwned(comp.release());
-    }
-
-    launchOptions.dialogTitle = "configure output";
-    launchOptions.dialogBackgroundColour = Colours::darkgrey;
-    launchOptions.escapeKeyTriggersCloseButton = true;
-    launchOptions.useNativeTitleBar = true;
-    launchOptions.resizable = false;
-    launchOptions.useBottomRightCornerResizer = true;
-    auto dw = launchOptions.create();
-    dw->enterModalState(
-            true,
-            make_generic_modal_callback_ptr(std::move(callback)).release(),
-            true);
+                        modal_callback callback) {
+    begin_modal_dialog(
+            "configure output",
+            make_ok_cancel_window_ptr(std::make_unique<config>(model)),
+            std::move(callback));
 }
 
 }  // namespace output
