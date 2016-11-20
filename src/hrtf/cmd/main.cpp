@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
     const std::regex name_regex{".*R([0-9]+)_T([0-9]+)_P([0-9]+).*"};
     for (const auto& entry : entries) {
         if (entry.empty()) {
-            throw std::runtime_error{"encountered error reading filename"};
+            throw std::runtime_error{"Encountered error reading filename."};
         }
         std::smatch match{};
         if (std::regex_match(entry, match, name_regex)) {
@@ -86,7 +86,7 @@ int main(int argc, char** argv) {
             const auto audio = audio_file::read(full_path.c_str());
 
             if (audio.signal.size() != 2) {
-                throw std::runtime_error{"hrtf data files must be stereo"};
+                throw std::runtime_error{"Hrtf data files must be stereo."};
             }
 
             const auto energy = util::map(

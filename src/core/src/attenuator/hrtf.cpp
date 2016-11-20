@@ -54,7 +54,7 @@ constexpr auto find_inc(const hrtf_data::entry* it,
                         Extractor extractor) {
     const auto ret = smallest_nonzero(it, end, extractor);
     if (!all_divisible(it, end, ret, extractor)) {
-        throw std::runtime_error{"items must be equally spaced"};
+        throw std::runtime_error{"Items must be equally spaced."};
     }
     return ret;
 }
@@ -100,7 +100,7 @@ void hrtf::set_channel(channel channel) { channel_ = channel; }
 
 void hrtf::set_radius(float radius) {
     if (radius < 0 || 1 < radius) {
-        throw std::runtime_error{"hrtf radius outside reasonable range"};
+        throw std::runtime_error{"Hrtf radius outside reasonable range."};
     }
     radius_ = radius;
 }

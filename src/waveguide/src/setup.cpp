@@ -16,7 +16,7 @@ vectors::vectors(util::aligned::vector<condensed_node> nodes,
                                 condensed_nodes_.end(),
                                 checker) != size) {
             throw std::runtime_error(
-                    "number of nodes does not match number of boundaries");
+                    "Number of nodes does not match number of boundaries.");
         }
     };
 
@@ -44,8 +44,8 @@ void vectors::set_coefficients(
         util::aligned::vector<coefficients_canonical> c) {
     if (c.size() != coefficients_.size()) {
         throw std::runtime_error(
-                "size of new coefficients vector must be equal to the existing "
-                "one in order to maintain object invariants");
+                "Size of new coefficients vector must be equal to the existing "
+                "one in order to maintain object invariants.");
     }
     coefficients_ = std::move(c);
 }

@@ -23,8 +23,8 @@ auto attenuate(const Method& method,
 }
 
 /// For the null attenuator, we just extract the absolute/omni pressure.
-inline auto attenuate(const core::attenuator::null& null,
-                      float Z,
+inline auto attenuate(const core::attenuator::null&,
+                      float /*Z*/,
                       const postprocessor::directional_receiver::output& i) {
     return i.pressure;
 }
@@ -43,7 +43,7 @@ struct attenuate_mapper final {
 template <typename Method>
 auto make_attenuate_mapper(Method method, float Z) {
     if (Z < 300 || 500 <= Z) {
-        throw std::runtime_error{"acoustic impedance outside expected range"};
+        throw std::runtime_error{"Acoustic impedance outside expected range."};
     }
     return attenuate_mapper<Method>{std::move(method), Z};
 }

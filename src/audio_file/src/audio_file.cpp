@@ -41,13 +41,13 @@ void write_interleaved(const char* name,
             get_sndfile_format(format) | get_sndfile_bit_depth(bit_depth);
     if (!SndfileHandle::formatCheck(fmt, channels, sr)) {
         throw std::runtime_error(
-                "looks like libsndfile can't write with those parameters");
+                "Sound file library can't write with those parameters.");
     }
 
     SndfileHandle outfile{name, SFM_WRITE, fmt, channels, sr};
     const auto written = outfile.write(data, num);
     if (!written) {
-        throw std::runtime_error("failed to write audio file");
+        throw std::runtime_error("Failed to write audio file.");
     }
 }
 
@@ -87,7 +87,7 @@ audio_file<double> read(const char* fname) {
     {
         std::ifstream is{fname};
         if (!is.good()) {
-            throw std::runtime_error{"audio_file::read: unable to open file"};
+            throw std::runtime_error{"Unable to open file."};
         }
     }
     SndfileHandle infile{fname, SFM_READ};

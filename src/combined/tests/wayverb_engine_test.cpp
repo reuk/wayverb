@@ -46,7 +46,7 @@ TEST(engine, engine) {
     const auto intermediate = e.run(true);
 
     if (intermediate == nullptr) {
-        throw std::runtime_error{"failed to generate intermediate results"};
+        throw std::runtime_error{"Failed to generate intermediate results."};
     }
 
     const auto result =

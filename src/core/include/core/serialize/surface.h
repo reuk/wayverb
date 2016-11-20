@@ -9,10 +9,10 @@ namespace cereal {
 
 template <typename Archive>
 void serialize(Archive& archive, wayverb::core::bands_type& m) {
-    cereal::size_type s = 8;
+    cereal::size_type s = wayverb::core::simulation_bands;
     archive(cereal::make_size_tag(s));
-    if (s != 8) {
-        throw std::runtime_error("volume array must be of length 8");
+    if (s != wayverb::core::simulation_bands) {
+        throw std::runtime_error("Volume array length is incorrect.");
     }
     std::for_each(std::begin(m.s), std::end(m.s), [&archive](auto& i) {
         archive(i);

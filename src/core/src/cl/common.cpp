@@ -41,7 +41,8 @@ cl::Device get_device(const cl::Context& context) {
             devices.end());
 
     if (devices.empty()) {
-        throw std::runtime_error("no devices support double precision");
+        throw std::runtime_error(
+                "No available OpenCL devices support double precision.");
     }
 
     devices.erase(remove_if(begin(devices),
@@ -52,7 +53,7 @@ cl::Device get_device(const cl::Context& context) {
                   devices.end());
 
     if (devices.empty()) {
-        throw std::runtime_error("no suitable devices available");
+        throw std::runtime_error("No suitable OpenCL devices available.");
     }
 
     const auto device = devices.front();
@@ -74,7 +75,7 @@ compute_context::compute_context() {
         } catch (...) {
         }
     }
-    throw std::runtime_error{"no OpenCL context contains a usable device"};
+    throw std::runtime_error{"No OpenCL context contains a usable device."};
 }
 
 compute_context::compute_context(device_type type)

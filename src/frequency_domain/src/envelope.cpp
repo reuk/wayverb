@@ -10,7 +10,7 @@ double max_width_factor(util::range<double> r, double step) {
 
 double width_factor(util::range<double> r, size_t bands, double overlap) {
     if (overlap < 0 || 1 < overlap) {
-        throw std::runtime_error{"overlap must be in the util::range 0-1"};
+        throw std::runtime_error{"Overlap must be in the range 0-1."};
     }
     return max_width_factor(r, 1.0 / bands) * overlap;
 }
@@ -28,7 +28,7 @@ double band_edge_impl(double p, double P, size_t l) {
 
 double lower_band_edge(double p, double P, size_t l) {
     if (P < 0) {
-        throw std::runtime_error("P must be greater or equal to 0");
+        throw std::runtime_error("P must be greater or equal to 0.");
     }
     if (P == 0) {
         return 0 <= p ? 1.0 : 0.0;
@@ -38,7 +38,7 @@ double lower_band_edge(double p, double P, size_t l) {
 
 double upper_band_edge(double p, double P, size_t l) {
     if (P < 0) {
-        throw std::runtime_error("P must be greater or equal to 0");
+        throw std::runtime_error("P must be greater or equal to 0.");
     }
     if (P == 0) {
         return p < 0 ? 1.0 : 0.0;
@@ -60,7 +60,7 @@ double compute_bandpass_magnitude(double frequency,
                                   double width_factor,
                                   size_t l) {
     if (width_factor < 0 || 1 < width_factor) {
-        throw std::runtime_error{"width_factor must be between 0 and 1"};
+        throw std::runtime_error{"Width_factor must be between 0 and 1."};
     }
 
     return compute_lopass_magnitude(frequency, r.get_max(), width_factor, l) *
@@ -72,7 +72,7 @@ double compute_lopass_magnitude(double frequency,
                                 double width_factor,
                                 size_t l) {
     if (width_factor < 0 || 1 < width_factor) {
-        throw std::runtime_error{"width_factor must be between 0 and 1"};
+        throw std::runtime_error{"Width_factor must be between 0 and 1."};
     }
 
     const auto absolute_width = edge * width_factor;
@@ -90,7 +90,7 @@ double compute_hipass_magnitude(double frequency,
                                 double width_factor,
                                 size_t l) {
     if (width_factor < 0 || 1 < width_factor) {
-        throw std::runtime_error{"width_factor must be between 0 and 1"};
+        throw std::runtime_error{"Width_factor must be between 0 and 1."};
     }
 
     const auto absolute_width = edge * width_factor;

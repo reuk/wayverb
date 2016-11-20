@@ -33,7 +33,7 @@ template <size_t I>
 auto to_array(const itpp::vec& x) {
     if (x.size() != I) {
         throw std::runtime_error{
-                "itpp vec cannot be converted to array with specified size"};
+                "ITPP vec cannot be converted to array with specified size."};
     }
 
     return to_array(x, std::make_index_sequence<I>{});

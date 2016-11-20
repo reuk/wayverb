@@ -12,8 +12,8 @@ namespace image_source {
 core::geo::ray construct_ray(const glm::vec3& from, const glm::vec3& to) {
     if (from == to) {
         throw std::runtime_error(
-                "tried to construct a ray pointing towards its starting "
-                "location");
+                "Tried to construct a ray pointing towards its starting "
+                "location.");
     }
     return {from, glm::normalize(to - from)};
 }

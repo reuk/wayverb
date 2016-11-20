@@ -149,12 +149,10 @@ auto sabine_reverb_time(double room_volume,
                         Absorption absorption_area,
                         Coeff air_coefficient) {
     if (room_volume <= 0) {
-        throw std::runtime_error{
-                "sabine_reverb_time: room_volume must be greater than 0"};
+        throw std::runtime_error{"Room volume is non-positive"};
     }
     if (any(absorption_area <= 0)) {
-        throw std::runtime_error{
-                "sabine_reverb_time: absorption_area must be greater than 0"};
+        throw std::runtime_error{"Absorption area is non-positive"};
     }
 
     const auto numerator = 0.161f * room_volume;
@@ -179,12 +177,10 @@ auto eyring_reverb_time(double room_volume,
                         double full_area,
                         Coeff air_coefficient) {
     if (room_volume <= 0) {
-        throw std::runtime_error{
-                "eyring_reverb_time: room_volume must be greater than 0"};
+        throw std::runtime_error{"Room volume is non-positive"};
     }
     if (any(absorption_area <= 0)) {
-        throw std::runtime_error{
-                "eyring_reverb_time: absorption_area must be greater than 0"};
+        throw std::runtime_error{"Absorption area is non-positive"};
     }
 
     const auto numerator = 0.161f * room_volume;

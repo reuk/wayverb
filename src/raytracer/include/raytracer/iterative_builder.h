@@ -19,7 +19,7 @@ public:
         const auto num_items = get_num_items();
         if (input_size != num_items) {
             throw std::runtime_error{
-                    "incorrect range size passed to iterative_builder"};
+                    "Incorrect range size passed to iterative_builder."};
         }
 
         for (auto i = 0ul; i != num_items; ++i) {

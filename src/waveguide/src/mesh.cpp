@@ -103,7 +103,7 @@ mesh compute_mesh(
                         return i == id_inside;
                     });
             if (!count) {
-                throw std::runtime_error("no inside nodes found");
+                throw std::runtime_error{"No inside nodes found."};
             }
         }
 #endif

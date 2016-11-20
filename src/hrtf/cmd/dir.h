@@ -11,7 +11,7 @@ public:
     dir(const char* name)
             : ptr_{opendir(name)} {
         if (!ptr_) {
-            throw std::runtime_error{"unable to open directory"};
+            throw std::runtime_error{"Unable to open directory."};
         }
     }
 

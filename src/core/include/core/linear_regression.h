@@ -17,7 +17,8 @@ linear_regression simple_linear_regression(It begin, It end) {
     const auto n = std::distance(begin, end);
 
     if (!n) {
-        throw std::runtime_error("can't find regression of empty range");
+        throw std::runtime_error(
+                "Empty range passed to simple linear regression.");
     }
 
     const auto sx =
@@ -42,8 +43,9 @@ linear_regression simple_linear_regression(It begin, It end) {
             });
 
     const auto denominator = n * sxx - sx * sx;
-    if (!denominator) {
-        throw std::runtime_error("regression test: denominator of 0");
+    if (denominator == 0.0) {
+        throw std::runtime_error(
+                "Linear regression estimated a denominator of 0");
     }
 
     const auto numerator = n * sxy - sx * sy;

@@ -51,7 +51,7 @@ auto interp(double a, T x1, T x2, U y1, U y2, Func&& func) {
 template <typename It, typename Func>
 auto interp(It b, It e, double a, Func&& func) {
     if (b == e) {
-        throw std::runtime_error{"can't interpolate empty range"};
+        throw std::runtime_error{"Can't interpolate empty range."};
     }
 
     const auto it =

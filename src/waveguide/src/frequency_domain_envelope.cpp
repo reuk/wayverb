@@ -13,7 +13,7 @@ bool frequency_domain_envelope::check_invariant() const {
 void frequency_domain_envelope::throw_if_invariant_violated() const {
     if (!check_invariant()) {
         throw std::runtime_error{
-                "frequency_domain_envelope invariant violated"};
+                "Frequency_domain_envelope invariant violated."};
     }
 }
 

@@ -34,13 +34,7 @@ program_wrapper::program_wrapper(
 }
 
 void program_wrapper::build(const cl::Device& device) const {
-//    try {
-        program.build({device}, "-Werror");
-//    } catch (const cl::Error& e) {
-//        std::cerr << program.template getBuildInfo<CL_PROGRAM_BUILD_LOG>(device)
-//                  << "\n" << e.what() << std::endl;
-//        throw;
-//    }
+    program.build({device}, "-Werror");
 }
 
 cl::Device program_wrapper::get_device() const { return device; }

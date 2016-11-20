@@ -20,7 +20,7 @@ T sinc(T t) {
 
 /// Generate a convolution kernel for a lowpass sinc filter (NO WINDOWING!).
 template <typename T = float>
-util::aligned::vector<T> sinc_kernel(double cutoff, int length) {
+util::aligned::vector<T> sinc_kernel(double cutoff, size_t length) {
     if (!(length % 2)) {
         throw std::runtime_error("Length of sinc filter kernel must be odd.");
     }
@@ -41,7 +41,7 @@ void elementwise_multiply(T& a, const U& b) {
 
 /// Generate a blackman window of a specific length.
 template <typename T = float>
-util::aligned::vector<T> blackman(int length) {
+util::aligned::vector<T> blackman(size_t length) {
     //  Holy magic numbers Batman!
     const auto a0 = 7938.0 / 18608.0;
     const auto a1 = 9240.0 / 18608.0;

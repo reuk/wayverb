@@ -33,13 +33,11 @@ constexpr bool is_any_inf(T t) {
 template <typename T>
 void throw_if_suspicious(const T& t) {
     if (is_any_nan(t)) {
-        throw exceptions::value_is_nan(
-                "suspicious value found by throw_if_suspicious");
+        throw exceptions::value_is_nan("Nan value found.");
     }
 
     if (is_any_inf(t)) {
-        throw exceptions::value_is_inf(
-                "suspicious value found by throw_if_suspicious");
+        throw exceptions::value_is_inf("Inf value found.");
     }
 }
 

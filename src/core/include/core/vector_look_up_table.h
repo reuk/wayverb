@@ -70,7 +70,7 @@ struct vector_look_up_table final {
                 (2 * (elevation_divisions + 1));
 
         if (elevation_divisions + 1 < adjusted) {
-            throw std::runtime_error{"elevation out of range"};
+            throw std::runtime_error{"Elevation out of range."};
         }
 
         return clamp(adjusted, 1ul, elevation_divisions) - 1;
@@ -85,14 +85,14 @@ struct vector_look_up_table final {
 
     static constexpr auto index_to_azimuth(size_t index) {
         if (azimuth_divisions <= index) {
-            throw std::runtime_error{"index out of range"};
+            throw std::runtime_error{"Index out of range."};
         }
         return (index * get_azimuth_angle());
     }
 
     static constexpr auto index_to_elevation(size_t index) {
         if (elevation_divisions <= index) {
-            throw std::runtime_error{"index out of range"};
+            throw std::runtime_error{"Index out of range."};
         }
         return ((index + 1) * get_elevation_angle()) - 90;
     }

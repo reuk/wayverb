@@ -128,7 +128,7 @@ void image_source_test() {
         if (std::none_of(lower, upper, [&](const auto& x) {
                 return approximately_matches(i, x);
             })) {
-            throw std::runtime_error{"no approximate matches"};
+            throw std::runtime_error{"No approximate matches."};
         }
     }
 }

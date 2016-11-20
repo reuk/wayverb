@@ -41,13 +41,7 @@ public:
                                           scene_.get_vertices().data()));
                       },
                       compute_triangle_indices(scene_.get_triangles().size()),
-                      aabb}} {
-        if (aabb == geo::compute_aabb(scene_.get_vertices())) {
-            throw std::runtime_error{
-                    "remember to add some padding to the voxelisation "
-                    "boundary!"};
-        }
-    }
+                      aabb}} {}
 
     const scene_data& get_scene_data() const { return scene_; }
     const voxel_collection<3>& get_voxels() const { return voxels_; }
@@ -93,7 +87,7 @@ std::experimental::optional<intersection> intersects(
              ray,
              [&](const geo::ray& ray,
                  const voxel& to_test,
-                 float min_dist_inside_voxel,
+                 float /*min_dist_inside_voxel*/,
                  float max_dist_inside_voxel) {
                  const auto i = ray_triangle_intersection(
                          ray,

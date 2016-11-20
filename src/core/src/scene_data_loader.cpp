@@ -63,7 +63,7 @@ class scene_data_loader::impl final {
         }
 
         if (triangles.empty() || vertices.empty()) {
-            throw std::runtime_error{"no geometry found in scene file"};
+            throw std::runtime_error{"No geometry found in scene file."};
         }
 
         return make_scene_data(std::move(triangles),

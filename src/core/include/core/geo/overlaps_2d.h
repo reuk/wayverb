@@ -17,10 +17,10 @@ template <typename It, typename Out>
 void normals_2d(It begin, It end, Out o) {
     const auto dist = std::distance(begin, end);
     if (dist == 0) {
-        throw std::runtime_error("can't find normals of nothing!");
+        throw std::runtime_error("Empty range passed to normal-finder.");
     }
     if (dist == 1) {
-        throw std::runtime_error("can't find normals of a single point");
+        throw std::runtime_error("Single point passed to normal-finder.");
     }
     *o++ = normal_2d(*(end - 1), *begin++);
     for (; begin != end; ++begin) {
@@ -51,7 +51,7 @@ constexpr bool operator==(const projection_2d& a, const projection_2d& b) {
 template <typename It>
 projection_2d project(It begin, It end, const glm::vec2& axis) {
     if (begin == end) {
-        throw std::runtime_error("cannot project null shape");
+        throw std::runtime_error("Null shape passed to projection function.");
     }
 
     const auto first = glm::dot(axis, *begin++);

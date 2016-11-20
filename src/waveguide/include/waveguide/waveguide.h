@@ -100,20 +100,20 @@ size_t run(const core::compute_context& cc,
                     core::read_value<error_code>(queue, error_flag_buffer, 0)) {
             if (error_flag & id_inf_error) {
                 throw core::exceptions::value_is_inf(
-                        "pressure value is inf, check filter coefficients");
+                        "Pressure value is inf, check filter coefficients.");
             }
 
             if (error_flag & id_nan_error) {
                 throw core::exceptions::value_is_nan(
-                        "pressure value is nan, check filter coefficients");
+                        "Pressure value is nan, check filter coefficients.");
             }
 
             if (error_flag & id_outside_mesh_error) {
-                throw std::runtime_error("tried to read non-existant node");
+                throw std::runtime_error("Tried to read non-existant node.");
             }
 
             if (error_flag & id_suspicious_boundary_error) {
-                throw std::runtime_error("suspicious boundary read");
+                throw std::runtime_error("Suspicious boundary read.");
             }
         }
 

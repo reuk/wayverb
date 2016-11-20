@@ -29,7 +29,7 @@ cl::Buffer init_buffer(It begin,
                        Func func) {
     const auto num_indices = count_boundary_type(begin, end, func);
     if (!num_indices) {
-        throw std::runtime_error("no boundaries");
+        throw std::runtime_error("No boundaries.");
     }
     set_boundary_index(begin, end, func);
     return cl::Buffer{context, CL_MEM_READ_WRITE, sizeof(T) * num_indices};

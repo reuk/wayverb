@@ -100,7 +100,7 @@ auto compute_reflectance_filter_coefficients(T&& absorption,
         }
     }
 
-    throw std::runtime_error{"unable to generate stable boundary filter"};
+    throw std::runtime_error{"Unable to generate stable boundary filter."};
 }
 
 }  // namespace waveguide

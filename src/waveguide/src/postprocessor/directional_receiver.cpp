@@ -20,9 +20,8 @@ directional_receiver::directional_receiver(
     for (const auto& i : surrounding_nodes_) {
         if (i == ~cl_uint{0}) {
             throw std::runtime_error(
-                    "can't place directional_receiver at this node as it is "
-                    "adjacent to "
-                    "a boundary");
+                    "Can't place directional_receiver at this node as it is "
+                    "adjacent to a boundary.");
         }
     }
 }

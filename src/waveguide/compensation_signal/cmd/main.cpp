@@ -36,7 +36,7 @@ const std::array<float, )"
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        throw std::runtime_error{"expected a step number"};
+        throw std::runtime_error{"Expected a step number."};
     }
 
     const size_t steps = std::stoi(argv[1]);

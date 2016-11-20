@@ -172,7 +172,7 @@ private:
             if (slot != end(slots_)) {
                 return slot->second.blocked;
             }
-            throw std::logic_error{"no such key"};
+            throw std::logic_error{"No such key."};
         }
 
         template <typename... Us>

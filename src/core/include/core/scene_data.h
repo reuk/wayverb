@@ -24,12 +24,12 @@ public:
             , surfaces_{surfaces} {
         const auto check_surface = [&](auto s) {
             if (s < 0 || surfaces_.size() <= s) {
-                throw std::runtime_error{"surface index is out of range"};
+                throw std::runtime_error{"Surface index is out of range."};
             }
         };
         const auto check_vertex = [&](auto v) {
             if (v < 0 || vertices_.size() <= v) {
-                throw std::runtime_error{"vertex index is out of range"};
+                throw std::runtime_error{"Vertex index is out of range."};
             }
         };
 

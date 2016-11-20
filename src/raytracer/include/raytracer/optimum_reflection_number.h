@@ -21,7 +21,7 @@ double min_absorption(const T& t) {
 template <typename It>
 double min_absorption(It begin, It end) {
     if (begin == end) {
-        throw std::runtime_error{"can't find min absorption of empty vector"};
+        throw std::runtime_error{"Can't find min absorption of empty vector."};
     }
     return std::accumulate(begin + 1,
                            end,

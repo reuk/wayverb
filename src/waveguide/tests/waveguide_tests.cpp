@@ -68,7 +68,7 @@ TEST(run_waveguide, run_waveguide) {
             compute_index(voxels_and_mesh.mesh.get_descriptor(), source);
 
     if (!is_inside(voxels_and_mesh.mesh, source_index)) {
-        throw std::runtime_error("source is outside of mesh!");
+        throw std::runtime_error("Source is outside of mesh.");
     }
 
     const util::aligned::vector<float> raw_input{1.0f};
@@ -84,7 +84,7 @@ TEST(run_waveguide, run_waveguide) {
                 const auto receiver_index =
                         compute_index(voxels_and_mesh.mesh.get_descriptor(), i);
                 if (!is_inside(voxels_and_mesh.mesh, receiver_index)) {
-                    throw std::runtime_error("receiver is outside of mesh!");
+                    throw std::runtime_error("Receiver is outside of mesh.");
                 }
                 return callback_accumulator<postprocessor::node>{
                         receiver_index};

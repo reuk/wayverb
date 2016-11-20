@@ -38,7 +38,7 @@ auto run(
                                   callbacks);
 
     if (!results) {
-        throw std::runtime_error{"raytracer failed to generate results"};
+        throw std::runtime_error{"Raytracer failed to generate results."};
     }
 
     return std::move(std::get<0>(*results));

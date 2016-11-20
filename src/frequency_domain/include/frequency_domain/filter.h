@@ -41,8 +41,7 @@ public:
     void run(In begin, In end, Out output_it, const callback& callback) {
         const auto dist = std::distance(begin, end);
         if (dist > rbuf_.size()) {
-            throw std::runtime_error(
-                    "filter::filter: input signal is too long");
+            throw std::runtime_error{"Filter input signal is too long."};
         }
 
         rbuf_.zero();

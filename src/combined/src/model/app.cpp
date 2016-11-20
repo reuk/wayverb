@@ -115,7 +115,8 @@ void app::save(const save_callback& callback) {
 
 void app::save_as(std::string name) {
     if (!project::is_project_file(name)) {
-        throw std::runtime_error{"save path must have project extension"};
+        throw std::runtime_error{
+                "Save path must have correct project extension."};
     }
     project.save_to(name);
     currently_open_file_ = std::move(name);

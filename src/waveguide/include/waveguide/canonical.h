@@ -41,7 +41,8 @@ std::experimental::optional<band> canonical_impl(
         if (!waveguide::is_inside(
                     mesh.get_structure().get_condensed_nodes()[ret])) {
             throw std::runtime_error{
-                    "source/receiver node position appears to be outside mesh"};
+                    "Source/receiver node position appears to be outside "
+                    "mesh."};
         }
         return ret;
     };

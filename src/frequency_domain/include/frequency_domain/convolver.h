@@ -31,7 +31,7 @@ public:
         const auto d0 = std::distance(a_begin, a_end);
         const auto d1 = std::distance(b_begin, b_end);
         if (d0 + d1 - 1 != get_fft_length()) {
-            throw std::runtime_error{"inputs must sum to FFT_LENGTH + 1"};
+            throw std::runtime_error{"Inputs must sum to FFT_LENGTH + 1."};
         }
 
         r2c_i_.zero();

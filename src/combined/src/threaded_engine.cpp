@@ -118,13 +118,13 @@ void complete_engine::do_run(core::compute_context compute_context,
 
             for (const auto& source : *persistent.sources()) {
                 if (!inside(voxelised, source->position()->get())) {
-                    throw std::runtime_error{"source is outside mesh"};
+                    throw std::runtime_error{"Source is outside mesh."};
                 }
             }
 
             for (const auto& receiver : *persistent.receivers()) {
                 if (!inside(voxelised, receiver->position()->get())) {
-                    throw std::runtime_error{"receiver is outside mesh"};
+                    throw std::runtime_error{"Receiver is outside mesh."};
                 }
             }
         }
@@ -206,7 +206,9 @@ void complete_engine::do_run(core::compute_context compute_context,
                 }
 
                 if (!channel) {
-                    throw std::runtime_error{"encountered unanticipated error"};
+                    throw std::runtime_error{
+                            "Encountered unknown error, causing channel not to "
+                            "be rendered."};
                 }
 
                 for (size_t i = 0, e = (*receiver)->capsules()->size(); i != e;
@@ -224,7 +226,7 @@ void complete_engine::do_run(core::compute_context compute_context,
         //  If keep going is false now, then the simulation was cancelled.
         if (keep_going_) {
             if (all_channels.empty()) {
-                throw std::runtime_error{"no channels were rendered"};
+                throw std::runtime_error{"No channels were rendered."};
             }
 
             //  Normalize.
@@ -238,7 +240,7 @@ void complete_engine::do_run(core::compute_context compute_context,
                                       make_iterator(end(all_channels)));
 
             if (max_mag == 0.0f) {
-                throw std::runtime_error{"all channels are silent"};
+                throw std::runtime_error{"All channels are silent."};
             }
 
             const auto factor = 1.0 / max_mag;

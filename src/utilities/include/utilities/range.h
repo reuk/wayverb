@@ -193,7 +193,7 @@ constexpr auto accumulate_max(It begin, It end, T starting_value) {
 template <typename It>
 constexpr auto enclosing_range(It begin, It end) {
     if (begin == end) {
-        throw std::runtime_error("can't minmax empty range");
+        throw std::runtime_error("Can't minmax empty range.");
     }
     return make_range(accumulate_min(begin + 1, end, *begin),
                       accumulate_max(begin + 1, end, *begin));

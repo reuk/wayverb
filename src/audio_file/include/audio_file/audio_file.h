@@ -46,7 +46,7 @@ auto interleave(It b, It e) {
 
     for (auto it = b; it != e; ++it) {
         if (std::distance(cbegin(*it), cend(*it)) != frames) {
-            throw std::runtime_error{"all channels must have equal length"};
+            throw std::runtime_error{"All channels must have equal length."};
         }
     }
 
@@ -64,12 +64,12 @@ auto interleave(It b, It e) {
 template <typename It>
 auto deinterleave(It b, It e, size_t channels) {
     if (channels == 0) {
-        throw std::runtime_error{"deinterleave: channels must be non-zero"};
+        throw std::runtime_error{"Channels must be non-zero."};
     }
     const auto in_size = std::distance(b, e);
     if (in_size % channels) {
         throw std::runtime_error{
-                "input size must be divisible by number of channels"};
+                "Input size must be divisible by number of channels."};
     }
 
     const auto frames = in_size / channels;
