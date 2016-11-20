@@ -171,31 +171,6 @@ bool main_window::perform(const InvocationInfo& info) {
         case CommandIDs::idResetView: model_.reset_view(); return true;
 
         case CommandIDs::idStartRender: {
-            /*
-            FileChooser fc{"choose output directory..."};
-            if (fc.browseForDirectory()) {
-                const auto dir = fc.getResult().getFullPathName().toStdString();
-                const auto unique = "sig";
-                const auto fnames =
-                        wayverb::combined::model::compute_all_file_names(
-                                dir.c_str(), unique, model_.project.persistent);
-
-                for (const auto fname : fnames) {
-                    if (File(fname).exists()) {
-                        if (AlertWindow::showOkCancelBox(
-                                    AlertWindow::AlertIconType::WarningIcon,
-                                    "overwrite files?",
-                                    "Existing files will be overwritten if you "
-                                    "decide to continue with the rendering "
-                                    "process.")) {
-                            break;
-                        } else {
-                            return true;
-                        }
-                    }
-                }
-            }
-            */
 
             /// Modal callback 'checks out' the current output state
             output::get_output_options(model_.output, [this](auto ret) {
@@ -248,11 +223,13 @@ void main_window::save_as() {
 
 std::experimental::optional<std::string>
 main_window::browse_for_file_to_save() {
-    FileChooser fc{"save location...", File(), "*.way"};
-    return fc.browseForFileToSave(true)
-                   ? std::experimental::make_optional(
-                             fc.getResult().getFullPathName().toStdString())
-                   : std::experimental::nullopt;
+    FileChooser fc{"save location...", File(), wayverb::combined::model::project::project_wildcard};
+    if (fc.browseForFileToSave(true)) {
+         const auto path = fc.getResult();
+         path.createDirectory();
+         return path.getFullPathName().toStdString();
+    }
+    return std::experimental::nullopt;
 }
 
 main_window::wants_to_close::connection main_window::connect_wants_to_close(

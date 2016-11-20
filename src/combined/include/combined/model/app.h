@@ -31,7 +31,8 @@ public:
     static constexpr const char* model_name = "model.model";
     static constexpr const char* config_name = "config.json";
 
-    static constexpr const char* project_extension = "*.way";
+    static constexpr const char* project_extension = "way";
+    static constexpr const char* project_wildcard = "*.way";
 
     static std::string compute_model_path(const std::string& root);
     static std::string compute_config_path(const std::string& root);

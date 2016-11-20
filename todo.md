@@ -17,6 +17,8 @@ app stuff
 ---------
 
 Really test load and save.
+    saving + loading need exception handling
+    loading crashes
 
 rendering
     'All channels are silent' bug
@@ -40,6 +42,7 @@ controls
     Show which channel is being rendered, and the total channels to go
 
 Finish adding the help panel info.
+    switch to normal tooltips
 
 Benchmark gpu vs cpu performance.
 
