@@ -198,10 +198,9 @@ public:
         initializing_ = false;
     }
 
-    void currentTabChanged(int newCurrentTabIndex,
-                           const String& name) override {
+    void currentTabChanged(int new_index, const String&) override {
         if (!initializing_) {
-            switch (newCurrentTabIndex) {
+            switch (new_index) {
                 case 0:
                     model_.set_mode(wayverb::combined::model::capsule::mode::
                                             microphone);
