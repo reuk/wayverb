@@ -5,11 +5,10 @@
 
 #include "waveguide/mesh_descriptor.h"
 
+#include <future>
+
 namespace wayverb {
 namespace combined {
-
-using waveguide_node_positions_changed =
-        util::event<waveguide::mesh_descriptor>;
 
 /// Given a scene, and a collection of sources and receivers,
 /// For each source-receiver pair:
@@ -26,49 +25,67 @@ using waveguide_node_positions_changed =
 
 class complete_engine final {
 public:
-    void run(const core::compute_context& compute_context,
-             const core::gpu_scene_data& scene_data,
-             const model::persistent& persistent,
-             const model::output& output);
+    ~complete_engine() noexcept;
 
-    bool is_running() const { return is_running_; }
+    void run(core::compute_context compute_context,
+             core::gpu_scene_data scene_data,
+             model::persistent persistent,
+             model::output output);
 
-    void cancel() { keep_going_ = false; }
+    bool is_running() const;
 
-    engine_state_changed::connection add_engine_state_changed_callback(
+    void cancel();
+
+    using engine_state_changed = util::event<size_t, size_t, state, double>;
+    using waveguide_node_positions_changed =
+            util::event<waveguide::mesh_descriptor>;
+    using waveguide_node_pressures_changed =
+            postprocessing_engine::waveguide_node_pressures_changed;
+    using raytracer_reflections_generated =
+            postprocessing_engine::raytracer_reflections_generated;
+    using encountered_error = util::event<std::string>;
+    using begun = util::event<>;
+    using finished = util::event<>;
+
+    engine_state_changed::connection connect_engine_state_changed(
             engine_state_changed::callback_type);
 
     waveguide_node_positions_changed::connection
-            add_waveguide_node_positions_changed_callback(
+            connect_waveguide_node_positions_changed(
                     waveguide_node_positions_changed::callback_type);
 
     waveguide_node_pressures_changed::connection
-            add_waveguide_node_pressures_changed_callback(
+            connect_waveguide_node_pressures_changed(
                     waveguide_node_pressures_changed::callback_type);
 
     raytracer_reflections_generated::connection
-            add_raytracer_reflections_generated_callback(
+            connect_raytracer_reflections_generated(
                     raytracer_reflections_generated::callback_type);
 
-    using encountered_error = util::event<std::string>;
-
-    encountered_error::connection add_encountered_error_callback(
+    encountered_error::connection connect_encountered_error(
             encountered_error::callback_type);
 
-    using finished = util::event<>;
-
-    finished::connection add_finished_callback(finished::callback_type);
+    begun::connection connect_begun(begun::callback_type);
+    finished::connection connect_finished(finished::callback_type);
 
 private:
+    void do_run(core::compute_context compute_context,
+                core::gpu_scene_data scene_data,
+                model::persistent persistent,
+                model::output output);
+
     engine_state_changed engine_state_changed_;
     waveguide_node_positions_changed waveguide_node_positions_changed_;
     waveguide_node_pressures_changed waveguide_node_pressures_changed_;
     raytracer_reflections_generated raytracer_reflections_generated_;
     encountered_error encountered_error_;
+    begun begun_;
     finished finished_;
 
     std::atomic_bool is_running_{false};
     std::atomic_bool keep_going_{true};
+
+    std::future<void> future_;
 };
 
 }  // namespace combined

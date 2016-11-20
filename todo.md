@@ -25,7 +25,7 @@ rendering
         due to source and receiver being at same location + hard source
         so: ensure that this is checked-for before rendering
 
-material preset scattering coefficients
+material preset scattering coefficients (?)
 
 controls
     waveguide options

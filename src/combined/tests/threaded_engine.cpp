@@ -25,10 +25,11 @@ TEST(threaded_engine, threaded_engine) {
 
     complete_engine complete{};
 
-    const engine_state_changed::scoped_connection connection{
-            complete.add_engine_state_changed_callback(
-                    [](auto state, auto progress) {
-                        std::cout << '\r' << std::setw(30) << to_string(state)
+    const complete_engine::engine_state_changed::scoped_connection connection{
+            complete.connect_engine_state_changed(
+                    [](auto run, auto runs, auto state, auto progress) {
+                        std::cout << '\r' << std::setw(10) << run << runs
+                                  << std::setw(30) << to_string(state)
                                   << std::setw(10) << progress << std::flush;
                     })};
 

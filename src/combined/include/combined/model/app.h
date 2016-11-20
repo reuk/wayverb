@@ -86,8 +86,17 @@ public:
 
     //  CALLBACKS  /////////////////////////////////////////////////////////////
 
-    using begun = util::event<>;
-    begun::connection connect_begun(begun::callback_type t);
+
+    using engine_state_changed = complete_engine::engine_state_changed;
+    using waveguide_node_positions_changed =
+            complete_engine::waveguide_node_positions_changed;
+    using waveguide_node_pressures_changed =
+            complete_engine::waveguide_node_pressures_changed;
+    using raytracer_reflections_generated =
+            complete_engine::raytracer_reflections_generated;
+    using encountered_error = complete_engine::encountered_error;
+    using begun = complete_engine::begun;
+    using finished = complete_engine::finished;
 
     engine_state_changed::connection connect_engine_state(
             engine_state_changed::callback_type t);
@@ -101,11 +110,11 @@ public:
     raytracer_reflections_generated::connection connect_reflections(
             raytracer_reflections_generated::callback_type t);
 
-    using encountered_error = complete_engine::encountered_error;
     encountered_error::connection connect_error_handler(
             encountered_error::callback_type t);
 
-    using finished = complete_engine::finished;
+    begun::connection connect_begun(begun::callback_type t);
+
     finished::connection connect_finished(finished::callback_type t);
 
     //  MISC FUNCTIONS  ////////////////////////////////////////////////////////
@@ -116,6 +125,7 @@ public:
     //  There are arguably better homes for this, but I'm short on time...
     scene scene;
 
+    //  Output info data model. There might be a better home for this too...
     output output;
 
     //  Project data.
@@ -136,10 +146,7 @@ private:
 
     std::string currently_open_file_;
 
-    begun begun_;
-
     complete_engine engine_;
-    std::future<void> future_;
 };
 
 }  // namespace model

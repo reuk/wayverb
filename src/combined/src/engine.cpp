@@ -63,7 +63,7 @@ private:
     glm::vec3 receiver_position_;
     double room_volume_;
     core::environment environment_;
-    engine_state_changed engine_state_changed_;
+    engine::engine_state_changed engine_state_changed_;
 };
 
 template <typename Histogram>
@@ -179,19 +179,19 @@ public:
 
     //  notifications  /////////////////////////////////////////////////////////
 
-    engine_state_changed::connection add_engine_state_changed_callback(
+    engine_state_changed::connection connect_engine_state_changed(
             engine_state_changed::callback_type callback) {
         return engine_state_changed_.connect(std::move(callback));
     }
 
     waveguide_node_pressures_changed::connection
-    add_waveguide_node_pressures_changed_callback(
+    connect_waveguide_node_pressures_changed(
             waveguide_node_pressures_changed::callback_type callback) {
         return waveguide_node_pressures_changed_.connect(std::move(callback));
     }
 
     raytracer_reflections_generated::connection
-    add_raytracer_reflections_generated_callback(
+    connect_raytracer_reflections_generated(
             raytracer_reflections_generated::callback_type callback) {
         return raytracer_reflections_generated_.connect(std::move(callback));
     }
@@ -241,23 +241,22 @@ std::unique_ptr<intermediate> engine::run(
     return pimpl_->run(keep_going);
 }
 
-engine_state_changed::connection engine::add_engine_state_changed_callback(
+engine::engine_state_changed::connection engine::connect_engine_state_changed(
         engine_state_changed::callback_type callback) {
-    return pimpl_->add_engine_state_changed_callback(std::move(callback));
+    return pimpl_->connect_engine_state_changed(std::move(callback));
 }
 
-waveguide_node_pressures_changed::connection
-engine::add_waveguide_node_pressures_changed_callback(
+engine::waveguide_node_pressures_changed::connection
+engine::connect_waveguide_node_pressures_changed(
         waveguide_node_pressures_changed::callback_type callback) {
-    return pimpl_->add_waveguide_node_pressures_changed_callback(
+    return pimpl_->connect_waveguide_node_pressures_changed(
             std::move(callback));
 }
 
-raytracer_reflections_generated::connection
-engine::add_raytracer_reflections_generated_callback(
+engine::raytracer_reflections_generated::connection
+engine::connect_raytracer_reflections_generated(
         raytracer_reflections_generated::callback_type callback) {
-    return pimpl_->add_raytracer_reflections_generated_callback(
-            std::move(callback));
+    return pimpl_->connect_raytracer_reflections_generated(std::move(callback));
 }
 
 const waveguide::voxels_and_mesh& engine::get_voxels_and_mesh() const {

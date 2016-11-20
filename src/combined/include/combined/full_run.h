@@ -39,14 +39,14 @@ public:
         engine_state_changed::scoped_connection state;
         if (!engine_state_changed_.empty()) {
             state = engine_state_changed::scoped_connection{
-                    engine_.add_engine_state_changed_callback(
+                    engine_.connect_engine_state_changed(
                             make_forwarding_call(engine_state_changed_))};
         }
 
         waveguide_node_pressures_changed::scoped_connection pressures;
         if (!waveguide_node_pressures_changed_.empty()) {
             pressures = waveguide_node_pressures_changed::scoped_connection{
-                    engine_.add_waveguide_node_pressures_changed_callback(
+                    engine_.connect_waveguide_node_pressures_changed(
                             make_forwarding_call(
                                     waveguide_node_pressures_changed_))};
         }
@@ -54,7 +54,7 @@ public:
         raytracer_reflections_generated::scoped_connection reflections;
         if (!raytracer_reflections_generated_.empty()) {
             reflections = raytracer_reflections_generated::scoped_connection{
-                    engine_.add_raytracer_reflections_generated_callback(
+                    engine_.connect_raytracer_reflections_generated(
                             make_forwarding_call(
                                     raytracer_reflections_generated_))};
         }
@@ -84,15 +84,21 @@ public:
 
     //  notifications
 
-    engine_state_changed::connection add_engine_state_changed_callback(
+    using engine_state_changed = engine::engine_state_changed;
+    using waveguide_node_pressures_changed =
+            engine::waveguide_node_pressures_changed;
+    using raytracer_reflections_generated =
+            engine::raytracer_reflections_generated;
+
+    engine_state_changed::connection connect_engine_state_changed(
             engine_state_changed::callback_type callback);
 
     waveguide_node_pressures_changed::connection
-    add_waveguide_node_pressures_changed_callback(
+    connect_waveguide_node_pressures_changed(
             waveguide_node_pressures_changed::callback_type callback);
 
     raytracer_reflections_generated::connection
-    add_raytracer_reflections_generated_callback(
+    connect_raytracer_reflections_generated(
             raytracer_reflections_generated::callback_type callback);
 
     //  get contents

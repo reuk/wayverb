@@ -37,8 +37,8 @@ TEST(engine, engine) {
              simulation_parameters{1 << 16, 5},
              make_waveguide_ptr(single_band_parameters{1000, 0.5})};
 
-    const engine_state_changed::scoped_connection connection{
-            e.add_engine_state_changed_callback([](auto state, auto progress) {
+    const engine::engine_state_changed::scoped_connection connection{
+            e.connect_engine_state_changed([](auto state, auto progress) {
                 std::cout << '\r' << std::setw(30) << to_string(state)
                           << std::setw(10) << progress << std::flush;
             })};

@@ -20,20 +20,20 @@ postprocessing_engine::postprocessing_engine(
                   raytracer,
                   std::move(waveguide)} {}
 
-engine_state_changed::connection
-postprocessing_engine::add_engine_state_changed_callback(
+postprocessing_engine::engine_state_changed::connection
+postprocessing_engine::connect_engine_state_changed(
         engine_state_changed::callback_type callback) {
     return engine_state_changed_.connect(std::move(callback));
 }
 
-waveguide_node_pressures_changed::connection
-postprocessing_engine::add_waveguide_node_pressures_changed_callback(
+postprocessing_engine::waveguide_node_pressures_changed::connection
+postprocessing_engine::connect_waveguide_node_pressures_changed(
         waveguide_node_pressures_changed::callback_type callback) {
     return waveguide_node_pressures_changed_.connect(std::move(callback));
 }
 
-raytracer_reflections_generated::connection
-postprocessing_engine::add_raytracer_reflections_generated_callback(
+postprocessing_engine::raytracer_reflections_generated::connection
+postprocessing_engine::connect_raytracer_reflections_generated(
         raytracer_reflections_generated::callback_type callback) {
     return raytracer_reflections_generated_.connect(std::move(callback));
 }

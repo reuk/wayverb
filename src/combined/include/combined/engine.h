@@ -61,18 +61,6 @@ constexpr auto to_string(state s) {
     }
 }
 
-/// Args: Current engine state, progress within state.
-using engine_state_changed = util::event<state, double>;
-
-/// Args: Current node pressures, total distanced travelled by sound wave.
-using waveguide_node_pressures_changed =
-        util::event<util::aligned::vector<float>, double>;
-
-/// Args: Current reflections, source position.
-using raytracer_reflections_generated = util::event<
-        util::aligned::vector<util::aligned::vector<raytracer::reflection>>,
-        glm::vec3>;
-
 //  postprocessing  ////////////////////////////////////////////////////////////
 
 class intermediate {
@@ -85,14 +73,11 @@ public:
     virtual ~intermediate() noexcept = default;
 
     virtual util::aligned::vector<float> postprocess(
-            const core::attenuator::null&,
-            double) const = 0;
+            const core::attenuator::null&, double) const = 0;
     virtual util::aligned::vector<float> postprocess(
-            const core::attenuator::hrtf&,
-            double) const = 0;
+            const core::attenuator::hrtf&, double) const = 0;
     virtual util::aligned::vector<float> postprocess(
-            const core::attenuator::microphone&,
-            double) const = 0;
+            const core::attenuator::microphone&, double) const = 0;
 };
 
 //  engine  ////////////////////////////////////////////////////////////////////
@@ -113,15 +98,27 @@ public:
 
     //  notifications  /////////////////////////////////////////////////////////
 
-    engine_state_changed::connection add_engine_state_changed_callback(
+    /// Args: Current engine state, progress within state.
+    using engine_state_changed = util::event<state, double>;
+
+    /// Args: Current node pressures, total distanced travelled by sound wave.
+    using waveguide_node_pressures_changed =
+            util::event<util::aligned::vector<float>, double>;
+
+    /// Args: Current reflections, source position.
+    using raytracer_reflections_generated = util::event<
+            util::aligned::vector<util::aligned::vector<raytracer::reflection>>,
+            glm::vec3>;
+
+    engine_state_changed::connection connect_engine_state_changed(
             engine_state_changed::callback_type callback);
 
     waveguide_node_pressures_changed::connection
-    add_waveguide_node_pressures_changed_callback(
+    connect_waveguide_node_pressures_changed(
             waveguide_node_pressures_changed::callback_type callback);
 
     raytracer_reflections_generated::connection
-    add_raytracer_reflections_generated_callback(
+    connect_raytracer_reflections_generated(
             raytracer_reflections_generated::callback_type callback);
 
     //  cached data  ///////////////////////////////////////////////////////////

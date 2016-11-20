@@ -93,28 +93,13 @@ app::app(const std::string& name)
 app::~app() noexcept { cancel_render(); }
 
 void app::start_render() {
-    cancel_render();
-
-    //  Let the world know that we're gonna do some stuff.
-    begun_();
-
-    //  Start engine in new thread.
-    future_ = std::async(std::launch::async, [
-        this,
-        s = generate_scene_data(),
-        p = project.persistent,
-        o = output
-    ] {
-        engine_.run(core::compute_context{},
-                    std::move(s),
-                    std::move(p),
-                    o);
-    });
+    engine_.run(core::compute_context{},
+                generate_scene_data(),
+                project.persistent,
+                output);
 }
 
-void app::cancel_render() {
-    engine_.cancel();
-}
+void app::cancel_render() { engine_.cancel(); }
 
 bool app::is_rendering() const { return engine_.is_running(); }
 
@@ -141,36 +126,36 @@ bool app::needs_save() const { return project.needs_save(); }
 //  CALLBACKS  /////////////////////////////////////////////////////////////////
 
 app::begun::connection app::connect_begun(begun::callback_type t) {
-    return begun_.connect(std::move(t));
+    return engine_.connect_begun(std::move(t));
 }
 
-engine_state_changed::connection app::connect_engine_state(
+app::engine_state_changed::connection app::connect_engine_state(
         engine_state_changed::callback_type t) {
-    return engine_.add_engine_state_changed_callback(std::move(t));
+    return engine_.connect_engine_state_changed(std::move(t));
 }
 
-waveguide_node_positions_changed::connection app::connect_node_positions(
+app::waveguide_node_positions_changed::connection app::connect_node_positions(
         waveguide_node_positions_changed::callback_type t) {
-    return engine_.add_waveguide_node_positions_changed_callback(std::move(t));
+    return engine_.connect_waveguide_node_positions_changed(std::move(t));
 }
 
-waveguide_node_pressures_changed::connection app::connect_node_pressures(
+app::waveguide_node_pressures_changed::connection app::connect_node_pressures(
         waveguide_node_pressures_changed::callback_type t) {
-    return engine_.add_waveguide_node_pressures_changed_callback(std::move(t));
+    return engine_.connect_waveguide_node_pressures_changed(std::move(t));
 }
 
-raytracer_reflections_generated::connection app::connect_reflections(
+app::raytracer_reflections_generated::connection app::connect_reflections(
         raytracer_reflections_generated::callback_type t) {
-    return engine_.add_raytracer_reflections_generated_callback(std::move(t));
+    return engine_.connect_raytracer_reflections_generated(std::move(t));
 }
 
 app::encountered_error::connection app::connect_error_handler(
         encountered_error::callback_type t) {
-    return engine_.add_encountered_error_callback(std::move(t));
+    return engine_.connect_encountered_error(std::move(t));
 }
 
 app::finished::connection app::connect_finished(finished::callback_type t) {
-    return engine_.add_finished_callback(std::move(t));
+    return engine_.connect_finished(std::move(t));
 }
 
 core::gpu_scene_data app::generate_scene_data() {
