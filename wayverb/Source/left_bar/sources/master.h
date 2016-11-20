@@ -18,7 +18,8 @@ namespace sources {
 
 class master final : public Component {
 public:
-    master(wayverb::combined::model::sources& sources);
+    master(wayverb::core::geo::box aabb,
+           wayverb::combined::model::sources& sources);
 
     void resized() override;
 

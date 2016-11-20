@@ -18,9 +18,24 @@ namespace model {
 project::project(const std::string& fpath)
         : scene_data_{is_project_file(fpath) ? compute_model_path(fpath)
                                              : fpath}
-        , needs_save_{!is_project_file(fpath)}
-        , persistent{core::geo::compute_aabb(
-                  scene_data_.get_scene_data()->get_vertices())} {
+        , needs_save_{!is_project_file(fpath)} {
+
+    //  First make sure default source and receiver are in a sensible position.
+    const auto aabb =
+            wayverb::core::geo::compute_aabb(get_scene_data().get_vertices());
+    const auto c = centre(aabb);
+
+    (*persistent.sources())[0]->set_position(c);
+    (*persistent.receivers())[0]->set_position(c);
+
+    //  Set up surfaces.
+    const auto& surface_strings =
+            scene_data_.get_scene_data()->get_surfaces();
+    persistent.materials() = materials_from_names<1>(begin(surface_strings),
+                                                     end(surface_strings));
+
+    //  If there's a config file, we'll just overwrite the state we just set,
+    //  but that's probably fine.
     if (is_project_file(fpath)) {
         const auto config_file = project::compute_config_path(fpath);
 
@@ -28,12 +43,6 @@ project::project(const std::string& fpath)
         std::ifstream stream(config_file);
         cereal::JSONInputArchive archive(stream);
         archive(persistent);
-
-    } else {
-        const auto& surface_strings =
-                scene_data_.get_scene_data()->get_surfaces();
-        persistent.materials() = materials_from_names<1>(begin(surface_strings),
-                                                         end(surface_strings));
     }
 
     persistent.connect([&](auto&) { needs_save_ = true; });

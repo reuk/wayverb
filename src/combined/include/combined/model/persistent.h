@@ -21,10 +21,8 @@ class persistent final : public owning_member<persistent,
                                               waveguide,
                                               vector<material, 1>> {
 public:
-    explicit persistent(core::geo::box aabb);
-
-    using sources_t = class sources;
-    using receivers_t = class receivers;
+    using sources_t = sources;
+    using receivers_t = receivers;
     using raytracer_t = class raytracer;
     using waveguide_t = class waveguide;
     using materials_t = class vector<material, 1>;

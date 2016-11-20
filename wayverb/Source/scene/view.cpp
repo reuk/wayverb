@@ -93,7 +93,7 @@ public:
                             source->hover_state()->get_hovered() ? 1.0 : 0.7;
                     PointObject ret{generic_shader_, glm::vec4{a, 0, 0, 1}};
                     ret.set_scale(source_receiver_radius_);
-                    ret.set_position(source->position()->get());
+                    ret.set_position(source->get_position());
                     return ret;
                 });
     }
@@ -120,7 +120,7 @@ public:
                                 return orientation.get_pointing();
                             }));
                     ret.set_scale(source_receiver_radius_);
-                    ret.set_position(receiver->position()->get());
+                    ret.set_position(receiver->get_position());
                     return ret;
                 });
     }

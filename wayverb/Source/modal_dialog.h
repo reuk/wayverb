@@ -73,10 +73,9 @@ public:
 
         addAndMakeVisible(done_);
         done_.setExplicitFocusOrder(1);
-        
+
         addAndMakeVisible(*content_);
         content_->setExplicitFocusOrder(2);
-
 
         setSize(content_->getWidth(),
                 content_->getHeight() + button_bar_height_);

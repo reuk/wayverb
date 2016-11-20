@@ -11,17 +11,18 @@ namespace sources {
 
 class source_editor final : public PropertyPanel {
 public:
-    source_editor(std::shared_ptr<wayverb::combined::model::source> source)
-            : source_{std::move(source)} {
+    source_editor(wayverb::core::geo::box aabb,
+                  std::shared_ptr<wayverb::combined::model::source> source)
+            : aabb_{std::move(aabb)}
+            , source_{std::move(source)} {
         //  Make properties.
         auto name = std::make_unique<text_property>("name");
-        auto position = std::make_unique<vec3_property>(
-                "position", source_->position()->get_bounds());
+        auto position = std::make_unique<vec3_property>("position", aabb_);
 
         auto update_from_source =
                 [ this, n = name.get(), p = position.get() ](auto& source) {
             n->set(source.get_name());
-            p->set(source.position()->get());
+            p->set(source.get_position());
         };
 
         update_from_source(*source_);
@@ -35,7 +36,7 @@ public:
                 [this](auto&, auto name) { source_->set_name(name); });
 
         position->connect_on_change(
-                [this](auto&, auto pos) { source_->position()->set(pos); });
+                [this](auto&, auto pos) { source_->set_position(pos); });
 
         addProperties({name.release()});
         addProperties({position.release()});
@@ -44,23 +45,28 @@ public:
     }
 
 private:
+    wayverb::core::geo::box aabb_;
     std::shared_ptr<wayverb::combined::model::source> source_;
     wayverb::combined::model::source::scoped_connection connection_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-master::master(wayverb::combined::model::sources& model)
+master::master(wayverb::core::geo::box aabb,
+               wayverb::combined::model::sources& model)
         : list_box_{model,
-                    [](auto shared) {
+                    [aabb](auto shared) {
                         return std::make_unique<list_config_item<
                                 wayverb::combined::model::source>>(
-                                shared, [](auto shared) {
+                                shared, [aabb](auto shared) {
                                     return std::make_unique<source_editor>(
-                                            shared);
+                                            aabb, shared);
                                 });
                     },
-                    [](auto& model) { model.insert(model.end()); }} {
+                    [](auto& model) {
+                        model.insert(model.end(),
+                                     wayverb::combined::model::source{});
+                    }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 

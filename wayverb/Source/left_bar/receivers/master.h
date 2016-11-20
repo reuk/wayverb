@@ -19,6 +19,7 @@ namespace receivers {
 class master final : public Component {
 public:
     master(const wayverb::combined::model::app::capsule_presets_t& presets,
+           wayverb::core::geo::box aabb,
            wayverb::combined::model::receivers& receivers);
 
     void resized() override;

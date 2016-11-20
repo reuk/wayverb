@@ -6,13 +6,6 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-persistent::persistent(core::geo::box aabb)
-        : base_type{sources_t{aabb},
-                    receivers_t{aabb},
-                    raytracer_t{},
-                    waveguide_t{},
-                    vector<material, 1>{}} {}
-
 shared_value<persistent::sources_t>& persistent::sources() { return get<0>(); }
 const shared_value<persistent::sources_t>& persistent::sources() const {
     return get<0>();

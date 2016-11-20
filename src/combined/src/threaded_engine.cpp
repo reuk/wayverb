@@ -101,8 +101,8 @@ void complete_engine::do_run(core::compute_context compute_context,
 
             for (const auto& source : *persistent.sources()) {
                 for (const auto& receiver : *persistent.receivers()) {
-                    if (distance(source->position()->get(),
-                                 receiver->position()->get()) <= mesh_spacing) {
+                    if (distance(source->get_position(),
+                                 receiver->get_position()) <= mesh_spacing) {
                         throw std::runtime_error{
                                 "Placing sources and receivers too close "
                                 "together will produce inaccurate results."};
@@ -117,13 +117,13 @@ void complete_engine::do_run(core::compute_context compute_context,
                     core::make_voxelised_scene_data(scene_data, 5, 0.1f);
 
             for (const auto& source : *persistent.sources()) {
-                if (!inside(voxelised, source->position()->get())) {
+                if (!inside(voxelised, source->get_position())) {
                     throw std::runtime_error{"Source is outside mesh."};
                 }
             }
 
             for (const auto& receiver : *persistent.receivers()) {
-                if (!inside(voxelised, receiver->position()->get())) {
+                if (!inside(voxelised, receiver->get_position())) {
                     throw std::runtime_error{"Receiver is outside mesh."};
                 }
             }
@@ -153,8 +153,8 @@ void complete_engine::do_run(core::compute_context compute_context,
                 //  Set up an engine to use.
                 postprocessing_engine eng{compute_context,
                                           scene_data,
-                                          (*source)->position()->get(),
-                                          (*receiver)->position()->get(),
+                                          (*source)->get_position(),
+                                          (*receiver)->get_position(),
                                           environment,
                                           persistent.raytracer()->get(),
                                           poly_waveguide->clone()};

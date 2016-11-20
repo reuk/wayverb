@@ -35,9 +35,8 @@ public:
 
 private:
     std::string get_model(const WaveguideModel& model) const override {
-        return util::build_string(
-                compute_sampling_frequency(model.get()),
-                " Hz");
+        return util::build_string(compute_sampling_frequency(model.get()),
+                                  " Hz");
     }
 };
 

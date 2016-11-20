@@ -11,10 +11,10 @@ TEST(app_model, sources) {
         ASSERT_EQ(i[0]->connections(), 1);
     };
 
-    model::vector<model::source, 1> a{model::source{geo::box{}}};
+    model::vector<model::source, 1> a{model::source{}};
     quick_check(a);
 
-    model::vector<model::source, 1> b{model::source{geo::box{}}};
+    model::vector<model::source, 1> b{model::source{}};
     quick_check(b);
 
     a = b;
@@ -25,13 +25,13 @@ TEST(app_model, sources) {
     quick_check(a);
     quick_check(b);
 
-    model::sources sources{geo::box{glm::vec3{-1}, glm::vec3{1}}};
+    model::sources sources{};
     ASSERT_EQ(sources.connections(), 0);
     ASSERT_EQ(sources[0]->connections(), 1);
 
     {
         model::shared_value<model::persistent> p{
-                model::persistent{geo::box{glm::vec3{-1}, glm::vec3{1}}}};
+                model::persistent{}};
 
         bool source_changed = false;
         (*p->sources())[0]->connect([&](auto&) { source_changed = true; });
@@ -40,13 +40,13 @@ TEST(app_model, sources) {
 
         ASSERT_FALSE(source_changed);
 
-        (*q->sources())[0]->position()->set({0.5, 0.5, 0.5});
+        (*q->sources())[0]->set_position({0.5, 0.5, 0.5});
 
         ASSERT_TRUE(source_changed);
 
         source_changed = false;
 
-        model::source new_source{geo::box{glm::vec3{-2}, glm::vec3{2}}};
+        model::source new_source{};
         (*q->sources())[0] = new_source;
 
         ASSERT_TRUE(source_changed);

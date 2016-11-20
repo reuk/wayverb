@@ -15,11 +15,12 @@ namespace receivers {
 
 class receiver_properties final : public PropertyPanel {
 public:
-    receiver_properties(wayverb::combined::model::receiver& receiver)
-            : receiver_{receiver} {
+    receiver_properties(wayverb::core::geo::box aabb,
+                        wayverb::combined::model::receiver& receiver)
+            : aabb_{std::move(aabb)}
+            , receiver_{receiver} {
         auto name = std::make_unique<text_property>("name");
-        auto position = std::make_unique<vec3_property>(
-                "position", receiver_.position()->get_bounds());
+        auto position = std::make_unique<vec3_property>("position", aabb_);
         auto orientation =
                 std::make_unique<azimuth_elevation_property>("orientation");
 
@@ -30,7 +31,7 @@ public:
             o = orientation.get()
         ](auto& receiver) {
             n->set(receiver.get_name());
-            p->set(receiver.position()->get());
+            p->set(receiver.get_position());
             o->set(wayverb::core::compute_azimuth_elevation(
                     receiver.get_orientation().get_pointing()));
         };
@@ -44,7 +45,7 @@ public:
                 [this](auto&, auto name) { receiver_.set_name(name); });
 
         position->connect_on_change(
-                [this](auto&, auto pos) { receiver_.position()->set(pos); });
+                [this](auto&, auto pos) { receiver_.set_position(pos); });
 
         orientation->connect_on_change([this](auto&, auto az_el) {
             receiver_.set_orientation(
@@ -57,6 +58,7 @@ public:
     }
 
 private:
+    wayverb::core::geo::box aabb_;
     wayverb::combined::model::receiver& receiver_;
     wayverb::combined::model::receiver::scoped_connection connection_;
 };
@@ -67,9 +69,10 @@ class receiver_editor final : public Component, public ComboBox::Listener {
 public:
     receiver_editor(
             const wayverb::combined::model::app::capsule_presets_t& presets,
+            wayverb::core::geo::box aabb,
             std::shared_ptr<wayverb::combined::model::receiver> receiver)
             : receiver_{std::move(receiver)}
-            , properties_{*receiver_}
+            , properties_{std::move(aabb), *receiver_}
             , capsules_{*receiver_->capsules()}
             , presets_{presets} {
         combo_box_.setTextWhenNothingSelected("capsule group presets...");
@@ -124,17 +127,21 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 
 master::master(const wayverb::combined::model::app::capsule_presets_t& presets,
+               wayverb::core::geo::box aabb,
                wayverb::combined::model::receivers& receivers)
         : list_box_{receivers,
-                    [&presets](auto shared) {
+                    [&presets, aabb](auto shared) {
                         return std::make_unique<list_config_item<
                                 wayverb::combined::model::receiver>>(
-                                shared, [&presets](auto shared) {
+                                shared, [&presets, aabb](auto shared) {
                                     return std::make_unique<receiver_editor>(
-                                            presets, shared);
+                                            presets, aabb, shared);
                                 });
                     },
-                    [](auto& model) { model.insert(model.end()); }} {
+                    [](auto& model) {
+                        model.insert(model.end(),
+                                     wayverb::combined::model::receiver{});
+                    }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
 

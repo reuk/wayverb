@@ -48,7 +48,7 @@ private:
 
         intersection inter{};
         for (; beg != end; ++beg) {
-            const auto diff = origin - (*beg)->position()->get();
+            const auto diff = origin - (*beg)->get_position();
             const auto b = glm::dot(direction, diff);
             const auto c = glm::dot(diff, diff) -
                            glm::pow(app_.scene.get_item_radius(), 2);

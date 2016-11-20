@@ -101,7 +101,7 @@ public:
             , item_{item}
             , camera_position_{model.compute_world_camera_position()}
             , camera_direction_{model.compute_world_camera_direction()}
-            , initial_position_{item->position()->get()}
+            , initial_position_{item->get_position()}
             , camera_distance_{
                       glm::distance(initial_position_, camera_position_)} {
         item->hover_state()->set_selected(true);
@@ -114,7 +114,7 @@ public:
             const auto current = compute_world_mouse_position(
                     glm::vec2{e.getPosition().x, e.getPosition().y});
             const auto new_pos = initial_position_ + current - initial;
-            strong->position()->set(new_pos);
+            strong->set_position(new_pos);
         }
     }
 
