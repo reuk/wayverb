@@ -21,6 +21,8 @@ public:
                       Slider::TextEntryBoxPosition::TextBoxLeft} {
         this->content.setIncDecButtonsMode(
                 Slider::IncDecButtonMode::incDecButtonsDraggable_AutoDirection);
+        this->content.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxLeft,
+            false, 80, 21);
         this->content.setRange(min, max, inc);
     }
 

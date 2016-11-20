@@ -8,6 +8,8 @@ slider_property::slider_property(const String& name, double min, double max)
                   Slider::TextEntryBoxPosition::TextBoxLeft} {
     slider_.setIncDecButtonsMode(
             Slider::IncDecButtonMode::incDecButtonsDraggable_AutoDirection);
+    slider_.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxLeft,
+            false, 80, 21);
     slider_.setRange(min, max);
     addAndMakeVisible(slider_);
 }

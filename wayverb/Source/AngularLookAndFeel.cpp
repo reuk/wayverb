@@ -38,6 +38,7 @@ AngularLookAndFeel::AngularLookAndFeel() {
               Colours::lightgrey.withAlpha(0.8f));
     setColour(BubbleComponent::ColourIds::outlineColourId, Colours::black);
     setColour(Slider::ColourIds::thumbColourId, emphasis);
+    setColour(Slider::ColourIds::textBoxOutlineColourId, Colours::black);
     setColour(PopupMenu::ColourIds::highlightedBackgroundColourId,
               Colours::darkgrey);
     setColour(ComboBox::ColourIds::arrowColourId, Colours::lightgrey);
