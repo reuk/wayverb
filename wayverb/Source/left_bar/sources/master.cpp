@@ -63,6 +63,8 @@ master::master(wayverb::combined::model::sources& model)
                     [](auto& model) { model.insert(model.end()); }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
+
+    setSize(300, 100);
 }
 
 void master::resized() { list_box_.setBounds(getLocalBounds()); }

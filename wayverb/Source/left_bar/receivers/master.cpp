@@ -137,6 +137,8 @@ master::master(const wayverb::combined::model::app::capsule_presets_t& presets,
                     [](auto& model) { model.insert(model.end()); }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
+
+    setSize(300, 100);
 }
 
 void master::resized() { list_box_.setBounds(getLocalBounds()); }

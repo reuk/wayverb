@@ -3,6 +3,7 @@
 
 #include "materials/master.h"
 #include "raytracer/master.h"
+#include "waveguide/master.h"
 #include "receivers/master.h"
 #include "sources/master.h"
 
@@ -14,16 +15,16 @@ template <typename T>
 class wrapped_property_component final : public PropertyComponent {
 public:
     template <typename... Ts>
-    wrapped_property_component(int height, Ts&&... ts)
-            : PropertyComponent{"empty", height}
+    wrapped_property_component(Ts&&... ts)
+            : PropertyComponent{"empty"}
             , content{std::forward<Ts>(ts)...} {
         setLookAndFeel(&look_and_feel_);
         addAndMakeVisible(content);
+
+        setPreferredHeight(content.getHeight());
     }
 
     void refresh() override {}
-
-    T content;
 
 private:
     class look_and_feel final : public AngularLookAndFeel {
@@ -46,6 +47,9 @@ private:
     };
 
     look_and_feel look_and_feel_;
+
+public:
+    T content;
 };
 
 Array<PropertyComponent*> make_material_options(
@@ -58,7 +62,7 @@ Array<PropertyComponent*> make_material_options(
     for (const auto& i : model) {
         ret.add(new wrapped_property_component<
                 left_bar::materials::config_item>(
-                30, scene, presets, i.get_shared_ptr(), count++));
+                scene, presets, i.get_shared_ptr(), count++));
     }
     return ret;
 }
@@ -94,17 +98,14 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
              "Use the options in this panel to adjust the various settings of "
              "the simulation.");
 
-    const auto item_height = 100;
-
     //  Populate the property panel
     property_panel_.addSection(
             "sources",
             {new wrapped_property_component<sources::master>{
-                    item_height, *model_.project.persistent.sources()}});
+                    *model_.project.persistent.sources()}});
     property_panel_.addSection(
             "receivers",
             {new wrapped_property_component<receivers::master>{
-                    item_height,
                     model_.capsule_presets,
                     *model_.project.persistent.receivers()}});
     property_panel_.addSection(
@@ -119,6 +120,10 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
              static_cast<PropertyComponent*>(
                      new raytracer::img_src_order_property{
                              *app.project.persistent.raytracer()})});
+
+    property_panel_.addSection(
+            "waveguide",
+            {new wrapped_property_component<waveguide::master>{*app.project.persistent.waveguide()}});
 
     property_panel_.setOpaque(false);
 

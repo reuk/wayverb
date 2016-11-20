@@ -23,6 +23,7 @@ public:
     static ApplicationCommandManager& get_command_manager();
     static StoredSettings& get_app_settings();
     static PropertiesFile& get_global_properties();
+    static LookAndFeel& get_look_and_feel();
     static void register_recent_file(const std::string& file);
 
 private:

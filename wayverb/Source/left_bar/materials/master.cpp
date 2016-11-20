@@ -205,6 +205,8 @@ config_item::config_item(wayverb::combined::model::scene& scene,
     addAndMakeVisible(label_);
     addAndMakeVisible(show_button_);
     addAndMakeVisible(config_button_);
+
+    setSize(300, 30);
 }
 
 void config_item::resized() {
