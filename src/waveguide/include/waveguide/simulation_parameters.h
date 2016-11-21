@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdlib>
+#include <tuple>
 
 namespace wayverb {
 namespace waveguide {
@@ -14,19 +15,47 @@ struct single_band_parameters final {
     double usable_portion;
 };
 
+constexpr auto to_tuple(const single_band_parameters& x) {
+    return std::tie(x.cutoff, x.usable_portion);
+}
+
+constexpr bool operator==(const single_band_parameters& a,
+                          const single_band_parameters& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+constexpr bool operator!=(const single_band_parameters& a,
+                          const single_band_parameters& b) {
+    return !(a == b);
+}
+
 struct multiple_band_constant_spacing_parameters final {
     /// The number of bands which should be simulated with the waveguide.
     /// Be careful with high numbers.
     /// The waveguide will be run once, at the required sampling rate, for each
     /// band, so i.e. 4 bands will take 4 times as long.
     size_t bands;
-    
+
     /// The cutoff to use for all bands.
     double cutoff;
 
     /// As above.
     double usable_portion;
 };
+
+constexpr auto to_tuple(const multiple_band_constant_spacing_parameters& x) {
+    return std::tie(x.bands, x.cutoff, x.usable_portion);
+}
+
+constexpr bool operator==(const multiple_band_constant_spacing_parameters& a,
+                          const multiple_band_constant_spacing_parameters& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+constexpr bool operator!=(const multiple_band_constant_spacing_parameters& a,
+                          const multiple_band_constant_spacing_parameters& b) {
+    return !(a == b);
+}
 
 constexpr auto compute_cutoff_frequency(double sample_rate,
                                         double usable_portion) {

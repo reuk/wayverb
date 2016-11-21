@@ -4,6 +4,10 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
+raytracer::raytracer(ray_number ray_number, size_t img_src_order)
+        : ray_number_{ray_number}
+        , img_src_order_{img_src_order} {}
+
 void raytracer::set_ray_number(ray_number ray_number) {
     ray_number_ = ray_number;
     notify();
@@ -22,6 +26,12 @@ wayverb::raytracer::simulation_parameters raytracer::get() const {
     return {wayverb::combined::model::get_ray_number(ray_number_),
             img_src_order_};
 }
+
+bool operator==(const raytracer& a, const raytracer& b) {
+    return a.get() == b.get();
+}
+
+bool operator!=(const raytracer& a, const raytracer& b) { return !(a == b); }
 
 }  // namespace model
 }  // namespace combined

@@ -3,20 +3,19 @@
 #include <experimental/utility>
 #include <memory>
 
+//  Problem: assigning (for example) to an element in a vector won't keep that
+//  element connected in a way that it updates that vector.
+
 namespace wayverb {
 namespace combined {
 namespace model {
 
-#define DEFAULT_MOVE
-
+/*
 /// A shared-pointer with value semantics.
 /// Useful for use with `weak_ptr`, checking for ended lifetimes etc.
 template <typename T>
 class shared_value final {
 public:
-    /// We don't allow construction from a shared_ptr because that would allow
-    /// storing nullptr.
-
     shared_value()
             : value_{std::make_shared<T>()} {}
 
@@ -26,12 +25,7 @@ public:
     shared_value(const shared_value& other)
             : value_{std::make_shared<T>(*other.value_)} {}
 
-#ifdef DEFAULT_MOVE
     shared_value(shared_value&&) noexcept = default;
-#else
-    shared_value(shared_value&& other) noexcept
-            : value_{std::make_shared<T>(std::move(*other.value_))} {}
-#endif
 
     //  From shared value
     shared_value& operator=(const shared_value& other) {
@@ -40,15 +34,7 @@ public:
         return *this;
     }
 
-#ifdef DEFAULT_MOVE
     shared_value& operator=(shared_value&& other) noexcept = default;
-#else
-    shared_value& operator=(shared_value&& other) noexcept {
-        *value_ = std::move(*other.value_);
-        value_->notify();
-        return *this;
-    }
-#endif
 
     //  From stack value
     shared_value& operator=(T other) {
@@ -71,6 +57,17 @@ public:
 private:
     std::shared_ptr<T> value_;
 };
+
+template <typename T>
+bool operator==(const shared_value<T>& a, const shared_value<T>& b) {
+    return *a == *b;
+}
+
+template <typename T>
+bool operator!=(const shared_value<T>& a, const shared_value<T>& b) {
+    return !(a == b);
+}
+*/
 
 }  // namespace model
 }  // namespace combined

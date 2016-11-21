@@ -21,6 +21,14 @@ void microphone::set_shape(float shape) {
 
 core::attenuator::microphone microphone::get() const { return microphone_; }
 
+bool operator==(const microphone& a, const microphone& b) {
+    return a.get() == b.get();
+}
+
+bool operator!=(const microphone& a, const microphone& b) {
+    return !(a == b);
+}
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

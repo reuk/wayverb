@@ -27,6 +27,9 @@ private:
     glm::vec3 up_;
 };
 
+bool operator==(const orientation& a, const orientation& b);
+bool operator!=(const orientation& a, const orientation& b);
+
 orientation combine(const orientation& a, const orientation& b);
 
 //  Given an object, oriented relative to world-space, and a vector direction

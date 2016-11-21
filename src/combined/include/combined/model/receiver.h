@@ -45,6 +45,9 @@ private:
     core::orientation orientation_;
 };
 
+bool operator==(const receiver& a, const receiver& b);
+bool operator!=(const receiver& a, const receiver& b);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 using receivers = vector<receiver, 1>;

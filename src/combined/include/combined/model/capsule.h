@@ -17,10 +17,12 @@ public:
     using microphone_t = class microphone;
     using hrtf_t = class hrtf;
 
-    capsule(std::string name, mode mode, microphone_t, hrtf_t);
+    explicit capsule(std::string name = "new capsule",
+                     mode mode = mode::microphone,
+                     microphone_t microphone = microphone_t{},
+                     hrtf_t hrtf = hrtf_t{});
     capsule(std::string name, microphone_t);
     capsule(std::string name, hrtf_t);
-    capsule() = default;
 
     void set_name(std::string name);
     std::string get_name() const;
@@ -40,9 +42,12 @@ public:
     const shared_value<hrtf_t>& hrtf() const;
 
 private:
-    std::string name_ = "new capsule";
-    mode mode_ = mode::microphone;
+    std::string name_;
+    mode mode_;
 };
+
+bool operator==(const capsule& a, const capsule& b);
+bool operator!=(const capsule& a, const capsule& b);
 
 core::orientation get_orientation(const capsule& capsule);
 

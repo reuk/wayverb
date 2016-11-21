@@ -28,6 +28,9 @@ private:
     core::attenuator::hrtf hrtf_;
 };
 
+bool operator==(const hrtf& a, const hrtf& b);
+bool operator!=(const hrtf& a, const hrtf& b);
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

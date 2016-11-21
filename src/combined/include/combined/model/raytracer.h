@@ -10,14 +10,15 @@ namespace model {
 
 class raytracer final : public basic_member<raytracer> {
 public:
-    raytracer() = default;
-
     enum class ray_number {
         r1e3 = 1000,
         r1e4 = 10000,
         r1e5 = 100000,
         r1e6 = 1000000
     };
+
+    explicit raytracer(ray_number ray_number = ray_number::r1e4,
+                       size_t img_src_order = 4);
 
     void set_ray_number(ray_number rays);
     ray_number get_ray_number() const;
@@ -33,9 +34,12 @@ public:
     }
 
 private:
-    ray_number ray_number_ = ray_number::r1e4;
-    size_t img_src_order_ = 4;
+    ray_number ray_number_;
+    size_t img_src_order_;
 };
+
+bool operator==(const raytracer& a, const raytracer& b);
+bool operator!=(const raytracer& a, const raytracer& b);
 
 constexpr size_t get_ray_number(raytracer::ray_number r) {
     return static_cast<size_t>(r);

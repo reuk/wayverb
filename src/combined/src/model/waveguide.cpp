@@ -8,6 +8,10 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
+single_band_waveguide::single_band_waveguide(double cutoff,
+                                             double usable_portion)
+        : data_{cutoff, usable_portion} {}
+
 void single_band_waveguide::set_cutoff(double cutoff) {
     data_.cutoff = cutoff;
     notify();
@@ -22,7 +26,22 @@ wayverb::waveguide::single_band_parameters single_band_waveguide::get() const {
     return data_;
 }
 
+bool operator==(const single_band_waveguide& a,
+                const single_band_waveguide& b) {
+    return a.get() == b.get();
+}
+
+bool operator!=(const single_band_waveguide& a,
+                const single_band_waveguide& b) {
+    return !(a == b);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
+
+multiple_band_waveguide::multiple_band_waveguide(size_t bands,
+                                                 double cutoff,
+                                                 double usable_portion)
+        : data_{bands, cutoff, usable_portion} {}
 
 void multiple_band_waveguide::set_bands(size_t bands) {
     data_.bands = clamp(bands, util::make_range(size_t{1}, size_t{8}));
@@ -54,7 +73,31 @@ const frequency_domain::edges_and_width_factor<9>
         multiple_band_waveguide::band_params_ =
                 hrtf_data::hrtf_band_params_hz();
 
+bool operator==(const multiple_band_waveguide& a,
+                const multiple_band_waveguide& b) {
+    return a.get() == b.get();
+}
+
+bool operator!=(const multiple_band_waveguide& a,
+                const multiple_band_waveguide& b) {
+    return !(a == b);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
+
+waveguide::waveguide(mode mode,
+                     single_band_waveguide single,
+                     multiple_band_waveguide multiple)
+        : base_type{std::move(single), std::move(multiple)}
+        , mode_{mode} {}
+
+waveguide::waveguide(single_band_waveguide single_band_waveguide)
+        : base_type{std::move(single_band_waveguide), multiple_band_waveguide{}}
+        , mode_{mode::single} {}
+
+waveguide::waveguide(multiple_band_waveguide multiple_band_waveguide)
+        : base_type{single_band_waveguide{}, std::move(multiple_band_waveguide)}
+        , mode_{mode::multiple} {}
 
 void waveguide::set_mode(mode mode) {
     mode_ = mode;
@@ -62,17 +105,6 @@ void waveguide::set_mode(mode mode) {
 }
 
 waveguide::mode waveguide::get_mode() const { return mode_; }
-
-double waveguide::get_sampling_frequency() const {
-    switch (mode_) {
-        case mode::single:
-            return wayverb::waveguide::compute_sampling_frequency(
-                    get<single_band_waveguide>()->get());
-        case mode::multiple:
-            return wayverb::waveguide::compute_sampling_frequency(
-                    get<multiple_band_waveguide>()->get());
-    }
-}
 
 shared_value<single_band_waveguide>& waveguide::single_band() {
     return get<single_band_t>();
@@ -87,6 +119,14 @@ shared_value<multiple_band_waveguide>& waveguide::multiple_band() {
 const shared_value<multiple_band_waveguide>& waveguide::multiple_band() const {
     return get<multiple_band_t>();
 }
+
+bool operator==(const waveguide& a, const waveguide& b) {
+    return static_cast<const waveguide::base_type&>(a) ==
+                   static_cast<const waveguide::base_type&>(b) &&
+           a.get_mode() == b.get_mode();
+}
+
+bool operator!=(const waveguide& a, const waveguide& b) { return !(a == b); }
 
 ////////////////////////////////////////////////////////////////////////////////
 

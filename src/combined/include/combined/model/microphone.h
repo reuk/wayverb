@@ -28,6 +28,9 @@ private:
     core::attenuator::microphone microphone_;
 };
 
+bool operator==(const microphone& a, const microphone& b);
+bool operator!=(const microphone& a, const microphone& b);
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

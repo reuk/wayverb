@@ -25,6 +25,12 @@ core::surface<core::simulation_bands> material::get_surface() const {
     return surface_;
 }
 
+bool operator==(const material& a, const material& b) {
+    return a.get_name() == b.get_name() && a.get_surface() == b.get_surface();
+}
+
+bool operator!=(const material& a, const material& b) { return !(a == b); }
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

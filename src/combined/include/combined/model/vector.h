@@ -115,6 +115,9 @@ public:
         set_owner();
     }
 
+    bool operator==(const vector& x) const { return data_ == x.data_; }
+    bool operator!=(const vector& x) const { return !operator==(x); }
+
 private:
     void set_owner() {
         for (auto& i : data_) {

@@ -35,6 +35,9 @@ private:
     float radius_;
 };
 
+bool operator==(const hrtf& a, const hrtf& b);
+bool operator!=(const hrtf& a, const hrtf& b);
+
 template <typename T, size_t... Ix>
 constexpr auto to_cl_float_vector(const std::array<T, sizeof...(Ix)>& x,
                                   std::index_sequence<Ix...>) {

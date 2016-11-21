@@ -39,5 +39,13 @@ glm::vec3 transform(const orientation& orientation, const glm::vec3& vec) {
     return glm::inverse(orientation.get_matrix()) * glm::vec4{vec, 0};
 }
 
+bool operator==(const orientation& a, const orientation& b) {
+    return a.get_pointing() == b.get_pointing() && a.get_up() == b.get_up();
+}
+
+bool operator!=(const orientation& a, const orientation& b) {
+    return !(a == b);
+}
+
 }  // namespace wayverb
 }  // namespace core

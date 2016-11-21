@@ -54,6 +54,16 @@ core::orientation get_orientation(const capsule& capsule) {
     }
 }
 
+bool operator==(const capsule& a, const capsule& b) {
+    return static_cast<const capsule::base_type&>(a) ==
+                   static_cast<const capsule::base_type&>(b) &&
+           a.get_name() == b.get_name() && a.get_mode() == b.get_mode();
+}
+
+bool operator!=(const capsule& a, const capsule& b) {
+    return !(a == b);
+}
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

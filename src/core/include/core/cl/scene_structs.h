@@ -48,6 +48,21 @@ constexpr auto make_surface(float s, float d) {
                           construct_vector<bands>(d)};
 }
 
+template <size_t bands>
+constexpr auto to_tuple(const surface<bands>& x) {
+    return std::tie(x.absorption, x.scattering);
+}
+
+template <size_t bands>
+constexpr bool operator==(const surface<bands>& a, const surface<bands>& b) {
+    return to_tuple(a) == to_tuple(b);
+}
+
+template <size_t bands>
+constexpr bool operator!=(const surface<bands>& a, const surface<bands>& b) {
+    return !(a == b);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 struct alignas(1 << 4) triangle_verts final {

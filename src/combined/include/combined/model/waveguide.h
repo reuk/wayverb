@@ -14,7 +14,8 @@ namespace model {
 
 class single_band_waveguide final : public basic_member<single_band_waveguide> {
 public:
-    single_band_waveguide() = default;
+    explicit single_band_waveguide(double cutoff = 500,
+                                   double usable_portion = 0.6);
 
     void set_cutoff(double cutoff);
     void set_usable_portion(double usable);
@@ -27,15 +28,20 @@ public:
     }
 
 private:
-    waveguide::single_band_parameters data_{500, 0.6};
+    waveguide::single_band_parameters data_;
 };
+
+bool operator==(const single_band_waveguide& a, const single_band_waveguide& b);
+bool operator!=(const single_band_waveguide& a, const single_band_waveguide& b);
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class multiple_band_waveguide final
         : public basic_member<multiple_band_waveguide> {
 public:
-    multiple_band_waveguide() = default;
+    explicit multiple_band_waveguide(size_t bands = 2,
+                                     double cutoff = 500,
+                                     double usable_portion = 0.6);
 
     void set_bands(size_t bands);
     void set_cutoff(double cutoff);
@@ -53,8 +59,13 @@ private:
 
     void maintain_valid_cutoff();
 
-    waveguide::multiple_band_constant_spacing_parameters data_{2, 500, 0.6};
+    waveguide::multiple_band_constant_spacing_parameters data_;
 };
+
+bool operator==(const multiple_band_waveguide& a,
+                const multiple_band_waveguide& b);
+bool operator!=(const multiple_band_waveguide& a,
+                const multiple_band_waveguide& b);
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -64,10 +75,16 @@ class waveguide final : public owning_member<waveguide,
 public:
     enum class mode { single, multiple };
 
+    explicit waveguide(
+            mode mode = mode::single,
+            single_band_waveguide single = single_band_waveguide{},
+            multiple_band_waveguide multiple = multiple_band_waveguide{});
+
+    explicit waveguide(single_band_waveguide single_band_waveguide);
+    explicit waveguide(multiple_band_waveguide multiple_band_waveguide);
+
     void set_mode(mode mode);
     mode get_mode() const;
-
-    double get_sampling_frequency() const;
 
     template <typename Archive>
     void serialize(Archive& archive) {
@@ -86,6 +103,9 @@ public:
 private:
     mode mode_ = mode::single;
 };
+
+bool operator==(const waveguide& a, const waveguide& b);
+bool operator!=(const waveguide& a, const waveguide& b);
 
 double compute_sampling_frequency(const waveguide& waveguide);
 

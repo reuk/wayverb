@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export CL_LOG_ERRORS=stdout
-#export GTEST_FILTER="*orientation*"
+export GTEST_FILTER="*round_trip*"
 
 if ./build.sh ; then
 #if ./build.sh 2>&1 | tee build_log.txt ; then

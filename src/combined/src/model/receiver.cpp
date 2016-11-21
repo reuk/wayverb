@@ -36,6 +36,16 @@ void receiver::set_position(const glm::vec3& p) {
 
 glm::vec3 receiver::get_position() const { return position_; }
 
+bool operator==(const receiver& a, const receiver& b) {
+    return a.get_name() == b.get_name() &&
+           a.get_position() == b.get_position() &&
+           a.get_orientation() == b.get_orientation();
+}
+
+bool operator!=(const receiver& a, const receiver& b) {
+    return !(a == b);
+}
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

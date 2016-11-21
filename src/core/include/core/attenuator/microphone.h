@@ -25,6 +25,9 @@ private:
     float shape_{0.0f};
 };
 
+bool operator==(const microphone& a, const microphone& b);
+bool operator!=(const microphone& a, const microphone& b);
+
 float attenuation(const microphone& mic, const glm::vec3& incident);
 
 }  // namespace attenuator

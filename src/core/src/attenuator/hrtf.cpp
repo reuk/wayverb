@@ -105,6 +105,15 @@ void hrtf::set_radius(float radius) {
     radius_ = radius;
 }
 
+bool operator==(const hrtf& a, const hrtf& b) {
+    return a.get_channel() == b.get_channel() &&
+           a.get_radius() == b.get_radius() && a.orientation == b.orientation;
+}
+
+bool operator!=(const hrtf& a, const hrtf& b) {
+    return !(a == b);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bands_type attenuation(const hrtf& hrtf, const glm::vec3& incident) {

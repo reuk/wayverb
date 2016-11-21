@@ -25,6 +25,14 @@ void source::set_position(const glm::vec3& position) {
 
 glm::vec3 source::get_position() const { return position_; }
 
+bool operator==(const source& a, const source& b) {
+    return a.get_name() == b.get_name() && a.get_position() == b.get_position();
+}
+
+bool operator!=(const source& a, const source& b) {
+    return !(a==b);
+}
+
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

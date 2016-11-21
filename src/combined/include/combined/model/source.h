@@ -38,6 +38,9 @@ private:
     glm::vec3 position_;
 };
 
+bool operator==(const source& a, const source& b);
+bool operator!=(const source& a, const source& b);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 using sources = vector<source, 1>;

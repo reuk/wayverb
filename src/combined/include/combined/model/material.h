@@ -3,6 +3,7 @@
 #include "combined/model/vector.h"
 
 #include "core/cl/scene_structs.h"
+#include "core/serialize/surface.h"
 
 namespace wayverb {
 namespace combined {
@@ -30,6 +31,9 @@ private:
     std::string name_;
     core::surface<core::simulation_bands> surface_;
 };
+
+bool operator==(const material& a, const material& b);
+bool operator!=(const material& a, const material& b);
 
 ////////////////////////////////////////////////////////////////////////////////
 

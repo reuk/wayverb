@@ -24,6 +24,12 @@ float attenuation(const microphone& mic, const glm::vec3& incident) {
     return 0;
 }
 
+bool operator==(const microphone& a, const microphone& b) {
+    return a.get_shape() == b.get_shape() && a.orientation == b.orientation;
+}
+
+bool operator!=(const microphone& a, const microphone& b) { return !(a == b); }
+
 }  // namespace attenuator
 }  // namespace core
 }  // namespace wayverb

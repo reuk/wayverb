@@ -7,6 +7,8 @@
 #include "utilities/for_each.h"
 #include "utilities/map.h"
 
+#include "cereal/types/tuple.hpp"
+
 #include <tuple>
 
 namespace wayverb {
@@ -26,9 +28,6 @@ public:
     /// constructed.
     basic_member(const basic_member&) {}
 
-    /// On move construct, object should assume the lifetime of the moved-from
-    /// object, and delete any previous internal state.
-    /// Here, that means taking the listeners of the moved-from object.
     basic_member(basic_member&&) noexcept = delete;
 
     /// On copy assign, assume the values of the copied-from object.
@@ -36,7 +35,6 @@ public:
     /// value has changed.
     basic_member& operator=(const basic_member&) { return *this; }
 
-    /// On move assign, take the moved-from object's listeners.
     basic_member& operator=(basic_member&&) noexcept = delete;
 
     using on_change = util::event<Derived&>;
@@ -83,12 +81,7 @@ public:
         set_owner();
     }
 
-    /*
-    owning_member(owning_member&& other) noexcept
-            : data_members_{std::move(other.data_members_)} {
-        set_owner();
-    }
-    */
+    owning_member(owning_member&& other) noexcept = delete;
 
 private:
     void swap(owning_member& other) noexcept {
@@ -104,17 +97,21 @@ public:
         return *this;
     }
 
-    /*
-    owning_member& operator=(owning_member&& other) noexcept {
-        swap(other);
-        return *this;
-    }
-    */
+    owning_member& operator=(owning_member&& other) noexcept = delete;
 
     template <typename Archive>
     void serialize(Archive& archive) {
         archive(data_members_);
         set_owner();
+    }
+
+    //  Implemented as members because they need to poke at private members.
+    bool operator==(const owning_member& other) const {
+        return data_members_ == other.data_members_;
+    }
+
+    bool operator!=(const owning_member& other) const {
+        return !operator==(other);
     }
 
 protected:
