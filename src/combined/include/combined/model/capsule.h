@@ -12,7 +12,7 @@ namespace model {
 
 class capsule final : public owning_member<capsule, microphone, hrtf> {
 public:
-    enum class mode { microphone, hrtf };
+    enum class mode { microphone = 1, hrtf };
 
     using microphone_t = class microphone;
     using hrtf_t = class hrtf;
@@ -35,11 +35,8 @@ public:
         archive(cereal::base_class<base_type>(this), name_, mode_);
     }
 
-    shared_value<microphone_t>& microphone();
-    const shared_value<microphone_t>& microphone() const;
-
-    shared_value<hrtf_t>& hrtf();
-    const shared_value<hrtf_t>& hrtf() const;
+    const auto& microphone() const { return get<0>(); }
+    const auto& hrtf() const { return get<1>(); }
 
 private:
     std::string name_;

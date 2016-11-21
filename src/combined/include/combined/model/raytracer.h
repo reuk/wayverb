@@ -20,6 +20,8 @@ public:
     explicit raytracer(ray_number ray_number = ray_number::r1e4,
                        size_t img_src_order = 4);
 
+    raytracer& operator=(raytracer other);
+
     void set_ray_number(ray_number rays);
     ray_number get_ray_number() const;
 
@@ -34,6 +36,8 @@ public:
     }
 
 private:
+    void swap(raytracer& other) noexcept;
+
     ray_number ray_number_;
     size_t img_src_order_;
 };

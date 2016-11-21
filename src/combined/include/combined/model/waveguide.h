@@ -17,6 +17,8 @@ public:
     explicit single_band_waveguide(double cutoff = 500,
                                    double usable_portion = 0.6);
 
+    single_band_waveguide& operator=(single_band_waveguide other);
+
     void set_cutoff(double cutoff);
     void set_usable_portion(double usable);
 
@@ -28,6 +30,8 @@ public:
     }
 
 private:
+    void swap(single_band_waveguide& other) noexcept;
+
     waveguide::single_band_parameters data_;
 };
 
@@ -43,6 +47,8 @@ public:
                                      double cutoff = 500,
                                      double usable_portion = 0.6);
 
+    multiple_band_waveguide& operator=(multiple_band_waveguide other);
+
     void set_bands(size_t bands);
     void set_cutoff(double cutoff);
     void set_usable_portion(double usable);
@@ -57,6 +63,7 @@ public:
 private:
     static const frequency_domain::edges_and_width_factor<9> band_params_;
 
+    void swap(multiple_band_waveguide& other) noexcept;
     void maintain_valid_cutoff();
 
     waveguide::multiple_band_constant_spacing_parameters data_;
@@ -83,6 +90,8 @@ public:
     explicit waveguide(single_band_waveguide single_band_waveguide);
     explicit waveguide(multiple_band_waveguide multiple_band_waveguide);
 
+    waveguide& operator=(waveguide other);
+
     void set_mode(mode mode);
     mode get_mode() const;
 
@@ -94,13 +103,12 @@ public:
     using single_band_t = single_band_waveguide;
     using multiple_band_t = multiple_band_waveguide;
 
-    shared_value<single_band_t>& single_band();
-    const shared_value<single_band_t>& single_band() const;
-
-    shared_value<multiple_band_t>& multiple_band();
-    const shared_value<multiple_band_t>& multiple_band() const;
+    const auto& single_band() const { return get<0>(); }
+    const auto& multiple_band() const { return get<1>(); }
 
 private:
+    void swap(waveguide& other) noexcept;
+
     mode mode_ = mode::single;
 };
 

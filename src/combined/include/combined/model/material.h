@@ -1,6 +1,6 @@
 #pragma once
 
-#include "combined/model/vector.h"
+#include "combined/model/min_size_vector.h"
 
 #include "core/cl/scene_structs.h"
 #include "core/serialize/surface.h"
@@ -16,6 +16,8 @@ public:
                               core::make_surface<core::simulation_bands>(0.05,
                                                                          0.05));
 
+    material& operator=(material other);
+
     void set_name(std::string name);
     std::string get_name() const;
 
@@ -28,6 +30,8 @@ public:
     }
 
 private:
+    void swap(material& other) noexcept;
+
     std::string name_;
     core::surface<core::simulation_bands> surface_;
 };
@@ -38,18 +42,23 @@ bool operator!=(const material& a, const material& b);
 ////////////////////////////////////////////////////////////////////////////////
 
 template <size_t MinimumSize, typename It>
-vector<material, MinimumSize> materials_from_names(It b, It e) {
-    const auto extra = std::distance(b, e) - MinimumSize;
+auto materials_from_names(It b, It e) {
+    const auto distance = std::distance(b, e);
+    if (distance < MinimumSize) {
+        throw std::runtime_error{
+                "Range passed to 'materials_from_names' is shorter than the "
+                "minumum size"};
+    }
+    const auto extra = distance - MinimumSize;
 
-    vector<material, MinimumSize> ret{extra};
+    min_size_vector<material, MinimumSize> ret{extra};
 
     for (auto i = 0; b != e; ++b, ++i) {
-        *ret[i] = material{*b};
+        ret[i]->item = material{*b};
     }
 
     return ret;
 }
-
 }  // namespace model
 }  // namespace combined
 }  // namespace wayverb

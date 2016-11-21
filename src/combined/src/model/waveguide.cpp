@@ -12,6 +12,19 @@ single_band_waveguide::single_band_waveguide(double cutoff,
                                              double usable_portion)
         : data_{cutoff, usable_portion} {}
 
+void single_band_waveguide::swap(single_band_waveguide& other) noexcept {
+    using std::swap;
+    swap(data_, other.data_);
+}
+
+single_band_waveguide& single_band_waveguide::operator=(
+        single_band_waveguide other) {
+    base_type::operator=(other);
+    swap(other);
+    notify();
+    return *this;
+}
+
 void single_band_waveguide::set_cutoff(double cutoff) {
     data_.cutoff = cutoff;
     notify();
@@ -42,6 +55,19 @@ multiple_band_waveguide::multiple_band_waveguide(size_t bands,
                                                  double cutoff,
                                                  double usable_portion)
         : data_{bands, cutoff, usable_portion} {}
+
+void multiple_band_waveguide::swap(multiple_band_waveguide& other) noexcept {
+    using std::swap;
+    swap(data_, other.data_);
+}
+
+multiple_band_waveguide& multiple_band_waveguide::operator=(
+        multiple_band_waveguide other) {
+    base_type::operator=(other);
+    swap(other);
+    notify();
+    return *this;
+}
 
 void multiple_band_waveguide::set_bands(size_t bands) {
     data_.bands = clamp(bands, util::make_range(size_t{1}, size_t{8}));
@@ -99,26 +125,24 @@ waveguide::waveguide(multiple_band_waveguide multiple_band_waveguide)
         : base_type{single_band_waveguide{}, std::move(multiple_band_waveguide)}
         , mode_{mode::multiple} {}
 
+void waveguide::swap(waveguide& other) noexcept {
+    using std::swap;
+    swap(mode_, other.mode_);
+}
+
+waveguide& waveguide::operator=(waveguide other) {
+    base_type::operator=(other);
+    swap(other);
+    notify();
+    return *this;
+}
+
 void waveguide::set_mode(mode mode) {
     mode_ = mode;
     notify();
 }
 
 waveguide::mode waveguide::get_mode() const { return mode_; }
-
-shared_value<single_band_waveguide>& waveguide::single_band() {
-    return get<single_band_t>();
-}
-const shared_value<single_band_waveguide>& waveguide::single_band() const {
-    return get<single_band_t>();
-}
-
-shared_value<multiple_band_waveguide>& waveguide::multiple_band() {
-    return get<multiple_band_t>();
-}
-const shared_value<multiple_band_waveguide>& waveguide::multiple_band() const {
-    return get<multiple_band_t>();
-}
 
 bool operator==(const waveguide& a, const waveguide& b) {
     return static_cast<const waveguide::base_type&>(a) ==
@@ -133,10 +157,12 @@ bool operator!=(const waveguide& a, const waveguide& b) { return !(a == b); }
 double compute_sampling_frequency(const waveguide& waveguide) {
     switch (waveguide.get_mode()) {
         case waveguide::mode::single:
-            return compute_sampling_frequency(waveguide.single_band()->get());
+            return compute_sampling_frequency(
+                    waveguide.single_band()->item.get());
 
         case waveguide::mode::multiple:
-            return compute_sampling_frequency(waveguide.multiple_band()->get());
+            return compute_sampling_frequency(
+                    waveguide.multiple_band()->item.get());
     }
 }
 

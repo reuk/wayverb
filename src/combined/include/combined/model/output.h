@@ -17,7 +17,7 @@ class capsule;
 
 class output final : public basic_member<output> {
 public:
-    output() = default;
+    output& operator=(output other);
 
     enum class sample_rate {
         sr44_1KHz = 1,
@@ -43,6 +43,8 @@ public:
     std::string get_unique_id() const;
 
 private:
+    void swap(output& other) noexcept;
+
     audio_file::bit_depth bit_depth_ = audio_file::bit_depth::pcm16;
     audio_file::format format_ = audio_file::format::aiff;
     sample_rate sample_rate_ = sample_rate::sr44_1KHz;

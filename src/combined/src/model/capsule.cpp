@@ -24,6 +24,19 @@ capsule::capsule(std::string name, hrtf_t hrtf)
         , name_{std::move(name)}
         , mode_{mode::hrtf} {}
 
+void capsule::swap(capsule& other) noexcept {
+    using std::swap;
+    swap(name_, other.name_);
+    swap(mode_, other.mode_);
+}
+
+capsule& capsule::operator=(capsule other) {
+    base_type::operator=(other);
+    swap(other);
+    notify();
+    return *this;
+}
+
 void capsule::set_name(std::string name) {
     name_ = std::move(name);
     notify();
@@ -38,19 +51,11 @@ void capsule::set_mode(mode mode) {
 
 capsule::mode capsule::get_mode() const { return mode_; }
 
-shared_value<capsule::microphone_t>& capsule::microphone() { return get<0>(); }
-const shared_value<capsule::microphone_t>& capsule::microphone() const {
-    return get<0>();
-}
-
-shared_value<capsule::hrtf_t>& capsule::hrtf() { return get<1>(); }
-const shared_value<capsule::hrtf_t>& capsule::hrtf() const { return get<1>(); }
-
 core::orientation get_orientation(const capsule& capsule) {
     switch (capsule.get_mode()) {
         case capsule::mode::microphone:
-            return capsule.microphone()->get().orientation;
-        case capsule::mode::hrtf: return capsule.hrtf()->get().orientation;
+            return capsule.microphone()->item.get().orientation;
+        case capsule::mode::hrtf: return capsule.hrtf()->item.get().orientation;
     }
 }
 
@@ -60,9 +65,7 @@ bool operator==(const capsule& a, const capsule& b) {
            a.get_name() == b.get_name() && a.get_mode() == b.get_mode();
 }
 
-bool operator!=(const capsule& a, const capsule& b) {
-    return !(a == b);
-}
+bool operator!=(const capsule& a, const capsule& b) { return !(a == b); }
 
 }  // namespace model
 }  // namespace combined

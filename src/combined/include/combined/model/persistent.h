@@ -19,28 +19,19 @@ class persistent final : public owning_member<persistent,
                                               receivers,
                                               raytracer,
                                               waveguide,
-                                              vector<material, 1>> {
+                                              min_size_vector<material, 1>> {
 public:
     using sources_t = sources;
     using receivers_t = receivers;
     using raytracer_t = class raytracer;
     using waveguide_t = class waveguide;
-    using materials_t = class vector<material, 1>;
+    using materials_t = class vector<material>;
 
-    shared_value<sources_t>& sources();
-    const shared_value<sources_t>& sources() const;
-
-    shared_value<receivers_t>& receivers();
-    const shared_value<receivers_t>& receivers() const;
-
-    shared_value<raytracer_t>& raytracer();
-    const shared_value<raytracer_t>& raytracer() const;
-
-    shared_value<waveguide_t>& waveguide();
-    const shared_value<waveguide_t>& waveguide() const;
-
-    shared_value<materials_t>& materials();
-    const shared_value<materials_t>& materials() const;
+    const auto& sources() const { return get<0>(); }
+    const auto& receivers() const { return get<1>(); }
+    const auto& raytracer() const { return get<2>(); }
+    const auto& waveguide() const { return get<3>(); }
+    const auto& materials() const { return get<4>(); }
 };
 
 }  // namespace model

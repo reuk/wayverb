@@ -1,7 +1,7 @@
 #pragma once
 
 #include "combined/model/hover.h"
-#include "combined/model/vector.h"
+#include "combined/model/min_size_vector.h"
 
 #include "core/geo/box.h"
 
@@ -25,8 +25,7 @@ public:
     glm::vec3 get_position() const;
 
     using hover_state_t = class hover_state;
-    auto& hover_state() { return get<hover_state_t>(); }
-    const auto& hover_state() const { return get<hover_state_t>(); }
+    const auto& hover_state() const { return get<0>(); }
 
     template <typename Archive>
     void serialize(Archive& archive) {
@@ -43,7 +42,7 @@ bool operator!=(const source& a, const source& b);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-using sources = vector<source, 1>;
+using sources = min_size_vector<source, 1>;
 
 }  // namespace model
 }  // namespace combined

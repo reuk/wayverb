@@ -11,6 +11,19 @@ source::source(std::string name, glm::vec3 position)
         , name_{std::move(name)}
         , position_{std::move(position)} {}
 
+void source::swap(source& other) noexcept {
+    using std::swap;
+    swap(name_, other.name_);
+    swap(position_, other.position_);
+}
+
+source& source::operator=(source other) {
+    base_type::operator=(other);
+    swap(other);
+    notify();
+    return *this;
+}
+
 void source::set_name(std::string name) {
     name_ = std::move(name);
     notify();

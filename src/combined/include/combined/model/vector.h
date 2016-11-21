@@ -2,7 +2,6 @@
 
 #include "combined/model/member.h"
 
-#include "utilities/aligned/vector.h"
 #include "utilities/event.h"
 #include "utilities/mapping_iterator_adapter.h"
 
@@ -12,92 +11,100 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-template <typename T, size_t MinimumSize>
-class vector final : public basic_member<vector<T, MinimumSize>> {
+template <typename T>
+class vector final : public basic_member<vector<T>> {
 public:
-    explicit vector(size_t extra_elements, const T& t)
-            : data_{MinimumSize + extra_elements, item_connection<T>{t}} {
-        set_owner();
-    }
+    using connection_type = persistent_connection<vector, T>;
+    using data_member = std::shared_ptr<connection_type>;
 
-    explicit vector(size_t extra_elements)
-            : data_{MinimumSize + extra_elements} {
-        set_owner();
-    }
-
-    explicit vector(const T& t)
-            : vector{0, t} {}
-
-    vector()
-            : vector{0} {}
-
-private:
-    void swap(vector& other) noexcept {
-        using std::swap;
-        swap(data_, other.data_);
-        set_owner();
-    }
-
-public:
+    /// So that back_inserter works.
     using value_type = T;
 
-    template <typename It>
-    vector(It b, It e)
-            : data_{make_connection_creator_iterator(b),
-                    make_connection_creator_iterator(e)} {
-        assert(MinimumSize <= std::distance(b, e));
-        set_owner();
+    vector(size_t elements, const T& t) {
+        reserve(elements);
+        for (auto i = 0u; i != elements; ++i) {
+            data_.emplace_back(std::make_shared<connection_type>(*this, t));
+        }
     }
 
-    explicit vector(std::initializer_list<T> init)
-            : vector{std::begin(init), std::end(init)} {}
+    explicit vector(size_t elements)
+            : vector{elements, T{}} {}
+
+    vector() = default;
+
+    template <typename It>
+    vector(It b, It e) {
+        reserve(std::distance(b, e));
+        std::copy(b, e, std::back_inserter(*this));
+    }
+
+    template <size_t N>
+    explicit vector(const T(&arr)[N]) 
+            : vector{std::begin(arr), std::end(arr)} {}
 
     vector(const vector& other)
-            : data_{other.data_} {
-        set_owner();
-    }
+            : vector{make_item_extractor_iterator(std::begin(other)),
+                     make_item_extractor_iterator(std::end(other))} {}
 
-    vector(vector&& other) noexcept
-            : data_{std::move(other.data_)} {
-        set_owner();
-    }
-
+    /// Not strongly exception safe.
     vector& operator=(const vector& other) {
-        auto copy{other};
-        swap(copy);
+        clear();
+        reserve(other.size());
+        std::copy(make_item_extractor_iterator(std::begin(other)),
+                  make_item_extractor_iterator(std::end(other)),
+                  std::back_inserter(*this));
+        this->notify();
         return *this;
     }
 
-    vector& operator=(vector&& other) noexcept {
-        swap(other);
-        return *this;
-    }
+    const auto& operator[](size_t index) const { return data_[index]; }
 
-    const auto& operator[](size_t index) const { return data_[index].get(); }
-    auto& operator[](size_t index) { return data_[index].get(); }
+    auto cbegin() const { return data_.cbegin(); }
+    auto begin() const { return data_.begin(); }
+    auto begin() { return data_.begin(); }
 
-    auto cbegin() const { return make_item_extractor_iterator(data_.cbegin()); }
-    auto begin() const { return make_item_extractor_iterator(data_.begin()); }
-    auto begin() { return make_item_extractor_iterator(data_.begin()); }
+    auto cend() const { return data_.cend(); }
+    auto end() const { return data_.end(); }
+    auto end() { return data_.end(); }
 
-    auto cend() const { return make_item_extractor_iterator(data_.cend()); }
-    auto end() const { return make_item_extractor_iterator(data_.end()); }
-    auto end() { return make_item_extractor_iterator(data_.end()); }
+    void reserve(size_t items) { data_.reserve(items); }
 
     template <typename It>
-    void insert(It it, T t) {
-        const auto i = data_.emplace(it.base(), std::move(t));
-        i->set_owner(*this);
+    auto insert(It it, const T& t) {
+        const auto i = data_.emplace(
+                it.base(), std::make_shared<connection_type>(*this, t));
+        this->notify();
+        return i;
+    }
+
+    void push_back(const value_type& t) {
+        data_.push_back(std::make_shared<connection_type>(*this, t));
+        this->notify();
+    }
+
+    void pop_back() {
+        data_.pop_back();
         this->notify();
     }
 
     template <typename It>
-    void erase(It it) {
-        if (can_erase()) {
-            data_.erase(it.base());
-            this->notify();
+    auto erase(It it) {
+        const auto i = data_.erase(it.base());
+        this->notify();
+        return i;
+    }
+
+    void resize(size_t new_size, const value_type& t) {
+        reserve(new_size);
+        while (new_size < size()) {
+            pop_back();
+        }
+        while (size() < new_size) {
+            push_back(t);
         }
     }
+
+    void resize(size_t new_size) { resize(new_size, value_type{}); }
 
     auto size() const { return data_.size(); }
     auto empty() const { return data_.empty(); }
@@ -107,25 +114,23 @@ public:
         this->notify();
     }
 
-    bool can_erase() const { return MinimumSize < size(); }
-
     template <typename Archive>
     void serialize(Archive& archive) {
-        archive(data_);
-        set_owner();
+        /// Inspired by the cereal vector serialization methods.
+
+        cereal::size_type size = this->size();
+        archive(cereal::make_size_tag(size));
+        resize(size);
+        for (const auto& i : *this) {
+            archive(i->item);
+        }
     }
 
     bool operator==(const vector& x) const { return data_ == x.data_; }
     bool operator!=(const vector& x) const { return !operator==(x); }
 
 private:
-    void set_owner() {
-        for (auto& i : data_) {
-            i.set_owner(*this);
-        }
-    }
-
-    util::aligned::vector<item_connection<T>> data_;
+    std::vector<data_member> data_;
 };
 
 }  // namespace model

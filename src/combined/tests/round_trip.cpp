@@ -37,6 +37,8 @@ void round_trip(T init) {
     {
         cereal::JSONOutputArchive archive(serialized);
         archive(init);
+        //std::cout << "**SERIALIZED**" << '\n';
+        //std::cout << serialized.str() << '\n';
     }
 
     T deserialized;
@@ -50,8 +52,10 @@ void round_trip(T init) {
 
     std::stringstream reserialized;
     {
-        cereal::JSONOutputArchive oArchive(reserialized);
-        oArchive(deserialized);
+        cereal::JSONOutputArchive archive(reserialized);
+        archive(deserialized);
+        //std::cout << "**RESERIALIZED**" << '\n';
+        //std::cout << reserialized.str() << '\n';
     }
 
     ASSERT_EQ(serialized.str(), reserialized.str());
@@ -133,10 +137,10 @@ TEST(round_trip, waveguide) {
     round_trip(model::waveguide{model::multiple_band_waveguide{5, 401, 0.21}});
 }
 
-TEST(round_trip, persistent) { 
-    round_trip(model::persistent{}); 
+TEST(round_trip, persistent) {
+    round_trip(model::persistent{});
 
     model::persistent p;
 
-    round_trip(model::persistent{}); 
+    round_trip(model::persistent{});
 }

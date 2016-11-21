@@ -28,14 +28,12 @@ public:
     /// constructed.
     basic_member(const basic_member&) {}
 
-    basic_member(basic_member&&) noexcept = delete;
-
-    /// On copy assign, assume the values of the copied-from object.
-    /// Subclasses will probably want to call notify() to signal that the
-    /// value has changed.
-    basic_member& operator=(const basic_member&) { return *this; }
-
-    basic_member& operator=(basic_member&&) noexcept = delete;
+    Derived& operator=(const Derived& other) {
+        auto copy{other};
+        swap(copy);
+        notify();
+        return *static_cast<Derived*>(this);
+    }
 
     using on_change = util::event<Derived&>;
     using connection = typename on_change::connection;
@@ -58,56 +56,103 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
+template <typename Owner, typename Item>
+class persistent_connection final {
+public:
+    using scoped_connection = typename Item::scoped_connection;
+
+    using owner_t = Owner;
+    using item_t = Item;
+
+    /// Assumption: owner will always outlive the connection.
+    explicit persistent_connection(owner_t& owner)
+            : persistent_connection{owner, item_t{}} {}
+
+    persistent_connection(owner_t& owner, const item_t& i)
+            : item{i}
+            , connection_{item.connect([o = &owner](auto&) { o->notify(); })} {}
+
+    persistent_connection(const persistent_connection&) = delete;
+    persistent_connection(persistent_connection&&) noexcept = delete;
+    persistent_connection& operator=(const persistent_connection&) = delete;
+    persistent_connection& operator=(persistent_connection&&) noexcept = delete;
+
+    /// This is safe to have public, as long as copy-assignment notifies as
+    /// expected.
+    item_t item;
+
+private:
+    scoped_connection connection_;
+};
+
+struct item_extractor final {
+    template <typename T, typename U>
+    auto& operator()(
+            const std::shared_ptr<persistent_connection<T, U>>& conn) const {
+        return conn->item;
+    }
+};
+
+template <typename It>
+static auto make_item_extractor_iterator(It it) {
+    return util::make_mapping_iterator_adapter(std::move(it), item_extractor{});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 template <typename Derived, typename... DataMembers>
 class owning_member : public basic_member<Derived> {
 public:
     using derived_type = Derived;
     using base_type = owning_member<Derived, DataMembers...>;
 
+    /// Sets up each connection to forward to this object.
+    /// Default-constructs members.
     owning_member()
-            : data_members_{
-                      std::make_tuple(item_connection<DataMembers>{}...)} {
-        set_owner();
-    }
+            : data_members_{std::make_shared<
+                      persistent_connection<Derived, DataMembers>>(
+                      *static_cast<Derived*>(this))...} {}
 
-    explicit owning_member(DataMembers... data_members)
-            : data_members_{std::make_tuple(item_connection<DataMembers>{
-                      std::move(data_members)}...)} {
-        set_owner();
-    }
+    /// Sets up each connection to forward to this object.
+    /// Assumes ownership of passed-in objects.
+    explicit owning_member(const DataMembers&... data_members)
+            : data_members_{std::make_shared<
+                      persistent_connection<Derived, DataMembers>>(
+                      *static_cast<Derived*>(this), data_members)...} {}
 
+    /// Sets up each connection to forward to this object.
+    /// Deep-copies content of other object, creating new shared_ptrs to own.
     owning_member(const owning_member& other)
-            : data_members_{other.data_members_} {
-        set_owner();
-    }
+            : owning_member{
+                      other,
+                      std::make_index_sequence<sizeof...(DataMembers)>{}} {}
 
-    owning_member(owning_member&& other) noexcept = delete;
-
-private:
-    void swap(owning_member& other) noexcept {
-        using std::swap;
-        swap(data_members_, other.data_members_);
-        set_owner();
-    }
-
-public:
+    /// Not strongly exception-safe.
+    /// Elementwise deep copy from other to this.
+    /// Subclasses should call notify afterwards.
     owning_member& operator=(const owning_member& other) {
-        auto copy{other};
-        swap(copy);
+        assign(other, std::make_index_sequence<sizeof...(DataMembers)>{});
         return *this;
     }
 
+    owning_member(owning_member&& other) noexcept = delete;
     owning_member& operator=(owning_member&& other) noexcept = delete;
 
     template <typename Archive>
     void serialize(Archive& archive) {
-        archive(data_members_);
-        set_owner();
+        /// We don't really want to serialize each persistent_connection.
+        /// Instead, we directly serialize the pointed-to items.
+        /// This is safe because the owning_member constructor will always
+        /// allocate the member shared_ptrs - there's no danger of dereferencing
+        /// a nullptr.
+        util::for_each([&archive](const auto& i) { archive(i->item); },
+                       data_members_);
     }
 
-    //  Implemented as members because they need to poke at private members.
+    //  Implemented as member functions because they need to poke at private
+    //  data members.
     bool operator==(const owning_member& other) const {
-        return data_members_ == other.data_members_;
+        return tie() == other.tie();
     }
 
     bool operator!=(const owning_member& other) const {
@@ -118,30 +163,46 @@ protected:
     ~owning_member() = default;
 
     template <size_t I>
-    auto& get() & {
-        return std::get<I>(data_members_).get();
-    }
-
-    template <size_t I>
     const auto& get() const & {
-        return std::get<I>(data_members_).get();
-    }
-
-    template <typename T>
-    auto& get() & {
-        return std::get<item_connection<T>>(data_members_).get();
+        return std::get<I>(data_members_);
     }
 
     template <typename T>
     const auto& get() const & {
-        return std::get<item_connection<T>>(data_members_).get();
+        return std::get<persistent_connection<Derived, T>>(data_members_);
     }
 
 private:
-    using data_members = std::tuple<item_connection<DataMembers>...>;
+    using data_members = std::tuple<
+            std::shared_ptr<persistent_connection<Derived, DataMembers>>...>;
 
-    void set_owner() noexcept {
-        util::for_each([this](auto& i) { i.set_owner(*this); }, data_members_);
+    template <size_t I>
+    using tuple_element_t = std::tuple_element_t<I, data_members>;
+
+    template <size_t I>
+    using inner_element_t = typename tuple_element_t<I>::element_type;
+
+    template <size_t... Ix>
+    owning_member(const owning_member& other, std::index_sequence<Ix...>)
+            : data_members_{std::make_shared<inner_element_t<Ix>>(
+                      *static_cast<Derived*>(this),
+                      std::get<Ix>(other.data_members_)->item)...} {}
+
+    template <size_t... Ix>
+    void assign(const owning_member& other, std::index_sequence<Ix...>) {
+        (void)std::initializer_list<int>{
+                ((void)(std::get<Ix>(data_members_)->item =
+                                std::get<Ix>(other.data_members_)->item),
+                 0)...};
+    }
+
+    template <size_t... Ix>
+    auto tie(std::index_sequence<Ix...>) const {
+        return std::tie(std::get<Ix>(data_members_)->item...);
+    }
+
+    auto tie() const {
+        return tie(std::make_index_sequence<sizeof...(DataMembers)>{});
     }
 
     data_members data_members_;

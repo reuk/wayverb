@@ -9,6 +9,18 @@ namespace model {
 microphone::microphone(const core::orientation& o, float shape)
         : microphone_{o, shape} {}
 
+void microphone::swap(microphone& other) noexcept {
+    using std::swap;
+    swap(microphone_, other.microphone_);
+}
+
+microphone& microphone::operator=(microphone other) {
+    base_type::operator=(other);
+    swap(other);
+    notify();
+    return *this;
+}
+
 void microphone::set_orientation(const core::orientation& o) {
     microphone_.orientation = o;
     notify();

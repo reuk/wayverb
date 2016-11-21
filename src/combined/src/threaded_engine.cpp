@@ -33,9 +33,9 @@ std::unique_ptr<capsule_base> polymorphic_capsule_model(
         const model::capsule& i, const core::orientation& orientation) {
     switch (i.get_mode()) {
         case model::capsule::mode::microphone:
-            return make_capsule_ptr(i.microphone()->get(), orientation);
+            return make_capsule_ptr(i.microphone()->item.get(), orientation);
         case model::capsule::mode::hrtf:
-            return make_capsule_ptr(i.hrtf()->get(), orientation);
+            return make_capsule_ptr(i.hrtf()->item.get(), orientation);
     }
 }
 
@@ -43,9 +43,9 @@ std::unique_ptr<waveguide_base> polymorphic_waveguide_model(
         const model::waveguide& i) {
     switch (i.get_mode()) {
         case model::waveguide::mode::single:
-            return make_waveguide_ptr(i.single_band()->get());
+            return make_waveguide_ptr(i.single_band()->item.get());
         case model::waveguide::mode::multiple:
-            return make_waveguide_ptr(i.multiple_band()->get());
+            return make_waveguide_ptr(i.multiple_band()->item.get());
     }
 }
 
@@ -95,14 +95,15 @@ void complete_engine::do_run(core::compute_context compute_context,
             //  Check that no receiver is too close to any source.
 
             const auto waveguide_sr =
-                    compute_sampling_frequency(*persistent.waveguide());
+                    compute_sampling_frequency(persistent.waveguide()->item);
             const float mesh_spacing = waveguide::config::grid_spacing(
                     environment.speed_of_sound, 1 / waveguide_sr);
 
-            for (const auto& source : *persistent.sources()) {
-                for (const auto& receiver : *persistent.receivers()) {
-                    if (distance(source->get_position(),
-                                 receiver->get_position()) <= mesh_spacing) {
+            for (const auto& source : persistent.sources()->item) {
+                for (const auto& receiver : persistent.receivers()->item) {
+                    if (distance(source->item.get_position(),
+                                 receiver->item.get_position()) <=
+                        mesh_spacing) {
                         throw std::runtime_error{
                                 "Placing sources and receivers too close "
                                 "together will produce inaccurate results."};
@@ -116,14 +117,14 @@ void complete_engine::do_run(core::compute_context compute_context,
             const auto voxelised =
                     core::make_voxelised_scene_data(scene_data, 5, 0.1f);
 
-            for (const auto& source : *persistent.sources()) {
-                if (!inside(voxelised, source->get_position())) {
+            for (const auto& source : persistent.sources()->item) {
+                if (!inside(voxelised, source->item.get_position())) {
                     throw std::runtime_error{"Source is outside mesh."};
                 }
             }
 
-            for (const auto& receiver : *persistent.receivers()) {
-                if (!inside(voxelised, receiver->get_position())) {
+            for (const auto& receiver : persistent.receivers()->item) {
+                if (!inside(voxelised, receiver->item.get_position())) {
                     throw std::runtime_error{"Receiver is outside mesh."};
                 }
             }
@@ -132,31 +133,31 @@ void complete_engine::do_run(core::compute_context compute_context,
         //  Now we can start rendering.
 
         const auto poly_waveguide =
-                polymorphic_waveguide_model(*persistent.waveguide());
+                polymorphic_waveguide_model(persistent.waveguide()->item);
 
         std::vector<channel_info> all_channels;
 
-        const auto runs =
-                persistent.sources()->size() * persistent.receivers()->size();
+        const auto runs = persistent.sources()->item.size() *
+                          persistent.receivers()->item.size();
 
         auto run = 0;
 
         //  For each source-receiver pair.
-        for (auto source = std::begin(*persistent.sources()),
-                  e_source = std::end(*persistent.sources());
+        for (auto source = std::begin(persistent.sources()->item),
+                  e_source = std::end(persistent.sources()->item);
              source != e_source && keep_going_;
              ++source) {
-            for (auto receiver = std::begin(*persistent.receivers()),
-                      e_receiver = std::end(*persistent.receivers());
+            for (auto receiver = std::begin(persistent.receivers()->item),
+                      e_receiver = std::end(persistent.receivers()->item);
                  receiver != e_receiver && keep_going_;
                  ++receiver, ++run) {
                 //  Set up an engine to use.
                 postprocessing_engine eng{compute_context,
                                           scene_data,
-                                          (*source)->get_position(),
-                                          (*receiver)->get_position(),
+                                          (*source)->item.get_position(),
+                                          (*receiver)->item.get_position(),
                                           environment,
-                                          persistent.raytracer()->get(),
+                                          persistent.raytracer()->item.get(),
                                           poly_waveguide->clone()};
 
                 //  Send new node position notification.
@@ -184,11 +185,12 @@ void complete_engine::do_run(core::compute_context compute_context,
                 }
 
                 const auto polymorphic_capsules = util::map_to_vector(
-                        std::begin(*(*receiver)->capsules()),
-                        std::end(*(*receiver)->capsules()),
+                        std::begin((*receiver)->item.capsules()->item),
+                        std::end((*receiver)->item.capsules()->item),
                         [&](const auto& i) {
                             return polymorphic_capsule_model(
-                                    *i, (*receiver)->get_orientation());
+                                    i->item,
+                                    (*receiver)->item.get_orientation());
                         });
 
                 //  Run the simulation, cache the result.
@@ -211,14 +213,17 @@ void complete_engine::do_run(core::compute_context compute_context,
                             "be rendered."};
                 }
 
-                for (size_t i = 0, e = (*receiver)->capsules()->size(); i != e;
+                for (size_t i = 0,
+                            e = (*receiver)->item.capsules()->item.size();
+                     i != e;
                      ++i) {
                     all_channels.emplace_back(channel_info{
                             std::move((*channel)[i]),
-                            compute_output_path(*(*source),
-                                                *(*receiver),
-                                                *(*(*receiver)->capsules())[i],
-                                                output)});
+                            compute_output_path(
+                                    (*source)->item,
+                                    (*receiver)->item,
+                                    (*receiver)->item.capsules()->item[i]->item,
+                                    output)});
                 }
             }
         }

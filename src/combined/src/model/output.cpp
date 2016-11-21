@@ -7,6 +7,22 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
+void output::swap(output& other) noexcept {
+    using std::swap;
+    swap(bit_depth_, other.bit_depth_);
+    swap(format_, other.format_);
+    swap(sample_rate_, other.sample_rate_);
+    swap(output_directory_, other.output_directory_);
+    swap(unique_id_, other.unique_id_);
+}
+
+output& output::operator=(output other) {
+    base_type::operator=(other);
+    swap(other);
+    notify();
+    return *this;
+}
+
 void output::set_sample_rate(sample_rate sample_rate) {
     sample_rate_ = sample_rate;
     notify();
@@ -67,11 +83,11 @@ std::string compute_output_path(const source& source,
 std::vector<std::string> compute_all_file_names(const persistent& persistent,
                                                 const output& output) {
     std::vector<std::string> ret;
-    for (const auto& source : *persistent.sources()) {
-        for (const auto& receiver : *persistent.receivers()) {
-            for (const auto& capsule : *receiver->capsules()) {
+    for (const auto& source : persistent.sources()->item) {
+        for (const auto& receiver : persistent.receivers()->item) {
+            for (const auto& capsule : receiver->item.capsules()->item) {
                 ret.emplace_back(compute_output_path(
-                        *source, *receiver, *capsule, output));
+                        source->item, receiver->item, capsule->item, output));
             }
         }
     }

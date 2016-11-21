@@ -4,6 +4,8 @@
 
 #include "utilities/mapping_iterator_adapter.h"
 
+#include <stdexcept>
+
 namespace wayverb {
 namespace combined {
 namespace model {
@@ -96,42 +98,6 @@ auto make_connection_creator_iterator(It it) {
                                                connection_creator{});
 }
 */
-
-template <typename Owner, typename Item>
-class persistent_connection final {
-public:
-    using scoped_connection = typename Item::scoped_connection;
-
-    using owner_t = Owner;
-    using item_t = Item;
-
-    /// Assumption: owner will always outlive the connection.
-    //explicit persistent_connection(owner_t& owner)
-    //        : owner_{owner} {};
-
-    persistent_connection(owner_t& owner, std::shared_ptr<item_t> item)
-            : owner_{owner}
-            , item_{std::move(item)} {
-        connect();
-    }
-
-    std::shared_ptr<item_t> get() const { return item_; }
-    void set(std::shared_ptr<item_t> ptr) {
-        //  TODO should I explicitly disconnect first?
-        item_ = std::move(ptr);
-        connect();
-    }
-
-private:
-    void connect() {
-        connection_ = scoped_connection{
-                item_->connect([this](auto&) { owner_.notify(); })};
-    }
-
-    owner_t& owner_;
-    std::shared_ptr<item_t> item_;
-    scoped_connection connection_;
-};
 
 }  // namespace model
 }  // namespace combined
