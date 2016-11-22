@@ -37,10 +37,12 @@ project::project(const std::string& fpath)
     if (is_project_file(fpath)) {
         const auto config_file = project::compute_config_path(fpath);
 
+        std::cout << "attempting to read config file from location:\n" << config_file << '\n';
+
         //  load the config
         std::ifstream stream(config_file);
         cereal::JSONInputArchive archive(stream);
-        // archive(persistent);
+        archive(persistent);
     }
 
     persistent.connect([&](auto&) { needs_save_ = true; });
@@ -76,7 +78,7 @@ void project::save_to(const std::string& fpath) {
         //  write config with all current materials to file
         std::ofstream stream(project::compute_config_path(fpath));
         cereal::JSONOutputArchive archive(stream);
-        // archive(persistent);
+        archive(persistent);
 
         needs_save_ = false;
     }

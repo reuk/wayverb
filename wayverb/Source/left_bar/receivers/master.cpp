@@ -137,9 +137,10 @@ master::master(const wayverb::combined::model::app::capsule_presets_t& presets,
                                             presets, aabb, shared);
                                 });
                     },
-                    [](auto& model) {
-                        model.insert(model.end(),
-                                     wayverb::combined::model::receiver{});
+                    [aabb](auto& model) {
+                        wayverb::combined::model::receiver to_insert{};
+                        to_insert.set_position(centre(aabb));
+                        model.insert(model.end(), to_insert);
                     }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);

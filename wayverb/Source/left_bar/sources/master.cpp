@@ -62,9 +62,10 @@ master::master(wayverb::core::geo::box aabb,
                                             aabb, shared);
                                 });
                     },
-                    [](auto& model) {
-                        model.insert(model.end(),
-                                     wayverb::combined::model::source{});
+                    [aabb](auto& model) {
+                        wayverb::combined::model::source to_insert{};
+                        to_insert.set_position(centre(aabb));
+                        model.insert(model.end(), to_insert);
                     }} {
     list_box_.setRowHeight(30);
     addAndMakeVisible(list_box_);
