@@ -9,19 +9,6 @@ material::material(std::string name,
         : name_{std::move(name)}
         , surface_{std::move(surface)} {}
 
-void material::swap(material& other) noexcept {
-    using std::swap;
-    swap(name_, other.name_);
-    swap(surface_, other.surface_);
-}
-
-material& material::operator=(material other) {
-    base_type::operator=(other);
-    swap(other);
-    notify();
-    return *this;
-}
-
 void material::set_name(std::string name) {
     name_ = std::move(name);
     notify();

@@ -16,8 +16,6 @@ public:
                               core::make_surface<core::simulation_bands>(0.05,
                                                                          0.05));
 
-    material& operator=(material other);
-
     void set_name(std::string name);
     std::string get_name() const;
 
@@ -29,8 +27,13 @@ public:
         archive(name_, surface_);
     }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(material)
 private:
-    void swap(material& other) noexcept;
+    void swap(material& other) noexcept {
+        using std::swap;
+        swap(name_, other.name_);
+        swap(surface_, other.surface_);
+    }
 
     std::string name_;
     core::surface<core::simulation_bands> surface_;

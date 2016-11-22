@@ -17,8 +17,6 @@ class capsule;
 
 class output final : public basic_member<output> {
 public:
-    output& operator=(output other);
-
     enum class sample_rate {
         sr44_1KHz = 1,
         sr48KHz,
@@ -42,8 +40,16 @@ public:
     void set_unique_id(std::string unique);
     std::string get_unique_id() const;
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(output)
 private:
-    void swap(output& other) noexcept;
+    inline void swap(output& other) noexcept {
+        using std::swap;
+        swap(bit_depth_, other.bit_depth_);
+        swap(format_, other.format_);
+        swap(sample_rate_, other.sample_rate_);
+        swap(output_directory_, other.output_directory_);
+        swap(unique_id_, other.unique_id_);
+    };
 
     audio_file::bit_depth bit_depth_ = audio_file::bit_depth::pcm16;
     audio_file::format format_ = audio_file::format::aiff;

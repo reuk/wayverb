@@ -20,8 +20,6 @@ public:
     explicit raytracer(ray_number ray_number = ray_number::r1e4,
                        size_t img_src_order = 4);
 
-    raytracer& operator=(raytracer other);
-
     void set_ray_number(ray_number rays);
     ray_number get_ray_number() const;
 
@@ -35,8 +33,13 @@ public:
         archive(ray_number_, img_src_order_);
     }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(raytracer)
 private:
-    void swap(raytracer& other) noexcept;
+    void swap(raytracer& other) noexcept {
+        using std::swap;
+        swap(ray_number_, other.ray_number_);
+        swap(img_src_order_, other.img_src_order_);
+    }
 
     ray_number ray_number_;
     size_t img_src_order_;

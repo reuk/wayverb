@@ -10,29 +10,8 @@
 using namespace wayverb::combined;
 using namespace wayverb::core;
 
-namespace {
-
 template <typename T>
-constexpr bool value_eq(const T& a, const T& b) {
-    return a == b;
-}
-
-template <typename T>
-constexpr bool value_eq(const std::unique_ptr<T>& a,
-                        const std::unique_ptr<T>& b) {
-    return *a == *b;
-}
-
-template <typename T>
-constexpr bool value_eq(const std::shared_ptr<T>& a,
-                        const std::shared_ptr<T>& b) {
-    return *a == *b;
-}
-
-}  // namespace
-
-template <typename T>
-void round_trip(T init) {
+void round_trip(const T& init) {
     std::stringstream serialized;
     {
         cereal::JSONOutputArchive archive(serialized);
@@ -48,7 +27,7 @@ void round_trip(T init) {
         archive(deserialized);
     }
 
-    ASSERT_TRUE(value_eq(deserialized, init));
+    ASSERT_EQ(deserialized, init);
 
     std::stringstream reserialized;
     {
@@ -138,9 +117,5 @@ TEST(round_trip, waveguide) {
 }
 
 TEST(round_trip, persistent) {
-    round_trip(model::persistent{});
-
-    model::persistent p;
-
     round_trip(model::persistent{});
 }

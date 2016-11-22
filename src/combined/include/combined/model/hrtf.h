@@ -24,7 +24,13 @@ public:
         archive(hrtf_);
     }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(hrtf)
 private:
+    void swap(hrtf& other) noexcept {
+        using std::swap;
+        swap(hrtf_, other.hrtf_);
+    }
+
     core::attenuator::hrtf hrtf_;
 };
 

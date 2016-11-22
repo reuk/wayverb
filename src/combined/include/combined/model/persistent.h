@@ -32,6 +32,10 @@ public:
     const auto& raytracer() const { return get<2>(); }
     const auto& waveguide() const { return get<3>(); }
     const auto& materials() const { return get<4>(); }
+
+    NOTIFYING_COPY_ASSIGN_DECLARATION(persistent)
+private:
+    inline void swap(persistent& other) noexcept { using std::swap; };
 };
 
 }  // namespace model

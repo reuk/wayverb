@@ -38,7 +38,14 @@ public:
     const auto& microphone() const { return get<0>(); }
     const auto& hrtf() const { return get<1>(); }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(capsule)
 private:
+    void swap(capsule& other) noexcept {
+        using std::swap;
+        swap(name_, other.name_);
+        swap(mode_, other.mode_);
+    }
+
     std::string name_;
     mode mode_;
 };

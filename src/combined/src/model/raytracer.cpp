@@ -8,19 +8,6 @@ raytracer::raytracer(ray_number ray_number, size_t img_src_order)
         : ray_number_{ray_number}
         , img_src_order_{img_src_order} {}
 
-void raytracer::swap(raytracer& other) noexcept {
-    using std::swap;
-    swap(ray_number_, other.ray_number_);
-    swap(img_src_order_, other.img_src_order_);
-}
-
-raytracer& raytracer::operator=(raytracer other) {
-    base_type::operator=(other);
-    swap(other);
-    notify();
-    return *this;
-}
-
 void raytracer::set_ray_number(ray_number ray_number) {
     ray_number_ = ray_number;
     notify();

@@ -126,7 +126,17 @@ public:
         }
     }
 
-    bool operator==(const vector& x) const { return data_ == x.data_; }
+    bool operator==(const vector& x) const {
+        //  Two vectors are equal if their values are equal, *not* their
+        //  memory layout.
+        return std::equal(cbegin(),
+                          cend(),
+                          x.cbegin(),
+                          x.cend(),
+                          [](const auto& a, const auto& b) {
+                              return a->item == b->item;
+                          });
+    }
     bool operator!=(const vector& x) const { return !operator==(x); }
 
 private:

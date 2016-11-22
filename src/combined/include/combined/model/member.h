@@ -1,11 +1,9 @@
 #pragma once
 
-#include "combined/model/shared_value.h"
-#include "combined/model/shared_value_connection.h"
-
 #include "utilities/event.h"
 #include "utilities/for_each.h"
 #include "utilities/map.h"
+#include "utilities/mapping_iterator_adapter.h"
 
 #include "cereal/types/tuple.hpp"
 
@@ -27,13 +25,7 @@ public:
     /// It's not possible for this object to have listeners if it's being
     /// constructed.
     basic_member(const basic_member&) {}
-
-    Derived& operator=(const Derived& other) {
-        auto copy{other};
-        swap(copy);
-        notify();
-        return *static_cast<Derived*>(this);
-    }
+    basic_member& operator=(const basic_member&) { return *this; }
 
     using on_change = util::event<Derived&>;
     using connection = typename on_change::connection;
@@ -53,6 +45,15 @@ protected:
 private:
     on_change on_change_;
 };
+
+#define NOTIFYING_COPY_ASSIGN_DECLARATION(TYPE) \
+    inline TYPE& operator=(const TYPE& other) { \
+        auto copy{other};                       \
+        base_type::operator=(copy);             \
+        this->swap(copy);                       \
+        this->notify();                         \
+        return *this;                           \
+    }
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -134,9 +135,6 @@ public:
         assign(other, std::make_index_sequence<sizeof...(DataMembers)>{});
         return *this;
     }
-
-    owning_member(owning_member&& other) noexcept = delete;
-    owning_member& operator=(owning_member&& other) noexcept = delete;
 
     template <typename Archive>
     void serialize(Archive& archive) {

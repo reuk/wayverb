@@ -14,8 +14,6 @@ public:
     microphone() = default;
     microphone(const core::orientation& o, float shape);
 
-    microphone& operator=(microphone other);
-
     void set_orientation(const core::orientation& o);
     void set_shape(float shape);
 
@@ -26,8 +24,12 @@ public:
         archive(microphone_);
     }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(microphone)
 private:
-    void swap(microphone& other) noexcept;
+    inline void swap(microphone& other) noexcept {
+        using std::swap;
+        swap(microphone_, other.microphone_);
+    };
 
     core::attenuator::microphone microphone_;
 };

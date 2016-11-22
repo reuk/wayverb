@@ -17,8 +17,6 @@ public:
     explicit single_band_waveguide(double cutoff = 500,
                                    double usable_portion = 0.6);
 
-    single_band_waveguide& operator=(single_band_waveguide other);
-
     void set_cutoff(double cutoff);
     void set_usable_portion(double usable);
 
@@ -29,8 +27,12 @@ public:
         archive(data_.cutoff, data_.usable_portion);
     }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(single_band_waveguide)
 private:
-    void swap(single_band_waveguide& other) noexcept;
+    inline void swap(single_band_waveguide& other) noexcept {
+        using std::swap;
+        swap(data_, other.data_);
+    };
 
     waveguide::single_band_parameters data_;
 };
@@ -47,8 +49,6 @@ public:
                                      double cutoff = 500,
                                      double usable_portion = 0.6);
 
-    multiple_band_waveguide& operator=(multiple_band_waveguide other);
-
     void set_bands(size_t bands);
     void set_cutoff(double cutoff);
     void set_usable_portion(double usable);
@@ -60,10 +60,15 @@ public:
         archive(data_.bands, data_.cutoff, data_.usable_portion);
     }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(multiple_band_waveguide)
 private:
+    inline void swap(multiple_band_waveguide& other) noexcept {
+        using std::swap;
+        swap(data_, other.data_);
+    };
+
     static const frequency_domain::edges_and_width_factor<9> band_params_;
 
-    void swap(multiple_band_waveguide& other) noexcept;
     void maintain_valid_cutoff();
 
     waveguide::multiple_band_constant_spacing_parameters data_;
@@ -90,8 +95,6 @@ public:
     explicit waveguide(single_band_waveguide single_band_waveguide);
     explicit waveguide(multiple_band_waveguide multiple_band_waveguide);
 
-    waveguide& operator=(waveguide other);
-
     void set_mode(mode mode);
     mode get_mode() const;
 
@@ -106,8 +109,12 @@ public:
     const auto& single_band() const { return get<0>(); }
     const auto& multiple_band() const { return get<1>(); }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(waveguide)
 private:
-    void swap(waveguide& other) noexcept;
+    inline void swap(waveguide& other) noexcept {
+        using std::swap;
+        swap(mode_, other.mode_);
+    };
 
     mode mode_ = mode::single;
 };

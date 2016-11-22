@@ -31,8 +31,6 @@ public:
                       "Must be at least MinSize elements in initializer list.");
     }
 
-    //  Default copy/assign is fine for now.
-
     //  Extra functionality over a normal vector.
 
     bool can_erase() const { return MinSize < size(); }
@@ -81,7 +79,10 @@ public:
 
     void clear() { vec().clear(); }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(min_size_vector)
 private:
+    inline void swap(min_size_vector& other) noexcept { using std::swap; };
+
     auto& vec() { return this->template get<0>()->item; }
     const auto& vec() const { return this->template get<0>()->item; }
 };

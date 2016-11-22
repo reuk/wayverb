@@ -24,19 +24,6 @@ capsule::capsule(std::string name, hrtf_t hrtf)
         , name_{std::move(name)}
         , mode_{mode::hrtf} {}
 
-void capsule::swap(capsule& other) noexcept {
-    using std::swap;
-    swap(name_, other.name_);
-    swap(mode_, other.mode_);
-}
-
-capsule& capsule::operator=(capsule other) {
-    base_type::operator=(other);
-    swap(other);
-    notify();
-    return *this;
-}
-
 void capsule::set_name(std::string name) {
     name_ = std::move(name);
     notify();

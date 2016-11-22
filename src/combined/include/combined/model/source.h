@@ -32,7 +32,14 @@ public:
         archive(name_, position_);
     }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(source)
 private:
+    inline void swap(source& other) noexcept {
+        using std::swap;
+        swap(name_, other.name_);
+        swap(position_, other.position_);
+    };
+
     std::string name_;
     glm::vec3 position_;
 };

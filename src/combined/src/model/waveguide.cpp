@@ -12,19 +12,6 @@ single_band_waveguide::single_band_waveguide(double cutoff,
                                              double usable_portion)
         : data_{cutoff, usable_portion} {}
 
-void single_band_waveguide::swap(single_band_waveguide& other) noexcept {
-    using std::swap;
-    swap(data_, other.data_);
-}
-
-single_band_waveguide& single_band_waveguide::operator=(
-        single_band_waveguide other) {
-    base_type::operator=(other);
-    swap(other);
-    notify();
-    return *this;
-}
-
 void single_band_waveguide::set_cutoff(double cutoff) {
     data_.cutoff = cutoff;
     notify();
@@ -55,19 +42,6 @@ multiple_band_waveguide::multiple_band_waveguide(size_t bands,
                                                  double cutoff,
                                                  double usable_portion)
         : data_{bands, cutoff, usable_portion} {}
-
-void multiple_band_waveguide::swap(multiple_band_waveguide& other) noexcept {
-    using std::swap;
-    swap(data_, other.data_);
-}
-
-multiple_band_waveguide& multiple_band_waveguide::operator=(
-        multiple_band_waveguide other) {
-    base_type::operator=(other);
-    swap(other);
-    notify();
-    return *this;
-}
 
 void multiple_band_waveguide::set_bands(size_t bands) {
     data_.bands = clamp(bands, util::make_range(size_t{1}, size_t{8}));
@@ -124,18 +98,6 @@ waveguide::waveguide(single_band_waveguide single_band_waveguide)
 waveguide::waveguide(multiple_band_waveguide multiple_band_waveguide)
         : base_type{single_band_waveguide{}, std::move(multiple_band_waveguide)}
         , mode_{mode::multiple} {}
-
-void waveguide::swap(waveguide& other) noexcept {
-    using std::swap;
-    swap(mode_, other.mode_);
-}
-
-waveguide& waveguide::operator=(waveguide other) {
-    base_type::operator=(other);
-    swap(other);
-    notify();
-    return *this;
-}
 
 void waveguide::set_mode(mode mode) {
     mode_ = mode;

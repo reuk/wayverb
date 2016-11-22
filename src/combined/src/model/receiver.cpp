@@ -10,24 +10,9 @@ namespace model {
 receiver::receiver(std::string name,
                    glm::vec3 position,
                    core::orientation orientation)
-        : base_type{vector<capsule>{}, hover_state_t{}}
-        , name_{std::move(name)}
+        : name_{std::move(name)}
         , position_{std::move(position)}
         , orientation_{std::move(orientation)} {}
-
-void receiver::swap(receiver& other) noexcept {
-    using std::swap;
-    swap(name_, other.name_);
-    swap(position_, other.position_);
-    swap(orientation_, other.orientation_);
-}
-
-receiver& receiver::operator=(receiver other) {
-    base_type::operator=(other);
-    swap(other);
-    notify();
-    return *this;
-}
 
 void receiver::set_name(std::string name) {
     name_ = std::move(name);

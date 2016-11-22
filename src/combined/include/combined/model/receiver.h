@@ -10,14 +10,13 @@ namespace wayverb {
 namespace combined {
 namespace model {
 
-class receiver final
-        : public owning_member<receiver, vector<capsule>, hover_state> {
+class receiver final : public owning_member<receiver,
+                                            min_size_vector<capsule, 1>,
+                                            hover_state> {
 public:
     explicit receiver(std::string name = "new receiver",
                       glm::vec3 position = glm::vec3{0},
                       core::orientation orientation = core::orientation{});
-
-    receiver& operator=(receiver other);
 
     void set_name(std::string name);
     std::string get_name() const;
@@ -38,8 +37,14 @@ public:
         archive(capsules()->item, name_, position_, orientation_);
     }
 
+    NOTIFYING_COPY_ASSIGN_DECLARATION(receiver)
 private:
-    void swap(receiver& other) noexcept;
+    void swap(receiver& other) noexcept {
+        using std::swap;
+        swap(name_, other.name_);
+        swap(position_, other.position_);
+        swap(orientation_, other.orientation_);
+    }
 
     std::string name_;
     glm::vec3 position_;
