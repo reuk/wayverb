@@ -101,8 +101,8 @@ public:
     auto operator-> () const { return item_.operator->(); }
     auto& operator*() const { return item_.operator*(); }
 
-    void block() { connection_.block(); }
-    void unblock() { connection_.unblock(); }
+    void block() { connection_.connection.block(); }
+    void unblock() { connection_.connection.unblock(); }
 
 private:
     std::shared_ptr<item_t> item_;
@@ -183,8 +183,18 @@ protected:
         return std::get<I>(data_members_);
     }
 
+    template <size_t I>
+    auto& get() & {
+        return std::get<I>(data_members_);
+    }
+
     template <typename T>
     const auto& get() const & {
+        return std::get<persistent_connection<T>>(data_members_);
+    }
+
+    template <typename T>
+    auto& get() & {
         return std::get<persistent_connection<T>>(data_members_);
     }
 

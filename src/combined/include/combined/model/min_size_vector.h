@@ -38,6 +38,7 @@ public:
     //  Forwarding methods to impl.
 
     const auto& operator[](size_t index) const { return vec()[index]; }
+    auto& operator[](size_t index) { return vec()[index]; }
 
     auto& front() { return vec().front(); }
     const auto& front() const { return vec().front(); }

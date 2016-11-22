@@ -57,6 +57,7 @@ public:
     }
 
     const auto& operator[](size_t index) const { return data_[index]; }
+    auto& operator[](size_t index) { return data_[index]; }
 
     auto& front() { return data_.front(); }
     const auto& front() const { return data_.front(); }

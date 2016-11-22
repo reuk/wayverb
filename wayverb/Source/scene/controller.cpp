@@ -185,8 +185,8 @@ void controller::mouse_move(const MouseEvent& e) {
         //  look for hovered items, notify if something is hovered.
         do_action_with_closest_thing(
                 wayverb::core::to_vec2{}(e.getPosition()),
-                sources,
-                receivers,
+                *app_.project.persistent.sources(),
+                *app_.project.persistent.receivers(),
                 [](const auto& shared) {
                     shared->hover_state()->set_hovered(true);
                     return true;
