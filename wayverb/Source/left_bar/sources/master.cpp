@@ -56,8 +56,7 @@ master::master(wayverb::core::geo::box aabb,
                wayverb::combined::model::sources& model)
         : list_box_{model,
                     [aabb](auto shared) {
-                        return std::make_unique<list_config_item<
-                                wayverb::combined::model::source>>(
+                        return make_list_config_item_ptr(
                                 shared, [aabb](auto shared) {
                                     return std::make_unique<source_editor>(
                                             aabb, shared);

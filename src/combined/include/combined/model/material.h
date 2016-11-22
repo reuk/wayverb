@@ -57,7 +57,7 @@ auto materials_from_names(It b, It e) {
     min_size_vector<material, MinimumSize> ret{extra};
 
     for (auto i = 0; b != e; ++b, ++i) {
-        ret[i]->item = material{*b};
+        *ret[i] = material{*b};
     }
 
     return ret;

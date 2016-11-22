@@ -14,11 +14,9 @@ template <typename T>
 class list_config_item : public updatable_component<T>,
                          public TextButton::Listener {
 public:
-    using get_callout_component =
-            std::function<std::unique_ptr<Component>(std::shared_ptr<T>)>;
+    using get_callout_component = std::function<std::unique_ptr<Component>(T)>;
 
-    list_config_item(std::shared_ptr<T> model,
-                     get_callout_component get_callout_component)
+    list_config_item(T model, get_callout_component get_callout_component)
             : model_{std::move(model)}
             , get_callout_component_{std::move(get_callout_component)} {
         label_.setInterceptsMouseClicks(false, false);
@@ -37,9 +35,9 @@ public:
 
     virtual ~list_config_item() noexcept = default;
 
-    void update(std::shared_ptr<T> model) override {
+    void update(T model) override {
         model_ = model;
-        set_label(model_->get_name());
+        set_label(model_->item.get_name());
     }
 
     void set_label(const std::string& label) {
@@ -60,12 +58,19 @@ public:
     }
 
 private:
-    std::shared_ptr<T> model_;
+    T model_;
     Label label_;
     TextButton button_{"..."};
     model::Connector<TextButton> button_connector_{&button_, this};
 
     get_callout_component get_callout_component_;
 };
+
+template <typename T>
+auto make_list_config_item_ptr(
+        T model, typename list_config_item<T>::get_callout_component callback) {
+    return std::make_unique<list_config_item<T>>(std::move(model),
+                                                 std::move(callback));
+}
 
 }  // namespace left_bar

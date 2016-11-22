@@ -67,11 +67,11 @@ std::string compute_output_path(const source& source,
 std::vector<std::string> compute_all_file_names(const persistent& persistent,
                                                 const output& output) {
     std::vector<std::string> ret;
-    for (const auto& source : persistent.sources()->item) {
-        for (const auto& receiver : persistent.receivers()->item) {
-            for (const auto& capsule : receiver->item.capsules()->item) {
+    for (const auto& source : *persistent.sources()) {
+        for (const auto& receiver : *persistent.receivers()) {
+            for (const auto& capsule : *receiver.item()->capsules()) {
                 ret.emplace_back(compute_output_path(
-                        source->item, receiver->item, capsule->item, output));
+                        *source, *receiver, *capsule, output));
             }
         }
     }

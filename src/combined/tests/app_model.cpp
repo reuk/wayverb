@@ -8,7 +8,7 @@ using namespace wayverb::core;
 TEST(app_model, sources) {
     const auto quick_check = [](const auto& i) {
         ASSERT_EQ(i.connections(), 0);
-        ASSERT_EQ(i[0]->item.connections(), 1);
+        ASSERT_EQ(i[0].item()->connections(), 1);
     };
 
     model::sources a{};
@@ -27,27 +27,27 @@ TEST(app_model, sources) {
 
     model::sources sources{};
     ASSERT_EQ(sources.connections(), 0);
-    ASSERT_EQ(sources[0]->item.connections(), 1);
+    ASSERT_EQ(sources[0].item()->connections(), 1);
 
     {
         model::persistent p;
 
         bool source_changed = false;
-        p.sources()->item[0]->item.connect(
+        (*p.sources().item())[0].item()->connect(
                 [&](auto&) { source_changed = true; });
 
         auto q = p;
 
         ASSERT_FALSE(source_changed);
 
-        p.sources()->item[0]->item.set_position({0.5, 0.5, 0.5});
+        (*p.sources().item())[0].item()->set_position({0.5, 0.5, 0.5});
 
         ASSERT_TRUE(source_changed);
 
         source_changed = false;
 
         model::source new_source{};
-        p.sources()->item[0]->item = new_source;
+        *(*p.sources().item())[0].item() = new_source;
 
         ASSERT_TRUE(source_changed);
     }

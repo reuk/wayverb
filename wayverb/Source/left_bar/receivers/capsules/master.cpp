@@ -256,7 +256,7 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 
 master::master(
-        wayverb::combined::model::vector<wayverb::combined::model::capsule, 1>&
+        wayverb::combined::model::min_size_vector<wayverb::combined::model::capsule, 1>&
                 model)
         : list_box_{model,
                     [](auto shared) {

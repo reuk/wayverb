@@ -20,8 +20,8 @@ TEST(threaded_engine, threaded_engine) {
     const auto scene_data = geo::get_scene_data(box, surface);
 
     model::persistent persistent{};
-    persistent.sources()->item[0]->item.set_position(source);
-    persistent.receivers()->item[0]->item.set_position(receiver);
+    (*persistent.sources())[0]->set_position(source);
+    (*persistent.receivers())[0]->set_position(receiver);
 
     complete_engine complete{};
 

@@ -19,20 +19,18 @@ project::project(const std::string& fpath)
         : scene_data_{is_project_file(fpath) ? compute_model_path(fpath)
                                              : fpath}
         , needs_save_{!is_project_file(fpath)} {
-
     //  First make sure default source and receiver are in a sensible position.
     const auto aabb =
             wayverb::core::geo::compute_aabb(get_scene_data().get_vertices());
     const auto c = centre(aabb);
 
-    persistent.sources()->item[0]->item.set_position(c);
-    persistent.receivers()->item[0]->item.set_position(c);
+    (*persistent.sources())[0]->set_position(c);
+    (*persistent.receivers())[0]->set_position(c);
 
     //  Set up surfaces.
-    const auto& surface_strings =
-            scene_data_.get_scene_data()->get_surfaces();
-    persistent.materials()->item =
-            materials_from_names<1>(begin(surface_strings), end(surface_strings));
+    const auto& surface_strings = scene_data_.get_scene_data()->get_surfaces();
+    *persistent.materials() = materials_from_names<1>(begin(surface_strings),
+                                                      end(surface_strings));
 
     //  If there's a config file, we'll just overwrite the state we just set,
     //  but that's probably fine.
@@ -42,7 +40,7 @@ project::project(const std::string& fpath)
         //  load the config
         std::ifstream stream(config_file);
         cereal::JSONInputArchive archive(stream);
-        //archive(persistent);
+        // archive(persistent);
     }
 
     persistent.connect([&](auto&) { needs_save_ = true; });
@@ -78,7 +76,7 @@ void project::save_to(const std::string& fpath) {
         //  write config with all current materials to file
         std::ofstream stream(project::compute_config_path(fpath));
         cereal::JSONOutputArchive archive(stream);
-        //archive(persistent);
+        // archive(persistent);
 
         needs_save_ = false;
     }
@@ -173,8 +171,8 @@ core::gpu_scene_data app::generate_scene_data() {
                                  core::surface<core::simulation_bands>>
             material_map;
 
-    for (const auto& i : project.persistent.materials()->item) {
-        material_map[i->item.get_name()] = i->item.get_surface();
+    for (const auto& i : *project.persistent.materials()) {
+        material_map[i->get_name()] = i->get_surface();
     }
 
     return scene_with_extracted_surfaces(project.get_scene_data(),

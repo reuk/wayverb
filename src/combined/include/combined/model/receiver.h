@@ -34,7 +34,7 @@ public:
 
     template <typename Archive>
     void serialize(Archive& archive) {
-        archive(capsules()->item, name_, position_, orientation_);
+        archive(*capsules(), name_, position_, orientation_);
     }
 
     NOTIFYING_COPY_ASSIGN_DECLARATION(receiver)

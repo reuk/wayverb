@@ -14,8 +14,7 @@ namespace model {
 template <typename T>
 class vector final : public basic_member<vector<T>> {
 public:
-    using connection_type = persistent_connection<vector, T>;
-    using data_member = std::shared_ptr<connection_type>;
+    using data_member = persistent_connection<T>;
 
     /// So that back_inserter works.
     using value_type = T;
@@ -23,7 +22,7 @@ public:
     vector(size_t elements, const T& t) {
         reserve(elements);
         for (auto i = 0u; i != elements; ++i) {
-            data_.emplace_back(std::make_shared<connection_type>(*this, t));
+            data_.emplace_back(*this, t);
         }
     }
 
@@ -39,7 +38,7 @@ public:
     }
 
     template <size_t N>
-    explicit vector(const T(&arr)[N]) 
+    explicit vector(const T (&arr)[N])
             : vector{std::begin(arr), std::end(arr)} {}
 
     vector(const vector& other)
@@ -59,6 +58,12 @@ public:
 
     const auto& operator[](size_t index) const { return data_[index]; }
 
+    auto& front() { return data_.front(); }
+    const auto& front() const { return data_.front(); }
+
+    auto& back() { return data_.back(); }
+    const auto& back() const { return data_.back(); }
+
     auto cbegin() const { return data_.cbegin(); }
     auto begin() const { return data_.begin(); }
     auto begin() { return data_.begin(); }
@@ -71,14 +76,13 @@ public:
 
     template <typename It>
     auto insert(It it, const T& t) {
-        const auto i = data_.emplace(
-                it.base(), std::make_shared<connection_type>(*this, t));
+        const auto i = data_.emplace(std::move(it), *this, t);
         this->notify();
         return i;
     }
 
     void push_back(const value_type& t) {
-        data_.push_back(std::make_shared<connection_type>(*this, t));
+        data_.emplace_back(*this, t);
         this->notify();
     }
 
@@ -89,7 +93,7 @@ public:
 
     template <typename It>
     auto erase(It it) {
-        const auto i = data_.erase(it.base());
+        const auto i = data_.erase(std::move(it));
         this->notify();
         return i;
     }
@@ -122,20 +126,19 @@ public:
         archive(cereal::make_size_tag(size));
         resize(size);
         for (const auto& i : *this) {
-            archive(i->item);
+            archive(*i);
         }
     }
 
     bool operator==(const vector& x) const {
         //  Two vectors are equal if their values are equal, *not* their
         //  memory layout.
-        return std::equal(cbegin(),
-                          cend(),
-                          x.cbegin(),
-                          x.cend(),
-                          [](const auto& a, const auto& b) {
-                              return a->item == b->item;
-                          });
+        return std::equal(
+                cbegin(),
+                cend(),
+                x.cbegin(),
+                x.cend(),
+                [](const auto& a, const auto& b) { return *a == *b; });
     }
     bool operator!=(const vector& x) const { return !operator==(x); }
 

@@ -39,6 +39,12 @@ public:
 
     const auto& operator[](size_t index) const { return vec()[index]; }
 
+    auto& front() { return vec().front(); }
+    const auto& front() const { return vec().front(); }
+
+    auto& back() { return vec().back(); }
+    const auto& back() const { return vec().back(); }
+
     auto cbegin() const { return vec().cbegin(); }
     auto begin() const { return vec().begin(); }
     auto begin() { return vec().begin(); }
@@ -81,10 +87,10 @@ public:
 
     NOTIFYING_COPY_ASSIGN_DECLARATION(min_size_vector)
 private:
-    inline void swap(min_size_vector& other) noexcept { using std::swap; };
+    inline void swap(min_size_vector&) noexcept { using std::swap; };
 
-    auto& vec() { return this->template get<0>()->item; }
-    const auto& vec() const { return this->template get<0>()->item; }
+    auto& vec() { return *this->template get<0>(); }
+    const auto& vec() const { return *this->template get<0>(); }
 };
 
 }  // namespace model

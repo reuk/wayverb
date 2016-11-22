@@ -13,9 +13,7 @@ namespace left_bar {
 template <typename T>
 class updatable_component : public Component {
 public:
-    using param_type = std::shared_ptr<T>;
-
-    virtual void update(param_type) = 0;
+    virtual void update(T) = 0;
 };
 
 /// Dead simple list box editor.
@@ -25,12 +23,11 @@ template <typename Model>
 class vector_list_box final : public ListBox {
 public:
     using model_type = Model;
-    using value_type = std::decay_t<decltype(*(std::declval<Model>()[0]))>;
+    using value_type = std::decay_t<decltype(std::declval<Model>().front())>;
     using updatable = updatable_component<value_type>;
-    using param_type = typename updatable::param_type;
 
     using create_list_item =
-            std::function<std::unique_ptr<updatable>(param_type)>;
+            std::function<std::unique_ptr<updatable>(value_type)>;
 
     vector_list_box(Model& model, create_list_item create_list_item)
             : model_{model, std::move(create_list_item)}
@@ -65,7 +62,7 @@ private:
                                           bool selected,
                                           Component* existing) override {
             if (row < getNumRows()) {
-                const auto& shared = model_[row].get_shared_ptr();
+                const auto shared = model_[row];
                 if (updatable* v = dynamic_cast<updatable*>(existing)) {
                     v->update(shared);
                 } else {

@@ -41,8 +41,8 @@ capsule::mode capsule::get_mode() const { return mode_; }
 core::orientation get_orientation(const capsule& capsule) {
     switch (capsule.get_mode()) {
         case capsule::mode::microphone:
-            return capsule.microphone()->item.get().orientation;
-        case capsule::mode::hrtf: return capsule.hrtf()->item.get().orientation;
+            return capsule.microphone()->get().orientation;
+        case capsule::mode::hrtf: return capsule.hrtf()->get().orientation;
     }
 }
 
