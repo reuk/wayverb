@@ -26,6 +26,7 @@ public:
 
     using hover_state_t = class hover_state;
     const auto& hover_state() const { return get<0>(); }
+    auto& hover_state() { return get<0>(); }
 
     template <typename Archive>
     void serialize(Archive& archive) {

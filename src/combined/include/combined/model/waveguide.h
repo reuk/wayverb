@@ -107,7 +107,10 @@ public:
     using multiple_band_t = multiple_band_waveguide;
 
     const auto& single_band() const { return get<0>(); }
+    auto& single_band() { return get<0>(); }
+
     const auto& multiple_band() const { return get<1>(); }
+    auto& multiple_band() { return get<1>(); }
 
     NOTIFYING_COPY_ASSIGN_DECLARATION(waveguide)
 private:

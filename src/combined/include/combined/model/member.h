@@ -98,8 +98,11 @@ public:
     const std::shared_ptr<item_t>& item() const { return item_; }
 
     auto get() const { return item_.get(); }
-    auto operator-> () const { return get(); }
-    auto& operator*() const { return *get(); }
+    auto operator-> () const { return item_.operator->(); }
+    auto& operator*() const { return item_.operator*(); }
+
+    void block() { connection_.block(); }
+    void unblock() { connection_.unblock(); }
 
 private:
     std::shared_ptr<item_t> item_;

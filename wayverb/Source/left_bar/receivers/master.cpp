@@ -131,8 +131,7 @@ master::master(const wayverb::combined::model::app::capsule_presets_t& presets,
                wayverb::combined::model::receivers& receivers)
         : list_box_{receivers,
                     [&presets, aabb](auto shared) {
-                        return std::make_unique<list_config_item<
-                                wayverb::combined::model::receiver>>(
+                        return make_list_config_item_ptr(
                                 shared, [&presets, aabb](auto shared) {
                                     return std::make_unique<receiver_editor>(
                                             presets, aabb, shared);

@@ -1,7 +1,8 @@
 #!/bin/sh
 
 export CL_LOG_ERRORS=stdout
-export GTEST_FILTER="*app_model*"
+#export GTEST_FILTER="*app_model*"
+#export GTEST_FILTER="*app_model*:*round_trip*"
 
 if ./build.sh ; then
 #if ./build.sh 2>&1 | tee build_log.txt ; then

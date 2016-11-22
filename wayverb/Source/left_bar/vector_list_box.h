@@ -23,7 +23,7 @@ template <typename Model>
 class vector_list_box final : public ListBox {
 public:
     using model_type = Model;
-    using value_type = std::decay_t<decltype(std::declval<Model>().front())>;
+    using value_type = std::decay_t<decltype(std::declval<Model>().front().item())>;
     using updatable = updatable_component<value_type>;
 
     using create_list_item =
@@ -62,7 +62,7 @@ private:
                                           bool selected,
                                           Component* existing) override {
             if (row < getNumRows()) {
-                const auto shared = model_[row];
+                const auto& shared = model_[row].item();
                 if (updatable* v = dynamic_cast<updatable*>(existing)) {
                     v->update(shared);
                 } else {

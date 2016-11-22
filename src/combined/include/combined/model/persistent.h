@@ -28,14 +28,23 @@ public:
     using materials_t = class vector<material>;
 
     const auto& sources() const { return get<0>(); }
+    auto& sources() { return get<0>(); }
+
     const auto& receivers() const { return get<1>(); }
+    auto& receivers() { return get<1>(); }
+
     const auto& raytracer() const { return get<2>(); }
+    auto& raytracer() { return get<2>(); }
+
     const auto& waveguide() const { return get<3>(); }
+    auto& waveguide() { return get<3>(); }
+
     const auto& materials() const { return get<4>(); }
+    auto& materials() { return get<4>(); }
 
     NOTIFYING_COPY_ASSIGN_DECLARATION(persistent)
 private:
-    inline void swap(persistent& other) noexcept { using std::swap; };
+    inline void swap(persistent&) noexcept { using std::swap; };
 };
 
 }  // namespace model

@@ -28,9 +28,11 @@ public:
     core::orientation get_orientation() const;
 
     const auto& capsules() const { return get<0>(); }
+    auto& capsules() { return get<0>(); }
 
     using hover_state_t = class hover_state;
     const auto& hover_state() const { return get<1>(); }
+    auto& hover_state() { return get<1>(); }
 
     template <typename Archive>
     void serialize(Archive& archive) {

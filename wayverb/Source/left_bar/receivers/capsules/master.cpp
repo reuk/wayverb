@@ -260,8 +260,7 @@ master::master(
                 model)
         : list_box_{model,
                     [](auto shared) {
-                        return std::make_unique<list_config_item<
-                                wayverb::combined::model::capsule>>(
+                        return make_list_config_item_ptr(
                                 shared, [](auto shared) {
                                     return std::make_unique<capsule_editor>(
                                             shared);

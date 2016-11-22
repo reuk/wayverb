@@ -36,7 +36,10 @@ public:
     }
 
     const auto& microphone() const { return get<0>(); }
+    auto& microphone() { return get<0>(); }
+
     const auto& hrtf() const { return get<1>(); }
+    auto& hrtf() { return get<1>(); }
 
     NOTIFYING_COPY_ASSIGN_DECLARATION(capsule)
 private:

@@ -165,32 +165,32 @@ void controller::enablement_changed(bool enabled) {
 
 void controller::mouse_move(const MouseEvent& e) {
     if (allow_edit_) {
-        //  We do things like this to minimize redraw requests.
+        //  Temporarily block connections to minimize redraw requests:
 
-        //  Make a copy of sources and receivers.
-        auto sources = app_.project.persistent.sources();
-        auto receivers = app_.project.persistent.receivers();
+        app_.project.persistent.sources().block();
+        app_.project.persistent.receivers().block();
 
         //  Ensure nothing is hovered.
-        for (auto& i : *sources) {
+        for (auto& i : *app_.project.persistent.sources()) {
             i->hover_state()->set_hovered(false);
         }
-        for (auto& i : *receivers) {
+        for (auto& i : *app_.project.persistent.receivers()) {
             i->hover_state()->set_hovered(false);
         }
+
+        //  Allow notifications to propagate again.
+        app_.project.persistent.sources().unblock();
+        app_.project.persistent.receivers().unblock();
 
         //  look for hovered items, notify if something is hovered.
         do_action_with_closest_thing(
                 wayverb::core::to_vec2{}(e.getPosition()),
-                *sources,
-                *receivers,
+                sources,
+                receivers,
                 [](const auto& shared) {
                     shared->hover_state()->set_hovered(true);
                     return true;
                 });
-
-        app_.project.persistent.sources() = sources;
-        app_.project.persistent.receivers() = receivers;
     }
 }
 

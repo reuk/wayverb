@@ -35,7 +35,7 @@ private:
 
     template <typename It>
     auto get_hovered(It beg, It end, const glm::vec2& mouse_pos) const {
-        using value_type = std::decay_t<decltype(beg->get_shared_ptr())>;
+        using value_type = std::decay_t<decltype(beg->item())>;
 
         const auto origin = app_.scene.compute_world_camera_position();
         const auto direction =
@@ -57,7 +57,7 @@ private:
                 const auto sq_det = std::sqrt(det);
                 const auto dist = std::min(-b + sq_det, -b - sq_det);
                 if (!inter.it || dist < inter.distance) {
-                    inter = intersection{beg->get_shared_ptr(), dist};
+                    inter = intersection{beg->item(), dist};
                 }
             }
         }

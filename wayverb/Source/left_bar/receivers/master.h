@@ -10,8 +10,6 @@ namespace receivers {
 
 /// The heart of the receivers component is a list-box.
 /// This should have buttons for adding and removing items.
-/// If an item is added, show its pop-out immediately, with the name field
-/// selected for editing.
 /// The pop-out should contain name and position editors.
 /// Don't allow receivers to be added or removed if any are currently selected/
 /// dragged.
