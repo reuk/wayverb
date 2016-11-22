@@ -149,8 +149,8 @@ auto make_move_item_action_ptr(wayverb::combined::model::scene& model,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-controller::controller(wayverb::combined::model::app& app)
-        : app_{app} {}
+controller::controller(main_model& model)
+        : model_{model} {}
 
 controller::~controller() noexcept = default;
 
@@ -167,26 +167,26 @@ void controller::mouse_move(const MouseEvent& e) {
     if (allow_edit_) {
         //  Temporarily block connections to minimize redraw requests:
 
-        app_.project.persistent.sources().block();
-        app_.project.persistent.receivers().block();
+        model_.project.persistent.sources().block();
+        model_.project.persistent.receivers().block();
 
         //  Ensure nothing is hovered.
-        for (auto& i : *app_.project.persistent.sources()) {
+        for (auto& i : *model_.project.persistent.sources()) {
             i->hover_state()->set_hovered(false);
         }
-        for (auto& i : *app_.project.persistent.receivers()) {
+        for (auto& i : *model_.project.persistent.receivers()) {
             i->hover_state()->set_hovered(false);
         }
 
         //  Allow notifications to propagate again.
-        app_.project.persistent.sources().unblock();
-        app_.project.persistent.receivers().unblock();
+        model_.project.persistent.sources().unblock();
+        model_.project.persistent.receivers().unblock();
 
         //  look for hovered items, notify if something is hovered.
         do_action_with_closest_thing(
                 wayverb::core::to_vec2{}(e.getPosition()),
-                *app_.project.persistent.sources(),
-                *app_.project.persistent.receivers(),
+                *model_.project.persistent.sources(),
+                *model_.project.persistent.receivers(),
                 [](const auto& shared) {
                     shared->hover_state()->set_hovered(true);
                     return true;
@@ -218,9 +218,9 @@ void controller::mouse_wheel_move(const MouseEvent& e,
                                   const MouseWheelDetails& d) {
     //  Only zoom if another action is not ongoing.
     if (mouse_action_ == nullptr) {
-        const auto current_distance = app_.scene.get_eye_distance();
+        const auto current_distance = model_.scene.get_eye_distance();
         const auto diff = current_distance * d.deltaY;
-        app_.scene.set_eye_distance(current_distance + diff);
+        model_.scene.set_eye_distance(current_distance + diff);
     }
 }
 
@@ -228,12 +228,12 @@ std::unique_ptr<controller::mouse_action> controller::start_action(
         const MouseEvent& e) {
     //  If middle and left mouse buttons are pressed, start panning action.
     if (e.mods.isMiddleButtonDown()) {
-        return std::make_unique<pan_action>(app_.scene);
+        return std::make_unique<pan_action>(model_.scene);
     }
 
     //  If middle mouse button is pressed, start rotation action.
     if (e.mods.isRightButtonDown()) {
-        return std::make_unique<rotate_action>(app_.scene);
+        return std::make_unique<rotate_action>(model_.scene);
     }
 
     //  If left mouse button is pressed, check for hovered items.
@@ -242,10 +242,10 @@ std::unique_ptr<controller::mouse_action> controller::start_action(
     if (allow_edit_ && e.mods.isLeftButtonDown()) {
         return do_action_with_closest_thing(
                 wayverb::core::to_vec2{}(e.getPosition()),
-                *app_.project.persistent.sources(),
-                *app_.project.persistent.receivers(),
+                *model_.project.persistent.sources(),
+                *model_.project.persistent.receivers(),
                 [this](const auto& shared) -> std::unique_ptr<mouse_action> {
-                    return make_move_item_action_ptr(app_.scene, shared);
+                    return make_move_item_action_ptr(model_.scene, shared);
                 });
     }
 

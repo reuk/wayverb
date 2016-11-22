@@ -1,7 +1,8 @@
 #include "master.h"
 
+#include "main_model.h"
+
 #include "controller.h"
-#include "engine_message_queue.h"
 #include "view.h"
 
 #include "AngularLookAndFeel.h"
@@ -20,31 +21,31 @@ namespace scene {
 
 class master::impl final : public Component {
 public:
-    impl(wayverb::combined::model::app& app, engine_message_queue& queue)
-            : app_{app}
-            , controller_{app_}
+    impl(main_model& model)
+            : model_{model}
+            , controller_{model_}
             //  These events will come from the message thread.
             , visible_surface_changed_connection_{
-                app.scene.connect_visible_surface_changed([this](auto visible) {
+                model_.scene.connect_visible_surface_changed([this](auto visible) {
                     view_.high_priority_command([=](auto& r) { r.set_highlighted_surface(visible); });
                 })}
             , view_state_changed_connection_{
-                app.scene.connect_view_state_changed([this](auto state) {
+                model_.scene.connect_view_state_changed([this](auto state) {
                     view_.high_priority_command([=](auto& r) { r.set_view_state(state); });
                 })}
             , projection_matrix_changed_connection_{
-                app_.scene.connect_projection_matrix_changed([this](auto matrix) {
+                model_.scene.connect_projection_matrix_changed([this](auto matrix) {
                     view_.high_priority_command([=](auto& r) { r.set_projection_matrix(matrix); });
                 })}
             //  These events come from the engine, so they must be queued onto the message thread.
             , visualise_changed_connection_{
-                 app_.scene.connect_visualise_changed([this, &queue](auto should_visualise) {
+                 model_.scene.connect_visualise_changed([this](auto should_visualise) {
                     if (should_visualise) {
                         //  IMPORTANT app callbacks might be called from any thread -
                         //  don't access unprotected common state inside engine
                         //  callbacks!
-                        positions_changed_ = engine_message_queue::node_positions_changed::scoped_connection{
-                                        queue.connect_node_positions([this](
+                        positions_changed_ = main_model::waveguide_node_positions_changed::scoped_connection{
+                                        model_.connect_node_positions([this](
                                                 auto descriptor) {
                                             view_.high_priority_command([d = std::move(descriptor)](
                                                     auto& renderer) {
@@ -55,8 +56,8 @@ public:
                                             });
                                         })};
 
-                        pressures_changed_ = engine_message_queue::node_pressures_changed::scoped_connection{
-                                        queue.connect_node_pressures([this](
+                        pressures_changed_ = main_model::waveguide_node_pressures_changed::scoped_connection{
+                                        model_.connect_node_pressures([this](
                                                 auto pressures, auto distance) {
                                             view_.low_priority_command([
                                                 p = std::move(pressures),
@@ -68,7 +69,7 @@ public:
                                         })};
 
                         reflections_generated_ =
-                                engine_message_queue::reflections_generated::scoped_connection{queue.connect_reflections(
+                                main_model::raytracer_reflections_generated::scoped_connection{model_.connect_reflections(
                                                 [this](auto reflections, auto source) {
                                                     view_.high_priority_command([
                                                         r = std::move(reflections),
@@ -80,38 +81,38 @@ public:
                                                 })};
 
                     } else {
-                        positions_changed_     = engine_message_queue::node_positions_changed::scoped_connection{};
-                        pressures_changed_     = engine_message_queue::node_pressures_changed::scoped_connection{};
-                        reflections_generated_ = engine_message_queue::reflections_generated::scoped_connection{};
+                        positions_changed_     = main_model::waveguide_node_positions_changed::scoped_connection{};
+                        pressures_changed_     = main_model::waveguide_node_pressures_changed::scoped_connection{};
+                        reflections_generated_ = main_model::raytracer_reflections_generated::scoped_connection{};
                         view_.high_priority_command([](auto& renderer) { renderer.clear(); });
                     }
                 })}
             , sources_connection_{
                 //  When sources or receivers change, update the view.
                 //  Assume model updates come from the message thread.
-                app_.project.persistent.sources()->connect([this](auto& sources) {
+                model_.project.persistent.sources()->connect([this](auto& sources) {
                     auto copy = sources;
                     view_.high_priority_command([r = std::move(copy)](auto& renderer) {
                         renderer.set_sources(std::move(r));
                     });
                 })}
             , receivers_connection_{
-                app_.project.persistent.receivers()->connect([this](auto& receivers) {
+                model_.project.persistent.receivers()->connect([this](auto& receivers) {
                     auto copy = receivers;
                     view_.high_priority_command([r = std::move(copy)](auto& renderer) {
                         renderer.set_receivers(std::move(r));
                     });
                 })}
-            , begun_{queue.connect_begun([this] {
+            , begun_{model_.connect_begun([this] {
                     setEnabled(false);
                 })}
-            , finished_{queue.connect_finished([this] {
+            , finished_{model_.connect_finished([this] {
                     setEnabled(true);
                     view_.high_priority_command([](auto& renderer) { renderer.clear(); });
                 })}
             {
         //  Set up the scene model so that everything is visible.
-        const auto scene_data = app_.project.get_scene_data();
+        const auto scene_data = model_.project.get_scene_data();
         auto triangles = scene_data.get_triangles();
         auto vertices = util::map_to_vector(begin(scene_data.get_vertices()),
                                             end(scene_data.get_vertices()),
@@ -129,8 +130,8 @@ public:
                     view_.high_priority_command([
                         t = std::move(t),
                         v = std::move(v),
-                        vs = app_.scene.get_view_state(),
-                        pm = app_.scene.get_projection_matrix()
+                        vs = model_.scene.get_view_state(),
+                        pm = model_.scene.get_projection_matrix()
                     ](auto& r) {
                         r.set_scene(t.data(), t.size(), v.data(), v.size());
                         r.set_view_state(vs);
@@ -143,8 +144,8 @@ public:
                     });
                 });
 
-        app_.project.persistent.sources()->notify();
-        app_.project.persistent.receivers()->notify();
+        model_.project.persistent.sources()->notify();
+        model_.project.persistent.receivers()->notify();
 
         //  We want to catch mouse events and dispatch our own commands to the
         //  view, so we'll disable mouse events directly on the view.
@@ -154,7 +155,7 @@ public:
     }
 
     void resized() override {
-        app_.scene.set_viewport(glm::vec2{getWidth(), getHeight()});
+        model_.scene.set_viewport(glm::vec2{getWidth(), getHeight()});
         view_.setBounds(getLocalBounds());
     }
 
@@ -185,7 +186,7 @@ private:
     generic_renderer<scene::view> view_;
 
     //  Keep a reference to the global model.
-    wayverb::combined::model::app& app_;
+    main_model& model_;
 
     //  This object decides how to interpret user input, and updates the models
     //  as appropriate.
@@ -203,18 +204,15 @@ private:
     wayverb::combined::model::receivers::scoped_connection
             receivers_connection_;
 
-    engine_message_queue::node_positions_changed::scoped_connection
-            positions_changed_;
-    engine_message_queue::node_pressures_changed::scoped_connection
-            pressures_changed_;
-    engine_message_queue::reflections_generated::scoped_connection
-            reflections_generated_;
-    engine_message_queue::begun::scoped_connection begun_;
-    engine_message_queue::finished::scoped_connection finished_;
+    main_model::waveguide_node_positions_changed::scoped_connection positions_changed_;
+    main_model::waveguide_node_pressures_changed::scoped_connection pressures_changed_;
+    main_model::raytracer_reflections_generated::scoped_connection reflections_generated_;
+    main_model::begun::scoped_connection begun_;
+    main_model::finished::scoped_connection finished_;
 };
 
-master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
-        : pimpl_{std::make_unique<impl>(app, queue)} {
+master::master(main_model& model)
+        : pimpl_{std::make_unique<impl>(model)} {
     set_help("model viewport",
              "This area displays the currently loaded 3D model. Click and drag "
              "to rotate the model, or use the mouse wheel to zoom in and out.");

@@ -12,18 +12,18 @@ main_window::main_window(ApplicationCommandTarget& next,
         : DocumentWindow(name, Colours::lightgrey, DocumentWindow::allButtons)
         , next_command_target_{next}
         , model_{std::move(fname)}
-        , content_component_{model_, engine_message_queue_}
-        , encountered_error_connection_{engine_message_queue_.connect_error_handler(
+        , content_component_{model_}
+        , encountered_error_connection_{model_.connect_error_handler(
                   [this](auto err_str) {
                       AlertWindow::showMessageBoxAsync(
                               AlertWindow::AlertIconType::WarningIcon,
                               "render error",
                               err_str);
                   })}
-        , begun_connection_{engine_message_queue_.connect_begun([this] {
+        , begun_connection_{model_.connect_begun([this] {
             wayverb_application::get_command_manager().commandStatusChanged();
         })}
-        , finished_connection_{engine_message_queue_.connect_finished([this] {
+        , finished_connection_{model_.connect_finished([this] {
             wayverb_application::get_command_manager().commandStatusChanged();
         })} {
     content_component_.setSize(800, 500);
@@ -220,11 +220,8 @@ void main_window::save_as() {
     }
 }
 
-std::experimental::optional<std::string>
-main_window::browse_for_file_to_save() {
-    FileChooser fc{"save location...",
-                   File(),
-                   wayverb::combined::model::project::project_wildcard};
+std::experimental::optional<std::string> main_window::browse_for_file_to_save() {
+    FileChooser fc{"save location...", File(), project::project_wildcard};
     if (fc.browseForFileToSave(true)) {
         const auto path = fc.getResult();
         path.createDirectory();

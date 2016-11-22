@@ -1,9 +1,7 @@
 #pragma once
 
+#include "main_model.h"
 #include "MainContentComponent.h"
-#include "engine_message_queue.h"
-
-#include "combined/model/app.h"
 
 class main_window final : public DocumentWindow,
                           public ApplicationCommandTarget {
@@ -39,15 +37,13 @@ private:
 
     ApplicationCommandTarget& next_command_target_;
 
-    wayverb::combined::model::app model_;
-    engine_message_queue engine_message_queue_{model_};
+    main_model model_;
 
     MainContentComponent content_component_;
 
-    engine_message_queue::encountered_error::scoped_connection
-            encountered_error_connection_;
-    engine_message_queue::begun::scoped_connection begun_connection_;
-    engine_message_queue::finished::scoped_connection finished_connection_;
+    main_model::encountered_error::scoped_connection encountered_error_connection_;
+    main_model::begun::scoped_connection begun_connection_;
+    main_model::finished::scoped_connection finished_connection_;
 
     wants_to_close wants_to_close_;
 };

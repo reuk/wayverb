@@ -1,8 +1,9 @@
 #pragma once
 
+#include "main_model.h"
+
 #include "../../UtilityComponents/connector.h"
 #include "../vector_list_box.h"
-#include "combined/model/app.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
@@ -12,7 +13,7 @@ namespace materials {
 class config_item final : public Component, public TextButton::Listener {
 public:
     using material_t = wayverb::combined::model::material;
-    using presets_t = wayverb::combined::model::app::material_presets_t;
+    using presets_t = main_model::material_presets_t;
 
     config_item(wayverb::combined::model::scene& scene,
                 const presets_t& presets,

@@ -5,11 +5,12 @@
 #include "left_bar/master.h"
 #include "scene/master.h"
 
+class main_model;
+
 class MainContentComponent final : public Component,
                                    public SettableHelpPanelClient {
 public:
-    MainContentComponent(wayverb::combined::model::app& app,
-                         engine_message_queue& queue);
+    MainContentComponent(main_model& model);
 
     void paint(Graphics& g) override;
     void resized() override;

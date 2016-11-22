@@ -7,6 +7,8 @@
 #include "sources/master.h"
 #include "waveguide/master.h"
 
+#include "utilities/string_builder.h"
+
 namespace {
 
 //  Allows a generic component to be placed in a property panel.
@@ -54,7 +56,7 @@ public:
 
 Array<PropertyComponent*> make_material_options(
         wayverb::combined::model::scene& scene,
-        const wayverb::combined::model::app::material_presets_t& presets,
+        const main_model::material_presets_t& presets,
         const wayverb::combined::model::
                 min_size_vector<wayverb::combined::model::material, 1>& model) {
     Array<PropertyComponent*> ret;
@@ -71,14 +73,14 @@ Array<PropertyComponent*> make_material_options(
 
 namespace left_bar {
 
-master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
-        : model_{app}
-        , begun_connection_{queue.connect_begun([this] {
+master::master(main_model& model)
+        : model_{model}
+        , begun_connection_{model_.connect_begun([this] {
             //  Disable the top panel so that the user can't muck stuff up.
             property_panel_.setEnabled(false);
             bottom_.set_state(bottom::state::rendering);
         })}
-        , engine_state_connection_{queue.connect_engine_state(
+        , engine_state_connection_{model_.connect_engine_state(
                   [this](auto run, auto runs, auto state, auto progress) {
                       bottom_.set_bar_text(util::build_string(
                               "run ",
@@ -89,7 +91,7 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
                               wayverb::combined::to_string(state)));
                       bottom_.set_progress(progress);
                   })}
-        , finished_connection_{queue.connect_finished([this] {
+        , finished_connection_{model_.connect_finished([this] {
             //  Re-enable the top panel.
             property_panel_.setEnabled(true);
             bottom_.set_state(bottom::state::idle);
@@ -114,21 +116,21 @@ master::master(wayverb::combined::model::app& app, engine_message_queue& queue)
                     *model_.project.persistent.receivers()}});
     property_panel_.addSection(
             "materials",
-            make_material_options(app.scene,
-                                  app.material_presets,
-                                  *app.project.persistent.materials()));
+            make_material_options(model_.scene,
+                                  model_.material_presets,
+                                  *model_.project.persistent.materials()));
     property_panel_.addSection(
             "raytracer",
             {static_cast<PropertyComponent*>(new raytracer::ray_number_property{
-                     *app.project.persistent.raytracer()}),
+                     *model_.project.persistent.raytracer()}),
              static_cast<PropertyComponent*>(
                      new raytracer::img_src_order_property{
-                             *app.project.persistent.raytracer()})});
+                             *model_.project.persistent.raytracer()})});
 
     property_panel_.addSection(
             "waveguide",
             {new wrapped_property_component<waveguide::master>{
-                    *app.project.persistent.waveguide()}});
+                    *model_.project.persistent.waveguide()}});
 
     property_panel_.setOpaque(false);
 

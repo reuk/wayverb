@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utilities/string_builder.h"
+
 #include "../JuceLibraryCode/JuceHeader.h"
 
 #include <string>

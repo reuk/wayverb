@@ -1,6 +1,6 @@
 #pragma once
 
-#include "combined/model/app.h"
+#include "main_model.h"
 
 #include "raytracer/cl/reflection.h"
 
@@ -17,7 +17,7 @@ namespace scene {
 /// Here, 'model' means model::controller and also wayverb::combined::model::app
 class controller final {
 public:
-    controller(wayverb::combined::model::app& app);
+    controller(main_model& model);
     ~controller() noexcept;
 
     void enablement_changed(bool enabled);
@@ -37,9 +37,9 @@ private:
     auto get_hovered(It beg, It end, const glm::vec2& mouse_pos) const {
         using value_type = std::decay_t<decltype(beg->item())>;
 
-        const auto origin = app_.scene.compute_world_camera_position();
+        const auto origin = model_.scene.compute_world_camera_position();
         const auto direction =
-                app_.scene.compute_world_mouse_direction(mouse_pos);
+                model_.scene.compute_world_mouse_direction(mouse_pos);
 
         struct intersection {
             value_type it;
@@ -51,7 +51,7 @@ private:
             const auto diff = origin - (*beg)->get_position();
             const auto b = glm::dot(direction, diff);
             const auto c = glm::dot(diff, diff) -
-                           glm::pow(app_.scene.get_item_radius(), 2);
+                           glm::pow(model_.scene.get_item_radius(), 2);
             const auto det = glm::pow(b, 2) - c;
             if (0 <= det) {
                 const auto sq_det = std::sqrt(det);
@@ -101,7 +101,7 @@ private:
         return return_type{};
     }
 
-    wayverb::combined::model::app& app_;
+    main_model& model_;
 
     std::unique_ptr<mouse_action> mouse_action_;
 

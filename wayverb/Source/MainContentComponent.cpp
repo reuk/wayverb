@@ -5,11 +5,10 @@
 #include <iomanip>
 #include <type_traits>
 
-MainContentComponent::MainContentComponent(wayverb::combined::model::app& app,
-                                           engine_message_queue& queue)
-        : left_bar_master_{app, queue}
+MainContentComponent::MainContentComponent(main_model& model)
+        : left_bar_master_{model}
         , resizer_bar_{&layout_manager_, 1, true}
-        , scene_master_{app, queue}
+        , scene_master_{model}
         , components_to_position_{
                   &left_bar_master_, &resizer_bar_, &scene_master_} {
     set_help("wayverb", "This is the main wayverb app window.");

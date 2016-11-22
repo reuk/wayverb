@@ -3,7 +3,7 @@
 #include "../editable_vector_list_box.h"
 #include "../list_config_item.h"
 
-#include "combined/model/app.h"
+#include "main_model.h"
 
 namespace left_bar {
 namespace receivers {
@@ -16,7 +16,7 @@ namespace receivers {
 
 class master final : public Component {
 public:
-    master(const wayverb::combined::model::app::capsule_presets_t& presets,
+    master(const main_model::capsule_presets_t& presets,
            wayverb::core::geo::box aabb,
            wayverb::combined::model::receivers& receivers);
 

@@ -68,7 +68,7 @@ private:
 class receiver_editor final : public Component, public ComboBox::Listener {
 public:
     receiver_editor(
-            const wayverb::combined::model::app::capsule_presets_t& presets,
+            const main_model::capsule_presets_t& presets,
             wayverb::core::geo::box aabb,
             std::shared_ptr<wayverb::combined::model::receiver> receiver)
             : receiver_{std::move(receiver)}
@@ -121,12 +121,12 @@ private:
     ComboBox combo_box_;
     model::Connector<ComboBox> capsule_presets_connector_{&combo_box_, this};
 
-    wayverb::combined::model::app::capsule_presets_t presets_;
+    main_model::capsule_presets_t presets_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
 
-master::master(const wayverb::combined::model::app::capsule_presets_t& presets,
+master::master(const main_model::capsule_presets_t& presets,
                wayverb::core::geo::box aabb,
                wayverb::combined::model::receivers& receivers)
         : list_box_{receivers,

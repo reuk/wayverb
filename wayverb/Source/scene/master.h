@@ -4,21 +4,13 @@
 
 #include <memory>
 
-namespace wayverb {
-namespace combined {
-namespace model {
-class app;
-}
-}
-}
-
-class engine_message_queue;
+class main_model;
 
 namespace scene {
 
 class master final : public Component, public SettableHelpPanelClient {
 public:
-    master(wayverb::combined::model::app& app, engine_message_queue& queue);
+    master(main_model& model);
     ~master() noexcept;
 
     void resized() override;

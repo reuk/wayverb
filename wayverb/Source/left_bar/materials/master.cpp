@@ -3,6 +3,8 @@
 #include "../../generic_property_component.h"
 #include "../../modal_dialog.h"
 
+#include "utilities/string_builder.h"
+
 #include <iomanip>
 
 namespace left_bar {
@@ -112,7 +114,7 @@ class material_component final : public PropertyPanel,
                                  public ComboBox::Listener {
 public:
     using material_t = wayverb::combined::model::material;
-    using presets_t = wayverb::combined::model::app::material_presets_t;
+    using presets_t = main_model::material_presets_t;
 
     material_component(const presets_t& presets, material_t& model)
             : presets_{presets}

@@ -4,6 +4,8 @@
 
 #include "Application.h"
 
+#include "utilities/string_builder.h"
+
 namespace left_bar {
 namespace waveguide {
 namespace {
