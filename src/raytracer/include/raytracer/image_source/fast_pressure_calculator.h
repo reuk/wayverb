@@ -10,6 +10,7 @@
 #include "utilities/aligned/vector.h"
 #include "utilities/map_to_vector.h"
 
+/// \file fast_pressure_calculator.h
 /// The image source finder is designed just to ascertain whether or not each
 /// 'possible' image-source path is an *actual* image-source path.
 /// Once it's worked this out, it delegates to one of these secondary functions
@@ -64,7 +65,6 @@ auto compute_fast_pressure(const glm::vec3& receiver,
 /// the time domain.
 /// Uses equation 9.22 from the kuttruff book, assuming single-sample
 /// reflection/convolution kernels.
-
 template <typename multichannel_type>
 class fast_pressure_calculator final {
 public:

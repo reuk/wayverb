@@ -16,6 +16,7 @@
 
 #include <cmath>
 
+/// \file canonical.h
 /// The waveguide algorithm in waveguide.h is modular, in that
 /// you can supply different combinations of sources and receivers.
 /// The method below drives the combination deemed to be most approriate for

@@ -5,6 +5,7 @@
 #include "core/callback_accumulator.h"
 #include "core/geo/box.h"
 
+/// \file exact.h
 /// For a cuboid with perfectly reflective walls, the image source solution is
 /// exact and fast to calculate.
 /// Here we implement a fast solver for image sources in a cuboid.

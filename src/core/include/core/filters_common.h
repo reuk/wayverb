@@ -14,16 +14,9 @@
 
 namespace wayverb {
 namespace core {
-
-/// This namespace houses all of the machinery for multiband crossover
-/// filtering.
 namespace filter {
 
 using convolver = frequency_domain::convolver;
-
-///	FIR filter concept:
-///		* implements a method 'filter' which takes two iterators and returns
-///		  a filtered vector of float.
 
 class lopass_windowed_sinc final {
 public:

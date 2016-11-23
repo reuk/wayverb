@@ -2,10 +2,13 @@
 
 #include <cmath>
 
-/// See siltanen2013
+/// \file calibration
+/// Defines level-matching methods for waveguide and raytracer outputs.
+/// See siltanen2013.
 
 namespace wayverb {
 namespace waveguide {
+
 /// Given a source strength, calculate the distance at which the source produces
 /// intensity 1W/m^2.
 template <typename T>

@@ -5,6 +5,12 @@
 
 namespace util {
 
+/// Allows inline transformations on iterators.
+/// When the iterator is dereferenced, it is passed through a unary functor of
+/// some kind, and the returned value is the output of this functor.
+/// Useful for 'pipelining' operations on iterators, or for adapting ranges
+/// when passing them to methods in a way that doesn't require a new range to be
+/// allocated
 template <typename It, typename Mapper>
 class mapping_iterator_adapter final {
 public:
