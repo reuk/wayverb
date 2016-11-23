@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(raytracer_tests)
-
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${DEPENDENCY_INSTALL_PREFIX}/include

@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(COMBINED VERSION 0.1 LANGUAGES CXX)
-
 file(GLOB_RECURSE sources "src/*.cpp")
 file(GLOB_RECURSE public_headers "include/*.h")
 file(GLOB_RECURSE private_headers "src/*.h")

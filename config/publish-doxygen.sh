@@ -13,7 +13,7 @@ git rm -rf .
 cd -
 
 cd build
-cmake .. && cmake --build . --target doc
+cmake -DONLY_BUILD_DOCS=ON .. && cmake --build .
 cd -
 
 cd ${HTML_PATH}

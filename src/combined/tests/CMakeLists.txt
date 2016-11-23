@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(combined_tests)
-
 include_directories(${DEPENDENCY_INSTALL_PREFIX}/include)
 
 set(name combined_tests)
