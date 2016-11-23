@@ -1,6 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
-
-#include_directories(${CMAKE_BINARY_DIR}/include)
+cmake_minimum_required(VERSION 3.3)
 
 add_executable(write_hrtf main.cpp)
 

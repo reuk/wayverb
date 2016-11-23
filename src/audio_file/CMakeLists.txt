@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.3)
 
 file(GLOB_RECURSE sources "src/*.cpp")
 file(GLOB_RECURSE public_headers "include/*.h")

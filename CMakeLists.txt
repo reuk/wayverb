@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.3)
+cmake_policy(VERSION 3.3)
 
 project(WAYVERB VERSION 0.1 LANGUAGES CXX)
 
@@ -16,23 +17,17 @@ if(ONLY_BUILD_DOCS)
             ${CMAKE_CURRENT_BINARY_DIR})
     endif(DOXYGEN_FOUND)
 else()
-    #set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-    #if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json")
-    #    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    #        ${CMAKE_CURRENT_BINARY_DIR}/compile_commands.json
-    #        ${CMAKE_CURRENT_SOURCE_DIR}/compile_commands.json)
-    #endif()
+    include(dependencies.txt)
 
-    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
-
-    set(CMAKE_BUILD_TYPE RelWithDebInfo)
+    set(CMAKE_BUILD_TYPE Release)
 
     set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -ftemplate-depth=1024)
 
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
-    include(dependencies.txt)
+    set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+    set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
     enable_testing()
     add_subdirectory(src)

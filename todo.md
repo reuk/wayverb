@@ -5,10 +5,6 @@ Not convinced that waveguide/raytracer levels are matched properly.
 
 Waveguide growth issue - see: vault model
 
-load/save
-    saving + loading need exception handling
-    loading crashes
-
 important
 =========
 
@@ -22,8 +18,6 @@ Look again at frequency domain test?
 
 app stuff
 ---------
-
-material preset scattering coefficients (?)
 
 Finish adding the help panel info.
     switch to normal tooltips
@@ -41,8 +35,6 @@ Set a bunch of listening tasks.
 
 normal
 ======
-
-Ambisonic polar patterns for microphones.
 
 Fuzzing.
 
