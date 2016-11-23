@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
-cmake_policy(VERSION 3.3)
+cmake_minimum_required(VERSION 3.2)
 
 project(WAYVERB VERSION 0.1 LANGUAGES CXX)
 
@@ -23,8 +22,8 @@ set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -ftemplate-depth=1024)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
+#set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+#set(CMAKE_VISIBILITY_INLINES_HIDDEN ON)
 
 enable_testing()
 add_subdirectory(src)

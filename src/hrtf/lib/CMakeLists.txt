@@ -1,12 +1,8 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.2)
 
-#file(GLOB_RECURSE sources "src/*.cpp")
 file(GLOB_RECURSE public_headers "include/*.h")
 
-add_library(hrtf INTERFACE 
-    #    ${sources} 
-    #    ${public_headers} 
-)
+add_library(hrtf INTERFACE)
 
 target_include_directories(hrtf
     INTERFACE

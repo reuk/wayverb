@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.2)
 
 set(name diffuse_decay)
 file(GLOB_RECURSE sources "*.cpp")
