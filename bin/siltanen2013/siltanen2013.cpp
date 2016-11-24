@@ -1,4 +1,5 @@
 #include "box/img_src.h"
+#include "box/poly.h"
 
 #include "combined/engine.h"
 #include "combined/waveguide_base.h"
@@ -8,8 +9,6 @@
 #include "waveguide/canonical.h"
 #include "waveguide/postprocess.h"
 
-#include "core/attenuator/hrtf.h"
-#include "core/attenuator/microphone.h"
 #include "core/cl/iterator.h"
 #include "core/reverb_time.h"
 
@@ -39,85 +38,6 @@ void write_tuple(It b, It e, const char* prefix, double sample_rate) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct processor {
-    processor() = default;
-    processor(const processor&) = default;
-    processor(processor&&) noexcept = default;
-    processor& operator=(const processor&) = default;
-    processor& operator=(processor&&) noexcept = default;
-    virtual ~processor() = default;
-
-    virtual util::named_value<util::aligned::vector<float>> process(
-            const wayverb::core::attenuator::null& attenuator) const = 0;
-    virtual util::named_value<util::aligned::vector<float>> process(
-            const wayverb::core::attenuator::hrtf& attenuator) const = 0;
-    virtual util::named_value<util::aligned::vector<float>> process(
-            const wayverb::core::attenuator::microphone& attenuator) const = 0;
-};
-
-template <typename Callback>
-class concrete_processor final : public processor {
-public:
-    explicit concrete_processor(Callback callback)
-            : callback_{std::move(callback)} {}
-
-    util::named_value<util::aligned::vector<float>> process(
-            const wayverb::core::attenuator::null& attenuator) const override {
-        return callback_(attenuator);
-    }
-    util::named_value<util::aligned::vector<float>> process(
-            const wayverb::core::attenuator::hrtf& attenuator) const override {
-        return callback_(attenuator);
-    }
-    util::named_value<util::aligned::vector<float>> process(
-            const wayverb::core::attenuator::microphone& attenuator)
-            const override {
-        return callback_(attenuator);
-    }
-
-private:
-    Callback callback_;
-};
-
-template <typename Callback>
-auto make_concrete_processor_ptr(Callback callback) {
-    return std::make_unique<concrete_processor<Callback>>(std::move(callback));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-struct renderer {
-    renderer() = default;
-    renderer(const renderer&) = default;
-    renderer(renderer&&) noexcept = default;
-    renderer& operator=(const renderer&) = default;
-    renderer& operator=(renderer&&) noexcept = default;
-    virtual ~renderer() noexcept = default;
-
-    virtual std::unique_ptr<processor> render() const = 0;
-};
-
-template <typename Callback>
-class concrete_renderer final : public renderer {
-public:
-    explicit concrete_renderer(Callback callback)
-            : callback_{std::move(callback)} {}
-
-    std::unique_ptr<processor> render() const override {
-        return make_concrete_processor_ptr(callback_());
-    }
-
-private:
-    Callback callback_;
-};
-
-template <typename Callback>
-auto make_concrete_renderer_ptr(Callback callback) {
-    return std::make_unique<concrete_renderer<Callback>>(std::move(callback));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 struct max_mag_functor final {
     template <typename T>
     auto operator()(T&& t) const {
@@ -125,7 +45,9 @@ struct max_mag_functor final {
     }
 };
 
-int main(int argc, char** argv) {
+////////////////////////////////////////////////////////////////////////////////
+
+int main(/*int argc, char** argv*/) {
     //  constants //////////////////////////////////////////////////////////////
 
     const auto box =
@@ -140,8 +62,8 @@ int main(int argc, char** argv) {
 
     constexpr auto scattering_surface =
             wayverb::core::surface<wayverb::core::simulation_bands>{
-                    {{0.1, 0.1, 0.11, 0.12, 0.13, 0.14, 0.16, 0.17}},
-                    {{0.1, 0.1, 0.11, 0.12, 0.13, 0.14, 0.16, 0.17}}};
+                    {{0.07, 0.09, 0.11, 0.12, 0.13, 0.14, 0.16, 0.17}},
+                    {{0.07, 0.09, 0.11, 0.12, 0.13, 0.14, 0.16, 0.17}}};
 
     const auto scene_data =
             wayverb::core::geo::get_scene_data(box, scattering_surface);
@@ -155,6 +77,9 @@ int main(int argc, char** argv) {
     const auto max_time = max_element(eyring);
 
     constexpr auto usable_portion = 0.6;
+    constexpr auto waveguide_cutoff =
+            wayverb::waveguide::compute_cutoff_frequency(sample_rate,
+                                                         usable_portion);
 
     constexpr auto volume_factor = 0.1;
 
@@ -178,7 +103,7 @@ int main(int argc, char** argv) {
                                     wayverb::waveguide::
                                             multiple_band_constant_spacing_parameters{
                                                     3,
-                                                    sample_rate,
+                                                    waveguide_cutoff,
                                                     usable_portion})}
                             .run(true);
 
@@ -189,7 +114,7 @@ int main(int argc, char** argv) {
         }));
     }
 
-    if (false) {
+    if (true) {
         //  raytracer //////////////////////////////////////////////////////////
         renderers.emplace_back(make_concrete_renderer_ptr([&] {
             auto input = wayverb::raytracer::canonical(
@@ -201,7 +126,7 @@ int main(int argc, char** argv) {
                     wayverb::raytracer::simulation_parameters{1 << 16, 5},
                     0,
                     true,
-                    [](auto step, auto steps) {});
+                    [](auto /*step*/, auto /*steps*/) {});
             return [&, input = std::move(input) ](const auto& attenuator) {
                 return util::make_named_value(
                         "raytracer",
@@ -256,8 +181,8 @@ int main(int argc, char** argv) {
                     waveguide_params,
                     max_element(eyring_reverb_time(scene_data, 0.0)),
                     true,
-                    [&](auto& queue,
-                        const auto& buffer,
+                    [&](auto& /*queue*/,
+                        const auto& /*buffer*/,
                         auto step,
                         auto steps) { set_progress(pb, step, steps); });
 
@@ -273,20 +198,20 @@ int main(int argc, char** argv) {
         });
     };
 
-    if (false) {
+    if (true) {
         //  single band ////////////////////////////////////////////////////////
         renderers.emplace_back(make_waveguide_renderer(
                 "waveguide.single_band",
-                wayverb::waveguide::single_band_parameters{sample_rate,
+                wayverb::waveguide::single_band_parameters{waveguide_cutoff,
                                                            usable_portion}));
     }
 
-    if (false) {
+    if (true) {
         //  multiple band constant spacing /////////////////////////////////////
         renderers.emplace_back(make_waveguide_renderer(
                 "waveguide.multiple_band.constant_spacing",
                 wayverb::waveguide::multiple_band_constant_spacing_parameters{
-                        3, sample_rate, usable_portion}));
+                        3, waveguide_cutoff, usable_portion}));
     }
 
     const auto rendered = util::map_to_vector(

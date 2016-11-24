@@ -12,11 +12,11 @@ directional_receiver::directional_receiver(
         double sample_rate,
         double ambient_density,
         size_t output_node)
-        : mesh_spacing_(mesh_descriptor.spacing)
-        , sample_rate_(sample_rate)
-        , ambient_density_(ambient_density)
-        , output_node_(output_node)
-        , surrounding_nodes_(compute_neighbors(mesh_descriptor, output_node)) {
+        : mesh_spacing_{mesh_descriptor.spacing}
+        , sample_rate_{sample_rate}
+        , ambient_density_{ambient_density}
+        , output_node_{output_node}
+        , surrounding_nodes_{compute_neighbors(mesh_descriptor, output_node)} {
     for (const auto& i : surrounding_nodes_) {
         if (i == ~cl_uint{0}) {
             throw std::runtime_error(

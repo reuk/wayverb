@@ -63,6 +63,7 @@ constexpr auto to_string(state s) {
 
 //  postprocessing  ////////////////////////////////////////////////////////////
 
+/// This is badly designed. Really, the capsules should be polymorphic.
 class intermediate {
 public:
     intermediate() = default;

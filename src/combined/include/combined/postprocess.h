@@ -83,7 +83,7 @@ auto postprocess(const combined_results<Histogram>& input,
                                                             room_volume,
                                                             environment,
                                                             output_sample_rate);
-
+                                                            
     const auto make_iterator = [](auto it) {
         return util::make_mapping_iterator_adapter(std::move(it),
                                                    max_frequency_functor{});

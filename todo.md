@@ -3,6 +3,30 @@
 ## critical
 
 Not convinced that waveguide/raytracer levels are matched properly.
+    feature matix
+        All different capsules (microphone, hrtf, null)
+        Multiband or singleband (flat, complex filters)
+        A few different rooms
+
+        equal_energy test: inital stochastic energy == raytracer energy
+        siltanen test: image-source modal response == waveguide modal response
+
+            but test does test against 'exact' rather than actual image source,
+            and it seems as though the waveguide level is not matched against
+            everything else.
+
+        therefore the issue may be when converting energies to pressures
+
+        where are levels computed or adjusted?
+            
+            stochastic finder initial level
+                fairly confident this is correct, due to
+                raytracer/tests/equal_energy
+
+            stochastic finder ongoing levels
+
+            waveguide calibration level
+                seems to be correct, at least for siltanen test
 
 Waveguide growth issue - see: vault model
 

@@ -1,20 +1,25 @@
 #pragma once
 
+#include <string>
+
 namespace util {
 
 template <typename T>
 struct named_value final {
-    const char* name;
+    named_value(std::string name, T value)
+            : name{std::move(name)}, value{std::move(value)} {}
+
+    std::string name;
     T value;
 };
 
 template <typename T>
-constexpr auto make_named_value(const char* name, T value) {
-    return named_value<T>{name, std::move(value)};
+auto make_named_value(std::string name, T value) {
+    return named_value<T>{std::move(name), std::move(value)};
 }
 
 template <typename Callback, typename T>
-constexpr auto map(Callback&& callback, const named_value<T>& t) {
+auto map(Callback&& callback, const named_value<T>& t) {
     return make_named_value(t.name, callback(t.value));
 }
 

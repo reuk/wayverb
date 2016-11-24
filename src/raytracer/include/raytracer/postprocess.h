@@ -23,13 +23,13 @@ auto postprocess(const simulation_results<Histogram>& input,
                                                  position,
                                                  environment.speed_of_sound,
                                                  output_sample_rate);
-
+                                                 
     const auto tail = raytracer::stochastic::postprocess(input.stochastic,
                                                          method,
                                                          room_volume,
                                                          environment,
                                                          output_sample_rate);
-
+                                                         
     return core::sum_vectors(head, tail);
 }
 

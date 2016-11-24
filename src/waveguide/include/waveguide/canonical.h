@@ -30,13 +30,15 @@ template <typename Callback>
 std::experimental::optional<band> canonical_impl(
         const core::compute_context& cc,
         const mesh& mesh,
-        double sample_rate,
         double simulation_time,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const core::environment& environment,
         const std::atomic_bool& keep_going,
         Callback&& callback) {
+    const auto sample_rate = compute_sample_rate(mesh.get_descriptor(),
+                                                 environment.speed_of_sound);
+
     const auto compute_mesh_index = [&](const auto& pt) {
         const auto ret = compute_index(mesh.get_descriptor(), pt);
         if (!waveguide::is_inside(
@@ -103,16 +105,14 @@ std::experimental::optional<util::aligned::vector<bandpass_band>> canonical(
         double simulation_time,
         const std::atomic_bool& keep_going,
         PressureCallback&& pressure_callback) {
-    if (auto ret =
-                detail::canonical_impl(cc,
-                                       voxelised.mesh,
-                                       compute_sampling_frequency(sim_params),
-                                       simulation_time,
-                                       source,
-                                       receiver,
-                                       environment,
-                                       keep_going,
-                                       pressure_callback)) {
+    if (auto ret = detail::canonical_impl(cc,
+                                          voxelised.mesh,
+                                          simulation_time,
+                                          source,
+                                          receiver,
+                                          environment,
+                                          keep_going,
+                                          pressure_callback)) {
         return util::aligned::vector<bandpass_band>{bandpass_band{
                 std::move(*ret), util::make_range(0.0, sim_params.cutoff)}};
     }
@@ -153,16 +153,14 @@ std::experimental::optional<util::aligned::vector<bandpass_band>> canonical(
     for (auto band = 0; band != sim_params.bands; ++band) {
         set_flat_coefficients_for_band(voxelised, band);
 
-        if (auto rendered_band = detail::canonical_impl(
-                    cc,
-                    voxelised.mesh,
-                    compute_sampling_frequency(sim_params),
-                    simulation_time,
-                    source,
-                    receiver,
-                    environment,
-                    keep_going,
-                    pressure_callback)) {
+        if (auto rendered_band = detail::canonical_impl(cc,
+                                                        voxelised.mesh,
+                                                        simulation_time,
+                                                        source,
+                                                        receiver,
+                                                        environment,
+                                                        keep_going,
+                                                        pressure_callback)) {
             ret.emplace_back(bandpass_band{
                     std::move(*rendered_band),
                     util::make_range(band_params.edges[band],

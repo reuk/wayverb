@@ -10,6 +10,10 @@ class CommandQueue;
 }  // namespace cl
 
 namespace wayverb {
+namespace core {
+struct environment;
+}  // namespace core
+
 namespace waveguide {
 
 struct mesh_descriptor;
@@ -36,7 +40,7 @@ public:
     size_t get_output_node() const;
 
 private:
-    float mesh_spacing_;
+    double mesh_spacing_;
     double sample_rate_;
     double ambient_density_;
     size_t output_node_;

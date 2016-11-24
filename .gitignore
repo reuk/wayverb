@@ -8,7 +8,7 @@ reference
 */output/
 demo/impulses
 demo/logfile.txt
-docs
+local_docs
 
 config/travisci_rsa
 
@@ -19,6 +19,7 @@ apps/impulse/Builds/MacOSX/Build
 
 *.wav
 *.aiff
+*~.skp
 
 compile_commands.json
 build_log.txt
