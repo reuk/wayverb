@@ -26,15 +26,14 @@ double grid_spacing(double speed_of_sound, double time_step) {
 
 }  // namespace config
 
-util::aligned::vector<float> adjust_sampling_rate(const float* begin,
-                                                  const float* end,
+util::aligned::vector<float> adjust_sampling_rate(const float* data,
+                                                  size_t size,
                                                   double in_sr,
                                                   double out_sr) {
-    const auto input_size = std::distance(begin, end);
-    util::aligned::vector<float> out_signal(out_sr * input_size / in_sr);
-    SRC_DATA sample_rate_info{begin,
+    util::aligned::vector<float> out_signal(out_sr * size / in_sr);
+    SRC_DATA sample_rate_info{data,
                               out_signal.data(),
-                              input_size,
+                              static_cast<long>(size),
                               static_cast<long>(out_signal.size()),
                               0,
                               0,

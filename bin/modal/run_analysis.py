@@ -8,7 +8,7 @@ def main():
     root_dir = '/Users/reuben/development/waveguide/build/bin/siltanen2013'
 
     fnames = [os.path.join(root_dir, i) for i in [
-        #'null.engine.wav',
+        'null.engine.wav',
         'null.img_src.wav',
         'null.waveguide.single_band.wav',
         'null.waveguide.multiple_band.constant_spacing.wav',

@@ -52,10 +52,10 @@ int main(/*int argc, char** argv*/) {
 
     const auto box =
             wayverb::core::geo::box{glm::vec3{0}, glm::vec3{5.56, 3.97, 2.81}};
-    constexpr auto sample_rate = 10000.0;
+    constexpr auto sample_rate = 5000.0;
 
-    constexpr auto source = glm::vec3{2.09, 2.12, 2.12},
-                   receiver = glm::vec3{2.09, 3.08, 0.96};
+    constexpr auto source = glm::vec3{2.09, 2.12, 2.12};
+    constexpr auto receiver = glm::vec3{2.09, 3.08, 0.96};
     constexpr wayverb::core::environment environment{};
     constexpr glm::vec3 pointing{0, 0, 1};
     constexpr glm::vec3 up{0, 1, 0};
@@ -80,6 +80,7 @@ int main(/*int argc, char** argv*/) {
     constexpr auto waveguide_cutoff =
             wayverb::waveguide::compute_cutoff_frequency(sample_rate,
                                                          usable_portion);
+    std::cout << "waveguide cutoff: " << waveguide_cutoff << "Hz\n";
 
     constexpr auto volume_factor = 0.1;
 
@@ -100,21 +101,20 @@ int main(/*int argc, char** argv*/) {
                             wayverb::raytracer::simulation_parameters{1 << 16,
                                                                       4},
                             wayverb::combined::make_waveguide_ptr(
-                                    wayverb::waveguide::
-                                            multiple_band_constant_spacing_parameters{
-                                                    3,
+                                    wayverb::waveguide::single_band_parameters{
                                                     waveguide_cutoff,
                                                     usable_portion})}
                             .run(true);
 
             return [&, input = std::move(input) ](const auto& attenuator) {
-                return util::make_named_value(
-                        "engine", input->postprocess(attenuator, sample_rate));
+                auto low = util::make_named_value("engine_low", input->postprocess(attenuator, sample_rate));
+                auto high = util::make_named_value("engine_high", input->postprocess(attenuator, 44100));
+                return high;
             };
         }));
     }
 
-    if (true) {
+    if (false) {
         //  raytracer //////////////////////////////////////////////////////////
         renderers.emplace_back(make_concrete_renderer_ptr([&] {
             auto input = wayverb::raytracer::canonical(
@@ -140,7 +140,7 @@ int main(/*int argc, char** argv*/) {
         }));
     }
 
-    if (true) {
+    if (false) {
         //  image source ///////////////////////////////////////////////////////
         renderers.emplace_back(make_concrete_renderer_ptr([&] {
             auto input = run_exact_img_src(
@@ -198,7 +198,7 @@ int main(/*int argc, char** argv*/) {
         });
     };
 
-    if (true) {
+    if (false) {
         //  single band ////////////////////////////////////////////////////////
         renderers.emplace_back(make_waveguide_renderer(
                 "waveguide.single_band",
@@ -206,7 +206,7 @@ int main(/*int argc, char** argv*/) {
                                                            usable_portion}));
     }
 
-    if (true) {
+    if (false) {
         //  multiple band constant spacing /////////////////////////////////////
         renderers.emplace_back(make_waveguide_renderer(
                 "waveguide.multiple_band.constant_spacing",

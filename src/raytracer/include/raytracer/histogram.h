@@ -60,11 +60,8 @@ void resize_if_necessary(std::vector<T, Alloc>& t, size_t new_size) {
 }
 
 template <typename Ret, typename It, typename T>
-void incremental_histogram(Ret& ret,
-                           It b,
-                           It e,
-                           double sample_rate,
-                           const T& callback) {
+void incremental_histogram(
+        Ret& ret, It b, It e, double sample_rate, const T& callback) {
     if (std::distance(b, e)) {
         const auto make_time_iterator = [](auto it) {
             return util::make_mapping_iterator_adapter(std::move(it),
@@ -73,7 +70,8 @@ void incremental_histogram(Ret& ret,
         const auto max_time_in_input =
                 *std::max_element(make_time_iterator(b), make_time_iterator(e));
 
-        resize_if_necessary(ret, std::floor(max_time_in_input * sample_rate) + 1);
+        resize_if_necessary(ret,
+                            std::floor(max_time_in_input * sample_rate) + 1);
 
         for (; b != e; ++b) {
             callback(*b, sample_rate, ret);
@@ -82,8 +80,7 @@ void incremental_histogram(Ret& ret,
 }
 
 template <typename It, typename T>
-auto histogram(
-        It b, It e, double sample_rate, const T& callback) {
+auto histogram(It b, It e, double sample_rate, const T& callback) {
     using value_type = decltype(volume(*b));
     util::aligned::vector<value_type> ret{};
     incremental_histogram(ret, b, e, sample_rate, callback);
@@ -91,17 +88,13 @@ auto histogram(
 }
 
 template <typename T, typename U, typename Alloc>
-void dirac_sum(const T& item,
-               double sample_rate,
-               std::vector<U, Alloc>& ret) {
+void dirac_sum(const T& item, double sample_rate, std::vector<U, Alloc>& ret) {
     ret[time(item) * sample_rate] += volume(item);
 }
 
 struct dirac_sum_functor final {
     template <typename T, typename Ret>
-    void operator()(const T& item,
-                    double sample_rate,
-                    Ret& ret) const {
+    void operator()(const T& item, double sample_rate, Ret& ret) const {
         dirac_sum(item, sample_rate, ret);
     }
 };
@@ -109,9 +102,7 @@ struct dirac_sum_functor final {
 /// See fu2015 2.2.2 'Discrete form of the impulse response'
 struct sinc_sum_functor final {
     template <typename T, typename Ret>
-    void operator()(const T& item,
-                    double sample_rate,
-                    Ret& ret) const {
+    void operator()(const T& item, double sample_rate, Ret& ret) const {
         constexpr auto width = 400;  //  Impulse width in samples.
 
         const auto item_time = time(item);
@@ -126,16 +117,16 @@ struct sinc_sum_functor final {
         const auto end_samp =
                 std::min(static_cast<ptrdiff_t>(ret.size()), ideal_end);
 
-        const auto begin_it = ret.begin() + begin_samp;
-        const auto end_it = ret.begin() + end_samp;
-
-        for (auto i = begin_it; i != end_it; ++i) {
-            const auto this_time = std::distance(ret.begin(), i) / sample_rate;
-            const auto relative_time = this_time - item_time;
-            const auto angle = 2 * M_PI * relative_time;
-            const auto envelope = 0.5 * (1 + std::cos(angle / width));
-            const auto filt = core::sinc(relative_time * sample_rate);
-            *i += volume(item) * envelope * filt;
+        for (auto it = ret.begin() + begin_samp,
+                  end_it = ret.begin() + end_samp;
+             it != end_it;
+             ++it) {
+            const auto this_sample = std::distance(ret.begin(), it);
+            const auto relative_sample = this_sample - centre_sample;
+            const auto envelope =
+                    0.5 * (1 + std::cos(2 * M_PI * relative_sample / width));
+            const auto filt = core::sinc(relative_sample);
+            *it += volume(item) * envelope * filt;
         }
     }
 };

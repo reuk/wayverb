@@ -14,8 +14,8 @@ double grid_spacing(double speed_of_sound, double time_step);
 
 }  // namespace config
 
-util::aligned::vector<float> adjust_sampling_rate(const float* begin,
-                                                  const float* end,
+util::aligned::vector<float> adjust_sampling_rate(const float* data,
+                                                  size_t size,
                                                   double in_sr,
                                                   double out_sr);
 

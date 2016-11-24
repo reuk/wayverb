@@ -40,6 +40,26 @@
  *  Hypothesis:
  *  Calibration factor doesn't decrease fast enough with frequency
  *      Perhaps as a result of using pressure rather than intensity?
+ *
+ *******************************************************************************
+ *
+ *  So, siltanen test behaves properly regardless of sample rate.
+ *  Issue is elsewhere?
+ *
+ *  The problem seems to be during sample-rate conversion.
+ *  i.e. if output sample rate == waveguide sample rate, everything's fine.
+ *  If not, things get scary.
+ *
+ *  Things definitely look pretty much the same after cutoff filtering, so the
+ *  problem isn't there.
+ *
+ *  Waveguide result magnitude is pretty much the same regardless of output 
+ *  sample rate.
+ *
+ *  Raytracer magnitude is lower at high sample rates: 2.9 vs 3.4
+ *
+ *  Possibly some nasty/wrong stuff happening in sinc_sum_functor.
+ *  Looks like enveloping is wrong (maybe).
  */
 
 auto load_scene(const std::string& name) {

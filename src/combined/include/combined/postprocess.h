@@ -8,6 +8,8 @@
 
 #include "core/sum_ranges.h"
 
+#include "audio_file/audio_file.h"
+
 namespace wayverb {
 namespace combined {
 
@@ -49,9 +51,10 @@ auto crossover_filter(LoIt b_lo,
         return ret;
     };
 
-    return core::sum_vectors(
-            run_filter(b_lo, e_lo, frequency_domain::compute_lopass_magnitude),
-            run_filter(b_hi, e_hi, frequency_domain::compute_hipass_magnitude));
+    const auto lo = run_filter(b_lo, e_lo, frequency_domain::compute_lopass_magnitude);
+    const auto hi = run_filter(b_hi, e_hi, frequency_domain::compute_hipass_magnitude);
+
+    return core::sum_vectors(lo, hi);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -65,8 +65,9 @@ auto postprocess(const band& band,
             make_attenuate_mapper(method, acoustic_impedance));
     const auto ret =
             postprocess(begin(attenuated), end(attenuated), band.sample_rate);
+
     return waveguide::adjust_sampling_rate(ret.data(),
-                                           ret.data() + ret.size(),
+                                           ret.size(),
                                            band.sample_rate,
                                            output_sample_rate);
 }
@@ -117,7 +118,7 @@ auto postprocess(const util::aligned::vector<bandpass_band>& results,
         filt.run(b, e, b, [&](auto cplx, auto freq) {
             return cplx * static_cast<float>(
                                   frequency_domain::compute_hipass_magnitude(
-                                          freq, dc_block, 1.0, 0));
+                                          freq, dc_block, 0.9, 0));
         });
     }
 
