@@ -6,6 +6,7 @@
 #include "waveguide/config.h"
 #include "waveguide/postprocess.h"
 
+#include "core/sinc.h"
 #include "core/sum_ranges.h"
 
 #include "audio_file/audio_file.h"
@@ -71,6 +72,7 @@ struct max_frequency_functor final {
 template <typename Histogram, typename Method>
 auto postprocess(const combined_results<Histogram>& input,
                  const Method& method,
+                 const glm::vec3& source_position,
                  const glm::vec3& receiver_position,
                  double room_volume,
                  const core::environment& environment,
@@ -102,12 +104,35 @@ auto postprocess(const combined_results<Histogram>& input,
                                           make_iterator(end(input.waveguide))) /
                         output_sample_rate;
     const auto width = 0.2;  //  Wider = more natural-sounding
-    return crossover_filter(begin(waveguide_processed),
-                            end(waveguide_processed),
-                            begin(raytracer_processed),
-                            end(raytracer_processed),
-                            cutoff,
-                            width);
+    auto filtered = crossover_filter(begin(waveguide_processed),
+                                     end(waveguide_processed),
+                                     begin(raytracer_processed),
+                                     end(raytracer_processed),
+                                     cutoff,
+                                     width);
+
+    //  Just in case the start has a bit of a dc offset, we do a sneaky window.
+    const auto window_length =
+            std::min(filtered.size(),
+                     static_cast<size_t>(std::floor(
+                             distance(source_position, receiver_position) *
+                             output_sample_rate / environment.speed_of_sound)));
+
+    if (window_length == 0) {
+        return filtered;
+    }
+
+    const auto window = core::left_hanning(std::floor(window_length));
+
+    //  Multiply together the window and filtered signal.
+    std::transform(
+            begin(window),
+            end(window),
+            begin(filtered),
+            begin(filtered),
+            [](auto envelope, auto signal) { return envelope * signal; });
+
+    return filtered;
 }
 
 }  // namespace combined

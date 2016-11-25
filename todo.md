@@ -1,16 +1,9 @@
 # TODO
 
-## critical
-
-Waveguide growth issue - see: vault model
-
 ## important
 
 Sanity checks - do big echo-y rooms sound big and echo-y? Do small rooms sound
 small? Can I get the correct direct/reflected ratios for near and far sources?
-
-Put a really short hanning window on the beginning of output signals to hide
-dc drift? QUALITY ENGINEERING
 
 Look again at frequency domain test?
 

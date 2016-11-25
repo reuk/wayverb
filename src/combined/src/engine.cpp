@@ -21,10 +21,12 @@ template <typename Histogram>
 class intermediate_impl final : public intermediate {
 public:
     intermediate_impl(combined_results<Histogram> to_process,
+                      const glm::vec3& source_position,
                       const glm::vec3& receiver_position,
                       double room_volume,
                       const core::environment& environment)
             : to_process_{std::move(to_process)}
+            , source_position_{source_position}
             , receiver_position_{receiver_position}
             , room_volume_{room_volume}
             , environment_{environment} {}
@@ -53,6 +55,7 @@ private:
                           double output_sample_rate) const {
         return wayverb::combined::postprocess(to_process_,
                                               attenuator,
+                                              source_position_,
                                               receiver_position_,
                                               room_volume_,
                                               environment_,
@@ -60,6 +63,7 @@ private:
     }
 
     combined_results<Histogram> to_process_;
+    glm::vec3 source_position_;
     glm::vec3 receiver_position_;
     double room_volume_;
     core::environment environment_;
@@ -68,11 +72,15 @@ private:
 
 template <typename Histogram>
 auto make_intermediate_impl_ptr(combined_results<Histogram> to_process,
+                                const glm::vec3& source_position,
                                 const glm::vec3& receiver_position,
                                 double room_volume,
                                 const core::environment& environment) {
-    return std::make_unique<intermediate_impl<Histogram>>(
-            std::move(to_process), receiver_position, room_volume, environment);
+    return std::make_unique<intermediate_impl<Histogram>>(std::move(to_process),
+                                                          source_position,
+                                                          receiver_position,
+                                                          room_volume,
+                                                          environment);
 }
 
 }  // namespace
@@ -172,6 +180,7 @@ public:
         return make_intermediate_impl_ptr(
                 make_combined_results(std::move(raytracer_output->aural),
                                       std::move(*waveguide_output)),
+                source_,
                 receiver_,
                 room_volume_,
                 environment_);

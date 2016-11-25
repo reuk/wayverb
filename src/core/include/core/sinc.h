@@ -61,12 +61,22 @@ T hanning_point(double f) {
     return 0.5 - 0.5 * cos(2 * M_PI * f);
 }
 
-/// Generate the right half of a hanning window
+/// Generate the right half of a hanning window.
 template <typename T = float>
-util::aligned::vector<T> right_hanning(int length) {
+util::aligned::vector<T> right_hanning(size_t length) {
     util::aligned::vector<T> ret(length);
-    for (auto i = 0; i != length; ++i) {
+    for (auto i = 0u; i != length; ++i) {
         ret[i] = hanning_point(0.5 + (i / (2 * (length - 1.0))));
+    }
+    return ret;
+}
+
+/// Generate the left half of a hanning window.
+template <typename T = float>
+util::aligned::vector<T> left_hanning(size_t length) {
+    util::aligned::vector<T> ret(length);
+    for (auto i = 0u; i != length; ++i) {
+        ret[i] = hanning_point(i / (2 * (length - 1.0)));
     }
     return ret;
 }
