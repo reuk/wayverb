@@ -20,48 +20,6 @@
 
 #include <iostream>
 
-/*  
- *  If this doesn't match the results I'm getting from the siltanen2013 test,
- *  then that must mean there's something wrong in the engine, that isn't
- *  present in the siltanen test - the image-source results are different
- *  somehow, I guess.
- *
- *  Looks like results might get better-looking depending on waveguide sample
- *  rate, where higher sample rates give more evenly-matched results.
- *
- *  Maybe there's something wrong with the way in which the calibration factor
- *  is calculated (seeing as this depends on grid spacing, which depends on 
- *  sample rate).
- *
- *  Observations:
- *  Waveguide level is too high at low frequencies, large spacings
- *  Calibration factor is higher for small spacings, as expected
- *
- *  Hypothesis:
- *  Calibration factor doesn't decrease fast enough with frequency
- *      Perhaps as a result of using pressure rather than intensity?
- *
- *******************************************************************************
- *
- *  So, siltanen test behaves properly regardless of sample rate.
- *  Issue is elsewhere?
- *
- *  The problem seems to be during sample-rate conversion.
- *  i.e. if output sample rate == waveguide sample rate, everything's fine.
- *  If not, things get scary.
- *
- *  Things definitely look pretty much the same after cutoff filtering, so the
- *  problem isn't there.
- *
- *  Waveguide result magnitude is pretty much the same regardless of output 
- *  sample rate.
- *
- *  Raytracer magnitude is lower at high sample rates: 2.9 vs 3.4
- *
- *  Possibly some nasty/wrong stuff happening in sinc_sum_functor.
- *  Looks like enveloping is wrong (maybe).
- */
-
 auto load_scene(const std::string& name) {
     //  Attempt to load from file path.
     wayverb::core::scene_data_loader loader{name};
@@ -101,7 +59,7 @@ int main(/*int argc, char** argv*/) {
         const auto scene_data =
                 wayverb::core::geo::get_scene_data(box, surface);
 
-        //const auto aabb_centre = centre(
+        // const auto aabb_centre = centre(
         //        wayverb::core::geo::compute_aabb(scene_data.get_vertices()));
 
         constexpr auto source = glm::vec3{2.09, 2.12, 2.12};

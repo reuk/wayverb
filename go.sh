@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export CL_LOG_ERRORS=stdout
-#export GTEST_FILTER="*equal_energy*"
+#export GTEST_FILTER="*sample_rate_conversion*"
 #export GTEST_FILTER="*app_model*:*round_trip*"
 
 if ./build.sh ; then
@@ -31,8 +31,8 @@ cd build
 #cd bin/diffuse_decay && ./diffuse_decay
 
 #cd bin/southern2011 && ./southern2011
-cd bin/siltanen2013 && ./siltanen2013
-#cd bin/level_match && ./level_match
+#cd bin/siltanen2013 && ./siltanen2013
+cd bin/level_match && ./level_match
 
 #cd ../bin/boundary_test && ./run_and_graph.sh
 

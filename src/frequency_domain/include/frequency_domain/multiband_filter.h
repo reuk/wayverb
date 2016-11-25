@@ -80,8 +80,8 @@ auto multiband_filter(It b,
 
     std::array<double, bands> normalized_rms{};
     for (auto i = 0; i != bands; ++i) {
-        normalized_rms[i] =
-                std::sqrt(summed_squared[i] / integrated_envelopes[i]);
+        normalized_rms[i] = integrated_envelopes[i] ? 
+                std::sqrt(summed_squared[i] / integrated_envelopes[i]) : 0;
     }
 
     return normalized_rms;

@@ -51,8 +51,10 @@ auto crossover_filter(LoIt b_lo,
         return ret;
     };
 
-    const auto lo = run_filter(b_lo, e_lo, frequency_domain::compute_lopass_magnitude);
-    const auto hi = run_filter(b_hi, e_hi, frequency_domain::compute_hipass_magnitude);
+    const auto lo =
+            run_filter(b_lo, e_lo, frequency_domain::compute_lopass_magnitude);
+    const auto hi =
+            run_filter(b_hi, e_hi, frequency_domain::compute_hipass_magnitude);
 
     return core::sum_vectors(lo, hi);
 }
@@ -65,6 +67,23 @@ struct max_frequency_functor final {
         return t.valid_hz.get_max();
     }
 };
+
+template <typename T>
+void scale_and_write(double scale,
+                     const char* fname,
+                     const T& data,
+                     double sample_rate) {
+    auto copy{data};
+    for (auto& i : copy) {
+        i *= scale;
+    }
+
+    audio_file::write(fname,
+                      copy,
+                      sample_rate,
+                      audio_file::format::wav,
+                      audio_file::bit_depth::pcm16);
+}
 
 template <typename Histogram, typename Method>
 auto postprocess(const combined_results<Histogram>& input,
@@ -80,13 +99,27 @@ auto postprocess(const combined_results<Histogram>& input,
                                    environment.acoustic_impedance,
                                    output_sample_rate);
 
+    const auto scale = 0.1;
+
+    scale_and_write(scale,
+                    util::build_string("waveguide.", output_sample_rate, ".wav")
+                            .c_str(),
+                    waveguide_processed,
+                    output_sample_rate);
+
     const auto raytracer_processed = raytracer::postprocess(input.raytracer,
                                                             method,
                                                             receiver_position,
                                                             room_volume,
                                                             environment,
                                                             output_sample_rate);
-                                                            
+
+    scale_and_write(scale,
+                    util::build_string("raytracer.", output_sample_rate, ".wav")
+                            .c_str(),
+                    raytracer_processed,
+                    output_sample_rate);
+
     const auto make_iterator = [](auto it) {
         return util::make_mapping_iterator_adapter(std::move(it),
                                                    max_frequency_functor{});
@@ -96,10 +129,9 @@ auto postprocess(const combined_results<Histogram>& input,
         return raytracer_processed;
     }
 
-    const auto cutoff =
-            *std::max_element(make_iterator(begin(input.waveguide)),
-                              make_iterator(end(input.waveguide))) /
-            output_sample_rate;
+    const auto cutoff = *std::max_element(make_iterator(begin(input.waveguide)),
+                                          make_iterator(end(input.waveguide))) /
+                        output_sample_rate;
     const auto width = 0.2;  //  Wider = more natural-sounding
     return crossover_filter(begin(waveguide_processed),
                             end(waveguide_processed),

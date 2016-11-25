@@ -30,7 +30,12 @@ util::aligned::vector<float> adjust_sampling_rate(const float* data,
                                                   size_t size,
                                                   double in_sr,
                                                   double out_sr) {
-    util::aligned::vector<float> out_signal(out_sr * size / in_sr);
+    if (!(in_sr && out_sr)) {
+        throw std::runtime_error{
+                "Sample rate of 0 gives few hints about how to proceed."};
+    }
+    const auto ratio = out_sr / in_sr;
+    util::aligned::vector<float> out_signal(ratio * size);
     SRC_DATA sample_rate_info{data,
                               out_signal.data(),
                               static_cast<long>(size),
@@ -40,6 +45,13 @@ util::aligned::vector<float> adjust_sampling_rate(const float* data,
                               0,
                               out_sr / in_sr};
     src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
+
+    //  Correct output level.
+    const auto volume_scale = 1 / ratio;
+    for (auto& i : out_signal) {
+        i *= volume_scale;
+    }
+
     return out_signal;
 }
 

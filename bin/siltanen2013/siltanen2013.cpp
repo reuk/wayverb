@@ -107,9 +107,7 @@ int main(/*int argc, char** argv*/) {
                             .run(true);
 
             return [&, input = std::move(input) ](const auto& attenuator) {
-                auto low = util::make_named_value("engine_low", input->postprocess(attenuator, sample_rate));
-                auto high = util::make_named_value("engine_high", input->postprocess(attenuator, 44100));
-                return high;
+                return util::make_named_value("engine", input->postprocess(attenuator, sample_rate));
             };
         }));
     }
@@ -257,12 +255,12 @@ int main(/*int argc, char** argv*/) {
             },
 
             std::make_tuple(
-                    std::make_tuple("null", wayverb::core::attenuator::null{}),
+                    std::make_tuple("null", wayverb::core::attenuator::null{})/*,
                     std::make_tuple(
                             "omnidirectional",
                             wayverb::core::attenuator::microphone{
                                     wayverb::core::orientation{pointing},
-                                    0.0f}) /*,
+                                    0.0f}),
 std::make_tuple("cardioid",
 wayverb::core::attenuator::microphone{pointing, 0.5f}),
 std::make_tuple("bidirectional",
