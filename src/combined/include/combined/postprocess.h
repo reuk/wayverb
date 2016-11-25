@@ -68,23 +68,6 @@ struct max_frequency_functor final {
     }
 };
 
-template <typename T>
-void scale_and_write(double scale,
-                     const char* fname,
-                     const T& data,
-                     double sample_rate) {
-    auto copy{data};
-    for (auto& i : copy) {
-        i *= scale;
-    }
-
-    audio_file::write(fname,
-                      copy,
-                      sample_rate,
-                      audio_file::format::wav,
-                      audio_file::bit_depth::pcm16);
-}
-
 template <typename Histogram, typename Method>
 auto postprocess(const combined_results<Histogram>& input,
                  const Method& method,
@@ -99,26 +82,12 @@ auto postprocess(const combined_results<Histogram>& input,
                                    environment.acoustic_impedance,
                                    output_sample_rate);
 
-    const auto scale = 0.1;
-
-    scale_and_write(scale,
-                    util::build_string("waveguide.", output_sample_rate, ".wav")
-                            .c_str(),
-                    waveguide_processed,
-                    output_sample_rate);
-
     const auto raytracer_processed = raytracer::postprocess(input.raytracer,
                                                             method,
                                                             receiver_position,
                                                             room_volume,
                                                             environment,
                                                             output_sample_rate);
-
-    scale_and_write(scale,
-                    util::build_string("raytracer.", output_sample_rate, ".wav")
-                            .c_str(),
-                    raytracer_processed,
-                    output_sample_rate);
 
     const auto make_iterator = [](auto it) {
         return util::make_mapping_iterator_adapter(std::move(it),

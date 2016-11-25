@@ -51,7 +51,8 @@ std::string project::compute_config_path(const std::string& root) {
     return root + '/' + config_name;
 }
 
-bool project::is_project_file(const std::string& fpath) {
+bool project::is_project_file(const std::string& fpath) {5
+t
     return std::string{std::find_if(crbegin(fpath),
                                     crend(fpath),
                                     [](auto i) { return i == '.'; })

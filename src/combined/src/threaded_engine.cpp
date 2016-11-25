@@ -1,5 +1,6 @@
 #include "combined/threaded_engine.h"
 #include "combined/forwarding_call.h"
+#include "combined/validate_placements.h"
 #include "combined/waveguide_base.h"
 
 #include "waveguide/config.h"
@@ -84,6 +85,7 @@ void complete_engine::do_run(core::compute_context compute_context,
         is_running_ = true;
         keep_going_ = true;
 
+        //  Send the "IT HAS BEGUN" message.
         begun_();
 
         constexpr core::environment environment{};
@@ -91,25 +93,28 @@ void complete_engine::do_run(core::compute_context compute_context,
         //  First, we check that all the sources and receivers are valid, to
         //  avoid doing useless work.
 
-        {
-            //  Check that no receiver is too close to any source.
+        const auto make_position_extractor_iterator = [](auto it) {
+            return util::make_mapping_iterator_adapter(
+                    std::move(it),
+                    [](const auto& i) { return i.item()->get_position(); });
+        };
 
-            const auto waveguide_sr =
-                    compute_sampling_frequency(*persistent.waveguide().item());
-            const float mesh_spacing = waveguide::config::grid_spacing(
-                    environment.speed_of_sound, 1 / waveguide_sr);
-
-            for (const auto& source : *persistent.sources().item()) {
-                for (const auto& receiver : *persistent.receivers().item()) {
-                    if (distance(source.item()->get_position(),
-                                 receiver.item()->get_position()) <=
-                        mesh_spacing) {
-                        throw std::runtime_error{
-                                "Placing sources and receivers too close "
-                                "together will produce inaccurate results."};
-                    }
-                }
-            }
+        if (!is_pairwise_distance_acceptable(
+                    make_position_extractor_iterator(
+                            std::begin(*persistent.sources())),
+                    make_position_extractor_iterator(
+                            std::end(*persistent.sources())),
+                    make_position_extractor_iterator(
+                            std::begin(*persistent.receivers())),
+                    make_position_extractor_iterator(
+                            std::end(*persistent.receivers())),
+                    waveguide::config::grid_spacing(
+                            environment.speed_of_sound,
+                            1 / compute_sampling_frequency(
+                                        *persistent.waveguide())))) {
+            throw std::runtime_error{
+                    "Placing sources and receivers too close "
+                    "together will produce inaccurate results."};
         }
 
         {
@@ -117,16 +122,20 @@ void complete_engine::do_run(core::compute_context compute_context,
             const auto voxelised =
                     core::make_voxelised_scene_data(scene_data, 5, 0.1f);
 
-            for (const auto& source : *persistent.sources().item()) {
-                if (!inside(voxelised, source.item()->get_position())) {
-                    throw std::runtime_error{"Source is outside mesh."};
-                }
+            if (!are_all_inside(make_position_extractor_iterator(
+                                        std::begin(*persistent.sources())),
+                                make_position_extractor_iterator(
+                                        std::end(*persistent.sources())),
+                                voxelised)) {
+                throw std::runtime_error{"Source is outside mesh."};
             }
 
-            for (const auto& receiver : *persistent.receivers().item()) {
-                if (!inside(voxelised, receiver.item()->get_position())) {
-                    throw std::runtime_error{"Receiver is outside mesh."};
-                }
+            if (!are_all_inside(make_position_extractor_iterator(
+                                        std::begin(*persistent.receivers())),
+                                make_position_extractor_iterator(
+                                        std::end(*persistent.receivers())),
+                                voxelised)) {
+                throw std::runtime_error{"Receiver is outside mesh."};
             }
         }
 

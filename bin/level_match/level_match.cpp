@@ -15,6 +15,7 @@
 #include "core/scene_data_loader.h"
 
 #include "utilities/string_builder.h"
+#include "utilities/progress_bar.h"
 
 #include "audio_file/audio_file.h"
 
@@ -38,40 +39,40 @@ auto load_scene(const std::string& name) {
                     wayverb::core::surface<wayverb::core::simulation_bands>{}));
 }
 
-int main(/*int argc, char** argv*/) {
+int main(int argc, char** argv) {
     try {
         constexpr auto surface =
                 wayverb::core::surface<wayverb::core::simulation_bands>{
                         {{0.07, 0.09, 0.11, 0.12, 0.13, 0.14, 0.16, 0.17}},
                         {{0.07, 0.09, 0.11, 0.12, 0.13, 0.14, 0.16, 0.17}}};
 
-        /*
         if (argc != 2) {
             throw std::runtime_error{"Expected a scene file."};
         }
 
         auto scene_data = load_scene(argv[1]);
         scene_data.set_surfaces(surface);
-        */
 
-        const auto box = wayverb::core::geo::box{glm::vec3{0},
-                                                 glm::vec3{5.56, 3.97, 2.81}};
-        const auto scene_data =
-                wayverb::core::geo::get_scene_data(box, surface);
+        // const auto box = wayverb::core::geo::box{glm::vec3{0},
+        //                                         glm::vec3{5.56, 3.97, 2.81}};
+        // const auto scene_data =
+        //        wayverb::core::geo::get_scene_data(box, surface);
 
-        // const auto aabb_centre = centre(
-        //        wayverb::core::geo::compute_aabb(scene_data.get_vertices()));
+        const auto aabb_centre = centre(
+                wayverb::core::geo::compute_aabb(scene_data.get_vertices()));
 
-        constexpr auto source = glm::vec3{2.09, 2.12, 2.12};
-        constexpr auto receiver = glm::vec3{2.09, 3.08, 0.96};
+        const auto source = aabb_centre + glm::vec3{0, 0, 0.2};
+        const auto receiver = aabb_centre + glm::vec3{0, 0, -0.2};
 
         const auto rays = 1 << 16;
         const auto img_src_order = 4;
 
-        const auto cutoff = 2000;
+        const auto cutoff = 1000;
         const auto usable_portion = 0.6;
 
         const auto output_sample_rate = 44100.0;
+
+        const auto params = wayverb::waveguide::single_band_parameters{cutoff, usable_portion};
 
         //  Set up simulation.
         wayverb::combined::engine engine{
@@ -81,10 +82,14 @@ int main(/*int argc, char** argv*/) {
                 receiver,
                 wayverb::core::environment{},
                 wayverb::raytracer::simulation_parameters{rays, img_src_order},
-                wayverb::combined::make_waveguide_ptr(
-                        wayverb::waveguide::
-                                multiple_band_constant_spacing_parameters{
-                                        3, cutoff, usable_portion})};
+                wayverb::combined::make_waveguide_ptr(params)};
+
+        //  When the engine changes, print a nice progress bar.
+
+        util::progress_bar pb{std::cout};
+        engine.connect_engine_state_changed([&](auto state, auto progress) {
+            set_progress(pb, progress);
+        });
 
         //  Run simulation.
         const auto intermediate = engine.run(true);
