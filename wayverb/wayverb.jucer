@@ -1,196 +1,186 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="Wayx2u" name="wayverb" projectType="guiapp" version="1.0.0"
-              bundleIdentifier="com.yourcompany.wayverb" includeBinaryInAppConfig="1"
+<JUCERPROJECT id="IqmNqo" name="wayverb" projectType="guiapp" version="0.0.1"
+              bundleIdentifier="com.reubenthomas.wayverb" includeBinaryInAppConfig="1"
               jucerVersion="4.3.0">
-  <MAINGROUP id="aLrqtw" name="wayverb">
-    <GROUP id="{7B584E1B-2D8F-4FAF-2BC9-A18BF95B12BA}" name="Source">
-      <GROUP id="{1AA0A1DE-8B1B-9F90-FACD-F8DAB10973BD}" name="3d_objects">
-        <FILE id="oA1TWY" name="AxesObject.h" compile="0" resource="0" file="Source/3d_objects/AxesObject.h"/>
-        <FILE id="GLJMXc" name="BasicDrawableObject.cpp" compile="1" resource="0"
+  <MAINGROUP id="Vfshv9" name="wayverb">
+    <GROUP id="{F02896B1-0EFA-FBE7-0EF5-F52CAC50990D}" name="Source">
+      <GROUP id="{08704082-63B0-3E04-08E7-C14D1FE43E87}" name="3d_objects">
+        <FILE id="JmAtsS" name="AxesObject.h" compile="0" resource="0" file="Source/3d_objects/AxesObject.h"/>
+        <FILE id="GCrYDN" name="BasicDrawableObject.cpp" compile="1" resource="0"
               file="Source/3d_objects/BasicDrawableObject.cpp"/>
-        <FILE id="O25lSq" name="BasicDrawableObject.h" compile="0" resource="0"
+        <FILE id="UsvrGF" name="BasicDrawableObject.h" compile="0" resource="0"
               file="Source/3d_objects/BasicDrawableObject.h"/>
-        <FILE id="mdvQie" name="BoxObject.h" compile="0" resource="0" file="Source/3d_objects/BoxObject.h"/>
-        <FILE id="jmXSFs" name="LitSceneShader.cpp" compile="1" resource="0"
+        <FILE id="v19tB9" name="BoxObject.h" compile="0" resource="0" file="Source/3d_objects/BoxObject.h"/>
+        <FILE id="TkCKuS" name="LitSceneShader.cpp" compile="1" resource="0"
               file="Source/3d_objects/LitSceneShader.cpp"/>
-        <FILE id="kr3Gp8" name="LitSceneShader.h" compile="0" resource="0"
+        <FILE id="cKQjxT" name="LitSceneShader.h" compile="0" resource="0"
               file="Source/3d_objects/LitSceneShader.h"/>
-        <FILE id="B4U0SM" name="mesh_object.cpp" compile="1" resource="0" file="Source/3d_objects/mesh_object.cpp"/>
-        <FILE id="Er0uLo" name="mesh_object.h" compile="0" resource="0" file="Source/3d_objects/mesh_object.h"/>
-        <FILE id="ZXjfJY" name="multi_material_object.cpp" compile="1" resource="0"
+        <FILE id="ku6JSD" name="mesh_object.cpp" compile="1" resource="0" file="Source/3d_objects/mesh_object.cpp"/>
+        <FILE id="Tymq2N" name="mesh_object.h" compile="0" resource="0" file="Source/3d_objects/mesh_object.h"/>
+        <FILE id="Ker0Ns" name="multi_material_object.cpp" compile="1" resource="0"
               file="Source/3d_objects/multi_material_object.cpp"/>
-        <FILE id="s7aqEq" name="multi_material_object.h" compile="0" resource="0"
+        <FILE id="OB2ie3" name="multi_material_object.h" compile="0" resource="0"
               file="Source/3d_objects/multi_material_object.h"/>
-        <FILE id="WzC9Ye" name="PointObject.cpp" compile="1" resource="0" file="Source/3d_objects/PointObject.cpp"/>
-        <FILE id="IzG7uQ" name="PointObject.h" compile="0" resource="0" file="Source/3d_objects/PointObject.h"/>
-        <FILE id="Ie8mrV" name="reflections_object.cpp" compile="1" resource="0"
+        <FILE id="dE1eLp" name="PointObject.cpp" compile="1" resource="0" file="Source/3d_objects/PointObject.cpp"/>
+        <FILE id="xlYOyw" name="PointObject.h" compile="0" resource="0" file="Source/3d_objects/PointObject.h"/>
+        <FILE id="ZLFLoP" name="reflections_object.cpp" compile="1" resource="0"
               file="Source/3d_objects/reflections_object.cpp"/>
-        <FILE id="FxAysa" name="reflections_object.h" compile="0" resource="0"
+        <FILE id="QTIWQl" name="reflections_object.h" compile="0" resource="0"
               file="Source/3d_objects/reflections_object.h"/>
       </GROUP>
-      <GROUP id="{F8C6AA7F-237D-A40F-6287-F4FFC9F88387}" name="left_bar">
-        <GROUP id="{2C02CE06-7180-7000-EAE0-0C2BD8DCA408}" name="materials">
-          <FILE id="Y4IvHZ" name="master.cpp" compile="1" resource="0" file="Source/left_bar/materials/master.cpp"/>
-          <FILE id="sWDu8F" name="master.h" compile="0" resource="0" file="Source/left_bar/materials/master.h"/>
+      <GROUP id="{A6C60A3E-18EF-0F4C-EA6C-5F54B976A7FC}" name="left_bar">
+        <GROUP id="{7FA9EE56-E030-64F1-6570-E26BDC9C1C41}" name="materials">
+          <FILE id="L4n88M" name="master.cpp" compile="1" resource="0" file="Source/left_bar/materials/master.cpp"/>
+          <FILE id="EPy00j" name="master.h" compile="0" resource="0" file="Source/left_bar/materials/master.h"/>
         </GROUP>
-        <GROUP id="{951BB706-D413-266C-D72A-BD19E531BCCE}" name="raytracer">
-          <FILE id="xfVZax" name="master.cpp" compile="1" resource="0" file="Source/left_bar/raytracer/master.cpp"/>
-          <FILE id="Lo1yuU" name="master.h" compile="0" resource="0" file="Source/left_bar/raytracer/master.h"/>
+        <GROUP id="{7D96A8C9-E896-32D8-1DEE-FA575D6A14ED}" name="raytracer">
+          <FILE id="kCmGuM" name="master.cpp" compile="1" resource="0" file="Source/left_bar/raytracer/master.cpp"/>
+          <FILE id="RzeXfY" name="master.h" compile="0" resource="0" file="Source/left_bar/raytracer/master.h"/>
         </GROUP>
-        <GROUP id="{C83BA42A-D24D-A591-3CDA-691B2AFA3A1C}" name="receivers">
-          <GROUP id="{B96B6049-0AFE-0988-8A67-1BEA301DAA1F}" name="capsules">
-            <FILE id="LgKUe5" name="master.cpp" compile="1" resource="0" file="Source/left_bar/receivers/capsules/master.cpp"/>
-            <FILE id="pdjiQ4" name="master.h" compile="0" resource="0" file="Source/left_bar/receivers/capsules/master.h"/>
+        <GROUP id="{04EB73FC-0C1D-B3F4-BFB4-E8A3FC224138}" name="receivers">
+          <GROUP id="{FFBAF51F-E389-4E30-F1D7-5FC2B25B35E1}" name="capsules">
+            <FILE id="PVOJAL" name="master.cpp" compile="1" resource="0" file="Source/left_bar/receivers/capsules/master.cpp"/>
+            <FILE id="Az0BM1" name="master.h" compile="0" resource="0" file="Source/left_bar/receivers/capsules/master.h"/>
           </GROUP>
-          <FILE id="qI9wXH" name="master.cpp" compile="1" resource="0" file="Source/left_bar/receivers/master.cpp"/>
-          <FILE id="UOfLZl" name="master.h" compile="0" resource="0" file="Source/left_bar/receivers/master.h"/>
+          <FILE id="gh1Aaf" name="master.cpp" compile="1" resource="0" file="Source/left_bar/receivers/master.cpp"/>
+          <FILE id="VSd7l1" name="master.h" compile="0" resource="0" file="Source/left_bar/receivers/master.h"/>
         </GROUP>
-        <GROUP id="{1F44A087-42AB-7069-67FB-2AFE4C67FC35}" name="sources">
-          <FILE id="S2VR3i" name="master.cpp" compile="1" resource="0" file="Source/left_bar/sources/master.cpp"/>
-          <FILE id="UNNSMC" name="master.h" compile="0" resource="0" file="Source/left_bar/sources/master.h"/>
+        <GROUP id="{EADDC1C8-211C-1B6A-2424-98CB6C740E72}" name="sources">
+          <FILE id="zH1bsO" name="master.cpp" compile="1" resource="0" file="Source/left_bar/sources/master.cpp"/>
+          <FILE id="t6l7ah" name="master.h" compile="0" resource="0" file="Source/left_bar/sources/master.h"/>
         </GROUP>
-        <GROUP id="{E1BD53C8-5A00-873D-988C-772FCAD81C8D}" name="waveguide">
-          <FILE id="nbZyak" name="master.cpp" compile="1" resource="0" file="Source/left_bar/waveguide/master.cpp"/>
-          <FILE id="rXEp7t" name="master.h" compile="0" resource="0" file="Source/left_bar/waveguide/master.h"/>
+        <GROUP id="{63C0A248-F879-3E6B-743E-CD81FAE52EB2}" name="waveguide">
+          <FILE id="kl9h42" name="master.cpp" compile="1" resource="0" file="Source/left_bar/waveguide/master.cpp"/>
+          <FILE id="uNMB2M" name="master.h" compile="0" resource="0" file="Source/left_bar/waveguide/master.h"/>
         </GROUP>
-        <FILE id="c5jem9" name="azimuth_elevation_property.cpp" compile="1"
+        <FILE id="h8Zz5S" name="azimuth_elevation_property.cpp" compile="1"
               resource="0" file="Source/left_bar/azimuth_elevation_property.cpp"/>
-        <FILE id="WHr8yy" name="azimuth_elevation_property.h" compile="0" resource="0"
+        <FILE id="AvTMja" name="azimuth_elevation_property.h" compile="0" resource="0"
               file="Source/left_bar/azimuth_elevation_property.h"/>
-        <FILE id="Tj0ymn" name="bottom_panel.cpp" compile="1" resource="0"
+        <FILE id="Rh7Qi0" name="bottom_panel.cpp" compile="1" resource="0"
               file="Source/left_bar/bottom_panel.cpp"/>
-        <FILE id="cUQbcv" name="bottom_panel.h" compile="0" resource="0" file="Source/left_bar/bottom_panel.h"/>
-        <FILE id="f4dXWh" name="editable_vector_list_box.h" compile="0" resource="0"
+        <FILE id="cPN0Ym" name="bottom_panel.h" compile="0" resource="0" file="Source/left_bar/bottom_panel.h"/>
+        <FILE id="oggTsM" name="editable_vector_list_box.h" compile="0" resource="0"
               file="Source/left_bar/editable_vector_list_box.h"/>
-        <FILE id="QfPWFz" name="heading_component.h" compile="0" resource="0"
+        <FILE id="kWOTBR" name="heading_component.h" compile="0" resource="0"
               file="Source/left_bar/heading_component.h"/>
-        <FILE id="WSITjb" name="list_config_item.h" compile="0" resource="0"
+        <FILE id="XxDhcB" name="list_config_item.h" compile="0" resource="0"
               file="Source/left_bar/list_config_item.h"/>
-        <FILE id="cOONe0" name="master.cpp" compile="1" resource="0" file="Source/left_bar/master.cpp"/>
-        <FILE id="WwhPU7" name="master.h" compile="0" resource="0" file="Source/left_bar/master.h"/>
-        <FILE id="MScnzf" name="slider_property.cpp" compile="1" resource="0"
+        <FILE id="RsvDaa" name="master.cpp" compile="1" resource="0" file="Source/left_bar/master.cpp"/>
+        <FILE id="gu8GDN" name="master.h" compile="0" resource="0" file="Source/left_bar/master.h"/>
+        <FILE id="OlBRYI" name="slider_property.cpp" compile="1" resource="0"
               file="Source/left_bar/slider_property.cpp"/>
-        <FILE id="N5XBqi" name="slider_property.h" compile="0" resource="0"
+        <FILE id="DMlYrU" name="slider_property.h" compile="0" resource="0"
               file="Source/left_bar/slider_property.h"/>
-        <FILE id="Q8Vdaz" name="vec3_property.cpp" compile="1" resource="0"
+        <FILE id="MBWl0M" name="vec3_property.cpp" compile="1" resource="0"
               file="Source/left_bar/vec3_property.cpp"/>
-        <FILE id="SdwsbS" name="vec3_property.h" compile="0" resource="0" file="Source/left_bar/vec3_property.h"/>
-        <FILE id="rKtqnf" name="vector_list_box.h" compile="0" resource="0"
+        <FILE id="hawzLm" name="vec3_property.h" compile="0" resource="0" file="Source/left_bar/vec3_property.h"/>
+        <FILE id="A1UqE5" name="vector_list_box.h" compile="0" resource="0"
               file="Source/left_bar/vector_list_box.h"/>
       </GROUP>
-      <GROUP id="{AAAFDDDB-80D3-CF5D-7206-1F37DF98AB1D}" name="output">
-        <FILE id="HVApAe" name="master.cpp" compile="1" resource="0" file="Source/output/master.cpp"/>
-        <FILE id="aBbORl" name="master.h" compile="0" resource="0" file="Source/output/master.h"/>
+      <GROUP id="{5005FEE2-429A-6314-F80E-FA120DC2CB18}" name="output">
+        <FILE id="y0hFOC" name="master.cpp" compile="1" resource="0" file="Source/output/master.cpp"/>
+        <FILE id="gyX6sU" name="master.h" compile="0" resource="0" file="Source/output/master.h"/>
       </GROUP>
-      <GROUP id="{F76C4C12-B9C7-4DF8-EF56-7F4AC64EFCF3}" name="scene">
-        <FILE id="n1inQ1" name="controller.cpp" compile="1" resource="0" file="Source/scene/controller.cpp"/>
-        <FILE id="S5cdbr" name="controller.h" compile="0" resource="0" file="Source/scene/controller.h"/>
-        <FILE id="eTM1A5" name="master.cpp" compile="1" resource="0" file="Source/scene/master.cpp"/>
-        <FILE id="IdCqrk" name="master.h" compile="0" resource="0" file="Source/scene/master.h"/>
-        <FILE id="KNx32M" name="view.cpp" compile="1" resource="0" file="Source/scene/view.cpp"/>
-        <FILE id="cYYx65" name="view.h" compile="0" resource="0" file="Source/scene/view.h"/>
+      <GROUP id="{97B0A235-AEB2-185C-BEF2-4E50226A3951}" name="scene">
+        <FILE id="tZMbay" name="controller.cpp" compile="1" resource="0" file="Source/scene/controller.cpp"/>
+        <FILE id="IYQgRu" name="controller.h" compile="0" resource="0" file="Source/scene/controller.h"/>
+        <FILE id="dbgqIg" name="master.cpp" compile="1" resource="0" file="Source/scene/master.cpp"/>
+        <FILE id="aNKsHZ" name="master.h" compile="0" resource="0" file="Source/scene/master.h"/>
+        <FILE id="eeACAy" name="view.cpp" compile="1" resource="0" file="Source/scene/view.cpp"/>
+        <FILE id="AUaD0s" name="view.h" compile="0" resource="0" file="Source/scene/view.h"/>
       </GROUP>
-      <GROUP id="{DC9762CD-25F3-9137-7D47-193E54E477DC}" name="UtilityComponents">
-        <FILE id="YQFauN" name="async_work_queue.cpp" compile="1" resource="0"
+      <GROUP id="{C6A0CE1A-950A-49AD-A498-D8EC715C708B}" name="UtilityComponents">
+        <FILE id="ZWvu3S" name="async_work_queue.cpp" compile="1" resource="0"
               file="Source/UtilityComponents/async_work_queue.cpp"/>
-        <FILE id="QjYvuh" name="async_work_queue.h" compile="0" resource="0"
+        <FILE id="n1qdVY" name="async_work_queue.h" compile="0" resource="0"
               file="Source/UtilityComponents/async_work_queue.h"/>
-        <FILE id="pbdHLE" name="AudioThumbnailPane.cpp" compile="1" resource="0"
-              file="Source/UtilityComponents/AudioThumbnailPane.cpp"/>
-        <FILE id="iKjxuT" name="AudioThumbnailPane.h" compile="0" resource="0"
-              file="Source/UtilityComponents/AudioThumbnailPane.h"/>
-        <FILE id="Btg2yy" name="BareBonesVUMeter.cpp" compile="1" resource="0"
+        <FILE id="ijjjJ9" name="BareBonesVUMeter.cpp" compile="1" resource="0"
               file="Source/UtilityComponents/BareBonesVUMeter.cpp"/>
-        <FILE id="dMlz82" name="BareBonesVUMeter.h" compile="0" resource="0"
+        <FILE id="JqjJXq" name="BareBonesVUMeter.h" compile="0" resource="0"
               file="Source/UtilityComponents/BareBonesVUMeter.h"/>
-        <FILE id="TZ9UTS" name="connector.h" compile="0" resource="0" file="Source/UtilityComponents/connector.h"/>
-        <FILE id="vsmAfY" name="DefaultAudio.cpp" compile="1" resource="0"
+        <FILE id="K5T6Ge" name="connector.h" compile="0" resource="0" file="Source/UtilityComponents/connector.h"/>
+        <FILE id="BO8CsK" name="DefaultAudio.cpp" compile="1" resource="0"
               file="Source/UtilityComponents/DefaultAudio.cpp"/>
-        <FILE id="kyJntc" name="DefaultAudio.h" compile="0" resource="0" file="Source/UtilityComponents/DefaultAudio.h"/>
-        <FILE id="PCF7Sa" name="FileDropComponent.cpp" compile="1" resource="0"
+        <FILE id="Sia0uu" name="DefaultAudio.h" compile="0" resource="0" file="Source/UtilityComponents/DefaultAudio.h"/>
+        <FILE id="xxmo51" name="FileDropComponent.cpp" compile="1" resource="0"
               file="Source/UtilityComponents/FileDropComponent.cpp"/>
-        <FILE id="OyCF24" name="FileDropComponent.h" compile="0" resource="0"
+        <FILE id="b0BSFN" name="FileDropComponent.h" compile="0" resource="0"
               file="Source/UtilityComponents/FileDropComponent.h"/>
-        <FILE id="YHwJ69" name="GainSlider.cpp" compile="1" resource="0" file="Source/UtilityComponents/GainSlider.cpp"/>
-        <FILE id="qJtoBS" name="GainSlider.h" compile="0" resource="0" file="Source/UtilityComponents/GainSlider.h"/>
-        <FILE id="oOAhqn" name="generic_renderer.h" compile="0" resource="0"
+        <FILE id="VQxNpx" name="GainSlider.cpp" compile="1" resource="0" file="Source/UtilityComponents/GainSlider.cpp"/>
+        <FILE id="s4zGU2" name="GainSlider.h" compile="0" resource="0" file="Source/UtilityComponents/GainSlider.h"/>
+        <FILE id="XGoEbd" name="generic_renderer.h" compile="0" resource="0"
               file="Source/UtilityComponents/generic_renderer.h"/>
-        <FILE id="BJIVK5" name="LoadWindow.cpp" compile="1" resource="0" file="Source/UtilityComponents/LoadWindow.cpp"/>
-        <FILE id="NuSBaE" name="LoadWindow.h" compile="0" resource="0" file="Source/UtilityComponents/LoadWindow.h"/>
-        <FILE id="l4kdoR" name="NumberEditor.h" compile="0" resource="0" file="Source/UtilityComponents/NumberEditor.h"/>
-        <FILE id="l1tp2H" name="PlaybackViewManager.cpp" compile="1" resource="0"
+        <FILE id="pORcJO" name="LoadWindow.cpp" compile="1" resource="0" file="Source/UtilityComponents/LoadWindow.cpp"/>
+        <FILE id="cFZF8K" name="LoadWindow.h" compile="0" resource="0" file="Source/UtilityComponents/LoadWindow.h"/>
+        <FILE id="Up4nwz" name="NumberEditor.h" compile="0" resource="0" file="Source/UtilityComponents/NumberEditor.h"/>
+        <FILE id="zvOnrM" name="PlaybackViewManager.cpp" compile="1" resource="0"
               file="Source/UtilityComponents/PlaybackViewManager.cpp"/>
-        <FILE id="lhDWtG" name="PlaybackViewManager.h" compile="0" resource="0"
+        <FILE id="nrXis5" name="PlaybackViewManager.h" compile="0" resource="0"
               file="Source/UtilityComponents/PlaybackViewManager.h"/>
-        <FILE id="iFkbRK" name="Playhead.cpp" compile="1" resource="0" file="Source/UtilityComponents/Playhead.cpp"/>
-        <FILE id="WLLl5c" name="Playhead.h" compile="0" resource="0" file="Source/UtilityComponents/Playhead.h"/>
-        <FILE id="OQrBra" name="Ruler.cpp" compile="1" resource="0" file="Source/UtilityComponents/Ruler.cpp"/>
-        <FILE id="s374iu" name="Ruler.h" compile="0" resource="0" file="Source/UtilityComponents/Ruler.h"/>
-        <FILE id="GHUHUe" name="StoredSettings.cpp" compile="1" resource="0"
+        <FILE id="jSt9MI" name="Playhead.cpp" compile="1" resource="0" file="Source/UtilityComponents/Playhead.cpp"/>
+        <FILE id="rKu5fF" name="Playhead.h" compile="0" resource="0" file="Source/UtilityComponents/Playhead.h"/>
+        <FILE id="xmoGi4" name="Ruler.cpp" compile="1" resource="0" file="Source/UtilityComponents/Ruler.cpp"/>
+        <FILE id="VSD2Qs" name="Ruler.h" compile="0" resource="0" file="Source/UtilityComponents/Ruler.h"/>
+        <FILE id="i5zgZs" name="StoredSettings.cpp" compile="1" resource="0"
               file="Source/UtilityComponents/StoredSettings.cpp"/>
-        <FILE id="dgZVmr" name="StoredSettings.h" compile="0" resource="0"
+        <FILE id="Xu1cy8" name="StoredSettings.h" compile="0" resource="0"
               file="Source/UtilityComponents/StoredSettings.h"/>
-        <FILE id="VqaxNv" name="Transport.cpp" compile="1" resource="0" file="Source/UtilityComponents/Transport.cpp"/>
-        <FILE id="nlH3XK" name="Transport.h" compile="0" resource="0" file="Source/UtilityComponents/Transport.h"/>
-        <FILE id="srTBqF" name="TransportDisplay.cpp" compile="1" resource="0"
+        <FILE id="j8n3Kq" name="Transport.cpp" compile="1" resource="0" file="Source/UtilityComponents/Transport.cpp"/>
+        <FILE id="sXkMXX" name="Transport.h" compile="0" resource="0" file="Source/UtilityComponents/Transport.h"/>
+        <FILE id="tXFKbe" name="TransportDisplay.cpp" compile="1" resource="0"
               file="Source/UtilityComponents/TransportDisplay.cpp"/>
-        <FILE id="XOWxUl" name="TransportDisplay.h" compile="0" resource="0"
+        <FILE id="slmJqR" name="TransportDisplay.h" compile="0" resource="0"
               file="Source/UtilityComponents/TransportDisplay.h"/>
-        <FILE id="iQwN32" name="VUMeter.cpp" compile="1" resource="0" file="Source/UtilityComponents/VUMeter.cpp"/>
-        <FILE id="LBRyR8" name="VUMeter.h" compile="0" resource="0" file="Source/UtilityComponents/VUMeter.h"/>
+        <FILE id="AX2lgQ" name="VUMeter.cpp" compile="1" resource="0" file="Source/UtilityComponents/VUMeter.cpp"/>
+        <FILE id="Aw1De0" name="VUMeter.h" compile="0" resource="0" file="Source/UtilityComponents/VUMeter.h"/>
       </GROUP>
-      <FILE id="SCOG4s" name="AngularLookAndFeel.cpp" compile="1" resource="0"
+      <FILE id="Iyj8HU" name="AngularLookAndFeel.cpp" compile="1" resource="0"
             file="Source/AngularLookAndFeel.cpp"/>
-      <FILE id="zym3uB" name="AngularLookAndFeel.h" compile="0" resource="0"
+      <FILE id="oL9JQE" name="AngularLookAndFeel.h" compile="0" resource="0"
             file="Source/AngularLookAndFeel.h"/>
-      <FILE id="TeQsR0" name="Application.cpp" compile="1" resource="0" file="Source/Application.cpp"/>
-      <FILE id="YQt4LZ" name="Application.h" compile="0" resource="0" file="Source/Application.h"/>
-      <FILE id="rxSOlZ" name="CommandIDs.h" compile="0" resource="0" file="Source/CommandIDs.h"/>
-      <FILE id="hIgNKX" name="engine_message_queue.cpp" compile="1" resource="0"
-            file="Source/engine_message_queue.cpp"/>
-      <FILE id="PVBso6" name="engine_message_queue.h" compile="0" resource="0"
-            file="Source/engine_message_queue.h"/>
-      <FILE id="R845eK" name="generic_combo_box_property.h" compile="0" resource="0"
+      <FILE id="v5mVyC" name="Application.cpp" compile="1" resource="0" file="Source/Application.cpp"/>
+      <FILE id="ni4wLo" name="Application.h" compile="0" resource="0" file="Source/Application.h"/>
+      <FILE id="hAbCHf" name="CommandIDs.h" compile="0" resource="0" file="Source/CommandIDs.h"/>
+      <FILE id="GPCVdb" name="generic_combo_box_property.h" compile="0" resource="0"
             file="Source/generic_combo_box_property.h"/>
-      <FILE id="Mt2Cxp" name="generic_property_component.h" compile="0" resource="0"
+      <FILE id="LM5OMX" name="generic_property_component.h" compile="0" resource="0"
             file="Source/generic_property_component.h"/>
-      <FILE id="CthtJU" name="generic_slider_property.h" compile="0" resource="0"
+      <FILE id="F4YDD7" name="generic_slider_property.h" compile="0" resource="0"
             file="Source/generic_slider_property.h"/>
-      <FILE id="B0VQi3" name="HelpWindow.cpp" compile="1" resource="0" file="Source/HelpWindow.cpp"/>
-      <FILE id="t2fsas" name="HelpWindow.h" compile="0" resource="0" file="Source/HelpWindow.h"/>
-      <FILE id="jnUZPv" name="main_model.cpp" compile="1" resource="0" file="Source/main_model.cpp"/>
-      <FILE id="lje3Z4" name="main_model.h" compile="0" resource="0" file="Source/main_model.h"/>
-      <FILE id="MPdl1U" name="main_window.cpp" compile="1" resource="0" file="Source/main_window.cpp"/>
-      <FILE id="gNLvaU" name="main_window.h" compile="0" resource="0" file="Source/main_window.h"/>
-      <FILE id="vdMKsI" name="MainContentComponent.cpp" compile="1" resource="0"
+      <FILE id="eB7aoX" name="HelpWindow.cpp" compile="1" resource="0" file="Source/HelpWindow.cpp"/>
+      <FILE id="vPhQbr" name="HelpWindow.h" compile="0" resource="0" file="Source/HelpWindow.h"/>
+      <FILE id="qcILKE" name="main_model.cpp" compile="1" resource="0" file="Source/main_model.cpp"/>
+      <FILE id="sye4m2" name="main_model.h" compile="0" resource="0" file="Source/main_model.h"/>
+      <FILE id="P9iXOA" name="main_window.cpp" compile="1" resource="0" file="Source/main_window.cpp"/>
+      <FILE id="ogO4KO" name="main_window.h" compile="0" resource="0" file="Source/main_window.h"/>
+      <FILE id="xtHAsh" name="MainContentComponent.cpp" compile="1" resource="0"
             file="Source/MainContentComponent.cpp"/>
-      <FILE id="My3ivc" name="MainContentComponent.h" compile="0" resource="0"
+      <FILE id="wzhcea" name="MainContentComponent.h" compile="0" resource="0"
             file="Source/MainContentComponent.h"/>
-      <FILE id="EywGrM" name="modal_dialog.h" compile="0" resource="0" file="Source/modal_dialog.h"/>
-      <FILE id="zUGcbd" name="PolarPatternDisplay.cpp" compile="1" resource="0"
+      <FILE id="haCucW" name="modal_dialog.h" compile="0" resource="0" file="Source/modal_dialog.h"/>
+      <FILE id="waC958" name="PolarPatternDisplay.cpp" compile="1" resource="0"
             file="Source/PolarPatternDisplay.cpp"/>
-      <FILE id="PfeyXL" name="PolarPatternDisplay.h" compile="0" resource="0"
+      <FILE id="xpEUlC" name="PolarPatternDisplay.h" compile="0" resource="0"
             file="Source/PolarPatternDisplay.h"/>
-      <FILE id="XxhjgG" name="text_property.cpp" compile="1" resource="0"
+      <FILE id="FBsyUD" name="text_property.cpp" compile="1" resource="0"
             file="Source/text_property.cpp"/>
-      <FILE id="bCg14V" name="text_property.h" compile="0" resource="0" file="Source/text_property.h"/>
-      <FILE id="PaJsFI" name="try_and_explain.h" compile="0" resource="0"
+      <FILE id="BswZ90" name="text_property.h" compile="0" resource="0" file="Source/text_property.h"/>
+      <FILE id="pgQmLk" name="try_and_explain.h" compile="0" resource="0"
             file="Source/try_and_explain.h"/>
     </GROUP>
-    <FILE id="mraDia" name="wayverb.png" compile="0" resource="1" file="wayverb.png"/>
+    <FILE id="eBKJgN" name="wayverb.png" compile="0" resource="1" file="wayverb.png"/>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraDefs="" extraCompilerFlags="-I../../../src/audio_file/include&#10;-I../../../src/combined/include&#10;-I../../../src/core/include&#10;-I../../../src/frequency_domain/include&#10;-I../../../src/hrtf/lib/include&#10;-I../../../src/raytracer/include&#10;-I../../../src/utilities/include&#10;-I../../../src/waveguide/include&#10;-I../../../build/include&#10;-I../../../build/dependencies/include&#10;-std=c++14"
-               smallIcon="mraDia" bigIcon="mraDia" documentExtensions="way"
-               externalLibraries="assimp&#10;audio_file&#10;combined&#10;compensation_signal&#10;core&#10;fftw3&#10;fftw3f&#10;frequency_domain&#10;itpp_static&#10;modern_gl_utils&#10;raytracer&#10;samplerate&#10;sndfile&#10;utilities&#10;waveguide&#10;zlibstatic"
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraCompilerFlags="-I../../../src/audio_file/include&#10;-I../../../src/combined/include&#10;-I../../../src/core/include&#10;-I../../../src/frequency_domain/include&#10;-I../../../src/hrtf/lib/include&#10;-I../../../src/raytracer/include&#10;-I../../../src/utilities/include&#10;-I../../../src/waveguide/include&#10;-I../../../build/include&#10;-I../../../build/dependencies/include&#10;-std=c++14"
                extraLinkerFlags="-L../../../build/lib&#10;-L../../../build/dependencies/lib"
-               extraFrameworks="OpenCL" prebuildCommand="cd ../../../ &amp;&amp; ./build.sh">
+               externalLibraries="assimp&#10;audio_file&#10;combined&#10;compensation_signal&#10;core&#10;fftw3&#10;fftw3f&#10;frequency_domain&#10;itpp_static&#10;modern_gl_utils&#10;raytracer&#10;samplerate&#10;sndfile&#10;utilities&#10;waveguide&#10;zlibstatic"
+               documentExtensions="way" extraFrameworks="OpenCL" prebuildCommand="cd ../../../ &amp;&amp; ./build.sh"
+               smallIcon="eBKJgN" bigIcon="eBKJgN">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
-                       isDebug="1" optimisation="1" targetName="visualiser"/>
-        <CONFIGURATION name="Release" osxSDK="default" osxCompatibility="default" osxArchitecture="default"
-                       isDebug="0" optimisation="3" targetName="visualiser"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="wayverb"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="wayverb"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../JUCE/modules"/>
@@ -206,16 +196,14 @@
         <MODULEPATH id="juce_audio_devices" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_formats" path="../../JUCE/modules"/>
         <MODULEPATH id="juce_audio_processors" path="../../JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../../JUCE/modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
   </EXPORTFORMATS>
   <MODULES>
-    <MODULE id="juce_audio_basics" showAllCode="0" useLocalCopy="1"/>
+    <MODULE id="juce_audio_basics" showAllCode="1" useLocalCopy="1"/>
     <MODULE id="juce_audio_devices" showAllCode="1" useLocalCopy="1"/>
     <MODULE id="juce_audio_formats" showAllCode="1" useLocalCopy="1"/>
     <MODULE id="juce_audio_processors" showAllCode="1" useLocalCopy="1"/>
-    <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="1"/>
     <MODULE id="juce_cryptography" showAllCode="1" useLocalCopy="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="1"/>
@@ -227,7 +215,4 @@
     <MODULE id="juce_video" showAllCode="1" useLocalCopy="1"/>
   </MODULES>
   <JUCEOPTIONS/>
-  <LIVE_SETTINGS>
-    <OSX/>
-  </LIVE_SETTINGS>
 </JUCERPROJECT>

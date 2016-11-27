@@ -1,5 +1,9 @@
 # TODO
 
+## critical
+
+Raytracer is slower when waveguide cutoff is high???
+
 ## important
 
 Sanity checks - do big echo-y rooms sound big and echo-y? Do small rooms sound
