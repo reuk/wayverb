@@ -1,8 +1,7 @@
 #pragma once
 
 #include "AngularLookAndFeel.h"
-
-#include "UtilityComponents/connector.h"
+#include "connector.h"
 
 template <typename T>
 class ok_cancel_window final : public Component, public ButtonListener {

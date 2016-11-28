@@ -2,8 +2,9 @@
 
 #include "utilities/string_builder.h"
 
-#include "../AngularLookAndFeel.h"
+#include "../UtilityComponents/AngularLookAndFeel.h"
 #include "../UtilityComponents/connector.h"
+
 #include "../generic_combo_box_property.h"
 #include "../text_property.h"
 

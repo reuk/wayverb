@@ -3,7 +3,7 @@
 #include "vector_list_box.h"
 
 #include "../UtilityComponents/connector.h"
-#include "../modal_dialog.h"
+#include "../UtilityComponents/modal_dialog.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 

@@ -1,24 +1,26 @@
 #include "GainSlider.h"
 
-#include "utilities/range.h"
+#include "juce_range_utils.h"
 
 namespace gain_transform {
 
-static const auto skew_factor =
-        std::log(0.5) /
-        std::log((-10.0 - db_minimum) / (db_maximum - db_minimum));
+namespace {
+
+const auto skew_factor = std::log(0.5) / std::log((-10.0 - db_minimum) /
+                                                  (db_maximum - db_minimum));
+
+}  // namespace
 
 double db_gain_to_proportion(double u) {
-    return std::pow(map(u,
-                        util::make_range(db_minimum, db_maximum),
-                        util::make_range(0.0, 1.0)),
-                    skew_factor);
+    return std::pow(
+            map(u, make_range(db_minimum, db_maximum), make_range(0.0, 1.0)),
+            skew_factor);
 }
 
 double proportion_to_db_gain(double u) {
     return map(0.0 < u ? std::exp(std::log(u) / skew_factor) : 0.0,
-               util::make_range(0.0, 1.0),
-               util::make_range(db_minimum, db_maximum));
+               make_range(0.0, 1.0),
+               make_range(db_minimum, db_maximum));
 }
 
 }  // namespace gain_transform

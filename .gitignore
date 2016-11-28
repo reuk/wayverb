@@ -20,6 +20,7 @@ apps/impulse/Builds/MacOSX/Build
 *.wav
 *.aiff
 *~.skp
+*.log
 
 compile_commands.json
 build_log.txt

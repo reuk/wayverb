@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../modal_dialog.h"
+#include "../UtilityComponents/modal_dialog.h"
 
 #include "combined/model/output.h"
 

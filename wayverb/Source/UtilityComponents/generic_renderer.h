@@ -1,15 +1,12 @@
 #pragma once
 
-#include "utilities/event.h"
-#include "utilities/threaded_queue.h"
-
+#include "threaded_queue.h"
 #include "async_work_queue.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
 #include "glm/glm.hpp"
 
-/// Oooooooooooh this class is well good.
 template <typename Renderer>
 class generic_renderer final : public Component {
     /// This class will be used entirely from the gl thread (other than
@@ -17,24 +14,17 @@ class generic_renderer final : public Component {
     /// It communicates with the outside world using thread-safe queues.
     class impl final : public OpenGLRenderer {
     public:
-        using input_queue =
-                util::threaded_queue<util::threading_policy::scoped_lock,
-                                     std::function<void(Renderer&)>>;
+        using input_queue = threaded_queue<std::function<void(Renderer&)>>;
 
-        impl(input_queue& high_queue, input_queue& low_queue)
-                : high_priority_queue_{high_queue}
-                , low_priority_queue_{low_queue} {}
+        impl(generic_renderer& owner)
+                : owner_{owner} {}
 
-        using context_created = util::event<>;
-        typename context_created::connection connect_context_created(
-                typename context_created::callback_type callback) {
-            return context_created_.connect(std::move(callback));
+        void high_priority_command(typename input_queue::value_type command) {
+            high_priority_queue_.push(std::move(command));
         }
 
-        using context_closing = util::event<>;
-        typename context_closing::connection connect_context_closing(
-                typename context_closing::callback_type callback) {
-            return context_closing_.connect(std::move(callback));
+        void low_priority_command(typename input_queue::value_type command) {
+            low_priority_queue_.push(std::move(command));
         }
 
     private:
@@ -42,7 +32,7 @@ class generic_renderer final : public Component {
             //  Create a new renderer object.
             renderer_ = std::make_unique<Renderer>();
             //  Signal that the context was created.
-            output_queue_.push([this] { context_created_(); });
+            output_queue_.push([this] { owner_.context_created(); });
         }
 
         void renderOpenGL() override {
@@ -70,27 +60,36 @@ class generic_renderer final : public Component {
 
         void openGLContextClosing() override {
             //  Signal that the context is closing.
-            output_queue_.push([this] { context_closing_(); });
+            output_queue_.push([this] { owner_.context_closing(); });
             //  Delete renderer object.
             renderer_ = nullptr;
         }
 
+        generic_renderer& owner_;
+
         std::unique_ptr<Renderer> renderer_;
 
-        input_queue& high_priority_queue_;
-        input_queue& low_priority_queue_;
+        input_queue high_priority_queue_;
+        input_queue low_priority_queue_;
         async_work_queue output_queue_;
-
-        context_created context_created_;
-        context_closing context_closing_;
     };
 
 public:
-    generic_renderer()
-            : impl_{high_priority_queue_, low_priority_queue_} {
-        impl_.connect_context_created([this] { context_created_(*this); });
-        impl_.connect_context_closing([this] { context_closing_(*this); });
+    class Listener {
+    public:
+        Listener() = default;
+        Listener(const Listener&) = default;
+        Listener(Listener&&) noexcept = default;
+        Listener& operator=(const Listener&) = default;
+        Listener& operator=(Listener&&) noexcept = default;
+        virtual ~Listener() noexcept = default;
 
+        virtual void context_created(generic_renderer&) = 0;
+        virtual void context_closing(generic_renderer&) = 0;
+    };
+
+    generic_renderer()
+            : impl_{*this} {
         context_.setOpenGLVersionRequired(OpenGLContext::openGL3_2);
         context_.setRenderer(&impl_);
         context_.setComponentPaintingEnabled(false);
@@ -102,32 +101,28 @@ public:
     ~generic_renderer() noexcept { context_.detach(); }
 
     void high_priority_command(typename impl::input_queue::value_type command) {
-        high_priority_queue_.push(std::move(command));
+        impl_.high_priority_command(std::move(command));
     }
 
     void low_priority_command(typename impl::input_queue::value_type command) {
-        low_priority_queue_.push(std::move(command));
+        impl_.low_priority_command(std::move(command));
     }
 
-    using context_created = util::event<generic_renderer<Renderer>&>;
-    typename context_created::connection connect_context_created(
-            typename context_created::callback_type callback) {
-        return context_created_.connect(std::move(callback));
-    }
+    void addListener(Listener* l) { listener_list_.add(l); }
 
-    using context_closing = util::event<generic_renderer<Renderer>&>;
-    typename context_closing::connection connect_context_closing(
-            typename context_closing::callback_type callback) {
-        return context_closing_.connect(std::move(callback));
-    }
+    void removeListener(Listener* l) { listener_list_.remove(l); }
 
 private:
-    typename impl::input_queue high_priority_queue_;
-    typename impl::input_queue low_priority_queue_;
+    void context_created() {
+        listener_list_.call(&Listener::context_created, *this);
+    }
+
+    void context_closing() {
+        listener_list_.call(&Listener::context_closing, *this);
+    }
 
     OpenGLContext context_;
     impl impl_;
 
-    context_created context_created_;
-    context_closing context_closing_;
+    ListenerList<Listener> listener_list_;
 };

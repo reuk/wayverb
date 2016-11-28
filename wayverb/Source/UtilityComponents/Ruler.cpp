@@ -1,6 +1,6 @@
 #include "Ruler.h"
 
-#include "utilities/range.h"
+#include "juce_range_utils.h"
 
 #include <iomanip>
 #include <sstream>
@@ -46,10 +46,10 @@ void Ruler::paint(juce::Graphics &g) {
          i += s) {
         auto pos = map(
                 i,
-                util::make_range(
+                make_range(
                         transport_view_manager.get_visible_range().getStart(),
                         transport_view_manager.get_visible_range().getEnd()),
-                util::make_range(0, getWidth()));
+                make_range(0, getWidth()));
         g.drawVerticalLine(pos, 2, getHeight() - 2);
         std::stringstream ss;
         ss << std::fixed << std::setprecision(std::max(0.0, -prec)) << i;
@@ -67,18 +67,16 @@ void Ruler::paint(juce::Graphics &g) {
 
 double Ruler::x_to_time(double x) const {
     return map(x,
-               util::make_range(0, getWidth()),
-               util::make_range(
-                       transport_view_manager.get_visible_range().getStart(),
-                       transport_view_manager.get_visible_range().getEnd()));
+               make_range(0, getWidth()),
+               make_range(transport_view_manager.get_visible_range().getStart(),
+                          transport_view_manager.get_visible_range().getEnd()));
 }
 
 double Ruler::time_to_x(double time) const {
     return map(time,
-               util::make_range(
-                       transport_view_manager.get_visible_range().getStart(),
-                       transport_view_manager.get_visible_range().getEnd()),
-               util::make_range(0, getWidth()));
+               make_range(transport_view_manager.get_visible_range().getStart(),
+                          transport_view_manager.get_visible_range().getEnd()),
+               make_range(0, getWidth()));
 }
 
 struct Ruler::RulerState {
@@ -89,7 +87,7 @@ struct Ruler::RulerState {
     juce::Range<double> visible_range;
 };
 
-void Ruler::mouseEnter(const juce::MouseEvent &event) {
+void Ruler::mouseEnter(const juce::MouseEvent &) {
     setMouseCursor(juce::MouseCursor::LeftRightResizeCursor);
 }
 
@@ -100,9 +98,9 @@ void Ruler::mouseDown(const juce::MouseEvent &e) {
     e.source.enableUnboundedMouseMovement(true, false);
 }
 
-void Ruler::mouseUp(const juce::MouseEvent &event) { ruler_state = nullptr; }
+void Ruler::mouseUp(const juce::MouseEvent &) { ruler_state = nullptr; }
 
-void Ruler::mouseExit(const juce::MouseEvent &event) {
+void Ruler::mouseExit(const juce::MouseEvent &) {
     setMouseCursor(juce::MouseCursor::NormalCursor);
 }
 
@@ -134,11 +132,11 @@ void Ruler::mouseDrag(const juce::MouseEvent &e) {
     }
 }
 
-void Ruler::mouseDoubleClick(const juce::MouseEvent &event) {
+void Ruler::mouseDoubleClick(const juce::MouseEvent &) {
     transport_view_manager.reset_view();
 }
 
-void Ruler::visible_range_changed(TransportViewManager *r,
-                                  const juce::Range<double> &range) {
+void Ruler::visible_range_changed(TransportViewManager *,
+                                  const juce::Range<double> &) {
     repaint();
 }

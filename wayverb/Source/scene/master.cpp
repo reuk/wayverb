@@ -19,7 +19,7 @@
 
 namespace scene {
 
-class master::impl final : public Component {
+class master::impl final : public Component, public generic_renderer<view>::Listener {
 public:
     impl(main_model& model)
             : model_{model}
@@ -111,39 +111,6 @@ public:
                     view_.high_priority_command([](auto& renderer) { renderer.clear(); });
                 })}
             {
-        //  Set up the scene model so that everything is visible.
-        const auto scene_data = model_.project.get_scene_data();
-        auto triangles = scene_data.get_triangles();
-        auto vertices = util::map_to_vector(begin(scene_data.get_vertices()),
-                                            end(scene_data.get_vertices()),
-                                            wayverb::core::to_vec3{});
-
-        //  When view is initialised, set the scene correctly
-        //  The callback will be run on the main message thread, so we can do
-        //  what we like (within reason).
-        view_.connect_context_created(
-                [ this, t = std::move(triangles), v = std::move(vertices) ](
-                        auto&) {
-                    //  Get scene data in correct format.
-                    //  This command will be run on the graphics thread, so it
-                    //  must be thread safe.
-                    view_.high_priority_command([
-                        t = std::move(t),
-                        v = std::move(v),
-                        vs = model_.scene.get_view_state(),
-                        pm = model_.scene.get_projection_matrix()
-                    ](auto& r) {
-                        r.set_scene(t.data(), t.size(), v.data(), v.size());
-                        r.set_view_state(vs);
-                        r.set_projection_matrix(pm);
-                        r.set_emphasis_colour(
-                                {AngularLookAndFeel::emphasis.getFloatRed(),
-                                 AngularLookAndFeel::emphasis.getFloatGreen(),
-                                 AngularLookAndFeel::emphasis.getFloatBlue()});
-                        //  TODO we might need to set other state here too.
-                    });
-                });
-
         model_.project.persistent.sources()->notify();
         model_.project.persistent.receivers()->notify();
 
@@ -179,11 +146,42 @@ public:
         controller_.mouse_wheel_move(e, d);
     }
 
+    void context_created(generic_renderer<scene::view>&) override {
+        //  Set up the scene model so that everything is visible.
+        const auto scene_data = model_.project.get_scene_data();
+        auto triangles = scene_data.get_triangles();
+        auto vertices = util::map_to_vector(begin(scene_data.get_vertices()),
+                                            end(scene_data.get_vertices()),
+                                            wayverb::core::to_vec3{});
+
+        //  Get scene data in correct format.
+        //  This command will be run on the graphics thread, so it
+        //  must be thread safe.
+        view_.high_priority_command([
+            t = std::move(triangles),
+            v = std::move(vertices),
+            vs = model_.scene.get_view_state(),
+            pm = model_.scene.get_projection_matrix()
+        ](auto& r) {
+            r.set_scene(t.data(), t.size(), v.data(), v.size());
+            r.set_view_state(vs);
+            r.set_projection_matrix(pm);
+            r.set_emphasis_colour(
+                    {AngularLookAndFeel::emphasis.getFloatRed(),
+                     AngularLookAndFeel::emphasis.getFloatGreen(),
+                     AngularLookAndFeel::emphasis.getFloatBlue()});
+            //  TODO we might need to set other state here too.
+        });
+    }
+
+    void context_closing(generic_renderer<scene::view>&) override {}
+
 private:
     //  We don't directly use the view, because it needs to run on its own gl
     //  thread.
     //  Instead, we wrap it in an object which supplies async command queues.
     generic_renderer<scene::view> view_;
+    model::Connector<generic_renderer<scene::view>> view_connector_{&view_, this};
 
     //  Keep a reference to the global model.
     main_model& model_;

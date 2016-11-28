@@ -1,7 +1,7 @@
 #include "master.h"
 
 #include "../../generic_property_component.h"
-#include "../../modal_dialog.h"
+#include "../../UtilityComponents/modal_dialog.h"
 
 #include "utilities/string_builder.h"
 

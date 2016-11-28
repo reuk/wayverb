@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../AngularLookAndFeel.h"
+#include "../../UtilityComponents/AngularLookAndFeel.h"
 #include "combined/model/waveguide.h"
 
 #include "../JuceLibraryCode/JuceHeader.h"
