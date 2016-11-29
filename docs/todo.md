@@ -1,5 +1,10 @@
 # TODO
 
+USE SUBMISSION GUIDELINES
+    central bibliography
+    abstract
+    declaration
+
 ## generic
 
 scholdoc -> pandoc in vagrantfile
@@ -55,3 +60,4 @@ download
 ## demo vid
 
 ## example audio files
+    Max preview patch

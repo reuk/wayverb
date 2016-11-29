@@ -7,7 +7,6 @@ class generic_slider_property
         : public generic_property_component<Model, double, Slider> {
 public:
     generic_slider_property(
-
             Model& model,
             const String& name,
             double min,
