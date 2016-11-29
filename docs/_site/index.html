@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>Wayverb - </title>
+    <title>Wayverb - Home</title>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 	<!--[if lte IE 8]><script src="http://0.0.0.0:4000/assets/js/ie/html5shiv.js"></script><![endif]-->
@@ -11,7 +11,6 @@
 </head>
 
 <body>
-<!-- Sidebar -->
 <section id="sidebar">
 <div class="inner">
 <nav>
@@ -28,17 +27,18 @@
 <li>
 <a href="#three">Download</a>
 </li>
+<li>
+<a href="#four">Background</a>
+</li>
 </ul>
 <p></nav></p>
 </div>
 </section>
-<!-- Wrapper -->
 <div id="wrapper">
-<!-- Intro -->
 <section id="intro" class="wrapper style1 fullscreen fade-up">
 <div class="inner">
-<h1 id="wayverb">wayverb</h1>
-<p>realistic, fast impulse-reponse synthesis<br>free and open source</p>
+<h1 id="wayverb">Wayverb</h1>
+<p>realistic, fast impulse-response synthesis <br> free and open source</p>
 <ul class="actions">
 <li>
 <a href="#one" class="button scrolly">Learn more</a>
@@ -46,128 +46,95 @@
 </ul>
 </div>
 </section>
-<!-- One -->
 <section id="one" class="wrapper style2 spotlights">
 <section>
-<a href="#" class="image"><img src="images/pic02.jpg" alt="" data-position="top center" /></a>
+<div class="image">
+<p><img src="images/shot_1.png" /></p>
+</div>
 <div class="content">
 <div class="inner">
-<h2 id="waveguide-mesh">waveguide mesh</h2>
-<p>Low frequency content is found using wave modelling techniques, which accurately physical effects such as reflection, interference, and diffraction. This accurately represents the modal response which gives a room its unique character.</p>
+<h2 id="what-is-wayverb">What is Wayverb?</h2>
+<p>Given a 3D model of a room (perhaps made with <a href="https://www.sketchup.com">Sketchup</a> or <a href="http://www.autodesk.com/products/autocad">AutoCAD</a>), Wayverb allows you to simulate the impulse response of that room. Simulations can be customised by adjusting the frequency response of the reflective surfaces, and the source and microphone positions.</p>
+<p>Generated impulse responses are primarily designed for use with convolution reverb tools such as <a href="https://www.audioease.com/altiverb">Altiverb</a>, for use in music production and sound design. They may also be useful to architects, for checking the acoustic properties of spaces (such as reverb time and speech intelligibility), without having to physically build anything.</p>
 <ul class="actions">
 <li>
-<a href="/waveguide/" class="button">Learn more</a>
+<a href="/demos/" class="button">View demos</a>
 </li>
 </ul>
 </div>
 </div>
 </section>
 <section>
-<a href="#" class="image"><img src="images/pic01.jpg" alt="" data-position="center center" /></a>
+<div class="image">
+<p><img src="images/shot_2.png" /></p>
+</div>
 <div class="content">
 <div class="inner">
-<h2 id="ray-tracer">ray tracer</h2>
-<p>Mid and high frequencies are simulated using a fast and robust ray tracer. Early reflections are found using the image-source method, which preserves important level- and time-difference cues for accurate sound localisation. Late reflections are estimated stochastically.</p>
+<h2 id="how-does-it-work">How does it work?</h2>
+<p>The simulator combines an image-source model for precise early reflections, a statistical ray-tracing model for fast envelope prediction, and a physically-based waveguide model for low frequencies. This combination provides a good balance between accuracy and simulation speed.</p>
 <ul class="actions">
 <li>
-<a href="/raytracer/" class="button">Learn more</a>
-</li>
-</ul>
-</div>
-</div>
-</section>
-<section>
-<a href="#" class="image"><img src="images/pic03.jpg" alt="" data-position="25% 25%" /></a>
-<div class="content">
-<div class="inner">
-<h2 id="uniquely-powerful">uniquely powerful</h2>
-<p>Wayverb is the only open-source project to bring together ray tracing and waveguide simulation in the same program. Written in high-performance C++14, using OpenCL for parallel compute.</p>
-<ul class="actions">
-<li>
-<a href="#" class="button">Learn more</a>
+<a href="#two" class="button scrolly">Learn more</a>
 </li>
 </ul>
 </div>
 </div>
 </section>
 </section>
-<!-- Two -->
 <section id="two" class="wrapper style3 fade-up">
 <div class="inner">
-<h2>
-What we do
-</h2>
-<p>
-Phasellus convallis elit id ullamcorper pulvinar. Duis aliquam turpis mauris, eu ultricies erat malesuada quis. Aliquam dapibus, lacus eget hendrerit bibendum, urna est aliquam sem, sit amet imperdiet est velit quis lorem.
-</p>
+<h2 id="implementation-details">Implementation details</h2>
+<p>You can jump straight to the documentation on each of these topics, or you can start by reading from the beginning.</p>
 <div class="features">
 <section>
-<span class="icon major fa-code"></span>
-<h3>
-Lorem ipsum amet
-</h3>
-<p>
-Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.
-</p>
+<h3 id="image-source-early-reflection-finder"><a href="/image_source/">Image-source early reflection finder</a></h3>
+Early reflections are found using the image-source method, retaining accurate directional and temporal information.
 </section>
 <section>
-<span class="icon major fa-lock"></span>
-<h3>
-Aliquam sed nullam
-</h3>
-<p>
-Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.
-</p>
+<h3 id="ray-tracing-late-reflection-estimator"><a href="/ray_tracer/">Ray-tracing late reflection estimator</a></h3>
+Late reflections are found using a statistical ray-tracing method, which estimates the envelope of the late energy decay.
 </section>
 <section>
-<span class="icon major fa-cog"></span>
-<h3>
-Sed erat ullam corper
-</h3>
-<p>
-Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.
-</p>
+<h3 id="waveguide-low-frequency-simulator"><a href="/waveguide/">Waveguide low-frequency simulator</a></h3>
+Low frequencies are found by modelling the change in air pressure over time, taking into account wave effects such as reflection, interference, and diffraction.
 </section>
 <section>
-<span class="icon major fa-desktop"></span>
-<h3>
-Veroeros quis lorem
-</h3>
-<p>
-Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.
-</p>
+<h3 id="hybrid"><a href="/hybrid/">Hybrid</a></h3>
+The three simulation methods are automatically and seamlessly combined to produce a single result.
 </section>
 <section>
-<span class="icon major fa-chain"></span>
-<h3>
-Urna quis bibendum
-</h3>
-<p>
-Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.
-</p>
+<h3 id="microphone-modelling"><a href="/microphone/">Microphone modelling</a></h3>
+Replicate traditional microphone set-ups to mimic a concert-hall recording, or use the built-in HRTF functionality to produce binaural impulse responses.
 </section>
 <section>
-<span class="icon major fa-diamond"></span>
-<h3>
-Aliquam urna dapibus
-</h3>
-<p>
-Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.
-</p>
+<h3 id="boundary-modelling"><a href="/boundary/">Boundary modelling</a></h3>
+Modify the frequency response of any surface in the model. Each surface has 8-band absorption and scattering parameters, which can be used to mimic real materials - or you can invent your own.
 </section>
 </div>
 <ul class="actions">
 <li>
-<a href="#" class="button">Learn more</a>
+<a href="/prelude/" class="button">Go to detailed documentation</a>
 </li>
 </ul>
 </div>
 </section>
 <section id="three" class="wrapper style1 fade-up">
 <div class="inner">
-<h2>
-download
-</h2>
+<h2 id="download">Download</h2>
+<p>You'll need a machine running macOS 10.11, ideally with a discrete graphics card.</p>
+<ul class="actions">
+<li>
+<a href="https://github.com/reuk/wayverb/releases" class="button">Get Wayverb</a>
+</li>
+</ul>
+</div>
+</section>
+<section id="four" class="wrapper style2 fade-up">
+<div class="inner">
+<h2 id="background">Background</h2>
+<p>Wayverb is written by <a href="https://github.com/reuk">Reuben Thomas</a>.</p>
+<p>It is the product of a MA by Research in Music at <a href="https://www.hud.ac.uk/">The University of Huddersfield</a>, supervised by <a href="http://www.alexanderjharker.co.uk/">Alexander Harker</a>, and submitted January 2017.</p>
+<p>The code is free and open-source, licensed under the terms of the GNU GPL v2. You can find it <a href="https://github.com/reuk/wayverb">here</a>.</p>
 </div>
 </section>
 </div>

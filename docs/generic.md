@@ -1,7 +1,6 @@
 ---
 layout: page
 title: Generic
-navigation_weight: 3
 ---
 
 <span class="image fit"><img src="images/pic04.jpg" alt="" /></span>

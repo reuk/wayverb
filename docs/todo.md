@@ -5,47 +5,34 @@ USE SUBMISSION GUIDELINES
     abstract
     declaration
 
+## the big things
+
+* homepage
+    * demos
+    * download
+
+* documentation
+    * with pdf
+    * bibliography
+
 ## generic
-
-scholdoc -> pandoc in vagrantfile
-
-Theme for 'normal' pages so that I can write in markdown, not worry about
-references etc.
-
-https://github.com/inukshuk/jekyll-scholar
 
 https://github.com/inukshuk/citeproc-ruby
 
-http://scholdoc.scholarlymarkdown.com/
-
 Looks like the workflow will be
-    write in scholarlymarkdown
+    write in markdown
     generate site locally
+        + pdf also - have local links to pdf on site!
     push to github
 
-    This is fine, it lets me stop worring about whether or not stuff is
-    supported by github's jekyll verstion etc.
-        BUT I should probably keep a site build environment somewhere
-        or at least keep really detailed documentation about setting up a build
-        env
+Higher quality background image
+Other images
 
 ## homepage
 
-overview
-    what does it do?
-    how do you use it?
-    how does it work?
-
-details
-    waveguide
-    raytracer
-    microphone modelling
-    boundary modelling
-    OpenCL
-    ???
-
-download
-    obvious
+## abstract
+## intro
+## background
 
 ## waveguide
 
@@ -61,3 +48,5 @@ download
 
 ## example audio files
     Max preview patch
+
+## bibliography

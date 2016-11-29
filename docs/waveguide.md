@@ -1,7 +1,6 @@
 ---
 layout: page
 title: Waveguide
-navigation_weight: 1
+navigation_weight: 3
 ---
 
-Some information about the waveguide development process.

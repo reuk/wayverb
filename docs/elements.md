@@ -1,7 +1,6 @@
 ---
 layout: page
 title: Elements
-navigation_weight: 4
 ---
 
 ## Text

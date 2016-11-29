@@ -2057,232 +2057,21 @@
 		margin: 0 0 2em 0;
 	}
 
-		.features section {
-			padding: 3.5em 3em 1em 7em ;
-			width: 50%;
-			border-top: solid 1px rgba(255, 255, 255, 0.15);
-			position: relative;
-		}
+    .features section {
+        padding: 2em 2em 2em 2em;
+        width: 50%;
+        position: relative;
+    }
 
-			.features section:nth-child(-n + 2) {
-				border-top-width: 0;
-			}
+    @media screen and (max-width: 980px) {
+        .features {
+            display: block;
+        }
 
-			.features section:nth-child(2n) {
-				border-left: solid 1px rgba(255, 255, 255, 0.15);
-			}
-
-			.features section .icon {
-				-moz-transition: opacity 0.5s ease, -moz-transform 0.5s ease;
-				-webkit-transition: opacity 0.5s ease, -webkit-transform 0.5s ease;
-				-ms-transition: opacity 0.5s ease, -ms-transform 0.5s ease;
-				transition: opacity 0.5s ease, transform 0.5s ease;
-				-moz-transition-delay: 1s;
-				-webkit-transition-delay: 1s;
-				-ms-transition-delay: 1s;
-				transition-delay: 1s;
-				-moz-transform: scale(1);
-				-webkit-transform: scale(1);
-				-ms-transform: scale(1);
-				transform: scale(1);
-				position: absolute;
-				left: 3em;
-				top: 3em;
-				opacity: 1;
-			}
-
-			.features section:nth-child(1) .icon {
-				-moz-transition-delay: 0.15s;
-				-webkit-transition-delay: 0.15s;
-				-ms-transition-delay: 0.15s;
-				transition-delay: 0.15s;
-			}
-
-			.features section:nth-child(2) .icon {
-				-moz-transition-delay: 0.3s;
-				-webkit-transition-delay: 0.3s;
-				-ms-transition-delay: 0.3s;
-				transition-delay: 0.3s;
-			}
-
-			.features section:nth-child(3) .icon {
-				-moz-transition-delay: 0.45s;
-				-webkit-transition-delay: 0.45s;
-				-ms-transition-delay: 0.45s;
-				transition-delay: 0.45s;
-			}
-
-			.features section:nth-child(4) .icon {
-				-moz-transition-delay: 0.6s;
-				-webkit-transition-delay: 0.6s;
-				-ms-transition-delay: 0.6s;
-				transition-delay: 0.6s;
-			}
-
-			.features section:nth-child(5) .icon {
-				-moz-transition-delay: 0.75s;
-				-webkit-transition-delay: 0.75s;
-				-ms-transition-delay: 0.75s;
-				transition-delay: 0.75s;
-			}
-
-			.features section:nth-child(6) .icon {
-				-moz-transition-delay: 0.9s;
-				-webkit-transition-delay: 0.9s;
-				-ms-transition-delay: 0.9s;
-				transition-delay: 0.9s;
-			}
-
-			.features section:nth-child(7) .icon {
-				-moz-transition-delay: 1.05s;
-				-webkit-transition-delay: 1.05s;
-				-ms-transition-delay: 1.05s;
-				transition-delay: 1.05s;
-			}
-
-			.features section:nth-child(8) .icon {
-				-moz-transition-delay: 1.2s;
-				-webkit-transition-delay: 1.2s;
-				-ms-transition-delay: 1.2s;
-				transition-delay: 1.2s;
-			}
-
-			.features section:nth-child(9) .icon {
-				-moz-transition-delay: 1.35s;
-				-webkit-transition-delay: 1.35s;
-				-ms-transition-delay: 1.35s;
-				transition-delay: 1.35s;
-			}
-
-			.features section:nth-child(10) .icon {
-				-moz-transition-delay: 1.5s;
-				-webkit-transition-delay: 1.5s;
-				-ms-transition-delay: 1.5s;
-				transition-delay: 1.5s;
-			}
-
-			.features section:nth-child(11) .icon {
-				-moz-transition-delay: 1.65s;
-				-webkit-transition-delay: 1.65s;
-				-ms-transition-delay: 1.65s;
-				transition-delay: 1.65s;
-			}
-
-			.features section:nth-child(12) .icon {
-				-moz-transition-delay: 1.8s;
-				-webkit-transition-delay: 1.8s;
-				-ms-transition-delay: 1.8s;
-				transition-delay: 1.8s;
-			}
-
-			.features section:nth-child(13) .icon {
-				-moz-transition-delay: 1.95s;
-				-webkit-transition-delay: 1.95s;
-				-ms-transition-delay: 1.95s;
-				transition-delay: 1.95s;
-			}
-
-			.features section:nth-child(14) .icon {
-				-moz-transition-delay: 2.1s;
-				-webkit-transition-delay: 2.1s;
-				-ms-transition-delay: 2.1s;
-				transition-delay: 2.1s;
-			}
-
-			.features section:nth-child(15) .icon {
-				-moz-transition-delay: 2.25s;
-				-webkit-transition-delay: 2.25s;
-				-ms-transition-delay: 2.25s;
-				transition-delay: 2.25s;
-			}
-
-			.features section:nth-child(16) .icon {
-				-moz-transition-delay: 2.4s;
-				-webkit-transition-delay: 2.4s;
-				-ms-transition-delay: 2.4s;
-				transition-delay: 2.4s;
-			}
-
-			.features section:nth-child(17) .icon {
-				-moz-transition-delay: 2.55s;
-				-webkit-transition-delay: 2.55s;
-				-ms-transition-delay: 2.55s;
-				transition-delay: 2.55s;
-			}
-
-			.features section:nth-child(18) .icon {
-				-moz-transition-delay: 2.7s;
-				-webkit-transition-delay: 2.7s;
-				-ms-transition-delay: 2.7s;
-				transition-delay: 2.7s;
-			}
-
-			.features section:nth-child(19) .icon {
-				-moz-transition-delay: 2.85s;
-				-webkit-transition-delay: 2.85s;
-				-ms-transition-delay: 2.85s;
-				transition-delay: 2.85s;
-			}
-
-			.features section:nth-child(20) .icon {
-				-moz-transition-delay: 3.0s;
-				-webkit-transition-delay: 3.0s;
-				-ms-transition-delay: 3.0s;
-				transition-delay: 3.0s;
-			}
-
-		.features.inactive section .icon {
-			-moz-transform: scale(0.5);
-			-webkit-transform: scale(0.5);
-			-ms-transform: scale(0.5);
-			transform: scale(0.5);
-			opacity: 0;
-		}
-
-		@media screen and (max-width: 980px) {
-
-			.features {
-				display: block;
-			}
-
-				.features section {
-					border-top-width: 1px !important;
-					border-left-width: 0 !important;
-					width: 100%;
-				}
-
-					.features section:first-child {
-						border-top-width: 0 !important;
-					}
-
-		}
-
-		@media screen and (max-width: 736px) {
-
-			.features section {
-				padding: 2.5em 1.5em 0.1em 5.5em ;
-			}
-
-				.features section .icon {
-					left: 1.5em;
-					top: 2em;
-				}
-
-		}
-
-		@media screen and (max-width: 480px) {
-
-			.features section {
-				padding: 2em 1.5em 0.1em 1.5em ;
-			}
-
-				.features section .icon {
-					left: 0;
-					position: relative;
-					top: 0;
-				}
-
-		}
+        .features section {
+            width: 100%;
+        }
+    }
 
 /* Form */
 
@@ -3020,12 +2809,13 @@
 		}
 
 		.spotlights > section > .image {
-			background-position: center center;
-			background-size: cover;
+			background-position: center;
+			background-size: contain;
+            background-repeat: no-repeat;
 			border-radius: 0;
 			display: block;
 			position: relative;
-			width: 25em;
+            width: 25em;
 		}
 
 			.spotlights > section > .image img {
