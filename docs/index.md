@@ -24,9 +24,9 @@ title: Home
 
 # Wayverb
 
-realistic, fast impulse-response synthesis
+Realistic, fast impulse-response synthesis.
 <br>
-free and open source
+Free and open source.
 
 <ul class="actions">
 <li><a href="#one" class="button scrolly">Learn more</a></li>
@@ -44,17 +44,19 @@ free and open source
 <div class="content">
 <div class="inner">
 
-## What is Wayverb?
+## What does Wayverb do?
 
-Given a 3D model of a room (perhaps made with [Sketchup](https://www.sketchup.com)
+**It simulates reverberation:** Given a 3D model of a room (perhaps made with
+[Sketchup](https://www.sketchup.com)
 or [AutoCAD](http://www.autodesk.com/products/autocad)), Wayverb allows you to
-simulate the impulse response of that room.
+predict the impulse response of that room.
 Simulations can be customised by adjusting the frequency response of the
 reflective surfaces, and the source and microphone positions.
 
-Generated impulse responses are primarily designed for use with convolution
-reverb tools such as [Altiverb](https://www.audioease.com/altiverb), for use in
-music production and sound design.
+**Perfect for sound design:** Generated impulse responses are intended for
+use with convolution reverb tools such as
+[Altiverb](https://www.audioease.com/altiverb), for music production and
+sound design applications.
 They may also be useful to architects, for checking the acoustic properties of
 spaces (such as reverb time and speech intelligibility), without having to
 physically build anything.
@@ -75,10 +77,11 @@ physically build anything.
 
 ## How does it work?
 
-The simulator combines an image-source model for precise early reflections,
-a statistical ray-tracing model for fast envelope prediction, and a
+**Accurate:** The simulator combines an image-source model for precise early
+reflections, a statistical ray-tracing model for fast envelope prediction, and a
 physically-based waveguide model for low frequencies.
-This combination provides a good balance between accuracy and simulation speed.
+
+**Fast:** Built in C++14, using OpenCL, to make the most of modern hardware.
 
 <ul class="actions">
 <li><a href="#two" class="button scrolly">Learn more</a></li>

@@ -12,8 +12,10 @@
 
 <body>
 <header id="header">
+    <a href="javascript:void(0)" class="menu" onclick="sidebar_open()">&#9776;</a>
     <a href="/" class="title">Wayverb</a>
-    <nav>
+</header>
+<nav id="sidebar_nav">
     <ul>
         
         
@@ -90,21 +92,16 @@
     </ul>
 </nav>
 
-</header>
 
-<div id="wrapper">
-    <section id="main" class="wrapper">
-        <div class="inner">
-            <h1 class="major">Generic</h1>
-            <p><span class="image fit"><img src="images/pic04.jpg" alt="" /></span></p>
+<section id="main" class="wrapper">
+    <div class="inner">
+        <h1 class="major">Generic</h1>
+        <p><span class="image fit"><img src="images/pic04.jpg" alt="" /></span></p>
 <p>Donec eget ex magna. Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum sit amet, fergiat. Pellentesque in mi eu massa lacinia malesuada et a elit. Donec urna ex, lacinia in purus ac, pretium pulvinar mauris. Curabitur sapien risus, commodo eget turpis at, elementum convallis elit. Pellentesque enim turpis, hendrerit tristique.</p>
 <p>Interdum et malesuada fames ac ante ipsum primis in faucibus. Pellentesque venenatis dolor imperdiet dolor mattis sagittis. Praesent rutrum sem diam, vitae egestas enim auctor sit amet. Pellentesque leo mauris, consectetur id ipsum sit amet, fersapien risus, commodo eget turpis at, elementum convallis elit. Pellentesque enim turpis, hendrerit tristique lorem ipsum dolor.</p>
 
-        </div>
-    </section>
-</div>
-
-<footer id="footer" class="wrapper alt">
+    </div>
+    <footer id="footer" class="wrapper alt">
     <div class="inner">
         <ul class="menu">
 			<li>&copy; Reuben Thomas 2016. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
@@ -121,5 +118,14 @@
 <!--[if lte IE 8]><script src="http://0.0.0.0:4000/assets/js/ie/respond.min.js"></script><![endif]-->
 <script src="http://0.0.0.0:4000/assets/js/main.js"></script>
 
+</section>
+<script>
+function sidebar_open() {
+    document.getElementById("sidebar_nav").style.display = "block";
+}
+function sidebar_close() {
+    document.getElementById("sidebar_nav").style.display = "none";
+}
+</script>
 </body>
 </html>

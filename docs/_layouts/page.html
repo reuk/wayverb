@@ -1,13 +1,22 @@
----
-layout: default
----
-
+<!DOCTYPE HTML>
+<html>
+{% include head.html %}
+<body>
 {% include header.html %}
-<div id="wrapper">
-    <section id="main" class="wrapper">
-        <div class="inner">
-            <h1 class="major">{{ page.title }}</h1>
-            {{ content }}
-        </div>
-    </section>
-</div>
+<section id="main" class="wrapper">
+    <div class="inner">
+        <h1 class="major">{{ page.title }}</h1>
+        {{ content }}
+    </div>
+    {% include footer.html %}
+</section>
+<script>
+function sidebar_open() {
+    document.getElementById("sidebar_nav").style.display = "block";
+}
+function sidebar_close() {
+    document.getElementById("sidebar_nav").style.display = "none";
+}
+</script>
+</body>
+</html>

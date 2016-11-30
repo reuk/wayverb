@@ -12,8 +12,10 @@
 
 <body>
 <header id="header">
+    <a href="javascript:void(0)" class="menu" onclick="sidebar_open()">&#9776;</a>
     <a href="/" class="title">Wayverb</a>
-    <nav>
+</header>
+<nav id="sidebar_nav">
     <ul>
         
         
@@ -90,19 +92,14 @@
     </ul>
 </nav>
 
-</header>
 
-<div id="wrapper">
-    <section id="main" class="wrapper">
-        <div class="inner">
-            <h1 class="major">Waveguide</h1>
-            
+<section id="main" class="wrapper">
+    <div class="inner">
+        <h1 class="major">Waveguide</h1>
+        
 
-        </div>
-    </section>
-</div>
-
-<footer id="footer" class="wrapper alt">
+    </div>
+    <footer id="footer" class="wrapper alt">
     <div class="inner">
         <ul class="menu">
 			<li>&copy; Reuben Thomas 2016. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
@@ -119,5 +116,14 @@
 <!--[if lte IE 8]><script src="http://0.0.0.0:4000/assets/js/ie/respond.min.js"></script><![endif]-->
 <script src="http://0.0.0.0:4000/assets/js/main.js"></script>
 
+</section>
+<script>
+function sidebar_open() {
+    document.getElementById("sidebar_nav").style.display = "block";
+}
+function sidebar_close() {
+    document.getElementById("sidebar_nav").style.display = "none";
+}
+</script>
 </body>
 </html>
