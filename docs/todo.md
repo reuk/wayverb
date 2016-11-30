@@ -8,17 +8,15 @@ USE SUBMISSION GUIDELINES
 Intro to the code
     where to start when reading
 
-## the big things
+page links broken
 
-* homepage
-    * demos
-    * download
+markdown rendering borked
 
-* documentation
-    * with pdf
-    * bibliography
+pdf rendering needed (automatic?)
 
-* link to code docs
+link to code docs
+
+favicon
 
 ## generic
 
@@ -31,9 +29,6 @@ Looks like the workflow will be
     push to github
 
 Higher quality background image
-Other images
-
-## homepage
 
 ## abstract
 ## intro
