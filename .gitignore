@@ -9,6 +9,7 @@ reference
 demo/impulses
 demo/logfile.txt
 local_docs
+docs/.vagrant
 
 config/travisci_rsa
 
