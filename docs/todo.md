@@ -8,23 +8,6 @@ USE SUBMISSION GUIDELINES
 Intro to the code
     where to start when reading
 
-## sidebar
-
-button in header
-    only visible on small screens 
-    toggles sidebar
-
-page layout
-
-header
-    button
-    header text
-optional sidebar
-content
-
-open/close
-hide on small screen
-
 ## the big things
 
 * homepage

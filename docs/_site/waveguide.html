@@ -12,10 +12,10 @@
 
 <body>
 <header id="header">
-    <a href="javascript:void(0)" class="menu" onclick="sidebar_open()">&#9776;</a>
+    <a href="javascript:void(0)" class="menu hide_large" onclick="sidebar_toggle()">&#9776;</a>
     <a href="/" class="title">Wayverb</a>
 </header>
-<nav id="sidebar_nav">
+<nav id="sidebar_nav" class="animate_left" style="display:none">
     <ul>
         
         
@@ -118,12 +118,23 @@
 
 </section>
 <script>
-function sidebar_open() {
-    document.getElementById("sidebar_nav").style.display = "block";
+function sidebar_toggle() {
+    var sidebar = document.getElementById("sidebar_nav");
+    if (sidebar.style.display === "none") {
+        sidebar.style.display = "block";
+    } else {
+        sidebar.style.display = "none";
+    }
 }
-function sidebar_close() {
-    document.getElementById("sidebar_nav").style.display = "none";
-}
+
+/*
+window.addEventListener('mouseup', function(event) {
+    var sidebar = document.getElementById("sidebar_nav");
+    if (event.target != sidebar && event.target.parentNode != sidebar) {
+        sidebar.style.display = "none";
+    }
+});
+*/
 </script>
 </body>
 </html>
