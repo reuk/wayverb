@@ -1,0 +1,33 @@
+<!DOCTYPE HTML>
+<html>
+{% include head.html %}
+<body>
+{% include header.html %}
+<section id="main" class="wrapper">
+    <div class="inner">
+        <h1 class="major">{{ page.title }}</h1>
+        {{ content }}
+    </div>
+    {% include footer.html %}
+</section>
+<script>
+function sidebar_toggle() {
+    var sidebar = document.getElementById("sidebar_nav");
+    if (sidebar.style.display === "none") {
+        sidebar.style.display = "block";
+    } else {
+        sidebar.style.display = "none";
+    }
+}
+
+/*
+window.addEventListener('mouseup', function(event) {
+    var sidebar = document.getElementById("sidebar_nav");
+    if (event.target != sidebar && event.target.parentNode != sidebar) {
+        sidebar.style.display = "none";
+    }
+});
+*/
+</script>
+</body>
+</html>

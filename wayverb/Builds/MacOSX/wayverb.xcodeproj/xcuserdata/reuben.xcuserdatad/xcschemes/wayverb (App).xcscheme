@@ -14,8 +14,8 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "2492ECA7300EB9236A5E17C2"
-               BuildableName = "visualiser.app"
+               BlueprintIdentifier = "775170E8525F91C5B5397522"
+               BuildableName = "wayverb.app"
                BlueprintName = "wayverb (App)"
                ReferencedContainer = "container:wayverb.xcodeproj">
             </BuildableReference>
@@ -32,8 +32,8 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2492ECA7300EB9236A5E17C2"
-            BuildableName = "visualiser.app"
+            BlueprintIdentifier = "775170E8525F91C5B5397522"
+            BuildableName = "wayverb.app"
             BlueprintName = "wayverb (App)"
             ReferencedContainer = "container:wayverb.xcodeproj">
          </BuildableReference>
@@ -55,8 +55,8 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2492ECA7300EB9236A5E17C2"
-            BuildableName = "visualiser.app"
+            BlueprintIdentifier = "775170E8525F91C5B5397522"
+            BuildableName = "wayverb.app"
             BlueprintName = "wayverb (App)"
             ReferencedContainer = "container:wayverb.xcodeproj">
          </BuildableReference>
@@ -74,8 +74,8 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "2492ECA7300EB9236A5E17C2"
-            BuildableName = "visualiser.app"
+            BlueprintIdentifier = "775170E8525F91C5B5397522"
+            BuildableName = "wayverb.app"
             BlueprintName = "wayverb (App)"
             ReferencedContainer = "container:wayverb.xcodeproj">
          </BuildableReference>
