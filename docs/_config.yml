@@ -18,7 +18,8 @@ url: "" # the base hostname & protocol for your site
 
 # Plugins
 gems:
-  - jekyll-pandoc
+#  - jekyll-pandoc
 
 # Build settings
-markdown: Pandoc
+# markdown: Pandoc
+markdown: kramdown
