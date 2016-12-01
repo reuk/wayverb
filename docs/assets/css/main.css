@@ -3004,10 +3004,6 @@
 
 /* Wrapper */
 
-	.wrapper {
-		position: relative;
-	}
-
 		.wrapper > .inner {
 			padding: 5em 5em 3em 5em ;
 			max-width: 100%;
@@ -3188,7 +3184,6 @@
 
     /* page navbar */
     .animate_left{
-        position:relative;
         -webkit-animation:animateleft 0.4s;
         animation:animateleft 0.4s
     }
@@ -3201,13 +3196,12 @@
 
     #sidebar_nav {
 		padding: 2em 2em 2em 2em ;
-		/*background: #312450;*/
         background: rgba(38, 28, 62, 1.0);
 		cursor: default;
 		height: 100vh;
 		left: 0;
 		overflow: auto;
-		position: absolute;
+		position: absolute !important;
 		text-align: right;
 		width: 16em;
 		z-index: 10000;

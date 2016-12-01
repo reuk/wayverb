@@ -13,8 +13,7 @@ description: >
     for checking the acoustics of architecture, without actually building
     anything!
     It's also free and open source.
-baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site
+baseurl: "/wayverb"
 
 # Plugins
 gems:
