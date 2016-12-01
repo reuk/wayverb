@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.8"/>
-<title>wayverb: Packaged HRTF data</title>
+<title>Wayverb: Packaged HRTF data</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -29,7 +29,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
-   <div id="projectname">wayverb
+   <div id="projectname">Wayverb
    </div>
   </td>
  </tr>
@@ -103,9 +103,8 @@ $(document).ready(function(){initNavTree('md_src_core_data_readme.html','');});
 <p>The site does not list a copyright notice for these files, but an appropriate copyright notice will be added here if necessary (or these files can be removed).</p>
 <p>Only one set of compensated data is stored here. To use a different database, add it here, ensure the naming conventions of the files follow the Listen naming format, and update the appropriate <code>CMakeLists.txt</code>.</p>
 <h1>HRTF naming convention:</h1>
-<p>HRTF files shall conform to the following regular expression:</p>
-<p>``` .*R([0-9]+)_T([0-9]+)_P([0-9]+).* ```</p>
-<ul>
+<p>HRTF files shall conform to the following regular expression: </p><pre class="fragment">.*R([0-9]+)_T([0-9]+)_P([0-9]+).*
+</pre><ul>
 <li>The first capture group is a radial distance in centimetres (currently unused).</li>
 <li>The second capture group is the azimuth in degrees.<ul>
 <li>0 is straight ahead, 180 is behind</li>

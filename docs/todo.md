@@ -8,8 +8,6 @@ USE SUBMISSION GUIDELINES
 Intro to the code
     where to start when reading
 
-link to code docs
-
 pdf rendering needed (automatic?)
 
 ## generic

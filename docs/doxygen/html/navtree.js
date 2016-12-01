@@ -1,8 +1,7 @@
 var NAVTREE =
 [
-  [ "wayverb", "index.html", [
+  [ "Wayverb", "index.html", [
     [ "Packaged HRTF data", "md_src_core_data_readme.html", null ],
-    [ "Wayverb", "md_readme.html", null ],
     [ "TODO", "md_todo.html", null ],
     [ "Classes", null, [
       [ "Class List", "annotated.html", "annotated" ],
@@ -28,8 +27,8 @@ var NAVTREEINDEX =
 "classwayverb_1_1combined_1_1model_1_1scene.html#a0f6ffc8e2061dcd6f4ba58ae79d039c9",
 "classwayverb_1_1core_1_1generic__scene__buffers.html#a4c90e6b60a799dcb79ac081efaba3c70",
 "classwayverb_1_1waveguide_1_1program.html",
-"structdetail_1_1cl__vector__constructor_3_01bool_00_01_n_01_4.html#a837ec0c42c9bea6313470e705900164f",
-"structwayverb_1_1raytracer_1_1make__process__functor__adapter.html"
+"structdetail_1_1cl__vector__type__trait.html",
+"structwayverb_1_1raytracer_1_1make__process__functor__adapter.html#ae2b59d9e8593a98de85d209931fb6d90"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

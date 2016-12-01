@@ -70,20 +70,6 @@ struct make_get_results_functor_adapter final {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-/// parameters:
-///     b_direction:        first iterator to a range of ray directions
-///     e_direction:        last iterator to a range of ray directions
-///     cc:                 the compute context + device to use
-///     voxelised:          a 3D model with surfaces
-///     params:             general scene parameters
-///     keep_going:         whether or not to continue calculating
-///     per_step_callback:  Will be called every step with the current step
-///                         number and the total number of steps.
-///     callbacks:          A tuple of callbacks which can be called with
-///                         simulation parameters to construct processing
-///                         objects.
-///                         Each processing object should have a 'process'
-///                         and a 'get_results' method.
 template <typename It, typename PerStepCallback, typename Callbacks>
 auto run(
         It b_direction,
