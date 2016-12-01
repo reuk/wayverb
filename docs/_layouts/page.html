@@ -11,23 +11,22 @@
     {% include footer.html %}
 </section>
 <script>
+function sidebar_hide() {
+    var sidebar = document.getElementById("sidebar_nav");
+    sidebar.style.display = "none";
+    sidebar.className = "";
+    sidebar.removeEventListener("animationend", sidebar_hide);
+}
 function sidebar_toggle() {
     var sidebar = document.getElementById("sidebar_nav");
     if (sidebar.style.display === "none") {
         sidebar.style.display = "block";
+        sidebar.className = "animate_open";
     } else {
-        sidebar.style.display = "none";
+        sidebar.className = "animate_close";
+        sidebar.addEventListener("animationend", sidebar_hide);
     }
 }
-
-/*
-window.addEventListener('mouseup', function(event) {
-    var sidebar = document.getElementById("sidebar_nav");
-    if (event.target != sidebar && event.target.parentNode != sidebar) {
-        sidebar.style.display = "none";
-    }
-});
-*/
 </script>
 </body>
 </html>

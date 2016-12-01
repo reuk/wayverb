@@ -40,7 +40,7 @@ Free and open source.
 
 <section>
 <div class="image">
-<img src="images/shot_1.png" />
+<img src="{{ site.baseurl }}/images/shot_1.png" />
 </div>
 <div class="content">
 <div class="inner">
@@ -63,7 +63,7 @@ spaces (such as reverb time and speech intelligibility), without having to
 physically build anything.
 
 <ul class="actions">
-<li><a href="{{ site.baseurl}}{% link demos.md %}" class="button">View demos</a></li>
+<li><a href="{{ site.baseurl }}{% link demos.md %}" class="button">View demos</a></li>
 </ul>
 </div>
 </div>
@@ -71,7 +71,7 @@ physically build anything.
 
 <section>
 <div class="image">
-<img src="images/shot_2.png" />
+<img src="{{ site.baseurl }}/images/shot_2.png" />
 </div>
 <div class="content">
 <div class="inner">
@@ -104,38 +104,38 @@ start by reading from the beginning.
 
 <div class="features">
 <section>
-### [Image-source early reflection finder]({{ site.baseurl}}{% link image_source.md %})
+### [Image-source early reflection finder]({{ site.baseurl }}{% link image_source.md %})
 Early reflections are found using the image-source method, retaining accurate
 directional and temporal information.
 </section>
 
 <section>
-### [Ray-tracing late reflection estimator]({{ site.baseurl}}{% link ray_tracer.md %})
+### [Ray-tracing late reflection estimator]({{ site.baseurl }}{% link ray_tracer.md %})
 Late reflections are found using a statistical ray-tracing method, which
 estimates the envelope of the late energy decay.
 </section>
 
 <section>
-### [Waveguide low-frequency simulator]({{ site.baseurl}}{% link waveguide.md %})
+### [Waveguide low-frequency simulator]({{ site.baseurl }}{% link waveguide.md %})
 Low frequencies are found by modelling the change in air pressure over time,
 taking into account wave effects such as reflection, interference, and
 diffraction.
 </section>
 
 <section>
-### [Hybrid]({{ site.baseurl}}{% link waveguide.md %})
+### [Hybrid]({{ site.baseurl }}{% link waveguide.md %})
 The three simulation methods are automatically and seamlessly combined to
 produce a single result.
 </section>
 
 <section>
-### [Microphone modelling]({{ site.baseurl}}{% link waveguide.md %})
+### [Microphone modelling]({{ site.baseurl }}{% link waveguide.md %})
 Replicate traditional microphone set-ups to mimic a concert-hall recording,
 or use the built-in HRTF functionality to produce binaural impulse responses.
 </section>
 
 <section>
-### [Boundary modelling]({{ site.baseurl}}{% link waveguide.md %})
+### [Boundary modelling]({{ site.baseurl }}{% link waveguide.md %})
 Modify the frequency response of any surface in the model.
 Each surface has 8-band absorption and scattering parameters, which can be used
 to mimic real materials - or you can invent your own.
@@ -143,7 +143,7 @@ to mimic real materials - or you can invent your own.
 </div>
 
 <ul class="actions">
-<li><a href="{{ site.baseurl}}{% link prelude.md %}" class="button">Go to detailed documentation</a></li>
+<li><a href="{{ site.baseurl }}{% link prelude.md %}" class="button">Go to detailed documentation</a></li>
 </ul>
 
 </div>
