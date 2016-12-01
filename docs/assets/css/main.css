@@ -3712,11 +3712,16 @@
 
 	#intro {
 		background-attachment: fixed;
-		background-image: url("images/intro.png");
+		background-image: url("images/intro.jpg");
 		background-position: top right;
 		background-repeat: no-repeat;
 		background-size: cover;
 	}
+
+	#intro .inner {
+        background: transparent;
+        background: rgba(0, 0, 0, 0.7);
+    }
 
 		#intro p {
 			font-size: 1.25em;

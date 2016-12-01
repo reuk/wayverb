@@ -27,6 +27,8 @@ title: Home
 
 Realistic, fast impulse-response synthesis.
 <br>
+GPU accelerated.
+<br>
 Free and open source.
 
 <ul class="actions">
@@ -100,7 +102,7 @@ physically-based waveguide model for low frequencies.
 ## Implementation details
 
 You can jump straight to the documentation on each of these topics, or you can
-start by reading from the beginning.
+[start by reading from the beginning]({{ site.baseurl }}{% link prelude.md %}).
 
 <div class="features">
 <section>
@@ -143,7 +145,7 @@ to mimic real materials - or you can invent your own.
 </div>
 
 <ul class="actions">
-<li><a href="{{ site.baseurl }}{% link prelude.md %}" class="button">Go to detailed documentation</a></li>
+<li><a href="{{ site.baseurl }}/doxygen/html/index.html" class="button">Go to code documentation</a></li>
 </ul>
 
 </div>

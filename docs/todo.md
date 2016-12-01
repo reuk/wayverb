@@ -8,15 +8,9 @@ USE SUBMISSION GUIDELINES
 Intro to the code
     where to start when reading
 
-page links broken
-
-markdown rendering borked
-
-pdf rendering needed (automatic?)
-
 link to code docs
 
-favicon
+pdf rendering needed (automatic?)
 
 ## generic
 

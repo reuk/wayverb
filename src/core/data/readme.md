@@ -15,9 +15,7 @@ files follow the Listen naming format, and update the appropriate
 
 HRTF files shall conform to the following regular expression:
 
-```
-.*R([0-9]+)_T([0-9]+)_P([0-9]+).*
-```
+    .*R([0-9]+)_T([0-9]+)_P([0-9]+).*
 
 * The first capture group is a radial distance in centimetres (currently unused).
 * The second capture group is the azimuth in degrees.

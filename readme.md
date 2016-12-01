@@ -56,12 +56,10 @@ This project has a fairly standard CMake build process.
 You should be able to `git clone` a copy of the repository, then from the
 project folder run:
 
-```
-mkdir -p build      # create a folder to hold built products
-cd build            # move to that folder
-cmake ..            # run cmake to configure the build
-make                # run the build itself
-```
+    mkdir -p build      # create a folder to hold built products
+    cd build            # move to that folder
+    cmake ..            # run cmake to configure the build
+    make                # run the build itself
 
 The first time you run this, CMake will download all the project's dependencies
 and build local copies of them.
@@ -86,18 +84,27 @@ Project Structure
 Important Folders
 -----------------
 
-* **library**: all the library code for the project. This is further subdivided:
-    * **common**: generic utilities such as data structures, architectural
+* **src**: all the library code for the project. This is further subdivided:
+    * **core**: generic utilities such as data structures, architectural
       patterns and DSP helpers
     * **raytracer**: components which relate specifically to geometric acoustics
     * **waveguide**: components which relate specifically to finite-difference
       time-domain (FDTD) air pressure simulation
     * **combined**: one way of combining the ray-tracer and waveguide components
       for broadband room acoustics simulations
+    * **audio_file**: wrapper round libsndfile. If I ever switch the soundfile
+      library from libsndfile (to something with a more flexible license) then
+      this module is all that will have to change.
+    * **frequency_domain**: wrapper around fftw. If I ever switch to some other
+      library, this is the only code that will have to change. There are also
+      a few utilities to do with analysis and filtering here.
+    * **hrtf**: small utility for generating hrtf data files from audio inputs.
+    * **utilities**: small self-contained utilities which aren't really tied to
+      this project, but they have to live somewhere.
 
 * **wayverb**: a GUI app interface to the `combined` library written with JUCE
 
-* **utils**: a collection of small command-line programs primarily for testing
+* **bin**: a collection of small command-line programs primarily for testing
   outputs from the library components
 
 Other Folders
@@ -105,17 +112,21 @@ Other Folders
 
 * **scripts**: a 'scratchpad' folder for python and octave prototypes
 
-* **submodules**: This project has several dependencies. For the most part,
-  these have official distributions, which CMake can fetch automatically when
-  the project is configured. This folder holds supporting code which has no
-  official distribution.
-
 * **demo**: assets for testing purposes
 
-* **config**: These files configure the Travis CI process which automatically
-  builds and publishes the library documentation.
+* **config**: These files configure the documentation generator. They used to
+  configure the Travis CI process which automatically built and published the
+  library documentation.
 
 License
 =======
 
 Please see the `LICENSE` file for details.
+
+**Software is provided "as is", without warranty of any kind, express or
+implied, including but not limited to the warranties of merchantability, fitness
+for a particular purpose and noninfringement.
+In no event shall the authors or copyright holders be liable for any claim,
+damages or other libility, whether in an action of contract, tort or otherwise,
+arising from, out of or in connection with the software or the use or other
+dealings in the software.**
