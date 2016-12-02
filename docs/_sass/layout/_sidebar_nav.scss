@@ -32,11 +32,7 @@ $sidebar_open_width: 16em;
 
         + #main.wrapper {
             left: $sidebar_open_width;
-            overflow-x: hidden;
-
-            #dimmer {
-                opacity: 1;
-            }
+            margin-left: 0;
 
             .nav_menu {
                 &.open {
@@ -104,11 +100,14 @@ $sidebar_open_width: 16em;
 }
 
 #main.wrapper {
-    left: $sidebar_open_width;
+    left: 0;
+    margin-left: $sidebar_open_width;
 
-    transition: left 0.4s ease;
+    transition: left 0.4s ease, margin-left 0.4s ease;
+
+    overflow-x: hidden;
 
     @include breakpoint(medium) {
-        left: 0;
+        margin-left: 0;
     }
 }
