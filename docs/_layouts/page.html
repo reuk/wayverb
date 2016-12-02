@@ -2,31 +2,18 @@
 <html>
 {% include head.html %}
 <body>
-{% include header.html %}
+{% include nav.html %}
 <section id="main" class="wrapper">
+    <header id="header">
+        <a href="#sidebar_nav" class="nav_menu open" >&#9776;</a>
+        <a href="#" class="nav_menu close" >&#9776;</a>
+        <a href="{{site.url}}{{ site.baseurl }}" class="title">Wayverb</a>
+    </header>
     <div class="inner">
         <h1 class="major">{{ page.title }}</h1>
         {{ content }}
     </div>
     {% include footer.html %}
 </section>
-<script>
-function sidebar_hide() {
-    var sidebar = document.getElementById("sidebar_nav");
-    sidebar.style.display = "none";
-    sidebar.className = "";
-    sidebar.removeEventListener("animationend", sidebar_hide);
-}
-function sidebar_toggle() {
-    var sidebar = document.getElementById("sidebar_nav");
-    if (sidebar.style.display === "none") {
-        sidebar.style.display = "block";
-        sidebar.className = "animate_open";
-    } else {
-        sidebar.className = "animate_close";
-        sidebar.addEventListener("animationend", sidebar_hide);
-    }
-}
-</script>
 </body>
 </html>

@@ -1,4 +1,5 @@
-<nav id="sidebar_nav" style="display:none">
+<nav id="sidebar_nav">
+    <a href="{{site.url}}{{ site.baseurl }}" class="title">Wayverb</a>
     <ul>
         {% assign navigation_pages = site.html_pages | sort: 'navigation_weight' %}
         {% for p in navigation_pages %}
