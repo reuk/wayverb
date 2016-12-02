@@ -9,8 +9,8 @@ reference
 demo/impulses
 demo/logfile.txt
 local_docs
-docs/.vagrant
 docs/_site
+docs/.*
 docs/doxygen/doxygen_sqlite3.db
 
 config/travisci_rsa

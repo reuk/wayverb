@@ -10,6 +10,8 @@ Intro to the code
 
 pdf rendering needed (automatic?)
 
+css -> sass
+
 ## generic
 
 https://github.com/inukshuk/citeproc-ruby
