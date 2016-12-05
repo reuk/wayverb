@@ -11,19 +11,11 @@
 
     > .inner {
         @include padding(5em, 5em);
-        max-width: 100%;
-        width: _size(inner-width);
-
-        @include breakpoint(xlarge) {
-            @include padding(4em, 4em);
-        }
-
-        @include breakpoint(large) {
-            width: 100%;
-        }
+        width: 100%;
+        //max-width: _size(inner-width);
 
         @include breakpoint(small) {
-            @include padding(3em, 2em);
+            @include padding(2em, 1em);
         }
     }
 

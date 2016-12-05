@@ -1,17 +1,5 @@
 $top_z_index: 10;
 
-#dimmer {
-    opacity: 0;
-    background: #000000;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: $top_z_index;
-    pointer-events: none;
-}
-
 //  see https://css-tricks.com/off-canvas-menu-with-css-target/
 
 $sidebar_open_width: 16em;
@@ -96,18 +84,5 @@ $sidebar_open_width: 16em;
                 }
             }
         }
-    }
-}
-
-#main.wrapper {
-    left: 0;
-    margin-left: $sidebar_open_width;
-
-    transition: left 0.4s ease, margin-left 0.4s ease;
-
-    overflow-x: hidden;
-
-    @include breakpoint(medium) {
-        margin-left: 0;
     }
 }

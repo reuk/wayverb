@@ -67,9 +67,10 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-    font-size: 2.75em;
+    font-size: 2.25em;
 
     &.major {
+        font-size: 2.75em;
         margin: 0 0 (_size(element-margin) * 0.65) 0;
         position: relative;
         padding-bottom: 0.35em;
