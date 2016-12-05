@@ -11,6 +11,15 @@
     width: device-width;
 }
 
+//  So that when the sidebar is open, the view can't be scrolled sideways.
+html, body {
+    overflow-x: hidden;
+}
+
+body {
+    position: relative;
+}
+
 // MSIE: Prevents scrollbar from overlapping content.
 body {
     -ms-overflow-style: scrollbar;
