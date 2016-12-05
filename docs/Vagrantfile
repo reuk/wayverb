@@ -66,15 +66,17 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
-    apt-get install -y language-pack-en pandoc build-essential ruby-dev zsh fonts-powerline
-    gem install jekyll jekyll-pandoc
+    apt-get install -y language-pack-en pandoc build-essential ruby-dev zsh fonts-powerline zlib1g-dev
+    gem install jekyll jekyll-pandoc rake html-proofer
   SHELL
 
   config.vm.provision "shell", privileged: false, inline: <<-SHELL
-    rm -rf ~/.oh-my-zsh
-    git clone --depth 1 https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
-    rm -rf ~/.vim
-    git clone https://github.com/reuk/vimrc ~/.vim
-    cp ~/.vim/zshrc ~/.zshrc
+    if [ ! -d ~/.oh-my-zsh ]; then
+        git clone --depth 1 https://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
+    fi
+
+    if [ ! -d ~/.vim ]; then
+        git clone --depth 1 https://github.com/reuk/vimrc ~/.vim && cp ~/.vim/zshrc ~/.zshrc
+    fi
   SHELL
 end
