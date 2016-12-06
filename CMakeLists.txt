@@ -16,7 +16,7 @@ if(ONLY_BUILD_DOCS)
             ${CMAKE_CURRENT_BINARY_DIR})
     endif(DOXYGEN_FOUND)
 else()
-    include(dependencies.txt)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/config/dependencies.cmake)
 
     set(CMAKE_BUILD_TYPE RelWithDebugInfo)
 

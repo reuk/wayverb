@@ -1,0 +1,88 @@
+$top_z_index: 10;
+
+//  see https://css-tricks.com/off-canvas-menu-with-css-target/
+
+$sidebar_open_width: 16em;
+
+#sidebar_nav {
+    width: $sidebar_open_width;
+
+    overflow: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+
+    transition: width 0.4s ease;
+
+    &:target {
+        width: $sidebar_open_width;
+
+        + #page_main {
+            left: $sidebar_open_width;
+            margin-left: 0;
+
+            .nav_menu {
+                &.open {
+                    display: none;
+                }
+                &.close {
+                    display: inline-block;
+                }
+            }
+        }
+    }
+
+    background: _palette(bg-alt);
+    text-align: right;
+    z-index: $top_z_index;
+
+    @include breakpoint(medium) {
+        width: 0;
+    }
+
+    .title {
+        background-color: _palette(accent1);
+        padding: 1em 1em;
+
+        font-size: 1.25em;
+        font-weight: bold;
+        border: 0;
+
+        display: block;
+        @include breakpoint(medium) {
+            display: none;
+        }
+    }
+
+    ul {
+        list-style: none;
+        margin: 2em 0;
+        padding: 0;
+
+        li {
+            margin: 0;
+            padding: 0;
+
+            a {
+                border: 0;
+                padding: 1.5em 2em;
+                color: rgba(255, 255, 255, 0.35);
+                font-size: 0.6em;
+                font-weight: bold;
+                letter-spacing: 0.25em;
+                text-transform: uppercase;
+                white-space: nowrap;
+                display: block;
+
+                &:hover {
+                    color: rgba(255, 255, 255, 0.55);
+                }
+
+                &.active {
+                    color: #ffffff;
+                }
+            }
+        }
+    }
+}

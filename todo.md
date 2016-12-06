@@ -47,6 +47,8 @@ Variable speed of sound.
 
 Undo/redo.
 
+Better comparative visualisation of rays + waves
+
 ### library
 
 Speed up compile times.
@@ -79,3 +81,5 @@ Probably not because 'ghost points' would end up coinciding with air points.
 Air absorption - Better calculation method based on temperature, humidity,
 ambient density, speed of sound.
 Implement as a post-process in all models.
+
+Automatically align waveguide mesh to model's minimal bounding box.

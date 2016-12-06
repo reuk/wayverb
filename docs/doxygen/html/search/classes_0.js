@@ -4,7 +4,7 @@ var searchData=
   ['allocator',['allocator',['../classutil_1_1aligned_1_1allocator.html',1,'util::aligned']]],
   ['any',['any',['../structdetail_1_1any.html',1,'detail']]],
   ['any_3c_20t_20_3e',['any&lt; T &gt;',['../structdetail_1_1any_3_01_t_01_4.html',1,'detail']]],
-  ['any_3c_20t_2c_20ts_2e_2e_2e_3e',['any&lt; T, Ts...&gt;',['../structdetail_1_1any_3_01_t_00_01_ts_8_8_8_4.html',1,'detail']]],
+  ['any_3c_20t_2c_20ts_2e_2e_2e_20_3e',['any&lt; T, Ts... &gt;',['../structdetail_1_1any_3_01_t_00_01_ts_8_8_8_01_4.html',1,'detail']]],
   ['attenuate_5fmapper',['attenuate_mapper',['../structwayverb_1_1waveguide_1_1attenuate__mapper.html',1,'wayverb::waveguide']]],
   ['attenuate_5fmapper',['attenuate_mapper',['../structwayverb_1_1raytracer_1_1attenuate__mapper.html',1,'wayverb::raytracer']]],
   ['attenuated_5fimpulse',['attenuated_impulse',['../structwayverb_1_1raytracer_1_1attenuated__impulse.html',1,'wayverb::raytracer']]],

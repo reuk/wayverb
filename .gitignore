@@ -9,9 +9,13 @@ reference
 demo/impulses
 demo/logfile.txt
 local_docs
-docs/_site
 docs/.*
-docs/doxygen/doxygen_sqlite3.db
+docs_source/.*
+
+.vagrant
+.sass-cache
+
+*.db
 
 config/travisci_rsa
 
