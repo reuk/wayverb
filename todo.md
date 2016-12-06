@@ -1,5 +1,9 @@
 # TODO
 
+## site
+
+doxygen missing assets
+
 ## critical
 
 Raytracer is slower when waveguide cutoff is high???
