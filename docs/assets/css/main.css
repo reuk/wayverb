@@ -1607,7 +1607,7 @@ button,
   background: rgba(255, 255, 255, 0.05);
   margin: 0 0 2em 0; }
   .features section {
-    padding: 2em 2em 0.1em 2em ;
+    padding: 2em;
     width: 50%;
     border-top: solid 1px rgba(255, 255, 255, 0.15);
     position: relative; }
@@ -1626,7 +1626,7 @@ button,
           border-top-width: 0 !important; } }
   @media screen and (max-width: 736px) {
     .features section {
-      padding: 2em 1.5em 0.1em 1.5em ; } }
+      padding: 1.5em; } }
 
 /* Form */
 form {

@@ -15,7 +15,8 @@
     margin: 0 0 _size(element-margin) 0;
 
     section {
-        @include padding(2em, 2em);
+        //@include padding(2em, 2em);
+        padding: 2em;
         width: 50%;
         border-top: solid 1px _palette(border);
         position: relative;
@@ -45,7 +46,7 @@
 
     @include breakpoint(small) {
         section {
-            @include padding(2em, 1.5em);
+            padding: 1.5em;
         }
     }
 }
