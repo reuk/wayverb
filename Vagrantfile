@@ -66,7 +66,7 @@ Vagrant.configure("2") do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
-    apt-get install -y doxygen cmake libcurl3 language-pack-en pandoc build-essential ruby-dev zsh fonts-powerline zlib1g-dev ntp
+    apt-get install -y doxygen cmake libcurl3 language-pack-en pandoc pandoc-citeproc build-essential ruby-dev zsh fonts-powerline zlib1g-dev ntp
     gem install jekyll jekyll-pandoc rake html-proofer
   SHELL
 

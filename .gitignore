@@ -13,6 +13,8 @@ docs/.*
 docs_source/.*
 
 local_hosted_docs
+tmp
+docs_source/tmp
 
 .vagrant
 .sass-cache

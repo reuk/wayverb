@@ -4,8 +4,9 @@ title: Context
 navigation_weight: 1
 ---
 
-* TOC
-{:toc}
+---
+link-citations: true
+...
 
 <!--
 
@@ -33,26 +34,26 @@ How have I decided to solve the problem?
 # Existing Software
 
 Room acoustics simulation is not a new topic of research.
-In 1968, Krokstad, Strøm and Sørsdal published their paper entitled
-"Calculating acoustical room response by use of a ray tracing technique",
-presenting the first use of computerized ray tracing to find the impulse
-response of a 3D model [@krokstad1968].
+The first documented method for estimating a room impulse response was put
+forward by @krokstad_calculating_1968, who suggested a geometric method based
+on ray tracing.
 
 TODO Since then... 
 
 Searching online uncovers a handful of programs for acoustic simulation:
 
-Name                           | Type                        | Availability
--------------------------------|-----------------------------|------------------
-Odeon [@rindel2000]			   | Geometric                   | Commercial       
-CATT-Acoustic [@dalenback2010] | Geometric                   | Commercial 
-Olive Tree Lab [@olive]        | Geometric                   | Commercial
-EASE [@ease]                   | Geometric                   | Commercial
-Auratorium [@auratorium]       | Geometric                   | Commercial
-RAVEN [@schroder2011_2]        | Geometric                   | None
-RoomWeaver [@beeson2004]       | Waveguide                   | None
-EAR [@ear]                     | Geometric                   | Free
-PachydermAcoustic [@pachyderm] | Geometric                   | Free
-Parallel FDTD [@parallelFDTD]  | Waveguide                   | Free
-i-Simpa [@isimpa]              | Geometric, extensible       | Free
+Name                                  | Type                        | Availability
+--------------------------------------|-----------------------------|------------------
+Odeon [@_odeon_2016]                  | Geometric                   | Commercial       
+CATT-Acoustic [@_catt-acoustic_2016]  | Geometric                   | Commercial 
+Olive Tree Lab [@_otl_2016]           | Geometric                   | Commercial
+EASE [@_ease_2016]                    | Geometric                   | Commercial
+Auratorium [@_audioborn_2016]         | Geometric                   | Commercial
+RAVEN [@schroder_raven:_2011]         | Geometric                   | None
+RoomWeaver [@beeson_roomweaver:_2004] | Waveguide                   | None
+EAR [@_ear_2016]                      | Geometric                   | Free
+PachydermAcoustic [@_pachyderm_2016]  | Geometric                   | Free
+Parallel FDTD [@_parallelfdtd_2016]   | Waveguide                   | Free
+i-Simpa [@_i-simpa_2016]              | Geometric, extensible       | Free
 
+# References

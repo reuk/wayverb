@@ -8,11 +8,19 @@ description: >
     It's also free and open source.
 baseurl: "/wayverb"
 
-destination: ../docs
-
 # Plugins
 gems:
 - jekyll-pandoc
 
 # Build settings
 markdown: Pandoc
+
+pandoc:
+    extensions:
+    - csl: elsevier-with-titles.csl
+    - bibliography: wayverb.bib
+
+exclude:
+- LICENSE.txt
+- readme.txt
+- todo.md
