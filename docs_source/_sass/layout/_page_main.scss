@@ -20,6 +20,10 @@
     }
 
     #refs {
+        $hanging-indent: 4em;
+
         font-size: 80%;
+        padding-left: $hanging-indent;
+        text-indent: -$hanging-indent;
     }
 }
