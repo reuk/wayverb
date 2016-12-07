@@ -4,9 +4,7 @@ title: Context
 navigation_weight: 1
 ---
 
----
-link-citations: true
-...
+# Context {.major}
 
 <!--
 
@@ -29,9 +27,9 @@ How have I decided to solve the problem?
 
 -->
 
-# Acoustics Simulation Techniques
+## Acoustics Simulation Techniques
 
-# Existing Software
+## Existing Software
 
 Room acoustics simulation is not a new topic of research.
 The first documented method for estimating a room impulse response was put
@@ -55,5 +53,3 @@ EAR [@_ear_2016]                      | Geometric                   | Free
 PachydermAcoustic [@_pachyderm_2016]  | Geometric                   | Free
 Parallel FDTD [@_parallelfdtd_2016]   | Waveguide                   | Free
 i-Simpa [@_i-simpa_2016]              | Geometric, extensible       | Free
-
-# References

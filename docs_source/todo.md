@@ -1,18 +1,17 @@
 # TODO
 
 USE SUBMISSION GUIDELINES
-    central bibliography
-    abstract
     declaration
-
-pdf rendering needed (automatic?)
 
 demo vid
 
 demo sounds
 
-next/previous
+work out how to add per-page bibliography titles
+    or, better, have citations link to a global 'bibliography' page
 
-per-page tables of content
+## maybe
 
 short urls in bibliograpy
+
+next/previous

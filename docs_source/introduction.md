@@ -1,21 +1,10 @@
 ---
 layout: page
-title: Prelude
+title: Introduction
 navigation_weight: 0
 ---
 
-# Abstract
-
-TODO Write this last.
-
-# Acknowledgements
-
-This research was supported by the Creative Coding Lab at the University of
-Huddersfield.
-I would like to thank my supervisor, Alexander Harker (PhD, Lecturer), for his
-invaluable input and patience.
-
-# Introduction
+# Introduction {- .major}
 
 The aim of impulse response synthesis is to simulate the reverberant properties
 of a space without having to physically build anything.

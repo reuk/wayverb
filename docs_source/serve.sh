@@ -1,1 +1,3 @@
-jekyll serve --host=0.0.0.0 --incremental --destination=tmp --verbose
+#!/bin/sh
+
+jekyll serve --host=0.0.0.0 --destination=tmp --verbose --incremental 

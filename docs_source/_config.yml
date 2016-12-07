@@ -10,17 +10,22 @@ baseurl: "/wayverb"
 
 # Plugins
 gems:
-- jekyll-pandoc
+    - jekyll-pandoc
 
 # Build settings
 markdown: Pandoc
 
 pandoc:
     extensions:
-    - csl: elsevier-with-titles.csl
-    - bibliography: wayverb.bib
+        - csl: apa.csl
+        - bibliography: wayverb.bib
+        - smart
 
 exclude:
-- LICENSE.txt
-- readme.txt
-- todo.md
+    - LICENSE.txt
+    - readme.txt
+    - todo.md
+    - makefile
+    - title_page.md
+    - abstract.md
+    - acknowledgements.md
