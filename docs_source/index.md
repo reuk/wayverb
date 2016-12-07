@@ -101,7 +101,7 @@ physically-based waveguide model for low frequencies.
 ## Implementation details
 
 You can jump straight to the documentation on each of these topics, or you can
-[start by reading from the beginning]({{ site.baseurl }}{% link prelude.md %}).
+[start by reading from the beginning]({{ site.baseurl }}{% link introduction.md %}).
 
 <div class="features">
 <section>

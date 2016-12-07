@@ -4,6 +4,8 @@ subtitle: |
     A thesis submitted to the University of Huddersfield in partial fulfilment
     of the requirements for the degree of Master of Arts
 
+institute: Creative Coding Lab at the University of Huddersfield
+
 author: Matthew Reuben Thomas
 date: January 2017
 

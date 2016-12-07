@@ -17,9 +17,10 @@ markdown: Pandoc
 
 pandoc:
     extensions:
+        - smart
         - csl: apa.csl
         - bibliography: wayverb.bib
-        - smart
+        - metadata: "link-citations:true"
 
 exclude:
     - LICENSE.txt
