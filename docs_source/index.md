@@ -3,6 +3,10 @@ layout: default
 title: Home
 ---
 
+---
+suppress-bibliography: true
+...
+
 <section id="sidebar">
 <div class="inner">
 <nav>

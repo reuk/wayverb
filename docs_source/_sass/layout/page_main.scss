@@ -11,6 +11,45 @@
     }
 
     > .inner {
+        background: rgb(255, 255, 255);
+        color: _palette(bg-alt);
+
+        a {
+            @include vendor('transition', (
+                'color #{_duration(transition)} ease',
+                'border-bottom-color #{_duration(transition)} ease'
+            ));
+
+            border-bottom: dotted 1px _palette(bg);
+            color: inherit;
+            text-decoration: none;
+
+            &:hover {
+                border-bottom-color: transparent;
+                color: _palette(accent1);
+            }
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: _palette(bg);
+        }
+
+        table {
+            tr {
+                &:nth-child(even) {
+                    background-color: lighten(#5e42a6, 45);
+                }
+            }
+
+            thead {
+                border-bottom: solid (_size(border-width) * 2) _palette(bg);
+            }
+
+            tfoot {
+                border-top: solid (_size(border-width) * 2) _palette(bg);
+            }
+        }
+
         @include padding(5em, 5em);
         max-width: 60em;
 

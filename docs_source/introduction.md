@@ -4,6 +4,10 @@ title: Introduction
 navigation_weight: 0
 ---
 
+---
+suppress-bibliography: true
+...
+
 # Introduction {- .major}
 
 The aim of impulse response synthesis is to simulate the reverberant properties

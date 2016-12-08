@@ -14,4 +14,5 @@ abstract: |
 
 rights: Creative Commons NonCommercial ShareAlike 4.0
 language: en-GB
+suppress-bibliography: false
 ...
