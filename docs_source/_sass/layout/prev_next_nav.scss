@@ -1,0 +1,26 @@
+#prev_next_nav {
+    text-transform: capitalize;
+    display: flex;
+    justify-content: space-between;
+
+    margin: 1em 0em;
+
+    a {
+        border: 0;
+    }
+
+    .prev_page {
+        &:before {
+            content: "⇦";
+            padding-right: 1em;
+        }
+    }
+
+    .next_page {
+        &:after {
+            content: "⇨";
+            padding-left: 1em;
+        }
+
+    }
+}

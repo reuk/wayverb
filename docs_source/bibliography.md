@@ -10,6 +10,12 @@ nocite: '@*'
 
 # References {- .major}
 
+This list contains all items cited in the text.
+It also contains some items not directly mentioned, but which nonetheless
+guided the development of the project, or might shape its future.
+
+---
+
 \noindent
 \vspace{-2em}
 \setlength{\parindent}{-0.5in}

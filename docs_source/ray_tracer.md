@@ -1,9 +1,9 @@
 ---
 layout: page
-title: Ray-tracer
+title: Ray tracer
 navigation_weight: 3
 ---
 
-# Ray-tracer {.major}
+# Ray Tracer {.major}
 
 Coming soon.

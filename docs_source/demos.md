@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Demos
-navigation_weight: 8
+navigation_weight: 50 
 ---
 
 # Demos {.major}

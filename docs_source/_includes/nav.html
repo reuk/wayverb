@@ -1,15 +1,13 @@
 <nav id="sidebar_nav">
     <a href="{{ site.baseurl }}{% link index.md %}" class="title">Wayverb</a>
     <ul>
-        {% assign navigation_pages = site.html_pages | sort: 'navigation_weight' %}
+        {% assign navigation_pages = site.html_pages | where_exp: 'p', 'p.navigation_weight' | sort: 'navigation_weight' %}
         {% for p in navigation_pages %}
-            {% if p.navigation_weight %}
-                <li>
-                    <a href="{{ site.baseurl }}{{ p.url }}" {% if p.url == page.url %}class="active"{% endif%}>
-                        {{ p.title }}
-                    </a>
-                </li>
-            {% endif %}
+            <li>
+                <a href="{{ site.baseurl }}{{ p.url }}" {% if p.url == page.url %}class="active"{% endif%}>
+                    {{ p.title }}
+                </a>
+            </li>
         {% endfor %}
     </ul>
 </nav>

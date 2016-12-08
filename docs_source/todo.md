@@ -7,8 +7,4 @@ demo vid
 
 demo sounds
 
-## maybe
-
-short urls in bibliograpy
-
-next/previous
+fix bibliography dates

@@ -1,0 +1,20 @@
+<nav id="prev_next_nav">
+    {% assign navigation_pages = site.html_pages | where_exp: 'p', 'p.navigation_weight' | sort: 'navigation_weight' %}
+    {% for p in navigation_pages %}
+        {% if p.url == page.url %}
+            {% assign prev_i = forloop.index0 | minus: 1 %}
+            {% assign prev = navigation_pages[prev_i] %}
+            {% if 0 <= prev_i && prev %}
+                <a href="{{ site.baseurl }}{{ prev.url }}" class="prev_page">{{ prev.title }}</a>
+            {% else %}
+                <div></div>
+            {% endif %}
+
+            {% assign next_i = forloop.index0 | plus: 1 %}
+            {% assign next = navigation_pages[next_i] %}
+            {% if next %}
+                <a href="{{ site.baseurl }}{{ next.url }}" class="next_page">{{ next.title }}</a>
+            {% endif %}
+        {% endif %}
+    {% endfor %}
+</nav>

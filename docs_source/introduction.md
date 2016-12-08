@@ -43,7 +43,8 @@ graphical tool for impulse response synthesis.
 It combines several simulation techniques, providing an adjustable balance
 between speed and accuracy.
 It is also free to download, can be run immediately on commodity hardware,
-and the source can be used and extended under the terms of the GNU GPL license.
+and the source code can be used and extended under the terms of the GNU GPL
+license.
 
 This thesis will begin by examining common methods of room simulation and the
 software which implements these methods, explaining why particular techniques
@@ -52,6 +53,8 @@ Then, each of the chosen techniques will be explored in depth, along with a
 description of their implementation.
 The procedure for producing a single impulse response from the outputs of
 multiple modelling techniques will be detailed.
-Finally, two extensions to the basic room acoustics model will be described,
+Two extensions to the basic room acoustics model will be described,
 namely frequency-dependent reflections at boundaries, and
 microphone/head-related transfer function (HRTF) simulation.
+The project will be evaluated, and finally, avenues for future development will
+be examined.

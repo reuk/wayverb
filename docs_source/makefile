@@ -19,6 +19,8 @@ SOURCES := \
 	waveguide.md \
 	microphone.md \
 	boundary.md \
+	evaluation.md \
+	the_future.md \
 	bibliography.md
 
 wayverb.pdf : $(SOURCES)
