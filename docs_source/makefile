@@ -2,6 +2,7 @@ PANDOC_OPTIONS = \
 	--smart \
 	--chapter \
 	--toc \
+	--variable=colorlinks:true \
 	--variable=geometry:margin=3cm \
 	--variable=geometry:a4paper \
 	--variable=documentclass:scrreprt \

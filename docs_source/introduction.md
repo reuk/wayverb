@@ -6,6 +6,7 @@ navigation_weight: 0
 
 ---
 suppress-bibliography: true
+toc: null
 ...
 
 # Introduction {- .major}

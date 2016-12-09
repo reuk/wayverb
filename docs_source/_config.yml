@@ -21,6 +21,9 @@ pandoc:
         - csl: apa.csl
         - bibliography: wayverb.bib
         - metadata: "link-citations:true"
+        - toc
+        - standalone
+        - template: template.html
 
 exclude:
     - LICENSE.txt
@@ -30,3 +33,4 @@ exclude:
     - title_page.md
     - abstract.md
     - acknowledgements.md
+    - template.html

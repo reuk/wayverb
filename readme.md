@@ -31,6 +31,29 @@ The approach of this library is to use:
 * **stochastic ray-tracing** for high-frequency late reflections, and
 * **rectilinear waveguide mesh** for all low-frequency content.
 
+Usage Notes
+===========
+
+You'll need a 3D model of the space.
+This model *must* be solid and watertight, without holes or no-thickness planes.
+The waveguide mesh setup process must be able to work out whether each node is
+'inside' or 'outside' the space, and it will not be able to do so if the
+model does not have a well-defined inside and outside.
+
+To ensure that your model is valid, you can:
+
+    * Open the model in Sketchup.
+    * Select-all and Edit > Make Group.
+    * Check the info window (Window > Entity Info).
+    * If this window displays a volume, it is correct.
+
+If the model is not valid, you can debug it using the
+['Solid Inspector' plugin](https://extensions.sketchup.com/en/content/solid-inspector).
+
+These instructions are taken from the readme for [ParallelFDTD](https://github.com/juuli/ParallelFDTD),
+which uses a similar (but not idential) technique to Wayverb for setting up
+a waveguide mesh.
+
 Requirements
 ============
 

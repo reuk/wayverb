@@ -1,3 +1,4 @@
+@charset "UTF-8";
 @import url(font-awesome.min.css);
 /*
 	Hyperspace by HTML5 UP
@@ -2220,7 +2221,6 @@ table {
   table td {
     padding: 0.75em 0.75em; }
   table th {
-    color: #ffffff;
     font-size: 1em;
     font-weight: bold;
     padding: 0 0.75em 0.75em 0.75em;
@@ -2728,8 +2728,54 @@ table {
     #page_main {
       margin-left: 0; } }
   #page_main > .inner {
+    background: white;
+    color: #261c3e;
     padding: 5em 5em 3em 5em ;
     max-width: 60em; }
+    #page_main > .inner a {
+      -moz-transition: color 0.2s ease, border-bottom-color 0.2s ease;
+      -webkit-transition: color 0.2s ease, border-bottom-color 0.2s ease;
+      -ms-transition: color 0.2s ease, border-bottom-color 0.2s ease;
+      transition: color 0.2s ease, border-bottom-color 0.2s ease;
+      border-bottom: dotted 1px #312450;
+      color: inherit;
+      text-decoration: none; }
+      #page_main > .inner a:hover {
+        border-bottom-color: transparent;
+        color: #5e42a6; }
+    #page_main > .inner h1, #page_main > .inner h2, #page_main > .inner h3, #page_main > .inner h4, #page_main > .inner h5, #page_main > .inner h6 {
+      color: #312450; }
+    #page_main > .inner table tr:nth-child(even) {
+      background-color: #e2dcf1; }
+    #page_main > .inner table thead {
+      border-bottom: solid 2px #312450; }
+    #page_main > .inner table tfoot {
+      border-top: solid 2px #312450; }
+    #page_main > .inner blockquote {
+      border-left: solid 4px #5e42a6; }
+    #page_main > .inner figure {
+      margin: 0 0 2em 0;
+      border: dotted 2px #e2dcf1; }
+      #page_main > .inner figure figcaption {
+        text-align: center; }
     @media screen and (max-width: 736px) {
       #page_main > .inner {
         padding: 2em 2em 0.1em 2em ; } }
+  #page_main #refs {
+    font-size: 80%;
+    padding-left: 4em;
+    text-indent: -4em; }
+
+#prev_next_nav {
+  text-transform: capitalize;
+  display: flex;
+  justify-content: space-between;
+  margin: 1em 0em; }
+  #prev_next_nav a {
+    border: 0; }
+  #prev_next_nav .prev_page:before {
+    content: "⇦";
+    padding-right: 1em; }
+  #prev_next_nav .next_page:after {
+    content: "⇨";
+    padding-left: 1em; }

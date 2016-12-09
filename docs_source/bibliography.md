@@ -6,6 +6,7 @@ navigation_weight: 100
 
 ---
 nocite: '@*'
+toc: null
 ...
 
 # References {- .major}

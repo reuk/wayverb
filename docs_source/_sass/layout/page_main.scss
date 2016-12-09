@@ -32,6 +32,12 @@
 
         h1, h2, h3, h4, h5, h6 {
             color: _palette(bg);
+            &:after {
+                height: 0;
+            }
+            &.major {
+                margin: 0;
+            }
         }
 
         table {
@@ -47,6 +53,38 @@
 
             tfoot {
                 border-top: solid (_size(border-width) * 2) _palette(bg);
+            }
+        }
+
+        blockquote {
+            border-left: solid (_size(border-width) * 4) _palette(accent1);
+        }
+
+        figure {
+            margin: 0 0 2em 0;
+            border: dotted (_size(border-width) * 2) lighten(#5e42a6, 45);
+
+            figcaption {
+                text-align: center;
+            }
+        }
+
+        img {
+            width: 100%;
+        }
+
+        #TOC {
+            display: block;
+            background-color: lighten(#5e42a6, 45);
+            float: right;
+            margin: 0 0 0 1em;
+            padding: 1em 1em 1em 0;
+            position: relative;
+            z-index: 10;
+
+            ul {
+                list-style: none;
+                margin: 0;
             }
         }
 
