@@ -18,6 +18,7 @@ markdown: Pandoc
 pandoc:
     extensions:
         - smart
+        - mathjax
         - csl: apa.csl
         - bibliography: wayverb.bib
         - metadata: "link-citations:true"

@@ -10,6 +10,9 @@
         margin-left: 0;
     }
 
+    code{white-space: pre;}
+    q { quotes: "“" "”" "‘" "’"; }
+
     > .inner {
         background: rgb(255, 255, 255);
         color: _palette(bg-alt);

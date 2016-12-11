@@ -81,7 +81,7 @@ Alternatively, they may use a surface-based technique, such as *acoustic
 radiance transfer* (ART), in which surfaces are used as intermediate stores of
 acoustic energy.
 
-These techniques are inherently approximate.
+These techniques are approximate by nature.
 They aim to randomly probe the problem space repeatedly, combining the results
 from multiple samples so that they converge upon the impulse response for a
 scene.
@@ -147,13 +147,13 @@ This in turn allows it to model unbounded spaces. [@murphy_digital_2000]
 The FDTD method works by dividing the space to be modelled into a regular grid,
 and computing changes in some quantity at each grid point over time.
 The formula used to update each grid point, along with the topology of the grid,
-may be varied depending on the accuracy, efficiency, and complexity of required
+may be varied depending on the accuracy, efficiency, and complexity required
 by the application.
 FDTD methods are generally applied to problems in electromagnetics, but a
 subclass of the FDTD method known as the *Digital Waveguide Mesh* (DWM) is
 often used for solving acoustics problems.
 
-The FDTD shares some characteristics with the element methods.
+The FDTD process shares some characteristics with the element methods.
 They all become rapidly more computationally expensive as the maximum output
 frequency increases [@valimaki_fifty_2012].
 They also share the problem of discretisation or quantisation, in which details
@@ -162,7 +162,7 @@ sampling period.
 If a large inter-element spacing is used, details of the room shape will be
 lost, whereas a small spacing will greatly increase the computational load.
 
-The FDTD method has one major advantage over element methods: it is run
+The major advantage of FDTD over element methods is that it is run
 directly in the time domain, rather than producing frequency-domain results,
 which in turn affords a much simpler implementation.
 
@@ -210,8 +210,8 @@ For example, the FAQ page for the Odeon software [@_odeon_2016-1] notes that:
 
 > For Odeon simulations as with real measurements, the source and receiver should be at least 1/4th wave length from the walls. But at the very lowest resonance of the room the level can change a lot from position to position without Odeon being able to predict it. For investigation of low frequency behavior (resonances), indeed Odeon is not the tool.
 
-Clearly there is a need for acoustics software which can accurately predict
-low frequency behaviour.
+Clearly there is a need for wave-modelling acoustics software, which can
+accurately predict low frequency behaviour.
 However, such software seems to be somewhat rarer than geometric acoustics
 software.
 Of the two wave-modelling programs listed, only one is generally available,
@@ -255,9 +255,9 @@ so would not require a great deal of experimentation to implement.
 Secondly, ray tracing has the property of being an *embarrassingly parallel*
 algorithm, because each individual ray can be simulated entirely independently,
 without requiring communication or synchronisation.
-By running the algorithm on graphics hardware, which is inherently parallel,
-all rays could be simulated in one go, yielding much greater performance than
-processing each ray sequentially.
+By running the algorithm on graphics hardware, which is designed to run great 
+numbers of calculations in parallel, all rays could be simulated in one go,
+yielding much greater performance than processing each ray sequentially.
 
 A logistical reason for choosing the image-source and ray tracing solution for
 high-frequency modelling was that the author had previously implemented such a
@@ -277,7 +277,7 @@ characteristic of being embarrassingly parallel.
 Each element in the waveguide mesh can be updated individually and
 simultaneously, which it was hoped would yield performance benefits.
 
-An in-depth description of the algorithms implemented will be given in the
+An in-depth description of the algorithms implemented is given in the
 [Image-Source]({{ site.baseurl }}{% link image_source.md %}),
 [Ray Tracer]({{ site.baseurl }}{% link ray_tracer.md %}), and
 [Waveguide]({{ site.baseurl }}{% link waveguide.md %}) sections.

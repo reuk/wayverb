@@ -4,6 +4,10 @@
 
 doxygen missing assets
 
+check raytracer ongoing energy
+    if direction is scattering-weighted, should the ongoing energy be weighted too?
+    what does this mean for diffuse rain?
+
 ## critical
 
 Raytracer is slower when waveguide cutoff is high???

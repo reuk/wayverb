@@ -1,5 +1,7 @@
 ---
-title: "Wayverb: A Graphical Tool for Hybrid Modelling Auralisation"
+title: >
+    Wayverb: A Graphical Tool for Hybrid Modelling Auralisation
+
 subtitle: |
     A thesis submitted to the University of Huddersfield in partial fulfilment
     of the requirements for the degree of Master of Arts
@@ -15,4 +17,6 @@ abstract: |
 rights: Creative Commons NonCommercial ShareAlike 4.0
 language: en-GB
 suppress-bibliography: false
+
+toc: true
 ...
