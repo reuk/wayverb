@@ -14,7 +14,7 @@ reference-section-title: References
 
 Room acoustics algorithms fall into two main categories: *geometric*, and
 *wave-based* [@southern_spatial_2011].
-Wave-based methods aim to numerically solve the wave equation, simulating the
+Wave-based methods aim to solve the wave equation numerically, simulating the
 actual behaviour of sound waves within an enclosure.
 Geometric methods instead make some simplifying assumptions about the behaviour
 of sound waves, which result in faster but less accurate simulations.
@@ -24,15 +24,15 @@ model sound as independent *rays*, *particles*, or *phonons*.
 The modelling of waves as particles has found great success in the field of
 computer graphics, where *ray-tracing* is used to simulate the reflections of
 light in a scene.
-The technique works well here because of the relatively high frequencies of the
-modelled waves.
+The technique works well for simulating light because of the relatively high
+frequencies of the modelled waves.
 The wavelengths of these waves - the wavelengths of the visible spectrum - will
 generally be many times smaller than any surface in the scene being rendered, so
-wave phenomena have little or no effect.
+wave phenomena have little or no visible effect.
 
 The assumption that rays and waves are interchangeable falls down somewhat when
 modelling sound.
-Here, the wavelengths range from 17m to 0.017m for the frequency range
+The wavelengths of sound in air range from 17m to 0.017m for the frequency range
 20Hz to 20KHz, so while the simulation may be accurate at high frequencies,
 at low frequencies the wavelength is of the same order as the wall surfaces in
 the scene.
@@ -45,8 +45,8 @@ Wave-modelling is so computationally expensive that using it to simulate a
 large scene over a broad spectrum could take weeks on consumer hardware.
 This leaves geometric methods as the only viable alternative.
 Though wave-modelling been studied for some time [@smith_physical_1992], and
-even applied to small acoustic simulations in consumer devices (such as the
-Yamaha VL1 keyboard), it is only recently, as computers have become more
+even applied to small simulations of strings and membranes in consumer devices
+such as keyboards, it is only recently, as computers have become more
 powerful, that these techniques have been seriously considered for room
 acoustics simulation.
 
@@ -65,6 +65,11 @@ A short review of simulation methods will be given here.
 For a detailed survey of methods used in room acoustics, see
 @svensson_computational_2002.
 
+The following diagram shows the relationships between the most common simulation
+methods.
+The advantages and disadvantages of each method will be discussed throughout the
+remainder of this section.
+
 ![An overview of different acoustic simulation methods, grouped by category.](images/simulation_techniques.png)
 
 ### Geometric
@@ -74,19 +79,18 @@ Geometric methods can largely be grouped into two categories: *stochastic* and
 
 Stochastic methods are generally based on statistical approximation via some
 kind of Monte Carlo algorithm.
-They may be based directly on reflection paths, using *ray tracing* or *beam
+Such algorithms are approximate by nature.
+They aim to randomly and repeatedly sample the problem space , combining the results
+from multiple trials so that they converge upon the correct answer.
+The balance of quality and speed can be adjusted in a straightforwward manner, simply by adjusting the number of samples taken.
+
+In room acoustics, stochastic algorithms may be based directly on reflection paths, using *ray tracing* or *beam
 tracing*, in which rays or beams are considered to transport acoustic energy
 around the scene.
 Alternatively, they may use a surface-based technique, such as *acoustic
 radiance transfer* (ART), in which surfaces are used as intermediate stores of
 acoustic energy.
 
-These techniques are approximate by nature.
-They aim to randomly probe the problem space repeatedly, combining the results
-from multiple samples so that they converge upon the impulse response for a
-scene.
-They can be tuned easily, as quality can be traded-off against speed simply by
-adjusting the number of samples taken.
 Surface-based methods, especially, are suited to real-time simulations (i.e.
 interactive, where the listener position can change), as the calculation
 occurs in several passes, only the last of which involves the receiver object.
@@ -118,7 +122,7 @@ For a detailed reference on geometric acoustic methods, see @savioja_overview_20
 The main advantage of wave-based methods is that they inherently account for
 wave effects like diffraction and interference [@shelley_diffuse_2007], while
 geometric methods do not.
-This means that they are capable of accurately simulating the low-frequency
+This means that these wave-based methods are capable of accurately simulating the low-frequency
 component of a room impulse-response, where constructive and destructive wave
 interference form *room modes*.
 Room modes have the effect of amplifying and attenuating specific frequencies in
@@ -185,8 +189,8 @@ time-domain impulse responses.
 ## Existing Software
 
 Searching online and in the literature uncovers a handful of programs for
-acoustic simulation (this is not an exhaustive list, but it is felt to be
-representative):
+acoustic simulation.
+The table below shows a selection which is not exhaustive, but which is felt to be representative.
 
 Name                                  | Type                        | Availability
 --------------------------------------|-----------------------------|------------------
@@ -206,9 +210,9 @@ All commercial acoustics programs found use geometric techniques, probably
 because they are fast to run, and can often be implemented to run interactively,
 in real-time.
 However, low-frequency performance is a known issue with these programs.
-For example, the FAQ page for the Odeon software [@_odeon_2016-1] notes that:
+For example, the FAQ page for the Odeon software notes that:
 
-> For Odeon simulations as with real measurements, the source and receiver should be at least 1/4th wave length from the walls. But at the very lowest resonance of the room the level can change a lot from position to position without Odeon being able to predict it. For investigation of low frequency behavior (resonances), indeed Odeon is not the tool.
+> For Odeon simulations as with real measurements, the source and receiver should be at least 1/4th wave length from the walls. But at the very lowest resonance of the room the level can change a lot from position to position without Odeon being able to predict it. For investigation of low frequency behavior (resonances), indeed Odeon is not the tool. [@_odeon_2016-1]
 
 Clearly there is a need for wave-modelling acoustics software, which can
 accurately predict low frequency behaviour.
@@ -219,7 +223,7 @@ which must additionally be run from Python or Matlab scripts.
 This is a good approach for research software, but would probably not be
 straightforward for users with limited programming experience.
 
-As of December 2016, it appears that no generally-available (commercially or
+At time of writing, December 2016, it appears that no generally-available (commercially or
 otherwise) piece of software has taken the approach of combining wave-modelling
 and geometric methods, although this technique is well-known in the literature
 [@southern_hybrid_2013; @aretz_combined_2009; @murphy_hybrid_2008; @southern_room_2013; @vorlander_simulation_2009; @southern_spatial_2011].

@@ -20,3 +20,9 @@ suppress-bibliography: false
 
 toc: true
 ...
+
+<!--
+header-includes:
+    - \usepackage{setspace}
+    - \onehalfspacing
+-->

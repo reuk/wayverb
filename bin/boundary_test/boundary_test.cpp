@@ -9,13 +9,17 @@
 #include "waveguide/stable.h"
 #include "waveguide/waveguide.h"
 
+#include "hrtf/multiband.h"
+
 #include "core/almost_equal.h"
+#include "core/az_el.h"
 #include "core/azimuth_elevation.h"
 #include "core/callback_accumulator.h"
 #include "core/cl/common.h"
 #include "core/conversions.h"
 #include "core/filters_common.h"
 #include "core/scene_data.h"
+#include "core/serialize/az_el.h"
 #include "core/serialize/surface.h"
 #include "core/sinc.h"
 #include "core/spatial_division/voxelised_scene_data.h"
@@ -23,6 +27,7 @@
 
 #include "utilities/map.h"
 #include "utilities/map_to_vector.h"
+#include "utilities/named_value.h"
 #include "utilities/progress_bar.h"
 
 #include "audio_file/audio_file.h"
@@ -238,10 +243,12 @@ private:
     const free_field_results free_field_ = get_free_field_results();
 };
 
-struct coefficient_package final {
-    std::string name;
-    wayverb::waveguide::coefficients_canonical reflectance_coefficients;
-    wayverb::waveguide::coefficients_canonical impedance_coefficients;
+struct file_item final {
+    wayverb::core::az_el az_el;
+    std::string material;
+    std::string test;
+    wayverb::waveguide::coefficients_canonical reflectance;
+    wayverb::waveguide::coefficients_canonical impedance;
 };
 
 namespace cereal {
@@ -254,12 +261,12 @@ void serialize(T& archive,
 }
 
 template <typename T>
-void serialize(T& archive, coefficient_package& c) {
-    archive(cereal::make_nvp("name", c.name),
-            cereal::make_nvp("reflectance_coefficients",
-                             c.reflectance_coefficients),
-            cereal::make_nvp("impedance_coefficients",
-                             c.impedance_coefficients));
+void serialize(T& archive, file_item& i) {
+    archive(cereal::make_nvp("az_el", i.az_el),
+            cereal::make_nvp("material", i.material),
+            cereal::make_nvp("test", i.test),
+            cereal::make_nvp("reflectance", i.reflectance),
+            cereal::make_nvp("impedance", i.impedance));
 }
 
 }  // namespace cereal
@@ -267,9 +274,8 @@ void serialize(T& archive, coefficient_package& c) {
 int main(int argc, char** argv) {
     //  arguments  /////////////////////////////////////////////////////////////
 
-    if (argc != 4) {
-        std::cerr
-                << "expecting an output folder, an azimuth, and an elevation\n";
+    if (argc != 2) {
+        std::cerr << "expecting an output folder\n";
         std::cerr << "actually found: \n";
         for (auto i = 0; i != argc; ++i) {
             std::cerr << "arg " << i << ": " << argv[i] << '\n';
@@ -280,108 +286,76 @@ int main(int argc, char** argv) {
 
     const std::string output_folder{argv[1]};
 
-    const auto azimuth = std::stof(argv[2]);
-    const auto elevation = std::stof(argv[3]);
-
-    //  fitted boundaries  /////////////////////////////////////////////////////
+    const auto angles = std::array<wayverb::core::az_el, 3>{
+            {{0, 0}, {M_PI / 6, M_PI / 6}, {M_PI / 3, M_PI / 3}}};
 
     constexpr auto waveguide_sample_rate = 8000.0;
+
+    {
+        const auto centres = hrtf_data::hrtf_band_centres_hz();
+        for (auto i : centres) {
+            std::cout << i << '\n';
+        }
+    }
 
     const auto make_reflectance_coefficients = [&](const auto& absorption) {
         return wayverb::waveguide::compute_reflectance_filter_coefficients(
                 absorption, waveguide_sample_rate);
     };
 
-    try {
-        const boundary_test test{
-                output_folder, waveguide_sample_rate, azimuth, elevation};
+    //  Coefficients taken from
+    //  Frequency-Dependent Absorbing Boundary Implementations in 3D Finite
+    //  Different Time Domain Room Acoustics Simulations
+    const auto coefficients = std::array<
+            util::named_value<wayverb::waveguide::coefficients_canonical>,
+            3>{{
+            {"plaster",
+             make_reflectance_coefficients(
+                     std::array<double, wayverb::core::simulation_bands>{
+                             {0.08, 0.08, 0.2, 0.5, 0.4, 0.4, 0.36}})},
+            {"wood",
+             make_reflectance_coefficients(
+                     std::array<double, wayverb::core::simulation_bands>{
+                             {0.15, 0.15, 0.11, 0.1, 0.07, 0.06, 0.06}})},
+            {"concrete",
+             make_reflectance_coefficients(
+                     std::array<double, wayverb::core::simulation_bands>{
+                             {0.02, 0.02, 0.03, 0.03, 0.03, 0.04, 0.07}})},
+    }};
 
-        const util::aligned::vector<
-                std::tuple<const char*,
-                           wayverb::waveguide::coefficients_canonical>>
-                raw_tests{
-                        //  {"flat_0",
-                        //   waveguide::to_flat_coefficients(
-                        //           make_surface<simulation_bands>(0.0199,
-                        //           0))},
-                        //  {"flat_1",
-                        //   waveguide::to_flat_coefficients(
-                        //           make_surface<simulation_bands>(0.19, 0))},
-                        //  {"flat_2",
-                        //   waveguide::to_flat_coefficients(
-                        //           make_surface<simulation_bands>(0.36, 0))},
+    //  fitted boundaries  /////////////////////////////////////////////////////
 
-                        //  {"flat_fitted_0",
-                        //   make_filter_coefficients(make_bands_type(0.0199).s)},
-                        //  {"flat_fitted_1",
-                        //   make_filter_coefficients(make_bands_type(0.19).s)},
-                        //  {"flat_fitted_2",
-                        //   make_filter_coefficients(make_bands_type(0.36).s)},
+    std::ofstream file{util::build_string(output_folder, "/coefficients.txt")};
+    cereal::JSONOutputArchive archive{file};
 
-                        {"sloping_fitted_0",
-                         make_reflectance_coefficients(
-                                 std::array<double,
-                                            wayverb::core::simulation_bands>{
-                                         {0.0,
-                                          0.05,
-                                          0.1,
-                                          0.15,
-                                          0.2,
-                                          0.25,
-                                          0.3,
-                                          0.35}})},
-                        {"sloping_fitted_1",
-                         make_reflectance_coefficients(
-                                 std::array<double,
-                                            wayverb::core::simulation_bands>{
-                                         {0.35,
-                                          0.3,
-                                          0.25,
-                                          0.2,
-                                          0.15,
-                                          0.1,
-                                          0.05,
-                                          0.0}})},
+    for (const auto azel : angles) {
+        //  Precomputes anechoic signal, so it's faster to group calculations
+        //  by azimuth/elevation, even though outputs should be grouped by
+        //  material.
+        const boundary_test test{output_folder,
+                                 waveguide_sample_rate,
+                                 azel.azimuth,
+                                 azel.elevation};
 
-                        {"sudden",
-                         make_reflectance_coefficients(
-                                 std::array<double,
-                                            wayverb::core::simulation_bands>{
-                                         {0, 1, 0, 1, 0, 1, 0, 1}})},
-                };
+        for (const auto coeffs : coefficients) {
+            const auto impedance_coeffs =
+                    to_impedance_coefficients(coeffs.value);
 
-        const auto coefficients_set = util::map_to_vector(
-                begin(raw_tests), end(raw_tests), [](const auto& tup) {
-                    return coefficient_package{
-                            std::get<0>(tup),
-                            std::get<1>(tup),
-                            wayverb::waveguide::to_impedance_coefficients(
-                                    std::get<1>(tup))};
-                });
+            const auto test_name = util::build_string("az_",
+                                                      azel.azimuth,
+                                                      "_el_",
+                                                      azel.elevation,
+                                                      '_',
+                                                      coeffs.name);
 
-        {
-            //  Write coefficients to file.
-            std::ofstream file{
-                    util::build_string(output_folder, "/coefficients.txt")};
-            cereal::JSONOutputArchive{file}(
-                    cereal::make_nvp("coefficients", coefficients_set));
+            test.run_full_test(test_name, impedance_coeffs);
+
+            archive(file_item{azel,
+                              coeffs.name,
+                              test_name,
+                              coeffs.value,
+                              impedance_coeffs});
         }
-
-        const auto all_test_results = util::map_to_vector(
-                begin(coefficients_set), end(coefficients_set), [&](auto i) {
-                    return test.run_full_test(i.name, i.impedance_coefficients);
-                });
-
-        if (all_test_results.front() == all_test_results.back()) {
-            std::cerr << "somehow both test results are the same even though "
-                         "they use different boundary coefficients";
-        }
-    } catch (const std::runtime_error& e) {
-        std::cerr << "critical runtime error: " << e.what();
-        return EXIT_FAILURE;
-    } catch (...) {
-        std::cerr << "unknown error";
-        return EXIT_FAILURE;
     }
 
     return EXIT_SUCCESS;

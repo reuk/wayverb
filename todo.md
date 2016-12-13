@@ -1,16 +1,14 @@
 # TODO
 
-## site
-
-doxygen missing assets
+## critical
 
 check raytracer ongoing energy
     if direction is scattering-weighted, should the ongoing energy be weighted too?
     what does this mean for diffuse rain?
 
-## critical
-
 Raytracer is slower when waveguide cutoff is high???
+
+Combine fields in condensed_node struct.
 
 ## important
 

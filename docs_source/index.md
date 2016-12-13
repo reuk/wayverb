@@ -128,19 +128,19 @@ diffraction.
 </section>
 
 <section>
-### [Hybrid]({{ site.baseurl }}{% link waveguide.md %})
+### [Hybrid]({{ site.baseurl }}{% link hybrid.md %})
 The three simulation methods are automatically and seamlessly combined to
 produce a single result.
 </section>
 
 <section>
-### [Microphone modelling]({{ site.baseurl }}{% link waveguide.md %})
+### [Microphone modelling]({{ site.baseurl }}{% link microphone.md %})
 Replicate traditional microphone set-ups to mimic a concert-hall recording,
 or use the built-in HRTF functionality to produce binaural impulse responses.
 </section>
 
 <section>
-### [Boundary modelling]({{ site.baseurl }}{% link waveguide.md %})
+### [Boundary modelling]({{ site.baseurl }}{% link boundary.md %})
 Modify the frequency response of any surface in the model.
 Each surface has 8-band absorption and scattering parameters, which can be used
 to mimic real materials - or you can invent your own.

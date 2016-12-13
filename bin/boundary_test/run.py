@@ -7,21 +7,8 @@ from math import pi
 from paths import *
 
 def main():
-    for azimuth, elevation in [
-        (pi / 4, pi / 4),
-        (pi / 3, pi / 3),
-        (0, 0),
-        (pi / 4, 0),
-    ]:
-        az_string = '%s' % float('%.4g' % azimuth)
-        el_string = '%s' % float('%.4g' % elevation)
-        o_dir = join(out_dir, "az_" + az_string + "_el_" + el_string)
-        cmd_1 = ["mkdir", "-p", o_dir]
-        cmd_2 = [exe, o_dir, str(azimuth), str(elevation)]
-        print cmd_1
-        call(cmd_1)
-        print cmd_2
-        call(cmd_2)
+    call(["mkdir", "-p", out_dir])
+    call([exe, out_dir])
 
 if __name__ == "__main__":
     main()

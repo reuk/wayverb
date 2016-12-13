@@ -17,7 +17,7 @@ import json
 from paths import *
 
 import sys
-sys.path.append("python")
+sys.path.append('python')
 
 USE_DB_AXES = True
 
@@ -54,7 +54,7 @@ def frequency_plot(num, den, label):
     plt.xlabel('Normalized Frequency')
 
     if USE_DB_AXES:
-        plt.plot(w, a2db(np.abs(h)), label=label)
+        plt.plot(w, a2db(np.abs(h)), label=label, linestyle='dashed')
     else:
         plt.plot(w, np.abs(h), label=label)
     plt.axvline(CUTOFF)
@@ -66,12 +66,12 @@ def boundary_coefficient_plot(num, den, azimuth, elevation, label):
 
 
 def show_graph(free_field_file, subbed_file, reflectance, impedance, azimuth, elevation):
-    files = [("free", free_field_file), ("reflection response", subbed_file), ]
+    files = [('free', free_field_file), ('reflection response', subbed_file), ]
 
     def get_signals(f):
         spf = wave.open(f)
         signal = spf.readframes(-1)
-        return np.fromstring(signal, "Int16")
+        return np.fromstring(signal, 'Int16')
 
     signals = [(tag, get_signals(i)) for tag, i in files]
 
@@ -86,74 +86,88 @@ def show_graph(free_field_file, subbed_file, reflectance, impedance, azimuth, el
     div = np.abs(ffts[1][1] / ffts[0][1])
     if USE_DB_AXES:
         div = a2db(div)
-    do_plot("divided", div)
+    do_plot('measured', div)
 
     def bcp((b, a), az, el, label):
         boundary_coefficient_plot(b, a, az, el, label)
 
-    bcp(reflectance, azimuth, elevation, "reflectance")
-    bcp(impedance, azimuth, elevation, "impedance")
-
-    plt.legend()
+    # bcp(reflectance, azimuth, elevation, 'reflectance')
+    bcp(impedance, azimuth, elevation, 'predicted')
 
 def extract_filter_coefficients(item):
-    b = [item["b"]["value" + str(i)] for i in range(len(item["b"]))]
-    a = [item["a"]["value" + str(i)] for i in range(len(item["a"]))]
+    b = [item['b']['value' + str(i)] for i in range(len(item['b']))]
+    a = [item['a']['value' + str(i)] for i in range(len(item['a']))]
     return b, a
 
 def main():
-    suffix_free = "_windowed_free_field.wav"
-    suffix_subb = "_windowed_subbed.wav"
+    suffix_free = '_windowed_free_field.wav'
+    suffix_subb = '_windowed_subbed.wav'
 
-    info_file = "coefficients.txt"
+    info_file = 'coefficients.txt'
 
-    subdirs = [
-        root for root,
-        subdirs,
-        _ in os.walk(out_dir) if not subdirs]
+    matcher = re.compile('az_([0-9]+\.[0-9]+)_el_([0-9]+\.[0-9]+)')
 
-    matcher = re.compile("az_([0-9]+\.[0-9]+)_el_([0-9]+\.[0-9]+)")
-    for subdir in subdirs:
-        plt.figure(figsize=(8.27, 11.69))
+    plt.figure(figsize=(10, 10))
 
-        groups = matcher.match(os.path.basename(subdir)).groups()
-        azimuth = float(groups[0])
-        elevation = float(groups[1])
+    # load file
+    with open(os.path.join(out_dir, info_file)) as f:
+        obj = json.load(f)
 
-        with open(os.path.join(subdir, info_file)) as f:
-            obj = json.load(f)
+    fdata = {}
+    for key in obj:
+        fdata[obj[key]['material']] = {'tests':[]}
 
-        num_subplots = len(obj["coefficients"])
-        for item, subplot in zip(obj["coefficients"], range(num_subplots)):
-            #b, a = extract_filter_coefficients(item["impedance_coefficients"])
+    for key in obj:
+        value = obj[key]
+        fdata[value['material']]['reflectance'] = extract_filter_coefficients(value['reflectance'])
+        fdata[value['material']]['impedance'] = extract_filter_coefficients(value['impedance'])
+        fdata[value['material']]['tests'].append((value['test'],
+                                              value['az_el']['azimuth'],
+                                              value['az_el']['elevation']))
 
-            ax = plt.subplot(num_subplots, 1, subplot + 1)
-            ax.set_title(item["name"])
-            show_graph(os.path.join(subdir, item["name"] + suffix_free),
-                       os.path.join(subdir, item["name"] + suffix_subb),
-                       extract_filter_coefficients(item["reflectance_coefficients"]),
-                       extract_filter_coefficients(item["impedance_coefficients"]),
+    for key in fdata:
+        fdata[key]['tests'] = sorted(fdata[key]['tests'], key=lambda (a, i, b): i)
+
+    num_materials = len(fdata)
+    num_plots = reduce(lambda a, b: max(a, len(fdata[b]['tests'])), fdata, 0)
+
+    ax = None
+    for material, key in enumerate(fdata, start=1):
+        for trial, (test_name, azimuth, elevation) in enumerate(fdata[key]['tests']):
+            ax = plt.subplot(num_plots, num_materials, material + trial * num_materials, sharex=ax, sharey=ax)
+
+            az_deg = int(azimuth * 180 / np.pi)
+            el_deg = int(elevation * 180 / np.pi)
+            ax.set_title(key + ', az: ' + str(az_deg) + ', el: ' + str(el_deg))
+
+            show_graph(os.path.join(out_dir, test_name + suffix_free),
+                       os.path.join(out_dir, test_name + suffix_subb),
+                       fdata[key]['reflectance'],
+                       fdata[key]['impedance'],
                        azimuth,
                        elevation)
 
-        plt.tight_layout()
-        plt.show()
-        if render:
-            plt.savefig(
-                os.path.join(
-                    subdir,
-                    "plot.pdf"),
-                bbox_inches="tight",
-                dpi=300)
+    plt.legend(loc='lower center', ncol=2, bbox_to_anchor=(0, -0.05, 1, 1), bbox_transform=plt.gcf().transFigure)
+    plt.suptitle('Comparison of Measured and Predicted Boundary Reflectance')
+
+    plt.tight_layout()
+    plt.subplots_adjust(top=0.9)
+
+    plt.show()
+    if render:
+        plt.savefig(
+            os.path.join(out_dir, 'plot.pdf'),
+            bbox_inches='tight',
+            dpi=300)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     pgf_with_rc_fonts = {
         'font.family': 'serif',
         'font.serif': [],
         'font.sans-serif': ['Helvetica Neue'],
         'font.monospace': ['Input Mono Condensed'],
-        'legend.fontsize': 7,
+        'legend.fontsize': 12,
     }
 
     matplotlib.rcParams.update(pgf_with_rc_fonts)

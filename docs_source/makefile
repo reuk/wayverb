@@ -2,7 +2,7 @@ PANDOC_OPTIONS = \
 	--smart \
 	--chapter \
 	--variable=colorlinks:true \
-	--variable=geometry:margin=3cm \
+	--variable=geometry:margin=2cm \
 	--variable=geometry:a4paper \
 	--variable=documentclass:scrreprt \
 	--metadata=link-citations:true \
