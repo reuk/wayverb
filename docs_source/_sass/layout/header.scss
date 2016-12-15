@@ -1,12 +1,4 @@
-///
-/// Hyperspace by HTML5 UP
-/// html5up.net | @ajlkn
-/// Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
-///
-
-/* Header */
-
-#header {
+header {
     background-color: _palette(accent1);
     padding: 1em 1em;
 
@@ -18,20 +10,27 @@
         display: block;
     }
 
+    ul {
+        padding: 0;
+        margin: 0;
+
+        > li {
+            display: inline-block;
+            margin: 0em 2em 0em 0em;
+
+            > a {
+                border: 0;
+            }
+        }
+    }
+
     .nav_menu {
         display: none;
-        margin: 0em 2em 0em 0em;
-        border: 0;
 
         &.open {
             @include breakpoint(medium) {
                 display: inline-block;
             }
         }
-    }
-
-    .title {
-        display: inline-block;
-        border: 0;
     }
 }

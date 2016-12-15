@@ -227,10 +227,9 @@
 		dt {
 			display: block;
 			font-weight: _font(weight-bold);
-			margin: 0 0 (_size(element-margin) * 0.5) 0;
 		}
 
 		dd {
-			margin-left: _size(element-margin);
+			margin: 0 0 (_size(element-margin) * 0.5) _size(element-margin);
 		}
 	}

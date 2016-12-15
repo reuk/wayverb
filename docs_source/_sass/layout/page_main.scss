@@ -17,6 +17,10 @@
         background: rgb(255, 255, 255);
         color: _palette(bg-alt);
 
+        strong, b {
+            color: #000;
+        }
+
         a {
             @include vendor('transition', (
                 'color #{_duration(transition)} ease',

@@ -11,7 +11,7 @@ body, input, select, textarea {
     font-family: _font(family);
     font-size: 16.5pt;
     font-weight: _font(weight);
-    line-height: 1.75;
+    line-height: 1.4;
 
     @include breakpoint(xlarge) {
         font-size: 13pt;
@@ -177,7 +177,7 @@ pre {
 
     code {
         display: block;
-        line-height: 1.75em;
+        line-height: 1.4em;
         padding: 1em 1.5em;
         overflow-x: auto;
     }

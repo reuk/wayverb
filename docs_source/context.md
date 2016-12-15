@@ -63,14 +63,13 @@ costs.
 
 A short review of simulation methods will be given here.
 For a detailed survey of methods used in room acoustics, see
-@svensson_computational_2002.
+[@svensson_computational_2002].
 
-The following diagram shows the relationships between the most common simulation
-methods.
+The following figure \text{(\ref{fig:simulation_techniques})} shows the relationships between the most common simulation methods.
 The advantages and disadvantages of each method will be discussed throughout the
 remainder of this section.
 
-![An overview of different acoustic simulation methods, grouped by category.](images/simulation_techniques.png)
+![An overview of different acoustic simulation methods, grouped by category.\label{fig:simulation_techniques}](images/simulation_techniques.png)
 
 ### Geometric
 
@@ -115,7 +114,7 @@ For these reasons, the image source method is only suitable for early
 reflections, and is generally combined with a stochastic method to find the
 late part of an impulse response.
 
-For a detailed reference on geometric acoustic methods, see @savioja_overview_2015.
+For a detailed reference on geometric acoustic methods, see [@savioja_overview_2015].
 
 ### Wave-based 
 
@@ -126,8 +125,8 @@ This means that these wave-based methods are capable of accurately simulating th
 component of a room impulse-response, where constructive and destructive wave
 interference form *room modes*.
 Room modes have the effect of amplifying and attenuating specific frequencies in
-the room impulse response, and produce much of the subjective sonic 'colour' or
-'character' of a room.
+the room impulse response, and produce much of the subjective sonic "colour" or
+"character" of a room.
 Reproducing these room modes is therefore vital for evaluating the acoustics of
 rooms such as concert halls and recording studios, or when producing musically
 pleasing reverbs.
@@ -190,7 +189,9 @@ time-domain impulse responses.
 
 Searching online and in the literature uncovers a handful of programs for
 acoustic simulation.
-The table below shows a selection which is not exhaustive, but which is felt to be representative.
+The following table \text{(\ref{tab:software})} shows a selection which is not exhaustive, but which is felt to be representative.
+
+Table: Some of the most prominent tools for acoustic simulation.\label{tab:software}
 
 Name                                  | Type                        | Availability
 --------------------------------------|-----------------------------|------------------
@@ -210,9 +211,9 @@ All commercial acoustics programs found use geometric techniques, probably
 because they are fast to run, and can often be implemented to run interactively,
 in real-time.
 However, low-frequency performance is a known issue with these programs.
-For example, the FAQ page for the Odeon software notes that:
+For example, the FAQ page for the Odeon software [@_odeon_2016-1] notes that:
 
-> For Odeon simulations as with real measurements, the source and receiver should be at least 1/4th wave length from the walls. But at the very lowest resonance of the room the level can change a lot from position to position without Odeon being able to predict it. For investigation of low frequency behavior (resonances), indeed Odeon is not the tool. [@_odeon_2016-1]
+> For Odeon simulations as with real measurements, the source and receiver should be at least 1/4th wave length from the walls. But at the very lowest resonance of the room the level can change a lot from position to position without Odeon being able to predict it. For investigation of low frequency behavior (resonances), indeed Odeon is not the tool. 
 
 Clearly there is a need for wave-modelling acoustics software, which can
 accurately predict low frequency behaviour.
@@ -285,8 +286,9 @@ An in-depth description of the algorithms implemented is given in the
 [Image-Source]({{ site.baseurl }}{% link image_source.md %}),
 [Ray Tracer]({{ site.baseurl }}{% link ray_tracer.md %}), and
 [Waveguide]({{ site.baseurl }}{% link waveguide.md %}) sections.
+The following figure \text{(\ref{fig:regions})} shows how the outputs from the different methods work together to produce a broadband impulse response.
 
-![The structure of a simulated impulse response.](images/regions.png)
+![The structure of a simulated impulse response.\label{fig:regions}](images/regions.png)
 
 Deciding on the simulation techniques led to three questions:
 
@@ -313,7 +315,7 @@ The programming language chosen was C++.
 For acceptable performance in numerical computing, a low-level language is
 required, and for rapid prototyping, high-level abstractions are necessary.
 C++ delivers on both of these requirements, for the most part, although its
-fundamentally unsafe memory model does introduce a class of bugs which don't
+fundamentally unsafe memory model does introduce a class of bugs which do not
 really exist in languages with garbage collection, borrow checking, or some
 other safety mechanism.
 
@@ -330,7 +332,7 @@ The only deployment target was macOS.
 This was mainly to ease development, as maintaining software across multiple
 platforms is often time-consuming.
 macOS also tends to have support for newer C++ language features than Windows.
-Visual Studio 2015 for Windows still doesn't support all of the C++11 language
+Visual Studio 2015 for Windows still does not support all of the C++11 language
 features [@_visual_2016], while the Clang compiler used by macOS has supported
 newer C++14 features since version 3.4 [@_clang_2016], released in May 2014 [@_download_2016].
 Targeting a single platform avoids the need to use only the
@@ -343,28 +345,45 @@ with a minimum of effort.
 The following additional libraries were used to speed development.
 They are all open-source and freely available.
 
-* *GLM:* Provides vector and matrix primitives and operations, primarily
-  designed for use in 3D graphics software, but which is useful for any program
-  that will deal with 3D space.
-* *Assimp:* Used for loading and saving 3D model files in a wide
-  array of formats, with a consistent interface for querying loaded files. 
-* *FFTW3:* Provides Fast Fourier Transform routines.
-  Used mainly for filtering and convolution.
-* *Libsndfile:* Used for loading and saving audio files, specifically for saving
-  simulation results.
-* *Libsamplerate:* Provides high-quality sample-rate-conversion routines.
-  Waveguide simulations are often run at a relatively low sample-rate, which
-  must then be adjusted.
-* *Gtest:* A unit-testing framework, used to validate small individual parts of
-  the program, and ensure that changes to one module don't cause breakage
-  elsewhere.
-* *Cereal:* Serializes data to and from files.
-  Used for saving program configuration options.
-* *ITPP:* A scientific computing library.
-  Used for its implementation of the Yule-Walker method for estimating filter
-  coefficients for a given magnitude response.
-* *JUCE:* Provides a framework for building graphical applications in C++.
-  Used for the final application.
+GLM
+:   Provides vector and matrix primitives and operations, primarily
+    designed for use in 3D graphics software,
+    but useful for any program that will deal with 3D space.
+
+Assimp
+:   Used for loading and saving 3D model files in a wide
+    array of formats, with a consistent interface for querying loaded files. 
+
+FFTW3
+:   Provides Fast Fourier Transform routines.
+    Used mainly for filtering and convolution.
+
+Libsndfile
+:   Used for loading and saving audio files, specifically for saving
+    simulation results.
+
+Libsamplerate
+:   Provides high-quality sample-rate-conversion routines.
+    Waveguide simulations are often run at a relatively low sample-rate, which
+    must then be adjusted.
+
+Gtest
+:   A unit-testing framework, used to validate small individual parts of
+    the program, and ensure that changes to one module do not cause breakage
+    elsewhere.
+
+Cereal
+:   Serializes data to and from files.
+    Used for saving program configuration options.
+
+ITPP
+:   A scientific computing library.
+    Used for its implementation of the Yule-Walker method for estimating filter
+    coefficients for a given magnitude response.
+
+JUCE
+:   Provides a framework for building graphical applications in C++.
+    Used for the final application.
 
 The project uses Cmake to configure its build, and to automatically download
 project dependencies.

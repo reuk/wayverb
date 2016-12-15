@@ -19,7 +19,7 @@ pandoc:
     extensions:
         - smart
         - mathjax
-        - csl: apa.csl
+        - csl: ieee.csl
         - bibliography: wayverb.bib
         - metadata: "link-citations:true"
         - toc

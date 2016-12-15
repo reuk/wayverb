@@ -23,7 +23,7 @@ The geometric and DWM implementations will be evaluated and compared, to ensure 
 
 ## Background
 
-The books by @vorlander_auralization:_2007 [p. 35] and @kuttruff_room_2009 [p. 35] both devote entire chapters to the topic of sound reflection and scattering.
+The books by Vorlander [@vorlander_auralization:_2007, p. 35] and Kuttruff [@kuttruff_room_2009, p. 35] both devote entire chapters to the topic of sound reflection and scattering.
 Please refer to these books for a detailed and broad explanation of reflection effects.
 To avoid unnecessary duplication, this background will be brief, aiming only to put terminology and decisions in context.
 
@@ -38,7 +38,7 @@ This simplifies most calculations, but the source of the wave must not be far en
 The reflection factor $R$ is a complex value given by $R=|R|\exp(i\chi )$, which describes a modification to the amplitude and phase of the reflected wave ($|R|$ is the magnitude term, $\chi$ is phase).
 This factor depends both on the frequency and direction of the incident wave.
 When $\chi = \pi$, $R=-1$, corresponding to a phase reversal.
-This is known as a 'soft' wall, but is rarely seen in room acoustics.
+This is known as a "soft" wall, but is rarely seen in room acoustics.
 It is reasonable to assume that reflections are in-phase in the majority of problems.
 
 The wall impedance $Z$ is defined as the ratio of sound pressure to the normal component of particle velocity at the wall surface.
@@ -51,7 +51,7 @@ It describes the proportion of incident energy lost during reflection.
 
 Properties of surfaces in an acoustic simulation may be described fully by either the reflection factor or impedance.
 The absorption coefficient fails to encode the phase-change properties of the surface, and so cannot fully describe the full range of possible characteristics.
-However, if surfaces are assumed to be 'hard', i.e. they do not induce phase changes, then the absorption coefficient is an adequate descriptor.
+However, if surfaces are assumed to be "hard", i.e. they do not induce phase changes, then the absorption coefficient is an adequate descriptor.
 
 ### Scattering
 
@@ -59,18 +59,18 @@ The reflection factor, absorption coefficient, and wall impedance describe the b
 If the reflecting surface has imperfections or details of the same order as the wavelength, as many surfaces in the real world do, then some components of the reflected wave will be *scattered* instead of specularly reflected.
 
 Describing the nature of the scattered sound is more complicated than specular reflections.
-A common method is to use a *scattering coefficient*, $s$, which describes the proportion of outgoing energy which is scattered, and which may be dependent on frequency:
+A common method is to use a *scattering coefficient*, $s$, which describes the proportion of outgoing energy which is scattered, and which may be dependent on frequency \text{(see figure \ref{fig:scattering})}:
 
 $$E_{\text{scattered}}=E_{\text{incident}}(1-\alpha)s, E_{\text{specular}}=E_{\text{incident}}(1-\alpha)(1-s), E_{\text{total}}=E_{\text{incident}}(1-\alpha)$$
 
-![Reflected components from a rough surface.](images/scattering.png)
+![Reflected components from a rough surface.\label{fig:scattering}](images/scattering.png)
 
 Alone, the scattering coefficient fails to describe the directional distribution of scattered energy.
 In the case of an ideally-diffusing surface, the scattered energy is distributed according to Lambert's cosine law.
-That is, the intensity depends only on the cosine of the outgoing scattering angle, and is independent of the angle of incidence.
+That is, the intensity depends only on the cosine of the outgoing scattering angle, and is independent of the angle of incidence \text{(see figure \ref{fig:lambert})}.
 More complex scattering distributions, which also depend on the outgoing direction, are possible [@christensen_new_2005; @durany_analytical_2015], but there is no single definitive model to describe physically-accurate scattering.
 
-![Lambert scattering. Scattered intensity is independent of incident angle.](images/lambert.png)
+![Lambert scattering. Scattered intensity is independent of incident angle.\label{fig:lambert}](images/lambert.png)
 
 ## Geometric Implementation
 
@@ -98,17 +98,17 @@ If a single ray is used to carry all frequency components, then each component m
 
 The plain scattering model affects only the ongoing ray direction and amplitude.
 However, it is worth considering that, at each reflection, the scattered energy may be directly visible to the receiver.
-This fact is exploited by the *diffuse rain* technique, in which each reflection is considered to spawn a 'secondary source' which emits scattered energy towards the receiver.
+This fact is exploited by the *diffuse rain* technique, in which each reflection is considered to spawn a "secondary source" which emits scattered energy towards the receiver.
 This scattered energy is recorded only if the secondary source is visible from the receiver.
 
-An equation for the magnitude of diffuse rain scattered energy is given by @schroder_physically_2011 [p. 64], assuming perfect Lambert diffusion:
+Assuming perfect Lambert diffusion, the magnitude of diffuse rain scattered energy is given by [@schroder_physically_2011, p. 64]:
 
 $$E_{\text{scattered}} = E_{\text{incident}}(1-\alpha)2s\cos\theta(1-\cos\frac{\gamma}{2})$$
 
-Here, $\theta$ is the angle from secondary source to receiver relative against the surface normal, and $\gamma$ is the opening angle.
+Here, $\theta$ is the angle from secondary source to receiver relative against the surface normal, and $\gamma$ is the opening angle \text{(shown in figure \ref{fig:diffuse_rain})}.
 The magnitude of the scattered energy depends on the direction from the secondary source to the receiver (by Lambert's cosine law), and also on the solid angle covered by the receiver.
 
-![Angles used in the diffuse rain equation for a spherical receiver.](images/diffuse_rain.png)
+![Angles used in the diffuse rain equation for a spherical receiver.\label{fig:diffuse_rain}](images/diffuse_rain.png)
 
 ## DWM Implementation
 
@@ -120,7 +120,7 @@ The two most common methods will be reviewed, and the choice of method for Wayve
 
 #### KW-Pipe Technique
 
-This method is described by @murphy_kw-boundary_2007 and @kelloniemi_frequency-dependent_2006.
+This method is described in [@murphy_kw-boundary_2007] and [@kelloniemi_frequency-dependent_2006].
 
 There are two main technically-equivalent formulations of digital waveguides meshes, known as *W-models* and *K-models*.
 W-models are based on travelling wave variables, which allow for straightforward interaction with a variety of termination types, such as rimguides, fractional delays, or wave digital filters.
@@ -130,12 +130,12 @@ K-models are based on Kirchhoff variables, and depend on physical quantities rat
 Under certain conditions, K-models and finite-difference time-domain (FDTD) simulations are equivalent.
 FDTD models have much smaller memory requirements than W-models, at the cost of decreased flexibility of filtering, as these models cannot directly interact with wave digital filters.
 
-The KW-pipe is a 'converter' between wave- and Kirchhoff- variables, which is designed to allow the majority of a model (that is, the air-filled space inside it) to be constructed as a K-model waveguide mesh.
+The KW-pipe is a "converter" between wave- and Kirchhoff- variables, which is designed to allow the majority of a model (that is, the air-filled space inside it) to be constructed as a K-model waveguide mesh.
 At the boundaries of the model, the KW-pipe is used to connect K-model nodes to W-model nodes.
 These W-model nodes can then be connected to wave digital filters to simulate frequency-dependent absorption of wave energy.
 The complete model retains both the memory-efficiency of the K-model and the termination flexibility of the W-model, with the drawback of additional implementation complexity at the interface between the two model types.
 
-This sounds extremely promising, but has a major drawback, as described by @kowalczyk_modeling_2008:
+This sounds extremely promising, but has a major drawback, as described in [@kowalczyk_modeling_2008]:
 while the inside of the mesh will be 2- or 3-dimensional, the boundary termination afforded by the wave-variable boundary is 1-dimensional.
 Each boundary node connects to just the closest interior node.
 As a result, the edges and corners are not considered to be part of the model, as these nodes do not have a directly adjacent interior node.
@@ -145,7 +145,7 @@ For these reasons, the 1D termination is unphysical and can lead to large errors
 
 #### Locally Reactive Surfaces Technique
 
-This method, described by @kowalczyk_modeling_2008, aims to create physically correct higher-dimensional boundaries by combining a boundary condition, defined by a boundary impedance, with the multidimensional wave equation.
+This method, described in [@kowalczyk_modeling_2008], aims to create physically correct higher-dimensional boundaries by combining a boundary condition, defined by a boundary impedance, with the multidimensional wave equation.
 This leads to a model for a *locally reacting surface* (LRS), in which boundary impedance is represented by an infinite-impulse-response (IIR) filter.
 
 As noted above, a surface is locally reacting if the normal component of the particle velocity on the boundary surface is dependent solely upon the sound pressure in front of the boundary.
@@ -163,7 +163,7 @@ That being said, neither of the boundary models considered are particularly real
 
 ### LRS Implementation
 
-See @kowalczyk_modeling_2008 and @kowalczyk_modelling_2008 for a more detailed explanation.
+See [@kowalczyk_modeling_2008] and [@kowalczyk_modelling_2008] for a more detailed explanation.
 
 In the [Background] section it was noted that the reflection characteristics of a surface are fully defined by a reflection coefficient or wall impedance, both of which might be frequency- and direction-dependent.
 The LRS technique starts from the definition of wall reflectance:
@@ -184,7 +184,7 @@ $$\xi(z)=\frac{1+R_0(z)}{1-R_0(z)}$$
 
 This impedance filter is most efficiently implemented as an *infinte impulse response* (IIR) filter, though surfaces with detailed frequency responses will require high-order filters, which tend to become numerically unstable.
 The usual solution to this problem would be to split the high-order filter into a series-combination of lower-order filters, however the LRS requires access to intermediate values from the filter delay-line which makes this approach impossible.
-An alternative solution is suggested by @oxnard_frequency-dependent_2015, who suggests running the entire simulation multiple times, once for each octave band.
+An alternative solution is suggested in [@oxnard_frequency-dependent_2015], which suggests running the entire simulation multiple times, once for each octave band.
 This means that the boundary filters can be single-order, and resistant to accumulated numerical error.
 Compared to high-order boundary filters, this method gives much improved accuracy, but at the (immense) cost of running the entire simulation multiple times.
 In Wayverb, both approaches are taken, allowing the user to choose between a fast, inaccurate single-run simulation with high-order filters; or a slow, accurate multi-run simulation with low-order filters.
@@ -194,14 +194,15 @@ Appropriate impedance filter coefficients can be inserted into special update eq
 Recall that the DWM operates by updating each mesh node individually, depending on the states of the immediately adjacent nodes.
 To model boundaries, the update equation for each of the boundary nodes is replaced.
 
-In the case of a flat wall, the boundary node is adjacent to a single inner-node, and a '1D' update equation is used.
-Where two perpendicular walls meet, the nodes along the edge will each be adjacent to two '1D' nodes, and a '2D' update equation is used for these nodes.
-Where three walls meet, the corner node will be directly adjacent to three '2D' nodes, and a '3D' update equation is used for this node.
+In the case of a flat wall, the boundary node is adjacent to a single inner-node, and a "1D" update equation is used.
+Where two perpendicular walls meet, the nodes along the edge will each be adjacent to two "1D" nodes, and a "2D" update equation is used for these nodes.
+Where three walls meet, the corner node will be directly adjacent to three "2D" nodes, and a "3D" update equation is used for this node.
+The three types of boundary nodes are shown in the following diagram \text{(\ref{fig:boundary_type_diagram})}.
 Note that this method is only capable of modelling mesh-aligned surfaces.
-Other sloping or curved surfaces must be approximated as a group of narrow mesh-aligned surfaces separated by 'steps'.
-For example, a wall tilted at 45 degrees will be modelled as a staircase-like series of '2D' edge nodes, instead of '1D' wall nodes.
+Other sloping or curved surfaces must be approximated as a group of narrow mesh-aligned surfaces separated by "steps".
+For example, a wall tilted at 45 degrees to the mesh axes will be approximated as a staircase-like series of "2D" edge nodes.
 
-![The three types of boundary nodes. 1D nodes are adjacent to inner nodes, 2D nodes are adjacent to two 1D nodes, and 3D nodes are adjacent to three 2D nodes.](images/boundary_type_diagram.png)
+![The three types of boundary nodes. 1D nodes are adjacent to inner nodes, 2D nodes are adjacent to two 1D nodes, and 3D nodes are adjacent to three 2D nodes.\label{fig:boundary_type_diagram}](images/boundary_type_diagram.png)
 
 <!--
 TODO code discussion?
@@ -248,7 +249,7 @@ Only the LRS method is tested here.
 The implementation of frequency-dependent boundaries in geometric simulations amounts to multiplication by a reflection coefficient (with optional scattering) per-band, so there is little to test.
 The LRS waveguide boundary is more complicated, as it embeds IIR filters into the waveguide boundaries, so it is worth testing that the boundary nodes behave as expected.
 
-The testing procedure used is similar to that of @kowalczyk_modeling_2008.
+The testing procedure used is similar to that in [@kowalczyk_modeling_2008].
 Code for the test can be seen at <https://github.com/reuk/wayverb/blob/master/bin/boundary_test/boundary_test.cpp>.
 
 ### Simulation Parameters
@@ -258,9 +259,9 @@ Code for the test can be seen at <https://github.com/reuk/wayverb/blob/master/bi
 * Run for 420 steps.
 * Source and receiver placed 37 node-spacings from the centre of the boundary.
 
-The following diagram shows the testing setup, which will be explained in the next section.
+The following diagram \text{(\ref{fig:boundary_test_setup})} shows the testing setup, which will be explained in the next section.
 
-![The setup of the two room-sizes, and the positions of sources and receivers inside.](images/boundary_test_setup.png)
+![The setup of the two room-sizes, and the positions of sources and receivers inside.\label{fig:boundary_test_setup}](images/boundary_test_setup.png)
 
 ### Method
 
@@ -271,7 +272,7 @@ Then, the room was doubled in size along the plane of the wall being tested,
 essentially removing this boundary from the model.
 The simulation was run again, recording just the direct response at the receiver
 ($r_d$).
-Finally, the receiver position was moved to its reflected position 'through' the
+Finally, the receiver position was moved to its reflected position "through" the
 tested wall, and the simulation was run once more, producing a free-field
 response ($r_i$).
 
@@ -295,13 +296,13 @@ where $\theta$ and $\phi$ are the reflection azimuth and elevation respectively.
 
 The test was run for three different angles of incidence, with azimuth and elevation of 0, 30, and 60 degrees respectively.
 Three different sets of surface absorption coefficients were used, giving a total of nine combinations of source position and absorption coefficients.
-The specific absorption coefficients are those suggested by @oxnard_frequency-dependent_2015, shown in the following table:
+The specific absorption coefficients are those suggested in [@oxnard_frequency-dependent_2015], shown in the following table:
 
-frequency / Hz  31      73      173     411     974     
---------------- ------- ------- ------- ------- ------- 
-plaster         0.08    0.08    0.2     0.5     0.4     
-wood            0.15    0.15    0.11    0.1     0.07    
-concrete        0.02    0.02    0.03    0.03    0.03    
+band centre frequency / Hz  31      73      173     411     974     
+--------------------------- ------- ------- ------- ------- ------- 
+plaster                     0.08    0.08    0.2     0.5     0.4     
+wood                        0.15    0.15    0.11    0.1     0.07    
+concrete                    0.02    0.02    0.03    0.03    0.03    
 
 The boundary filter for each material was generated by converting the absorption coefficients to per-band reflectance coefficients using the relationship $R=\sqrt{1-\alpha}$.
 Then, the Yule-Walker method from the ITPP library [@_itpp_2013] was used to calculate coefficients for a sixth-order IIR filter which approximated the per-band reflectance.
@@ -309,13 +310,13 @@ This filter was converted to an impedance filter by $\xi(z)=\frac{1+R_0(z)}{1-R_
 
 ## Results
 
-The results are shown in the following figure.
+The results are shown in the following figure \text{(\ref{fig:reflectance})}.
 Although the waveguide mesh has a theoretical upper frequency limit of 0.25 of
 the mesh sampling rate, the 3D FDTD scheme has a cutoff frequency of 0.196
 of the mesh sampling rate for axial directions.
 This point has been marked as a vertical line on the result graphs.
 
-![Measured boundary reflectance is compared against the predicted reflectance, for three different materials and three different angles of incidence.](images/reflectance.png)
+![Measured boundary reflectance is compared against the predicted reflectance, for three different materials and three different angles of incidence.\label{fig:reflectance}](images/reflectance.png)
 
 ## Evaluation
 
@@ -331,22 +332,21 @@ To prevent boundary modelling error affecting the results of impulse response sy
 
 It is also worth noting that ideally this experiment would be conducted with a
 completely flat wave-front, which is not easily accomplished.
-In their experiments, @kowalczyk_modeling_2008 use large meshes (around 3000 by 3000
-nodes, nine million in total) and place their sources a great distance away from
+The experiments in [@kowalczyk_modeling_2008] use large meshes (around 3000 by 3000
+nodes, nine million in total) and place the sources a great distance away from
 the boundary being studied in order to maintain a mostly-flat wave-front.
-However, they only run their experiments in two dimensions.
-In fact, they do not present experimental results for their implementation of
-boundaries in three dimensions at all.
+However, the experiments are only run in two dimensions.
+In fact, no experimental results are given for the implementation of three-dimensional boundaries.
 This is probably because running a 3D simulation on a similar scale would require
 a mesh of twenty-seven billion nodes, which in turn would require gigabytes of
 memory and hours of simulation time.
 
-@kowalczyk_modeling_2008 note that in some of the experiments with 2D meshes,
+According to [@kowalczyk_modeling_2008], in some of the experiments with 2D meshes,
 there are disparities at low frequencies between the predicted and actual
 results, which they say is an artefact of non-flat wave-fronts.
 Interestingly, there is little low-frequency error in the experimental results above, despite the fact that the source is placed very close to the boundary, and the wave-front is therefore very rounded.
 This might, however, be the cause of the relatively small broadband fluctuations between 0 and 0.15 of the mesh sampling rate.
-The filters used in this test are also of much higher order than those tested by @kowalczyk_modeling_2008, giving a greater chance of accumulated numerical error.
+The filters used in this test are also of much higher order than those tested in [@kowalczyk_modeling_2008], giving a greater chance of accumulated numerical error.
 This may be the cause of the volatile high-frequency behaviour.
 
 In conclusion, for the most part, the results presented adhere closely to the expected results, with the caveat that the surface reflectance is only accurate at low frequencies, below around 0.15 of the mesh sampling rate.

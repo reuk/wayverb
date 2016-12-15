@@ -3,11 +3,25 @@
 {% include head.html %}
 <body>
 {% include nav.html %}
-<section id="page_main">
-    <header id="header">
-        <a href="#sidebar_nav" class="nav_menu open" >&#9776;</a>
-        <a href="#" class="nav_menu close" >&#9776;</a>
-        <a href="{{ site.baseurl }}{% link index.md %}" class="title">Wayverb</a>
+<div id="page_main">
+    <header>
+        <ul>
+            <li class="nav_menu open" >
+                <a href="#sidebar_nav">
+                    &#9776;
+                </a>
+            </li>
+            <li class="nav_menu close" >
+                <a href="#">
+                    &#9776;
+                </a>
+            </li>
+            <li>
+                <a href="{{ site.baseurl }}{% link index.md %}" >
+                    Wayverb
+                </a>
+            </li>
+        </ul>
     </header>
     <div class="inner">
         {% include prev_next_nav.html %}
@@ -15,6 +29,6 @@
         {% include prev_next_nav.html %}
     </div>
     {% include footer.html %}
-</section>
+</div>
 </body>
 </html>

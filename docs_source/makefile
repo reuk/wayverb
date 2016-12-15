@@ -7,7 +7,7 @@ PANDOC_OPTIONS = \
 	--variable=documentclass:scrreprt \
 	--metadata=link-citations:true \
 	--bibliography=wayverb.bib \
-	--csl=apa.csl
+	--csl=ieee.csl
 
 SOURCES := \
 	title_page.md \
@@ -25,6 +25,13 @@ SOURCES := \
 
 wayverb.pdf : $(SOURCES)
 	pandoc $(PANDOC_OPTIONS) -o $@ $^
+
+%.png : %.svg
+	inkscape --export-png=$@ --export-dpi=300 --export-background-opacity=0 --without-gui $<
+
+PNG_FILES := $(patsubst %.svg,%.png,$(wildcard images/*))
+
+png : $(PNG_FILES)
 
 .PHONY: all clean
 
