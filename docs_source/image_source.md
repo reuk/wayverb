@@ -75,12 +75,88 @@ The disadvantage is that a greater number of validity checks are required, thoug
 
 ## Implementation
 
-* tree
-    * backtracking
+Here the concrete implementation of the image-source method is presented, as it is used in Wayverb.
+
+The simulation prerequisites are:
+
+* source position
+* receiver position
+* speed of sound in air
+* acoustic impedance of air
+* a scene, made up of triangles, where each triangle has an associated material comprised of multiband absorption and scattering coefficients (curved surfaces are not supported, and must be approximated by small triangles)
+
+First, an axis-aligned bounding box is computed for the scene, and split into uniformly sized cuboid *voxels*.
+Each voxel holds a reference to any triangles in the scene which happen to intersect with that voxel.
+The voxel mesh acts as an "acceleration structure", speeding up intersection tests between rays and triangles.
+To check for an intersection between a ray and a number of triangles, the simplest method is to check the ray against each triangle individually, which is very time consuming.
+The voxel mesh allows the number to checks to be greatly reduced, by checking only triangles that are within voxels that the ray intersects.
+These voxels can be found very quickly, by "walking" the voxels along the ray, using an algorithm presented in [@amanatides_fast_1987].
+For large scenes with many triangles, this method can lead to speed-ups of an order of magnitude or more.
+Assume all ray-intersection tests mentioned throughout this thesis use the voxel-acceleration method, unless explicitly noted.
+
+Rays are fired in uniform random directions from the source.
+Each ray is checked for an intersection with the scene, and if an intersection is found, some data about the intersection is recorded.
+Specifically, the record includes the triangle which was intersected, and whether or not the receiver is visible from the intersection point.
+Then, the vector-based scattering method [@christensen_new_2005] is used to find the directions of new rays, which are fired from the intersection points.
+The ray-tracing process continues up to a certain depth, which is artificially limited to ten reflections in Wayverb.
+For most simulations, three or four reflections should be adequate.
+
+The ray tracer produces a list of reflection paths for each ray.
+Some rays may follow the same paths, and so duplicates must be removed.
+To remove duplicate paths, and speed up future calculations, the per-ray information is condensed into a tree of valid paths.
+Each node in the tree stores a reference to a triangle in the scene, and whether or not the receiver is visible from this triangle.
+Each unique path starting from a root node in the tree represents a possible image source contribution, which must be checked.
+This checking is carried out using the backtracking method explained above.
+A nice property of the tree structure is that it can be traversed using depth-first recursion, allowing some of the backtracking information to be cached between ray paths, speeding up the calculation with only minimal memory overhead.
+This is similar to the approach mentioned in [@savioja_overview_2015].
+Also, because the tree is immutable, it can be shared between multiple worker threads, which check image sources independently.
+The nature of the recursive algorithm makes it a poor fit for an OpenCL implementation, so native (CPU) threads are used instead.
+
+Some paths in the tree may not actually produce valid image sources, and these paths are discarded.
+For paths which *do* contribute valid image sources, the propagation delay and frequency-dependent pressure of the image source signal must be found.
+According to [@kuttruff_room_2009, p. 325], the propagation delay is equal to the distance from the receiver to the image source, divided by the speed of sound.
+The pressure content is found by convolving the reflectances of all intermediate surfaces.
+This is equivalent to a single real multiplication per frequency band, as long as reflectances can be represented by real values.
+
+The surface reflectances are found by converting per-band absorptions into per-band normal-incidence reflectance magnitudes by $|R|=\sqrt{1-\alpha}$.
+These are converted to per-band impedances by $\xi=\frac{1+|R|}{1-|R|}$.
+Finally, the impedances are converted back to *angle-dependent* reflectances by $R(\theta)=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$, where $\theta$ is the angle of incidence at the surface.
+This is the same approach taken in [@southern_room_2013].
+
+TODO where does scattering come into it?
+
+The contributions of all image sources must be summed together to find the final impulse response.
+The contribution $g$ of a single image source with intermediate surfaces $m_1 m_2 \dots m_n$ is given by
+
+$$g_{m_1 m_2 \dots m_n} = \frac{\sqrt{Z_0/4\pi}}{d_{m_1 m_2 \dots m_n}} \cdot r_{m_1} \ast r_{m_2} \ast \dots \ast r_{m_n} \ast \delta(\frac{d_{m_1 m_2 \dots m_n}}{c})$$
+
+where $Z_0$ is the acoustic impedance of air, $c$ is the speed of sound, $d_{m_1 m_2 \dots m_n}$ is the distance from the receiver to the image source, and $r_{m_i}$ is the reflectance of surface $i$.
+This assumes that the original source emits a pressure impulse $\delta$ at the starting-time of the simulation.
+
+To create a digital audio file representing an impulse response, the output must be discretised at some sampling frequency $f_s$.
+The individual image source contributions must be added, at positions corresponding to their propagation delays, into an output buffer at that sampling frequency.
+The ideal buffer position for a given contribution is equal to $\tau f_s$ where $\tau$ is the propagation delay of that contribution.
+However, this value is unlikely to be an integer.
+The simplest solution would be to round to the closest integer, and use this as the buffer position.
+However, for applications such as multi-microphone simulation which are sensitive to arrival time, this can lead to obvious phase errors.
+A solution is suggested in [@fu_gpu-based_2016]:
+To place the contribution with sub-sample accuracy, the impulsive $\delta$ signal is replaced by the impulse-response of an ideal low-pass filter, with cut-off equal to the output Nyquist frequency.
+Such an impulse response is infinitely long, but tends to zero quickly, so it is Hanning windowed to reduce the number of additions required.
+The windowed signal is added to the output buffer so that its centre falls at $\tau f_s$.
+
+TODO sinc equation
+
+Recall that each image-source contribution has per-band pressure values.
+Rather than summing all contributions directly to the output buffer, several buffers are created, one per frequency band.
+The contributions for each band are summed into each buffer individually.
+The final output of the simulation is created by band-passing and then mixing down the buffers.
+
+TODO some lovely diagrams
+
 * tie-in to ray-tracer
-* sinc histogram
-* multithreading
-* behaviour at boundaries
+    * scattering?
+
+TODO mention why high image-source orders don't make sense
 
 ## Testing
 

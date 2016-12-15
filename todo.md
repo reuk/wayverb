@@ -10,6 +10,8 @@ Raytracer is slower when waveguide cutoff is high???
 
 Combine fields in condensed_node struct.
 
+Is it worth checking all paths in the image source tree?
+
 ## important
 
 Sanity checks - do big echo-y rooms sound big and echo-y? Do small rooms sound
