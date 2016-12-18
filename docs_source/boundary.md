@@ -63,14 +63,14 @@ A common method is to use a *scattering coefficient*, $s$, which describes the p
 
 $$E_{\text{scattered}}=E_{\text{incident}}(1-\alpha)s, E_{\text{specular}}=E_{\text{incident}}(1-\alpha)(1-s), E_{\text{total}}=E_{\text{incident}}(1-\alpha)$$
 
-![Reflected components from a rough surface.\label{fig:scattering}](images/scattering.png)
+![Reflected components from a rough surface.\label{fig:scattering}](images/scattering)
 
 Alone, the scattering coefficient fails to describe the directional distribution of scattered energy.
 In the case of an ideally-diffusing surface, the scattered energy is distributed according to Lambert's cosine law.
 That is, the intensity depends only on the cosine of the outgoing scattering angle, and is independent of the angle of incidence \text{(see figure \ref{fig:lambert})}.
 More complex scattering distributions, which also depend on the outgoing direction, are possible [@christensen_new_2005; @durany_analytical_2015], but there is no single definitive model to describe physically-accurate scattering.
 
-![Lambert scattering. Scattered intensity is independent of incident angle.\label{fig:lambert}](images/lambert.png)
+![Lambert scattering. Scattered intensity is independent of incident angle.\label{fig:lambert}](images/lambert)
 
 ## Geometric Implementation
 
@@ -108,7 +108,7 @@ $$E_{\text{scattered}} = E_{\text{incident}}(1-\alpha)2s\cos\theta(1-\cos\frac{\
 Here, $\theta$ is the angle from secondary source to receiver relative against the surface normal, and $\gamma$ is the opening angle \text{(shown in figure \ref{fig:diffuse_rain})}.
 The magnitude of the scattered energy depends on the direction from the secondary source to the receiver (by Lambert's cosine law), and also on the solid angle covered by the receiver.
 
-![Angles used in the diffuse rain equation for a spherical receiver.\label{fig:diffuse_rain}](images/diffuse_rain.png)
+![Angles used in the diffuse rain equation for a spherical receiver.\label{fig:diffuse_rain}](images/diffuse_rain)
 
 ## DWM Implementation
 
@@ -202,7 +202,7 @@ Note that this method is only capable of modelling mesh-aligned surfaces.
 Other sloping or curved surfaces must be approximated as a group of narrow mesh-aligned surfaces separated by "steps".
 For example, a wall tilted at 45 degrees to the mesh axes will be approximated as a staircase-like series of "2D" edge nodes.
 
-![The three types of boundary nodes. 1D nodes are adjacent to inner nodes, 2D nodes are adjacent to two 1D nodes, and 3D nodes are adjacent to three 2D nodes.\label{fig:boundary_type_diagram}](images/boundary_type_diagram.png)
+![The three types of boundary nodes, used to model reflective planes, edges, and corners. 1D nodes are adjacent to inner nodes, 2D nodes are adjacent to two 1D nodes, and 3D nodes are adjacent to three 2D nodes.\label{fig:boundary_type_diagram}](images/boundary_diagram)
 
 <!--
 TODO code discussion?
@@ -261,7 +261,7 @@ Code for the test can be seen at <https://github.com/reuk/wayverb/blob/master/bi
 
 The following diagram \text{(\ref{fig:boundary_test_setup})} shows the testing setup, which will be explained in the next section.
 
-![The setup of the two room-sizes, and the positions of sources and receivers inside.\label{fig:boundary_test_setup}](images/boundary_test_setup.png)
+![The setup of the two room-sizes, and the positions of sources and receivers inside.\label{fig:boundary_test_setup}](images/boundary_testing_setup)
 
 ### Method
 
@@ -316,7 +316,7 @@ the mesh sampling rate, the 3D FDTD scheme has a cutoff frequency of 0.196
 of the mesh sampling rate for axial directions.
 This point has been marked as a vertical line on the result graphs.
 
-![Measured boundary reflectance is compared against the predicted reflectance, for three different materials and three different angles of incidence.\label{fig:reflectance}](images/reflectance.png)
+![Measured boundary reflectance is compared against the predicted reflectance, for three different materials and three different angles of incidence.\label{fig:reflectance}](images/reflectance)
 
 ## Evaluation
 

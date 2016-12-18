@@ -10,3 +10,9 @@ Site content (including but not limited to markdown files, images,
 bibliographies, videos, audio files) is currently not licensed.
 It is copyright Reuben Thomas 2016. All rights reserved.
 This may change in the future once I've decided on a nice permissive license...
+
+Site built with jekyll + doxygen for code docs.
+Printable document built with LaTeX.
+SVGs mostly created with Google Drawings, but a couple were rendered with
+Processing, and graphs are generally from Numpy/Matplotlib.
+All documentation is built from the same source files, using Pandoc.

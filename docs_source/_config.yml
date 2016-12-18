@@ -25,6 +25,7 @@ pandoc:
         - toc
         - standalone
         - template: template.html
+        - default-image-extension: svg
 
 exclude:
     - LICENSE.txt

@@ -7,7 +7,8 @@ PANDOC_OPTIONS = \
 	--variable=documentclass:scrreprt \
 	--metadata=link-citations:true \
 	--bibliography=wayverb.bib \
-	--csl=ieee.csl
+	--csl=ieee.csl \
+	--default-image-extension=pdf
 
 SOURCES := \
 	title_page.md \
@@ -20,18 +21,15 @@ SOURCES := \
 	microphone.md \
 	boundary.md \
 	evaluation.md \
-	the_future.md \
 	bibliography.md
 
-wayverb.pdf : $(SOURCES)
-	pandoc $(PANDOC_OPTIONS) -o $@ $^
+%.pdf : %.svg
+	inkscape --export-pdf=$@ --without-gui $<
 
-%.png : %.svg
-	inkscape --export-png=$@ --export-dpi=300 --export-background-opacity=0 --without-gui $<
+PDF_FILES := $(patsubst %.svg,%.pdf,$(wildcard images/*))
 
-PNG_FILES := $(patsubst %.svg,%.png,$(wildcard images/*))
-
-png : $(PNG_FILES)
+wayverb.pdf : $(SOURCES) $(PDF_FILES)
+	pandoc $(PANDOC_OPTIONS) -o $@ $(SOURCES)
 
 .PHONY: all clean
 

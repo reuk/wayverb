@@ -1,9 +1,9 @@
 ---
 layout: page
-title: Evaluation
+title: Evaluation and Future
 navigation_weight: 24 
 ---
 
-# Evaluation {.major}
+# Evaluation and Future {.major}
 
 Coming soon.

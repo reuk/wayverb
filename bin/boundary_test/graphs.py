@@ -156,9 +156,10 @@ def main():
     plt.show()
     if render:
         plt.savefig(
-            os.path.join(out_dir, 'plot.pdf'),
+            os.path.join(out_dir, 'boundary_response.svg'),
             bbox_inches='tight',
-            dpi=300)
+            dpi=300,
+            format='svg')
 
 
 if __name__ == '__main__':

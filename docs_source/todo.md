@@ -9,6 +9,16 @@ demo sounds
 
 get svg working in pdf
 
-work out how to do section/figure links which work in pdf and html
+	generate nicer boundary diagrams as svg
 
-ask Alex about hand-in method - do I need to bind a copy?
+write
+
+	raytracer
+
+	waveguide
+
+	hybrid
+
+	microphone
+	
+	evaluation + future

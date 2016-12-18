@@ -69,7 +69,7 @@ The following figure \text{(\ref{fig:simulation_techniques})} shows the relation
 The advantages and disadvantages of each method will be discussed throughout the
 remainder of this section.
 
-![An overview of different acoustic simulation methods, grouped by category.\label{fig:simulation_techniques}](images/simulation_techniques.png)
+![An overview of different acoustic simulation methods, grouped by category.\label{fig:simulation_techniques}](images/simulation_techniques)
 
 ### Geometric
 
@@ -288,7 +288,7 @@ An in-depth description of the algorithms implemented is given in the
 [Waveguide]({{ site.baseurl }}{% link waveguide.md %}) sections.
 The following figure \text{(\ref{fig:regions})} shows how the outputs from the different methods work together to produce a broadband impulse response.
 
-![The structure of a simulated impulse response.\label{fig:regions}](images/regions.png)
+![The structure of a simulated impulse response.\label{fig:regions}](images/regions)
 
 Deciding on the simulation techniques led to three questions:
 
