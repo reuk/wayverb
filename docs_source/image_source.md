@@ -93,6 +93,7 @@ The disadvantage is that a greater number of validity checks are required, thoug
 ## Implementation
 
 Here the concrete implementation of the image-source method is presented, as it is used in Wayverb.
+Details of the microphone-modelling process are discussed separately, in the [Microphone Modelling]({{ site.baseurl }}{% link microphone.md %}) section.
 The following image \text{(\ref{fig:image_source_process})} gives an overview of the entire process.
 
 ![Creation of an impulse response using image sources.\label{fig:image_source_process}](images/image_source_process)

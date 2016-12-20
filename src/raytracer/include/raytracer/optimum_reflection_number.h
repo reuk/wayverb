@@ -32,7 +32,7 @@ double min_absorption(It begin, It end) {
                            });
 }
 
-/// Get the number of necessary reflections for a given min amplitude.
+/// Get the number of necessary reflections for a given min absorption.
 inline size_t compute_optimum_reflection_number(double absorption) {
     return std::ceil(-3 / std::log10(1 - absorption));
 }

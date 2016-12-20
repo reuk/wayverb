@@ -7,18 +7,19 @@ demo vid
 
 demo sounds
 
-get svg working in pdf
-
-	generate nicer boundary diagrams as svg
-
 write
 
 	raytracer
 
 	waveguide
+		nodes inside/outside
+		source types
 
 	hybrid
 
 	microphone
 	
 	evaluation + future
+
+	code walkthrough?
+		nice big diagram

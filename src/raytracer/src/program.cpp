@@ -51,7 +51,6 @@ void reflect_and_add_triangle_to_history(triangle_verts current,
 kernel void init_reflections(global reflection* reflections) {
     const size_t thread = get_global_id(0);
     reflections[thread] = (reflection){(float3)(0),
-                                       (float3)(0),
                                        ~(uint)0,
                                        (char)true,
                                        (char)0};
@@ -132,7 +131,6 @@ kernel void reflections(global ray* rays,  //  ray
 
     //  now we can populate the output
     reflections[thread] = (reflection){intersection_pt,
-                                       specular,
                                        closest_intersection.index,
                                        true,
                                        is_intersection};

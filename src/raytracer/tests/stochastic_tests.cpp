@@ -28,21 +28,9 @@ TEST(stochastic, bad_reflections_box) {
     const scene_buffers buffers{cc.context, voxelised};
 
     const util::aligned::vector<reflection> bad_reflections{
-            reflection{cl_float3{{2.66277409, 0.0182733424, 6}},
-                       cl_float3{{-0.474790603, 0.544031799, -0.691811323}},
-                       10,
-                       1,
-                       1},
-            reflection{cl_float3{{3.34029818, 1.76905692, 6}},
-                       cl_float3{{-0.764549553, -0.314452171, -0.562657714}},
-                       10,
-                       1,
-                       1},
-            reflection{cl_float3{{4, 2.46449089, 1.54567611}},
-                       cl_float3{{-0.431138247, -0.254869401, 0.86554104}},
-                       7,
-                       1,
-                       1},
+            reflection{cl_float3{{2.66277409, 0.0182733424, 6}}, 10, 1, 1},
+            reflection{cl_float3{{3.34029818, 1.76905692, 6}}, 10, 1, 1},
+            reflection{cl_float3{{4, 2.46449089, 1.54567611}}, 7, 1, 1},
     };
 
     stochastic::finder diff{cc, source, receiver, 1.0f, bad_reflections.size()};
@@ -64,23 +52,12 @@ TEST(stochastic, bad_reflections_vault) {
     const scene_buffers buffers{cc.context, voxelised};
 
     const util::aligned::vector<reflection> bad_reflections{
-            reflection{cl_float3{{2.29054403, 1.00505638, -1.5}},
-                       cl_float3{{-0.682838321, 0.000305294991, 0.730569482}},
-                       2906,
-                       1,
-                       1},
-            reflection{cl_float3{{5.28400469, 3.0999999, -3.8193748}},
-                       cl_float3{{-0.715907454, -0.277387351, 0.640728354}},
-                       2671,
-                       1,
-                       1},
-            reflection{cl_float3{{5.29999971, 2.40043592, -2.991467}},
-                       cl_float3{{-0.778293132, -0.199705943, 0.595295966}},
-                       2808,
-                       1,
-                       1},
+            reflection{cl_float3{{2.29054403, 1.00505638, -1.5}}, 2906, 1, 1},
+            reflection{
+                    cl_float3{{5.28400469, 3.0999999, -3.8193748}}, 2671, 1, 1},
+            reflection{
+                    cl_float3{{5.29999971, 2.40043592, -2.991467}}, 2808, 1, 1},
             reflection{cl_float3{{-1.29793882, 2.44466829, 5.30000019}},
-                       cl_float3{{0.270797491, -0.315135896, -0.909592032}},
                        1705,
                        1,
                        1},

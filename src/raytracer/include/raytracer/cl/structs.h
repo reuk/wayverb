@@ -102,7 +102,6 @@ struct core::cl_representation<raytracer::reflection> final {
     static constexpr auto value = R"(
 typedef struct {
     float3 position;
-    float3 direction;
     uint triangle;
     char keep_going;
     char receiver_visible;

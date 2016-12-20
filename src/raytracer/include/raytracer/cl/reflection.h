@@ -9,7 +9,6 @@ namespace raytracer {
 
 struct alignas(1 << 4) reflection final {
     cl_float3 position;   //  position of the secondary source
-    cl_float3 direction;  //  specular direction from the source
     cl_uint triangle;     //  triangle which contains source
     cl_char keep_going;   //  whether or not this is the teriminator for this
                           //  path (like a \0 in a char*)
@@ -19,7 +18,6 @@ struct alignas(1 << 4) reflection final {
 
 constexpr auto to_tuple(const reflection& x) {
     return std::tie(x.position,
-                    x.direction,
                     x.triangle,
                     x.keep_going,
                     x.receiver_visible);
