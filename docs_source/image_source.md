@@ -140,13 +140,20 @@ The pressure content is found by convolving together the reflectances of all int
 This is equivalent to a single multiplication per frequency band, as long as reflectances can be represented by real values.
 
 The surface reflectances are found by converting per-band absorptions into per-band normal-incidence reflectance magnitudes by $|R|=\sqrt{1-\alpha}$.
-These are converted to per-band impedances by $\xi=\frac{1+|R|}{1-|R|}$.
-Finally, the impedances are converted back to *angle-dependent* reflectances by $R(\theta)=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$, where $\theta$ is the angle of incidence at the surface.
+These are converted to per-band impedances by 
+
+(@) $$\xi=\frac{1+|R|}{1-|R|}$$
+
+Finally, the impedances are converted back to *angle-dependent* reflectances by
+
+(@) $$R(\theta)=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$
+
+where $\theta$ is the angle of incidence at the surface.
 This is the same approach taken in [@southern_room_2013].
 
 The contribution $g$ of a single image source with intermediate surfaces $m_1 m_2 \dots m_n$ is given by
 
-$$g_{m_1 m_2 \dots m_n} = \frac{\sqrt{Z_0/4\pi}}{d_{m_1 m_2 \dots m_n}} \cdot r_{m_1} \ast r_{m_2} \ast \dots \ast r_{m_n} \ast \delta(\frac{d_{m_1 m_2 \dots m_n}}{c})$$
+(@) $$g_{m_1 m_2 \dots m_n} = \frac{\sqrt{Z_0/4\pi}}{d_{m_1 m_2 \dots m_n}} \cdot r_{m_1} \ast r_{m_2} \ast \dots \ast r_{m_n} \ast \delta(\frac{d_{m_1 m_2 \dots m_n}}{c})$$
 
 where $Z_0$ is the acoustic impedance of air, $c$ is the speed of sound, $d_{m_1 m_2 \dots m_n}$ is the distance from the receiver to the image source, and $r_{m_i}$ is the reflectance of surface $i$.
 This assumes that the original source emits a pressure impulse $\delta$ at the starting-time of the simulation.
@@ -163,10 +170,10 @@ The contribution can be positioned with sub-sample accuracy, by replacing the im
 Such an impulse response is infinitely long, but tends to zero quickly, so it can be Hanning windowed to reduce the number of additions required.
 This form of the impulse is as follows:
 
-$$
+(@) $$
 \delta_{\text{LPF}}(n - \epsilon)=
 \begin{cases}
-	\frac{1}{2}(1+\cos\frac{2\pi (n - \epsilon)}{N_w})\text{sinc}(n - \epsilon), & \text{if} - \frac{N_w}{2} < n < \frac{N_w}{2} \\
+	\frac{1}{2}(1+\cos\frac{2\pi (n - \epsilon)}{N_w})\text{sinc}(n - \epsilon), & - \frac{N_w}{2} < n < \frac{N_w}{2} \\
 	0, & \text{otherwise}
 \end{cases}
 $$

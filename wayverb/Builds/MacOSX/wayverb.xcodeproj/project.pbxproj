@@ -2890,7 +2890,10 @@
 					BB6E42DAD92DF36B6980AA5D,
 					BBE60ED14C6D89866D0E4D12, ); name = Source; sourceTree = "<group>"; };
 		CC808053E0FC96863D08F79B = {isa = XCBuildConfiguration; buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/build/$(CONFIGURATION)";
@@ -2907,14 +2910,17 @@
 				HEADER_SEARCH_PATHS = ("../../JuceLibraryCode", "../../JuceLibraryCode/modules", "$(inherited)");
 				INFOPLIST_FILE = Info-App.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_CPLUSPLUSFLAGS = "-I../../../src/audio_file/include -I../../../src/combined/include -I../../../src/core/include -I../../../src/frequency_domain/include -I../../../src/hrtf/lib/include -I../../../src/raytracer/include -I../../../src/utilities/include -I../../../src/waveguide/include -I../../../build/include -I../../../build/dependencies/include -std=c++14";
+				OTHER_CPLUSPLUSFLAGS = "-I../../../src/audio_file/include -I../../../src/combined/include -I../../../src/core/include -I../../../src/frequency_domain/include -I../../../src/hrtf/lib/include -I../../../src/raytracer/include -I../../../src/utilities/include -I../../../src/waveguide/include -I../../../build/include -I../../../build/dependencies/include";
 				OTHER_LDFLAGS = "-L../../../build/lib -L../../../build/dependencies/lib -lassimp -laudio_file -lcombined -lcompensation_signal -lcore -lfftw3 -lfftw3f -lfrequency_domain -litpp_static -lmodern_gl_utils -lraytracer -lsamplerate -lsndfile -lutilities -lwaveguide -lzlibstatic";
 				PRODUCT_BUNDLE_IDENTIFIER = com.reubenthomas.wayverb;
 				SDKROOT_ppc = macosx10.5; }; name = Debug; };
 		E028DB616C197D40ABE048CC = {isa = XCBuildConfiguration; buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
 				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/build/$(CONFIGURATION)";
@@ -2932,9 +2938,10 @@
 				HEADER_SEARCH_PATHS = ("../../JuceLibraryCode", "../../JuceLibraryCode/modules", "$(inherited)");
 				INFOPLIST_FILE = Info-App.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
-				MACOSX_DEPLOYMENT_TARGET = 10.11;
+				LLVM_LTO = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.4;
-				OTHER_CPLUSPLUSFLAGS = "-I../../../src/audio_file/include -I../../../src/combined/include -I../../../src/core/include -I../../../src/frequency_domain/include -I../../../src/hrtf/lib/include -I../../../src/raytracer/include -I../../../src/utilities/include -I../../../src/waveguide/include -I../../../build/include -I../../../build/dependencies/include -std=c++14";
+				OTHER_CPLUSPLUSFLAGS = "-I../../../src/audio_file/include -I../../../src/combined/include -I../../../src/core/include -I../../../src/frequency_domain/include -I../../../src/hrtf/lib/include -I../../../src/raytracer/include -I../../../src/utilities/include -I../../../src/waveguide/include -I../../../build/include -I../../../build/dependencies/include";
 				OTHER_LDFLAGS = "-L../../../build/lib -L../../../build/dependencies/lib -lassimp -laudio_file -lcombined -lcompensation_signal -lcore -lfftw3 -lfftw3f -lfrequency_domain -litpp_static -lmodern_gl_utils -lraytracer -lsamplerate -lsndfile -lutilities -lwaveguide -lzlibstatic";
 				PRODUCT_BUNDLE_IDENTIFIER = com.reubenthomas.wayverb;
 				SDKROOT_ppc = macosx10.5; }; name = Release; };
@@ -2951,7 +2958,6 @@
 				GCC_WARN_NON_VIRTUAL_DESTRUCTOR = YES;
 				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "wayverb";
 				WARNING_CFLAGS = -Wreorder;
 				ZERO_LINK = NO; }; name = Debug; };

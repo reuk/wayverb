@@ -35,14 +35,23 @@ This simplifies most calculations, but the source of the wave must not be far en
 
 ### Magnitude and Phase
 
-The reflection factor $R$ is a complex value given by $R=|R|\exp(i\chi )$, which describes a modification to the amplitude and phase of the reflected wave ($|R|$ is the magnitude term, $\chi$ is phase).
+The reflection factor $R$ is a complex value given by 
+
+(@) $$R=|R|\exp(i\chi)$$
+
+which describes a modification to the amplitude and phase of the reflected wave ($|R|$ is the magnitude term, $\chi$ is phase).
+
 This factor depends both on the frequency and direction of the incident wave.
 When $\chi = \pi$, $R=-1$, corresponding to a phase reversal.
 This is known as a "soft" wall, but is rarely seen in room acoustics.
-It is reasonable to assume that reflections are in-phase in the majority of problems.
+It is reasonable to assume that reflections are in-phase in the majority of architectural acoustics problems.
 
 The wall impedance $Z$ is defined as the ratio of sound pressure to the normal component of particle velocity at the wall surface.
-It is related to the reflection factor by $R=\frac{Z\cos\theta-Z_0}{Z\cos\theta+Z_0}$, where $\theta$ is the angle of incidence, and $Z_0$ is the characteristic impedance of the propagation medium, normally air.
+It is related to the reflection factor by
+
+(@) $$R=\frac{Z\cos\theta-Z_0}{Z\cos\theta+Z_0}$$
+
+where $\theta$ is the angle of incidence, and $Z_0$ is the characteristic impedance of the propagation medium, normally air.
 In the case that the wall impedance is independent of the wave angle-of-incidence, the surface is known as *locally reacting*.
 A locally reacting surface does not transmit waves tangentially along the wall surface.
 
@@ -61,7 +70,7 @@ If the reflecting surface has imperfections or details of the same order as the 
 Describing the nature of the scattered sound is more complicated than specular reflections.
 A common method is to use a *scattering coefficient*, $s$, which describes the proportion of outgoing energy which is scattered, and which may be dependent on frequency \text{(see figure \ref{fig:scattering})}:
 
-$$E_{\text{scattered}}=E_{\text{incident}}(1-\alpha)s, E_{\text{specular}}=E_{\text{incident}}(1-\alpha)(1-s), E_{\text{total}}=E_{\text{incident}}(1-\alpha)$$
+(@) $$E_{\text{scattered}}=E_{\text{incident}}(1-\alpha)s, E_{\text{specular}}=E_{\text{incident}}(1-\alpha)(1-s), E_{\text{total}}=E_{\text{incident}}(1-\alpha)$$
 
 ![Reflected components from a rough surface.\label{fig:scattering}](images/scattering)
 
@@ -77,8 +86,16 @@ More complex scattering distributions, which also depend on the outgoing directi
 The geometric implementation of reflective surfaces is straightforward.
 In both image-source and ray tracing methods, each ray starts with a certain intensity or pressure.
 For specular reflections, the ray pressure must merely be multiplied by the wall reflection coefficient, which may derived from the absorption and scattering coefficients using the equations above.
-Specifically, the normal-incidence specific impedance $\xi_0$ is calculated using $\xi_0=\frac{1+R_0}{1-R_0}$ where $R_0$ is the normal-incidence reflection factor.
-Then, the angle-dependent reflection factor is given by $R_\theta=\frac{\xi_0\cos\theta-1}{\xi_0\cos\theta+1}$ where $\theta$ is the angle of incidence [@southern_room_2013].
+Specifically, the normal-incidence specific impedance $\xi_0$ is calculated using 
+
+(@) $$\xi_0=\frac{1+R_0}{1-R_0}$$
+
+where $R_0$ is the normal-incidence reflection factor.
+Then, the angle-dependent reflection factor is given by 
+
+$$R_\theta=\frac{\xi_0\cos\theta-1}{\xi_0\cos\theta+1}$$
+
+where $\theta$ is the angle of incidence [@southern_room_2013].
 
 If the reflection factor is dependent on frequency then the frequency range, and the pressure carried by the ray, must be discretised into bands.
 Then each band must be modified using a representative reflection factor for that frequency range.
@@ -103,7 +120,7 @@ This scattered energy is recorded only if the secondary source is visible from t
 
 Assuming perfect Lambert diffusion, the magnitude of diffuse rain scattered energy is given by [@schroder_physically_2011, p. 64]:
 
-$$E_{\text{scattered}} = E_{\text{incident}}(1-\alpha)2s\cos\theta(1-\cos\frac{\gamma}{2})$$
+(@) $$E_{\text{scattered}} = E_{\text{incident}}(1-\alpha)2s\cos\theta(1-\cos\frac{\gamma}{2})$$
 
 Here, $\theta$ is the angle from secondary source to receiver relative against the surface normal, and $\gamma$ is the opening angle \text{(shown in figure \ref{fig:diffuse_rain})}.
 The magnitude of the scattered energy depends on the direction from the secondary source to the receiver (by Lambert's cosine law), and also on the solid angle covered by the receiver.
@@ -168,11 +185,11 @@ See [@kowalczyk_modeling_2008] and [@kowalczyk_modelling_2008] for a more detail
 In the [Background] section it was noted that the reflection characteristics of a surface are fully defined by a reflection coefficient or wall impedance, both of which might be frequency- and direction-dependent.
 The LRS technique starts from the definition of wall reflectance:
 
-$$R=\frac{Z\cos\theta-Z_0}{Z\cos\theta+Z_0}$$
+(@) $$R=\frac{Z\cos\theta-Z_0}{Z\cos\theta+Z_0}$$
 
 This may instead be written in terms of *specific acoustic impedance* $\xi$, which is equal to the wall impedance $Z$ divided by the acoustic impedance of the propagation medium (air) $Z_0$: $\xi=\frac{Z}{Z_0}$.
 
-$$R=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$
+(@) $$R=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$
 
 This equation can be rearranged to define the wall impedance in terms of the reflection coefficient.
 Further, the reflection coefficient can be replaced with a digital filter $R_0(z)$, describing the frequency-dependent normal-incidence behaviour of the surface.
@@ -180,7 +197,7 @@ This filter might be derived from per-band absorption coefficients, using the re
 In Wayverb, reflection magnitudes are found in this way, and then the Yule-Walker method is used to approximate coefficients for $R_0$.
 The substitution leads to an equation for a filter, describing the specific acoustic impedance of the surface:
 
-$$\xi(z)=\frac{1+R_0(z)}{1-R_0(z)}$$
+(@) $$\xi(z)=\frac{1+R_0(z)}{1-R_0(z)}$$
 
 This impedance filter is most efficiently implemented as an *infinte impulse response* (IIR) filter, though surfaces with detailed frequency responses will require high-order filters, which tend to become numerically unstable.
 The usual solution to this problem would be to split the high-order filter into a series-combination of lower-order filters, however the LRS requires access to intermediate values from the filter delay-line which makes this approach impossible.
@@ -290,7 +307,7 @@ To find the accuracy of the boundary model, the numerical reflectance was
 compared to the theoretical reflection of the digital impedance filter being
 tested, which is defined as:
 
-$$R_{\theta, \phi}(z) = \frac{\xi(z)\cos\theta\cos\phi - 1}{\xi(z)\cos\theta\cos\phi + 1}$$
+(@) $$R_{\theta, \phi}(z) = \frac{\xi(z)\cos\theta\cos\phi - 1}{\xi(z)\cos\theta\cos\phi + 1}$$
 
 where $\theta$ and $\phi$ are the reflection azimuth and elevation respectively.
 

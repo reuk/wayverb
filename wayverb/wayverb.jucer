@@ -177,14 +177,18 @@
     <FILE id="eBKJgN" name="wayverb.png" compile="0" resource="1" file="wayverb.png"/>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" extraCompilerFlags="-I../../../src/audio_file/include&#10;-I../../../src/combined/include&#10;-I../../../src/core/include&#10;-I../../../src/frequency_domain/include&#10;-I../../../src/hrtf/lib/include&#10;-I../../../src/raytracer/include&#10;-I../../../src/utilities/include&#10;-I../../../src/waveguide/include&#10;-I../../../build/include&#10;-I../../../build/dependencies/include&#10;-std=c++14"
+    <XCODE_MAC targetFolder="Builds/MacOSX" extraCompilerFlags="-I../../../src/audio_file/include&#10;-I../../../src/combined/include&#10;-I../../../src/core/include&#10;-I../../../src/frequency_domain/include&#10;-I../../../src/hrtf/lib/include&#10;-I../../../src/raytracer/include&#10;-I../../../src/utilities/include&#10;-I../../../src/waveguide/include&#10;-I../../../build/include&#10;-I../../../build/dependencies/include"
                extraLinkerFlags="-L../../../build/lib&#10;-L../../../build/dependencies/lib"
                externalLibraries="assimp&#10;audio_file&#10;combined&#10;compensation_signal&#10;core&#10;fftw3&#10;fftw3f&#10;frequency_domain&#10;itpp_static&#10;modern_gl_utils&#10;raytracer&#10;samplerate&#10;sndfile&#10;utilities&#10;waveguide&#10;zlibstatic"
                documentExtensions="way" extraFrameworks="OpenCL" prebuildCommand="cd ../../../ &amp;&amp; ./build.sh"
                smallIcon="eBKJgN" bigIcon="eBKJgN">
       <CONFIGURATIONS>
-        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="wayverb"/>
-        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="wayverb"/>
+        <CONFIGURATION name="Debug" isDebug="1" optimisation="1" targetName="wayverb"
+                       osxSDK="default" osxCompatibility="10.9 SDK" osxArchitecture="64BitIntel"
+                       cppLanguageStandard="c++14" cppLibType="libc++"/>
+        <CONFIGURATION name="Release" isDebug="0" optimisation="3" targetName="wayverb"
+                       osxCompatibility="10.9 SDK" osxArchitecture="64BitIntel" cppLanguageStandard="c++14"
+                       cppLibType="libc++" linkTimeOptimisation="1" osxSDK="default"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_core" path="../../JUCE/modules"/>

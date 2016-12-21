@@ -10,7 +10,7 @@ target_include_directories(audio_file
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
     PRIVATE
-    ${CMAKE_BINARY_DIR}/include
+    ${DEPENDENCY_INSTALL_PREFIX}/include
 )
 
 target_link_libraries(audio_file sndfile)

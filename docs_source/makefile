@@ -6,6 +6,7 @@ PANDOC_OPTIONS = \
 	--variable=geometry:a4paper \
 	--variable=documentclass:scrreprt \
 	--metadata=link-citations:true \
+	--latex-engine=lualatex \
 	--bibliography=wayverb.bib \
 	--csl=ieee.csl \
 	--default-image-extension=pdf
