@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.2)
-
 include_directories(${DEPENDENCY_INSTALL_PREFIX}/include)
 
 add_executable(write_compensation_signal main.cpp)

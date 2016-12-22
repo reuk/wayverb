@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.2)
-
 file(GLOB sources "*.cpp")
 
 add_definitions(-DSCRATCH_PATH="${CMAKE_BINARY_DIR}")

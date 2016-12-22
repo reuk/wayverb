@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.2)
-
 set(outfile ${CMAKE_CURRENT_BINARY_DIR}/hrtf_entries.h)
 add_custom_command(OUTPUT ${outfile}
     COMMAND write_hrtf ${CMAKE_CURRENT_SOURCE_DIR}/data/IRC_1002_C > ${outfile}

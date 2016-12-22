@@ -22,6 +22,12 @@ set(CMAKE_MODULE_PATH ${DEPENDENCY_INSTALL_PREFIX} ${CMAKE_MODULE_PATH})
 
 set(GLOBAL_DEPENDENCY_CMAKE_FLAGS "-DCMAKE_MODULE_PATH=${DEPENDENCY_INSTALL_PREFIX}" "-DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
 
+set(ENV_SETTINGS "MACOSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET}")
+
+set(CUSTOM_MAKE_COMMAND
+    BUILD_COMMAND make ${ENV_SETTINGS} 
+)
+
 # glm ##########################################################################
 
 ExternalProject_Add(
@@ -51,7 +57,8 @@ set_property(TARGET zlibstatic PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_P
 ExternalProject_Add(
     fftwf_external
     URL http://fftw.org/fftw-3.3.5.tar.gz
-    CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-float
+    CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --enable-float --enable-shared=no
+    ${CUSTOM_MAKE_COMMAND}
 )
 
 add_library(fftwf UNKNOWN IMPORTED)
@@ -63,7 +70,8 @@ set_property(TARGET fftwf PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_PREFIX
 ExternalProject_Add(
     sndfile_external
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch 1.0.27 https://github.com/erikd/libsndfile.git sndfile_external
-    CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --disable-external-libs --prefix=<INSTALL_DIR>
+    CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --disable-external-libs --prefix=<INSTALL_DIR> --enable-shared=no
+    ${CUSTOM_MAKE_COMMAND}
 )
 
 add_library(sndfile UNKNOWN IMPORTED)
@@ -79,7 +87,8 @@ ExternalProject_Add(
     samplerate_external
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 https://github.com/erikd/libsamplerate.git samplerate_external
     PATCH_COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_SOURCE_DIR}/config/fix_carbon.patch
-    CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --disable-dependency-tracking 
+    CONFIGURE_COMMAND <SOURCE_DIR>/autogen.sh && <SOURCE_DIR>/configure --prefix=<INSTALL_DIR> --disable-dependency-tracking --enable-shared=no
+    ${CUSTOM_MAKE_COMMAND}
 )
 
 add_library(samplerate UNKNOWN IMPORTED)
@@ -91,7 +100,7 @@ set_property(TARGET samplerate PROPERTY IMPORTED_LOCATION ${DEPENDENCY_INSTALL_P
 ExternalProject_Add(
     gtest_external
     DOWNLOAD_COMMAND ${GIT_EXECUTABLE} clone --depth 1 --branch release-1.8.0 https://github.com/google/googletest.git gtest_external
-    CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> 
+    CMAKE_ARGS ${GLOBAL_DEPENDENCY_CMAKE_FLAGS} -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR> -Dgtest_hide_internal_symbols=on
 )
 
 add_library(gtest UNKNOWN IMPORTED)
@@ -112,6 +121,7 @@ ExternalProject_Add(
     fftw_external
     URL http://fftw.org/fftw-3.3.5.tar.gz
     CONFIGURE_COMMAND <SOURCE_DIR>/configure --prefix=<INSTALL_DIR>
+    ${CUSTOM_MAKE_COMMAND}
 )
 
 add_library(fftw UNKNOWN IMPORTED)

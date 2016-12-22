@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.2)
-
 set(name waveguide_distance_test)
 add_executable(${name} ${name}.cpp)
 
