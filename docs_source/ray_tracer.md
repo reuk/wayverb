@@ -84,11 +84,6 @@ The process will be described in greater detail in the following [Implementation
 
 Here, Wayverb's ray tracer will be described.
 Details of the boundary- and microphone-modelling processes are discussed separately, in the [Boundary Modelling]({{ site.baseurl }}{% link boundary.md %}) and [Microphone Modelling]({{ site.baseurl }}{% link microphone.md %}) sections respectively.
-The following image \text{(\ref{fig:ray_tracer_process})} outlines the entire process.
-
-<!-- TODO enable ![Estimating the reverb tail using ray tracing.\label{fig:ray_tracer_process}](images/ray_tracer_process) -->
-
-TODO full diagram
 
 ### Finding Reflections
 
@@ -124,7 +119,7 @@ To find the maximum ray tracing depth, first the minimum absorption of all surfa
 The outgoing energy from a reflection is equal to $E_\text{incoming}(1-\alpha)$ where $E_\text{incoming}$ is the incoming energy and $\alpha$ is the surface absorption.
 The maximum ray tracing depth is equal to the number of reflections from the minimally absorptive surface required to reduce the energy of a ray by 60dB:
 
-(@) $$n_\text{reflections}=\left\lceil-\frac{3}{\log_{10}(1-\alpha_\text{min})}\right\rceil$$
+(@) $$n_\text{reflections}=\left\lceil-\frac{6}{\log_{10}(1-\alpha_\text{min})}\right\rceil$$
 
 ### Logging Energy
 
@@ -145,6 +140,9 @@ When ray tracing has completed, the result is a set of histograms which describe
 These histograms will have a relatively low sampling rate of around 1KHz, as explained above, so they are not directly suitable for auralisation.
 To produce audio-rate impulse responses, the "fine structure" of the decay tail must be synthesised and then enveloped using the histogram envelopes.
 The process used to convert the histogram into an audio-rate impulse response is described in [@heinz_binaural_1993], and in greater depth in [@schroder_physically_2011, p. 70], though an overview will be given here.
+The following image \text{(\ref{fig:raytrace_process})} outlines the process of estimating an audio-rate representation of low-sample-rate multi-band histograms.
+
+![Generating an audio-rate signal from multi-band ray tracing energy histograms at a low sampling rate.\label{fig:raytrace_process}](images/raytrace_process)
 
 #### Generating a Noise Signal
 

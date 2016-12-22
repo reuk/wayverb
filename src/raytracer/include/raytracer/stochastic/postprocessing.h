@@ -40,7 +40,7 @@ auto interval_size(Engine& engine, double mean_occurrence) {
     //  Parameters are this way round to preserve the half-open range in the
     //  correct direction.
     std::uniform_real_distribution<double> distribution{1.0, 0.0};
-    return 1.0 / mean_occurrence * std::log(1.0 / distribution(engine));
+    return std::log(1.0 / distribution(engine)) / mean_occurrence;
 }
 
 double t0(double constant);

@@ -19,6 +19,7 @@ SOURCES := \
 	image_source.md \
 	ray_tracer.md \
 	waveguide.md \
+	hybrid.md \
 	microphone.md \
 	boundary.md \
 	evaluation.md \
