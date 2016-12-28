@@ -23,7 +23,6 @@ research aims
 	refer back to criteria set up here
 
 be explicit about where I've tried several things and chosen a solution
-
-give better context for decisions
+	give better context for decisions
 
 look over boundary tests again, try with less flat filters
