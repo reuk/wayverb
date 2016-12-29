@@ -430,11 +430,85 @@ A PCS input signal, combined with the transparent source input method, seems
 perfect for this application.  It obeys the differentiation constraint, has a
 wide and flat passband, and is short in time.  The soft source will not cause
 scattering artefacts, and as the input signal has no DC component, it should
-not introduce solution growth.
+not introduce solution-growth.
 
-TODO what did testing show?
+A test was devised to ensure that the source injection method did not cause
+solution-growth.  A standard rectilinear waveguide mesh with a sampling
+frequency of 10KHz was set up within a cuboid room, measuring $5.56 \times 3.97
+\times 2.81$ metres. A source was placed at (4.8, 2.18, 2.12), and a receiver
+at (4.7, 2.08, 2.02).  The walls of the room were set to have a uniform
+broadband absorption of 0.006 (see the [Boundary Modelling]({{ site.baseurl}}{%
+link boundary.md %}) section).  "Transparent" input signals were created from a
+differentiated Gaussian pulse, a sine-modulated Gaussian pulse, and a Ricker
+wavelet, all of which were set to a centre frequency of 0.05 $f_s$.  A
+physically-constrained source signal was also generated, using parameters
+suggested in section V of [@sheaffer_physical_2014]: a max-flat
+finite-impulse-response pulse-shaping filter kernel with 16 taps and centre
+frequency of 0.075 $f_s$ and magnitude 250μN was generated; it was passed
+through a mechanical shaping filter with radius 5cm, mass 25g, lower cutoff
+100Hz, and resonance 0.7; then this signal was passed through an
+infinite-impulse-response *injection filter*, and used as a soft source.
+(These parameters are reproduced here to ensure that the test is repeatable,
+but a full discussion of their meaning is beyond the scope of this paper. The
+interested reader is directed to [@sheaffer_physical_2014] or to the
+implementation of the physically-constrained source in the Wayverb repository.)
+Finally, the simulation was run for around 85000 steps (less than the expected
+Sabine RT60 of the room) with each of the four sources, and the response at the
+receiver was recorded.
 
-TODO why am I using a hard dirac source?
+The results of the experiment are shown in the following figure
+\text{(\ref{fig:solution_growth_results})}.  The response of a transparent
+Dirac source (which has a strong DC component) is also shown.  All the sources
+with no DC component show significantly less solution-growth than the
+transparent Dirac source.  However, they *do* all show the effects of
+solution-growth.
+
+TODO solution growth results
+
+The solution-growth seen here only becomes prominent towards the end of the
+simulation, after around 60000 steps.  However, papers which propose
+countermeasures to the solution-growth problem generally only test their
+solutions up to 15000 steps or so [@sheaffer_physical_2014;
+@sheaffer_physically-constrained_2012; @jeong_source_2012].  The results of
+testing the solution in [@dimitrijevic_optimization_2015] are not even
+presented.  It is entirely possible that these input methods have not been
+tested in such a long simulation before.
+
+The reason for the solution-growth is not clear. In general, the problem is
+caused by repeated superposition of the DC level, which is reflected from
+boundaries.  The waveguide has no inherent way of removing DC, so *any* small
+DC component will accumulate over time.  If the original signal does not have a
+DC component, then the DC is being added from elsewhere.  The most likely
+origin is numerical error in the waveguide mesh.  The experiment above uses
+32-bit single-precision floating-point to represent the pressure of mesh nodes,
+which is necessary because using double-precision would double the memory usage
+and halve the computational throughput.  It is possible that error in these
+single-precision calculations manifests as a tiny DC component, which then
+multiplies as the simulation progresses.
+
+Whatever the reason, it is clear that using a soft source generally causes a DC
+offset to accumulate, even when the input signal has no DC component.  Soft
+sources may be suitable for shorter simulations, however, without running the
+simulation, it is impossible to know how much DC will accumulate, and whether
+or not it will remain within acceptable bounds.  Therefore, in general, current
+forms of the soft source are not appropriate for arbitrary room simulation.
+
+As an alternative to a soft source, Wayverb currently uses a hard source with a
+Dirac impulse as its input method.  Though this still causes low-frequency
+error [@sheaffer_physical_2014], this error manifests as an oscillation rather
+than an exponential growth. The oscillation tends to be below the audible
+range, and therefore can be removed without affecting the perceived quality of
+the simulation. This removal is achieved with no phase modifications by
+transforming the signal into the frequency domain, smoothly attenuating the
+lowest frequencies, and then converting back to the time domain.
+The main drawback of the hard source is its scattering characteristic.
+Though undesirable, this behaviour has a physical analogue: in a
+physical recording, reflected wave-fronts would be scattered from the speaker
+cabinet or starter pistol used to excite the space.
+
+Code for modelling soft sources remains in the Wayverb repository, so if future
+research uncovers a soft source without solution-growth, it will be easy to
+replace the current source model with an improved one.
 
 ## Implementation
 

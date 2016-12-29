@@ -16,6 +16,7 @@ local_hosted_docs
 tmp
 docs_source/tmp
 docs_source/_site
+docs_source/images/*.pdf
 
 .vagrant
 .sass-cache

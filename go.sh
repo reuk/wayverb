@@ -8,7 +8,7 @@ if ./build.sh ; then
 #if ./build.sh 2>&1 | tee build_log.txt ; then
 cd build
 
-ctest -V
+#ctest -V
 
 #cd bin/image_source_comparison && ./image_source_comparison
 
@@ -22,7 +22,7 @@ ctest -V
 
 #./tests/mesh_impulse_response/write_compensation_signal
 
-#cd bin/solution_growth && ./solution_growth
+cd bin/solution_growth && ./solution_growth
 
 #cd bin/sheaffer2014 && ./sheaffer2014
 

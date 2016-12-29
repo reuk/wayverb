@@ -12,12 +12,7 @@ Combine fields in condensed_node struct.
 
 Is it worth checking all paths in the image source tree?
 
-## important
-
-Sanity checks - do big echo-y rooms sound big and echo-y? Do small rooms sound
-small? Can I get the correct direct/reflected ratios for near and far sources?
-
-Look again at frequency domain test?
+Soft source without solution growth.
 
 ### app stuff
 

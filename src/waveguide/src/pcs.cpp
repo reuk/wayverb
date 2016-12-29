@@ -73,7 +73,7 @@ offset_signal design_pcs_source(size_t length,
                                 double sphere_mass,
                                 double low_cutoff_hz,
                                 double low_q) {
-    auto pulse_shaping_filter = maxflat(0.20, 16, 1, length);
+    auto pulse_shaping_filter = maxflat(0.075, 16, 0.00025, length);
     core::filter::biquad mechanical_filter{mech_sphere(
             sphere_mass, low_cutoff_hz / sample_rate, low_q, 1 / sample_rate)};
     run_one_pass(mechanical_filter,

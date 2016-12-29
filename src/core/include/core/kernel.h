@@ -10,69 +10,50 @@ namespace wayverb {
 namespace core {
 namespace kernels {
 
-inline double gaussian(double t, double bandwidth) {
-    return std::pow(M_E, -std::pow(t, 2.0) / std::pow(bandwidth, 2.0));
-}
+double gaussian(double t, double o);
+double sin_modulated_gaussian(double t, double o);
+double gaussian_dash(double t, double o);
 
-template <typename T = float>
-util::aligned::vector<T> gaussian_kernel(double sampling_frequency,
-                                         double valid_portion) {
-    const auto upper = sampling_frequency * valid_portion;
-    const auto o = 2 / (M_PI * upper);
-    const auto l = std::ceil(8 * o * sampling_frequency) * 2;
-    const auto time_offset = l / (2 * sampling_frequency);
+template <typename T, typename Func>
+util::aligned::vector<T> gauss_like_kernel(double fc, const Func& func) {
+    const auto o = 1.0 / (2.0 * M_PI * fc);
+    const ptrdiff_t delay = std::ceil(8.0 * o);
+    const auto l = delay * 2 + 1;
     util::aligned::vector<T> ret;
     ret.reserve(l);
-    for (auto i = 0u; i != l; ++i) {
-        ret.emplace_back(gaussian((i / sampling_frequency) - time_offset, o));
+    for (ptrdiff_t i = 0; i != l; ++i) {
+        ret.emplace_back(func(i - delay, o));
     }
     return ret;
 }
 
-inline double sin_modulated_gaussian(double t,
-                                     double bandwidth,
-                                     double frequency) {
-    return -gaussian(t, bandwidth) * sin(2.0 * M_PI * frequency * t);
+template <typename T = float>
+auto gen_gaussian(double fc) {
+    return gauss_like_kernel<T>(fc, gaussian);
 }
 
 template <typename T = float>
-util::aligned::vector<T> sin_modulated_gaussian_kernel(
-        double sampling_frequency, double valid_portion) {
-    const auto upper = sampling_frequency * valid_portion;
-    const auto o = 2 / (M_PI * upper);
-    const auto l = std::ceil(8 * o * sampling_frequency) * 2;
-    const auto time_offset = l / (2 * sampling_frequency);
-    util::aligned::vector<T> ret;
-    ret.reserve(l);
-    for (auto i = 0u; i != l; ++i) {
-        ret.emplace_back(sin_modulated_gaussian(
-                (i / sampling_frequency) - time_offset, o, upper * 0.5));
-    }
-    return ret;
+auto gen_sin_modulated_gaussian(double fc) {
+    return gauss_like_kernel<T>(fc, sin_modulated_gaussian);
+}
+
+template <typename T = float>
+auto gen_gaussian_dash(double fc) {
+    return gauss_like_kernel<T>(fc, gaussian_dash);
 }
 
 /// t = time
 /// f = peak frequency
-inline double ricker(double t, double f) {
-    //  see
-    //  http://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.ricker.html
-    //  and http://wiki.seg.org/wiki/Dictionary:Ricker_wavelet
-    const auto u = M_PI * M_PI * f * f * t * t;
-    return (1.0 - 2.0 * u) * std::exp(-u);
-}
+double ricker(double t, double f);
 
 template <typename T = float>
-util::aligned::vector<T> ricker_kernel(double sampling_frequency,
-                                       double valid_portion) {
-    const auto upper = sampling_frequency * valid_portion;
-    const auto o = 2 / (M_PI * upper);
-    const auto l = std::ceil(8 * o * sampling_frequency) * 2;
-    const auto time_offset = l / (2 * sampling_frequency);
+util::aligned::vector<T> gen_ricker(double fc) {
+    const ptrdiff_t delay = std::ceil(1.0 / fc);
+    const auto l = delay * 2 + 1;
     util::aligned::vector<T> ret;
     ret.reserve(l);
-    for (auto i = 0u; i != l; ++i) {
-        ret.emplace_back(
-                ricker((i / sampling_frequency) - time_offset, upper * 0.5));
+    for (ptrdiff_t i = 0; i != l; ++i) {
+        ret.emplace_back(ricker(i - delay, fc));
     }
     return ret;
 }
