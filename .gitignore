@@ -34,6 +34,7 @@ apps/impulse/Builds/MacOSX/Build
 *.aiff
 *~.skp
 *.log
+*.aux
 
 compile_commands.json
 build_log.txt

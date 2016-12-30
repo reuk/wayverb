@@ -68,7 +68,7 @@ Vagrant.configure("2") do |config|
     apt-get update
     apt-get install -y language-pack-en zsh fonts-powerline
     apt-get install -y doxygen cmake ntp
-    apt-get install -y pandoc pandoc-citeproc texlive-latex-recommended texlive-xetex inkscape
+    apt-get install -y pandoc pandoc-citeproc texlive-latex-recommended texlive-xetex inkscape pdf2svg
     apt-get install -y libcurl3 build-essential ruby-dev zlib1g-dev
     gem install jekyll jekyll-pandoc rake html-proofer
   SHELL

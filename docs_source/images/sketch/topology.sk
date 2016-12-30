@@ -1,0 +1,210 @@
+def box {
+    def p0 (0, 0, 0)
+    def p1 (0, 0, 1)
+    def p2 (0, 1, 0)
+    def p3 (0, 1, 1)
+    def p4 (1, 0, 0)
+    def p5 (1, 0, 1)
+    def p6 (1, 1, 0)
+    def p7 (1, 1, 1)
+
+    def style [fillstyle=solid, opacity=0.4, cull=false, linecolor=gray, linestyle=dotted]
+
+    polygon [style] (p0) (p2) (p6) (p4)
+    polygon [style] (p5) (p7) (p3) (p1)
+    polygon [style] (p0) (p1) (p3) (p2)
+    polygon [style] (p5) (p4) (p6) (p7)
+    polygon [style] (p0) (p4) (p5) (p1)
+    polygon [style] (p2) (p3) (p7) (p6)
+}
+
+def p00 (0, 0, 0)
+def p01 (0, 0, 0.5)
+def p02 (0, 0, 1)
+
+def p03 (0, 0.5, 0)
+def p04 (0, 0.5, 0.5)
+def p05 (0, 0.5, 1)
+
+def p06 (0, 1, 0)
+def p07 (0, 1, 0.5)
+def p08 (0, 1, 1)
+
+def p09 (0.5, 0, 0)
+def p10 (0.5, 0, 0.5)
+def p11 (0.5, 0, 1)
+
+def p12 (0.5, 0.5, 0)
+def p13 (0.5, 0.5, 0.5)
+def p14 (0.5, 0.5, 1)
+
+def p15 (0.5, 1, 0)
+def p16 (0.5, 1, 0.5)
+def p17 (0.5, 1, 1)
+
+def p18 (1, 0, 0)
+def p19 (1, 0, 0.5)
+def p20 (1, 0, 1)
+
+def p21 (1, 0.5, 0)
+def p22 (1, 0.5, 0.5)
+def p23 (1, 0.5, 1)
+
+def p24 (1, 1, 0)
+def p25 (1, 1, 0.5)
+def p26 (1, 1, 1)
+
+def template {
+    {box}
+
+    dots [dotsize=0.1, linecolor=gray]
+         (p00) (p01) (p02) (p03) (p04) (p05) (p06) (p07) (p08) (p09) (p10) (p11)
+         (p12) (p13) (p14) (p15) (p16) (p17) (p18) (p19) (p20) (p21) (p22) (p23)
+         (p24) (p25) (p26)
+}
+
+def tetrahedral {
+    {template}
+
+    def unit {
+        def m0 (0, 0, 0)
+        def m1 (0.5, 0, 0.5)
+        def m2 (0.25, 0.25, 0.25)
+        def m3 (0, 0.5, 0.5)
+        def m4 (0.5, 0.5, 0)
+
+        dots [dotsize=0.2, linecolor=blue] 
+             (m0) (m1) (m2) (m3) (m4)
+
+        line (m2) (m0)
+        line (m2) (m1)
+        line (m2) (m3)
+        line (m2) (m4)
+    }
+
+    put { translate ([0, 0, 0]) } {unit}
+    put { translate ([0.5, 0, 0.5]) } {unit}
+    put { translate ([0, 0.5, 0.5]) } {unit}
+    put { translate ([0.5, 0.5, 0]) } {unit}
+
+    special |
+        \uput[d]#1{tetrahedral}
+            | (p11)
+}
+
+def rectilinear {
+    {template}
+
+    dots [dotsize=0.2, linecolor=blue] 
+         (p13) (p04) (p10) (p12) (p14) (p16) (p22)
+
+    line (p13) (p04)
+    line (p13) (p10)
+    line (p13) (p12)
+    line (p13) (p14)
+    line (p13) (p16)
+    line (p13) (p22)
+
+    special |
+        \uput[d]#1{rectilinear}
+            | (p11)
+}
+
+def octahedral {
+    {template}
+
+    dots [dotsize=0.2, linecolor=blue] 
+         (p13) (p00) (p02) (p06) (p08) (p18) (p20) (p24) (p26)
+
+    line (p13) (p00)
+    line (p13) (p02)
+    line (p13) (p06)
+    line (p13) (p08)
+    line (p13) (p18)
+    line (p13) (p20)
+    line (p13) (p24)
+    line (p13) (p26)
+    
+    special |
+        \uput[d]#1{octahedral}
+            | (p11)
+}
+
+def dodecahedral {
+    {template}
+
+    dots [dotsize=0.2, linecolor=blue]
+         (p13) (p01) (p03) (p05) (p07) (p09) (p11) (p15) (p17) (p19) (p21) (p23) (p25)
+
+    line (p13) (p01)
+    line (p13) (p03)
+    line (p13) (p05)
+    line (p13) (p07)
+    line (p13) (p09)
+    line (p13) (p11)
+    line (p13) (p15)
+    line (p13) (p17)
+    line (p13) (p19)
+    line (p13) (p21)
+    line (p13) (p23)
+    line (p13) (p25)
+
+    special |
+        \uput[d]#1{dodecahedral}
+            | (p11)
+}
+
+def interpolated {
+    {template}
+
+    dots [dotsize=0.2, linecolor=blue]
+         (p00) (p01) (p02) (p03) (p04) (p05) (p06) (p07) (p08) (p09) (p10) (p11)
+         (p12) (p13) (p14) (p15) (p16) (p17) (p18) (p19) (p20) (p21) (p22) (p23)
+         (p24) (p25) (p26)
+
+    line (p13) (p00) 
+    line (p13) (p01) 
+    line (p13) (p02) 
+    line (p13) (p03) 
+    line (p13) (p04) 
+    line (p13) (p05) 
+    line (p13) (p06) 
+    line (p13) (p07) 
+    line (p13) (p08) 
+    line (p13) (p09) 
+    line (p13) (p10) 
+    line (p13) (p11)
+    line (p13) (p12) 
+    line (p13) (p14) 
+    line (p13) (p15) 
+    line (p13) (p16) 
+    line (p13) (p17) 
+    line (p13) (p18) 
+    line (p13) (p19) 
+    line (p13) (p20) 
+    line (p13) (p21) 
+    line (p13) (p22) 
+    line (p13) (p23)
+    line (p13) (p24) 
+    line (p13) (p25) 
+    line (p13) (p26)
+
+    special |
+        \uput[d]#1{interpolated}
+            | (p11)
+}
+
+def spacing 1.4
+
+def width spacing * 4 + 1
+
+def eye (width / 2, 4, 10)
+def look_at (width / 2, 0, -5)
+
+put { view ((eye), (look_at)) then perspective (30) } { 
+    put { translate ([0 * spacing, 0, 0]) } {tetrahedral} 
+    put { translate ([1 * spacing, 0, 0]) } {rectilinear}
+    put { translate ([2 * spacing, 0, 0]) } {octahedral}
+    put { translate ([3 * spacing, 0, 0]) } {dodecahedral}
+    put { translate ([4 * spacing, 0, 0]) } {interpolated}
+}

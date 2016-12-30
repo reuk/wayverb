@@ -273,17 +273,24 @@ perfect reconstruction, and to avoid artificial-sounding discontinuities in the
 spectrum, the filter shape suggested in [@antoni_orthogonal-like_2010] is used.
 This paper suggests equations which describe the band-edge magnitudes:
 
-(@) $$G_\text{lower}(\omega_\text{edge} + p) =
-\sin^2\left(\frac{\pi}{2}\phi_l(p)\right), G_\text{upper}(\omega_\text{edge} +
-p) = \cos^2\left(\frac{\pi}{2}\phi_l(p)\right)$$
+(@)
+$$
+G_\text{lower}(\omega_\text{edge} + p) = \sin^2\left(\frac{\pi}{2}\phi_l(p)\right), \\
+G_\text{upper}(\omega_\text{edge} + p) = \cos^2\left(\frac{\pi}{2}\phi_l(p)\right)
+$$
 
 Here, $G$ is a function of frequency, $\omega_\text{edge}$ is the band-edge
 frequency, and $p$ is the relative frequency of a nearby frequency bin.  The
 equations are computed for a range of values $p=P,\dots,P$ where $P$ is the
 width of the crossover.  The definition of $\phi_l(p), l \geq 0$ is recursive:
 
-(@) $$ \phi_l(p)= \begin{cases} \frac{1}{2}(p / P + 1), & l = 0 \\
-\sin(\frac{\pi}{2}\phi_{l-1}(p)), & \text{otherwise} \end{cases} $$
+(@) $$
+\phi_l(p)=
+\begin{cases}
+	\frac{1}{2}(p / P + 1), & l = 0 \\
+	\sin(\frac{\pi}{2}\phi_{l-1}(p)), & \text{otherwise} 
+\end{cases}
+$$
 
 The variable $l$ defines the steepness of the crossover, and is set to 0 in
 Wayverb, so that the transition between bands is smooth and gradual.  The

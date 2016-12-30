@@ -66,10 +66,14 @@ respectively, and $n$ and $m$ are integral [@smith_iii_equivalence_2004].
 An implementation of these equations will take the form of two parallel delay
 lines, which propagate wave components in opposite directions.  This is shown
 in the following diagram \text{(\ref{fig:one_d_waveguide})}.  The "output" of
-the simulation, that is, the physical displacement of the modelled string, is
-found by adding the wave components in both delay lines at a single point.
+the simulation, that is, the physical displacement of the modelled string over
+time, is found by adding the wave components in both delay lines at a single
+point.
 
-TODO nice diagram
+![Delay lines cause wave components to be propagated along the "string" over
+time. The total displacement of the string is found by adding together values
+from the same point on each delay
+line.\label{fig:one_d_waveguide}](images/one_d_waveguide)
 
 Waveguides in higher dimensions can be created in a straightforward manner, by
 connecting digital waveguide elements at a *scattering junction*.  Wave

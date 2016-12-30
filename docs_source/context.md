@@ -183,17 +183,16 @@ selection which is not exhaustive, but which is felt to be representative.
 Table: Some of the most prominent tools for acoustic
 simulation.\label{tab:software}
 
-Name                                  | Type                        |
-Availability
+Name                                  | Type                        | Availability
 --------------------------------------|-----------------------------|------------------
-Odeon [@_odeon_2016]                  | Geometric                   |
-Commercial       CATT-Acoustic [@_catt-acoustic_2016]  | Geometric
-| Commercial Olive Tree Lab [@_otl_2016]           | Geometric
-| Commercial EASE [@_ease_2016]                    | Geometric
-| Commercial Auratorium [@_audioborn_2016]         | Geometric
-| Commercial RAVEN [@schroder_raven:_2011]         | Geometric
-| None RoomWeaver [@beeson_roomweaver:_2004] | Waveguide                   |
-None EAR [@_ear_2016]                      | Geometric                   | Free
+Odeon [@_odeon_2016]                  | Geometric                   | Commercial       
+CATT-Acoustic [@_catt-acoustic_2016]  | Geometric 					| Commercial 
+Olive Tree Lab [@_otl_2016]           | Geometric 					| Commercial 
+EASE [@_ease_2016]                    | Geometric 					| Commercial 
+Auratorium [@_audioborn_2016]         | Geometric 					| Commercial 
+RAVEN [@schroder_raven:_2011]         | Geometric 					| None 
+RoomWeaver [@beeson_roomweaver:_2004] | Waveguide                   | None 
+EAR [@_ear_2016]                      | Geometric                   | Free
 PachydermAcoustic [@_pachyderm_2016]  | Geometric                   | Free
 Parallel FDTD [@_parallelfdtd_2016]   | Waveguide                   | Free
 i-Simpa [@_i-simpa_2016]              | Geometric, extensible       | Free

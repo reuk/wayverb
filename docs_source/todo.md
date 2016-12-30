@@ -6,10 +6,11 @@ demo
 	vid
 	sounds
 
+re-do diagrams for test setup and boundary types, using sketch
+
 write
 	waveguide
 		nodes inside/outside
-		source types
 
 	hybrid
 

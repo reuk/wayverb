@@ -1,0 +1,75 @@
+% right side (outside to right)
+def R1 (1,1,1) def R2 (1,-1,1) def R3 (1,-1,-1) def R4 (1,1,-1)
+def R5 (1,1.5,0)
+% left side (outside to right--backward)
+def W [2,0,0]
+def L1 (R1)-[W] def L2 (R2)-[W] def L3 (R3)-[W] def L4 (R4)-[W]
+def L5 (R5)-[W]
+
+% door
+def e .01
+def D1 (0,-1,1+e) def D2 (.5,-1,1+e) def D3 (.5,0,1+e) def D4 (0,0,1+e)
+
+def O (0,0,0)
+
+def hp rotate(-40, [0,1,0]) then translate([0,0,-12])
+def axes {
+    def sz 1
+    line [arrows=<->] (sz,0,0)(O)(0,sz,0)
+    line [arrows=->] (O)(0,0,sz)
+    line [linewidth=.2pt,linecolor=blue,linestyle=dashed] (O)(0,0,-10)
+    special |\uput[r]#1{$x$}\uput[u]#2{$y$}\uput[l]#3{$z$}|
+    (sz,0,0)(0,sz,0)(0,0,sz)
+}
+
+def pR1 [[hp]]*(R1) def pR2 [[hp]]*(R2) def pR3 [[hp]]*(R3)
+def pR4 [[hp]]*(R4) def pR5 [[hp]]*(R5)
+def pL1 [[hp]]*(L1) def pL2 [[hp]]*(L2) def pL3 [[hp]]*(L3)
+def pL4 [[hp]]*(L4) def pL5 [[hp]]*(L5)
+def pD1 [[hp]]*(D1) def pD2 [[hp]]*(D2) def pD3 [[hp]]*(D3)
+def pD4 [[hp]]*(D4)
+
+def rgt polygon (pR1)(pR2)(pR3)(pR4)(pR5)
+def lft polygon (pL5)(pL4)(pL3)(pL2)(pL1)
+def frt polygon (pR2)(pR1)(pL1)(pL2)
+def bck polygon (pR4)(pR3)(pL3)(pL4)
+def tfr polygon (pR1)(pR5)(pL5)(pL1)
+def tbk polygon (pR5)(pR4)(pL4)(pL5)
+def bot polygon (pR2)(pL2)(pL3)(pR3)
+def door polygon[fillcolor=brown] (pD1)(pD2)(pD3)(pD4)
+def house { {rgt}{lft}{frt}{bck}{tfr}{tbk}{bot}{door} }
+
+def p 5
+def projection_plane {
+    def sz 1.5
+    polygon(-sz,-sz,-p)(sz,-sz,-p)(sz,sz,-p)(-sz,sz,-p)
+    special |\rput[b]#1-2#3{\footnotesize\sf projection plane }|
+    (-sz,-sz,-p)(sz,-sz,-p)(0,-sz+.1,-p)
+}
+
+def projection_rays {
+    def rayopt [linewidth=.3pt,linecolor=lightgray]
+    line [rayopt](O)(pR1)
+    line [rayopt](O)(pR2)
+    line [rayopt](O)(pR3)
+    line [rayopt](O)(pR4)
+    line [rayopt](O)(pR5)
+    line [rayopt](O)(pL1)
+    line [rayopt](O)(pL2)
+    line [rayopt](O)(pL3)
+    line [rayopt](O)(pL4)
+    line [rayopt](O)(pL5)
+    line [rayopt](O)(pD1)
+    line [rayopt](O)(pD2)
+    line [rayopt](O)(pD3)
+    line [rayopt](O)(pD4)
+}
+
+def projection {
+    put { project(p) then translate([0, 0, 1*e]) } {house}
+    put { project(p) then translate([0, 0, 2*e]) } {door}
+}
+
+def eye (10,4,10)
+def look_at (0,0,-5)
+put { view((eye), (look_at)) then perspective(20) } { {house}{axes}{projection_plane}{projection_rays}{projection} }

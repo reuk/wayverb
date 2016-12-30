@@ -255,9 +255,13 @@ the output Nyquist frequency.  Such an impulse response is infinitely long, but
 tends to zero quickly, so it can be Hanning windowed to reduce the number of
 additions required.  This form of the impulse is as follows:
 
-(@) $$ \delta_{\text{LPF}}(n - \epsilon)= \begin{cases}
-\frac{1}{2}(1+\cos\frac{2\pi (n - \epsilon)}{N_w})\text{sinc}(n - \epsilon), &
-- \frac{N_w}{2} < n < \frac{N_w}{2} \\ 0, & \text{otherwise} \end{cases} $$
+(@) $$
+\delta_{\text{LPF}}(n - \epsilon)=
+\begin{cases}
+	\frac{1}{2}(1+\cos\frac{2\pi (n - \epsilon)}{N_w})\text{sinc}(n - \epsilon), & - \frac{N_w}{2} < n < \frac{N_w}{2} \\
+	0, & \text{otherwise}
+\end{cases} 
+$$
 
 where $n$ is an index in the output buffer, $\epsilon$ is the centre of the
 impulse in samples ($\epsilon=\tau f_s$), and $N_w$ is the width of the window
