@@ -10,44 +10,6 @@ using namespace wayverb::core;
 
 namespace {
 
-TEST(image_source, image_source_position) {
-    const geo::box box{glm::vec3{0}, glm::vec3{4, 3, 6}};
-    const glm::vec3 source{1};
-
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 0, 0}),
-              source);
-
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{1, 0, 0}),
-              (glm::vec3{7, 1, 1}));
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{-1, 0, 0}),
-              (glm::vec3{-1, 1, 1}));
-
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 1, 0}),
-              (glm::vec3{1, 5, 1}));
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, -1, 0}),
-              (glm::vec3{1, -1, 1}));
-
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 0, 1}),
-              (glm::vec3{1, 1, 11}));
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 0, -1}),
-              (glm::vec3{1, 1, -1}));
-
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{2, 0, 0}),
-              (glm::vec3{9, 1, 1}));
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{-2, 0, 0}),
-              (glm::vec3{-7, 1, 1}));
-
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 2, 0}),
-              (glm::vec3{1, 7, 1}));
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, -2, 0}),
-              (glm::vec3{1, -5, 1}));
-
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 0, 2}),
-              (glm::vec3{1, 1, 13}));
-    ASSERT_EQ(image_source::image_position(box, source, glm::ivec3{0, 0, -2}),
-              (glm::vec3{1, 1, -11}));
-}
-
 template <size_t channels>
 bool approximately_matches(const impulse<channels>& a,
                            const impulse<channels>& b) {
@@ -67,12 +29,12 @@ void image_source_test() {
     const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
     constexpr glm::vec3 source{1, 1, 1}, receiver{2, 1, 5};
     constexpr wayverb::core::environment environment{};
-    constexpr auto surface = make_surface<simulation_bands>(0.1f, 0);
 
-    constexpr auto shells = 3;
+    constexpr auto absorption = 0.1f;
+    constexpr auto surface = make_surface<simulation_bands>(absorption, 0);
 
     auto exact_impulses = image_source::find_impulses(
-            box, source, receiver, surface, shells, false);
+            box, source, receiver, surface.absorption, 20);
 
     const auto check_distances = [&](const auto& range) {
         for (const auto& imp : range) {

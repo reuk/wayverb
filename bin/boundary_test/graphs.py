@@ -50,8 +50,8 @@ def frequency_plot(num, den, label):
     h.resize(n / 2)
     w /= np.pi * 2
 
-    plt.ylabel('Amplitude / dB')
-    plt.xlabel('Normalized Frequency')
+    plt.ylabel('amplitude / dB')
+    plt.xlabel('normalised frequency')
 
     if USE_DB_AXES:
         plt.plot(w, a2db(np.abs(h)), label=label, linestyle='dashed')

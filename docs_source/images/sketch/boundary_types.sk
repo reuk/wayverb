@@ -1,0 +1,156 @@
+def box {
+    def p0 (0, 0, 0)
+    def p1 (0, 0, 1)
+    def p2 (0, 1, 0)
+    def p3 (0, 1, 1)
+    def p4 (1, 0, 0)
+    def p5 (1, 0, 1)
+    def p6 (1, 1, 0)
+    def p7 (1, 1, 1)
+
+    def style [fillstyle=none, cull=false, linecolor=gray, linestyle=dotted]
+
+    polygon [style] (p0) (p2) (p6) (p4)
+    polygon [style] (p5) (p7) (p3) (p1)
+    polygon [style] (p0) (p1) (p3) (p2)
+    polygon [style] (p5) (p4) (p6) (p7)
+    polygon [style] (p0) (p4) (p5) (p1)
+    polygon [style] (p2) (p3) (p7) (p6)
+}
+
+def p00 (0, 0, 0)
+def p01 (0, 0, 0.5)
+def p02 (0, 0, 1)
+
+def p03 (0, 0.5, 0)
+def p04 (0, 0.5, 0.5)
+def p05 (0, 0.5, 1)
+
+def p06 (0, 1, 0)
+def p07 (0, 1, 0.5)
+def p08 (0, 1, 1)
+
+def p09 (0.5, 0, 0)
+def p10 (0.5, 0, 0.5)
+def p11 (0.5, 0, 1)
+
+def p12 (0.5, 0.5, 0)
+def p13 (0.5, 0.5, 0.5)
+def p14 (0.5, 0.5, 1)
+
+def p15 (0.5, 1, 0)
+def p16 (0.5, 1, 0.5)
+def p17 (0.5, 1, 1)
+
+def p18 (1, 0, 0)
+def p19 (1, 0, 0.5)
+def p20 (1, 0, 1)
+
+def p21 (1, 0.5, 0)
+def p22 (1, 0.5, 0.5)
+def p23 (1, 0.5, 1)
+
+def p24 (1, 1, 0)
+def p25 (1, 1, 0.5)
+def p26 (1, 1, 1)
+
+def template {
+    {box}
+
+    put { scale (0.5) then translate ([0, 0, 0]) } {box}
+    put { scale (0.5) then translate ([0, 0, 0.5]) } {box}
+    put { scale (0.5) then translate ([0.5, 0, 0]) } {box}
+    put { scale (0.5) then translate ([0.5, 0, 0.5]) } {box}
+    put { scale (0.5) then translate ([0, 0.5, 0]) } {box}
+    put { scale (0.5) then translate ([0, 0.5, 0.5]) } {box}
+    put { scale (0.5) then translate ([0.5, 0.5, 0]) } {box}
+    put { scale (0.5) then translate ([0.5, 0.5, 0.5]) } {box}
+
+    %dots [dotsize=0.1, linecolor=gray]
+    %     (p00) (p01) (p02) (p03) (p04) (p05) (p06) (p07) (p08) (p09) (p10) (p11)
+    %     (p12) (p13) (p14) (p15) (p16) (p17) (p18) (p19) (p20) (p21) (p22) (p23)
+    %     (p24) (p25) (p26)
+}
+
+def d1 {
+    {template}
+
+    dots [dotsize=0.3, linecolor=red] (p13)
+    dots [dotsize=0.2, linecolor=red] (p04) (p10) (p12) (p14) (p16) (p22)
+
+    def style [linewidth=0.1, linecolor=red]
+
+    %line [style] (p13) (p04)
+    %line [style] (p13) (p10)
+    %line [style] (p13) (p12)
+    %line [style] (p13) (p14)
+    %line [style] (p13) (p16)
+    %line [style] (p13) (p22)
+    
+    special |
+        \uput[d]#1{1D}
+            | (p11)
+}
+
+def d2 {
+    {template}
+
+    dots [dotsize=0.3, linecolor=green] (p13)
+    dots [dotsize=0.2, linecolor=green]
+         (p13) (p01) (p03) (p05) (p07) (p09) (p11) (p15) (p17) (p19) (p21) (p23) (p25)
+
+    def style [linewidth=0.1, linecolor=green]
+
+    %line [style] (p13) (p01)
+    %line [style] (p13) (p03)
+    %line [style] (p13) (p05)
+    %line [style] (p13) (p07)
+    %line [style] (p13) (p09)
+    %line [style] (p13) (p11)
+    %line [style] (p13) (p15)
+    %line [style] (p13) (p17)
+    %line [style] (p13) (p19)
+    %line [style] (p13) (p21)
+    %line [style] (p13) (p23)
+    %line [style] (p13) (p25)
+    
+    special |
+        \uput[d]#1{2D}
+            | (p11)
+}
+
+def d3 {
+    {template}
+
+    dots [dotsize=0.3, linecolor=blue] (p13)
+    dots [dotsize=0.2, linecolor=blue]
+         (p13) (p00) (p02) (p06) (p08) (p18) (p20) (p24) (p26)
+
+    def style [linewidth=0.1, linecolor=blue]
+
+    %line [style] (p13) (p00)
+    %line [style] (p13) (p02)
+    %line [style] (p13) (p06)
+    %line [style] (p13) (p08)
+    %line [style] (p13) (p18)
+    %line [style] (p13) (p20)
+    %line [style] (p13) (p24)
+    %line [style] (p13) (p26)
+    
+    special |
+        \uput[d]#1{3D}
+            | (p11)
+}
+
+def spacing 1.6
+
+def width spacing * 2 + 1
+
+def eye (width / 2, 4, 10)
+def look_at (width / 2, 0, -5)
+
+put { view ((eye), (look_at)) then perspective (30) } { 
+    put { rotate (20, (p13), [0, 1, 0]) then translate ([0 * spacing, 0, 0]) } {d1} 
+    put { rotate (20, (p13), [0, 1, 0]) then translate ([1 * spacing, 0, 0]) } {d2}
+    put { rotate (20, (p13), [0, 1, 0]) then translate ([2 * spacing, 0, 0]) } {d3}
+}

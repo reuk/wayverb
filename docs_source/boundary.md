@@ -14,9 +14,9 @@ reference-section-title: References
 
 The ideal boundary model would allow complete control over the frequency- and
 direction-dependent absorption and scattering of a surface.  Though this is
-reasonably straightforward in geometric models, it is far from a solved problem
-for the digital waveguide mesh (DWM).  Several possible implementations are
-discussed in the literature, each with unique drawbacks.
+reasonably straightforward to implement in geometric models, it is far from a
+solved problem for the digital waveguide mesh (DWM).  Several possible
+implementations are discussed in the literature, each with unique drawbacks.
 
 This section will begin by discussing the ideal behaviour of modelled acoustic
 boundaries.  Then, the implementation for geometric models will be discussed.
@@ -163,11 +163,20 @@ considered to spawn a "secondary source" which emits scattered energy towards
 the receiver.  This scattered energy is recorded only if the secondary source
 is visible from the receiver.
 
-Assuming perfect Lambert diffusion, the magnitude of diffuse rain scattered
-energy is given by [@schroder_physically_2011, p. 64]:
+The magnitude of scattered energy is proportional to the scattering
+coefficient, and the Lambert diffusion coefficient.  It is also proportional to
+the fraction of the available hemispherical output area which is covered by the
+receiver volume.  The absolute area covered by a spherical receiver
+$A_{\text{intersection}}$ is found using the equation for the surface area of a
+spherical cap [@schroder_physically_2011, p. 64].
 
-(@) $$E_{\text{scattered}} =
-E_{\text{incident}}(1-\alpha)2s\cos\theta(1-\cos\frac{\gamma}{2})$$
+(@) $$ \begin{aligned}
+A_{\text{intersection}} & = 2\pi r^2(1-\cos\gamma) \\
+E_{\text{scattered}} & = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\theta \cdot \left( \frac{A_{\text{intersection}}}{2\pi r^2} \right) \\
+                     & = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\theta \cdot \left( \frac{2\pi r^2(1-\cos\gamma)}{2\pi r^2} \right) \\
+                     & = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\theta \cdot (1-\cos\gamma)
+\end{aligned}
+$$
 
 Here, $\theta$ is the angle from secondary source to receiver relative against
 the surface normal, and $\gamma$ is the opening angle \text{(shown in figure
@@ -336,47 +345,14 @@ and corners. 1D nodes are adjacent to inner nodes, 2D nodes are adjacent to two
 1D nodes, and 3D nodes are adjacent to three 2D
 nodes.\label{fig:boundary_type_diagram}](images/boundary_diagram)
 
-<!-- TODO code discussion?
-
-#### Code
-
-No papers give any hints about how to structure the simulation data in memory.
-In Wayverb, the metadata for each node is stored like so (actual node pressures
-are stored separately):
-
-	struct condensed_node final { int boundary_type; unsighed int
-boundary_index; };
-
-The `boundary_type` field is a bitfield which encodes the update equation that
-should be used for the node, by `or`ing together fields from an enum:
-		
-	typedef enum { id_none = 0, id_inside = 1 << 0, id_nx = 1 << 1, id_px = 1
-<< 2, id_ny = 1 << 3, id_py = 1 << 4, id_nz = 1 << 5, id_pz = 1 << 6,
-id_reentrant = 1 << 7, } boundary_type;
-
-If no bits are set, the node is completely outside the simulation.  If the
-least significant bit (LSB) is set, the node is an inner node, and should use
-the air update equation.  Otherwise, the node is a boundary node, and should
-use a boundary update equation depending on the number of set bits (1 bit set =
-1D update equation, 2 bits set = 2D update etc.).
-
-The `boundary_index` field is an index into an array of filter state structs.
-As only the bottom 8 bits of the `boundary_type` field are used, this field
-could be stored in the top 24 bits, to halve the memory required for each
-struct.  This approach will be taken in a future revision of the software.
-
-TODO diagram of memory map/layout
-
--->
-
-## Test Procedure
+## Testing
 
 Only the LRS method is tested here.  The implementation of frequency-dependent
 boundaries in geometric simulations amounts to multiplication by a reflection
 coefficient (with optional scattering) per-band, so there is little to test.
 The LRS waveguide boundary is more complicated, as it embeds IIR filters into
-the waveguide boundaries, so it is worth testing that the boundary nodes behave
-as expected.
+the waveguide boundaries, so it is worth ensuring that the boundary nodes
+behave as expected.
 
 The testing procedure used is similar to that in [@kowalczyk_modeling_2008].
 Code for the test can be seen at
@@ -445,7 +421,7 @@ filter which approximated the per-band reflectance.  This filter was converted
 to an impedance filter by $\xi(z)=\frac{1+R_0(z)}{1-R_0(z)}$, which was then
 used in the boundary update equations for the DWM.
 
-## Results
+### Results
 
 The results are shown in the following figure \text{(\ref{fig:reflectance})}.
 Although the waveguide mesh has a theoretical upper frequency limit of 0.25 of
@@ -457,7 +433,7 @@ vertical line on the result graphs.
 for three different materials and three different angles of
 incidence.\label{fig:reflectance}](images/reflectance)
 
-## Evaluation
+### Evaluation
 
 The initial impression of the results is that the measured response is
 reasonably accurate, to within 6dB of the predicted response, but only below

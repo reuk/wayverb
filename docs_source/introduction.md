@@ -41,11 +41,11 @@ Code requires manual compilation, or perhaps can only be run from a textual
 interface, or else the project is outdated and unmaintained.
 
 The Wayverb project provides a solution to these problems, by making available
-a graphical tool for impulse response synthesis.  It combines several
-simulation techniques, providing an adjustable balance between speed and
-accuracy.  It is also free to download, can be run immediately on commodity
-hardware, and the source code can be used and extended under the terms of the
-GNU General Public License (GPL).
+a graphical tool for impulse response synthesis.  It combines geometric and
+wave-modelling simulation techniques, providing an adjustable balance between
+speed and accuracy.  It is also free to download, can be run immediately on
+commodity hardware, and the source code can be used and extended under the
+terms of the GNU General Public License (GPL).
 
 This thesis will begin by examining common methods of room simulation and the
 software which implements these methods, explaining why particular techniques

@@ -4,6 +4,7 @@
 
 #include "core/callback_accumulator.h"
 #include "core/geo/box.h"
+#include <iostream>
 
 /// \file exact.h
 /// For a cuboid with perfectly reflective walls, the image source solution is
@@ -14,87 +15,81 @@ namespace wayverb {
 namespace raytracer {
 namespace image_source {
 
-template <typename T>
-constexpr T power(T t, size_t exponent) {
-    return !exponent ? 1 : t * power(t, exponent - 1);
-}
+//  Combined Wave and Ray Based Room Acoustic Simulations of Small Rooms
+//  Marc Aretz, p. 71
 
-constexpr auto width_for_shell(size_t shell) { return shell * 2 + 1; }
-constexpr auto num_images(size_t shell) {
-    return power(width_for_shell(shell), 3);
-}
-
-inline auto image_position(const core::geo::box& box,
+auto image_source_position(const glm::ivec3& order,
                            const glm::vec3& source,
-                           const glm::ivec3& image_index) {
-    const auto mirrored = centre(box) * 2.0f - source;
-    const auto selector = glm::equal(glm::abs(image_index) % 2, glm::ivec3{1});
-    return glm::mix(source, mirrored, selector) +
-           dimensions(box) * glm::vec3{image_index};
+                           const glm::vec3& dim) {
+    return glm::vec3{order} * dim +
+           glm::mix(glm::vec3{dim - source},
+                    glm::vec3{source},
+                    glm::equal(order % 2, glm::ivec3{0}));
 }
 
-template <typename Callback>
-void image_at_index(const core::geo::box& box,
-                    const glm::vec3& source,
-                    const glm::vec3& receiver,
-                    const glm::ivec3& image_index,
-                    double max_distance,
-                    util::aligned::vector<reflection_metadata>& scratch,
-                    const Callback& callback) {
-    const auto pos = image_position(box, source, image_index);
-    if (max_distance < glm::distance(receiver, pos)) {
-        return;
-    }
-
-    //  Find intersection angles.
-    const auto shell_dim = glm::abs(image_index);
-    //  Find angles with each of the walls.
-    const auto direction = glm::normalize(pos - receiver);
-    const auto cos_angles = glm::abs(direction);
-
-    //  Add the right number of reflections with each angle.
-    //  This is fine supposing the reflection operation is associative.
-    scratch.clear();
-    for (auto c = 0ul; c != shell_dim.x; ++c) {
-        scratch.emplace_back(reflection_metadata{0, cos_angles.x});
-    }
-    for (auto c = 0ul; c != shell_dim.y; ++c) {
-        scratch.emplace_back(reflection_metadata{0, cos_angles.y});
-    }
-    for (auto c = 0ul; c != shell_dim.z; ++c) {
-        scratch.emplace_back(reflection_metadata{0, cos_angles.z});
-    }
-
-    //  Call the callback.
-    callback(pos, scratch.begin(), scratch.end());
+template <typename T>
+constexpr T power(T t, size_t p) {
+    return p == 0 ? core::unit_constructor_v<T> : t * power(t, p - 1);
 }
 
-template <typename Callback>
-void traverse_images(const core::geo::box& box,
+template <typename T>
+auto attenuation_factor(const glm::ivec3& order,
+                        const glm::vec3& image_source,
+                        const glm::vec3& receiver,
+                        const T& impedance) {
+    const auto diff = image_source - receiver;
+    const auto cos_theta = glm::abs(diff) / glm::length(diff);
+
+    return power(core::average_wall_impedance_to_pressure_reflectance(
+                         impedance, cos_theta.x),
+                 abs(order.x)) *
+           power(core::average_wall_impedance_to_pressure_reflectance(
+                         impedance, cos_theta.y),
+                 abs(order.y)) *
+           power(core::average_wall_impedance_to_pressure_reflectance(
+                         impedance, cos_theta.z),
+                 abs(order.z));
+}
+
+template <typename T>
+auto traverse_images(const core::geo::box& box,
                      const glm::vec3& source,
                      const glm::vec3& receiver,
-                     size_t shells,
                      double max_distance,
-                     const Callback& callback) {
-    util::aligned::vector<reflection_metadata> scratch;
-    const auto width = width_for_shell(shells);
-    for (auto i = 0ul; i != width; ++i) {
-        const auto x = i - shells;
-        for (auto j = 0ul; j != width; ++j) {
-            const auto y = j - shells;
-            for (auto k = 0ul; k != width; ++k) {
-                const auto z = k - shells;
+                     const T& impedance) {
+    const auto dim = dimensions(box);
+    const auto shells = glm::ivec3(glm::ceil(glm::vec3(max_distance) / dim));
 
-                image_at_index(box,
-                               source,
-                               receiver,
-                               glm::ivec3{x, y, z},
-                               max_distance,
-                               scratch,
-                               callback);
+    std::cout << "shells: " << shells.x << ", " << shells.y << ", " << shells.z
+              << '\n';
+
+    using impulse_t = impulse<::detail::components_v<T>>;
+
+    util::aligned::vector<impulse_t> impulses;
+    impulses.reserve(shells.x * shells.y * shells.z * 8);
+
+    for (auto i = -shells.x; i != shells.x + 1; ++i) {
+        for (auto j = -shells.y; j != shells.y + 1; ++j) {
+            for (auto k = -shells.z; k != shells.z + 1; ++k) {
+                const auto order = glm::ivec3{i, j, k};
+                const auto pos = box.get_min() +
+                                 image_source_position(order, source, dim);
+                const auto dist = glm::distance(pos, receiver);
+
+                if (dist < max_distance) {
+                    const auto attenuation =
+                            attenuation_factor(order, pos, receiver, impedance);
+
+                    impulses.emplace_back(
+                            impulse_t{attenuation,
+                                      core::to_cl_float3{}(pos),
+                                      glm::distance(pos, receiver)});
+                }
             }
         }
     }
+
+    return impulses;
 }
 
 template <typename Surface>
@@ -102,24 +97,11 @@ auto find_impulses(const core::geo::box& box,
                    const glm::vec3& source,
                    const glm::vec3& receiver,
                    const Surface& surface,
-                   double max_distance,
-                   bool flip_phase) {
-    const auto dim = dimensions(box);
-    const auto min_dim = std::min({dim.x, dim.y, dim.z});
-    const auto shells = std::ceil(max_distance / min_dim);
+                   double max_distance) {
+    const auto impedance = core::pressure_reflectance_to_average_wall_impedance(
+            core::absorption_to_pressure_reflectance(surface));
 
-    auto callback =
-            core::make_callback_accumulator(make_fast_pressure_calculator(
-                    &surface, &surface + 1, receiver, flip_phase));
-    traverse_images(box,
-                    source,
-                    receiver,
-                    shells,
-                    max_distance,
-                    [&](const auto& img, auto begin, auto end) {
-                        callback(img, begin, end);
-                    });
-    return callback.get_output();
+    return traverse_images(box, source, receiver, max_distance, impedance);
 }
 
 }  // namespace image_source

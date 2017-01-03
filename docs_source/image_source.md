@@ -46,7 +46,7 @@ for the image model to calculate scattered or diffuse responses.  Though this
 may sound troubling, it is not very problematic.  The conversion of specular
 into diffuse sound energy is unidirectional, so repeated reflections cause the
 ratio of scattered to specular energy to increase monotonically.  It is shown
-in [@kuttruff_room_2009, p.126] that though the earliest reflections may be
+in [@kuttruff_room_2009, p. 126] that though the earliest reflections may be
 largely specular, after a few reflections the large majority of sound energy
 becomes diffuse.  This suggests that the image model should be used only for
 very early reflections, and a secondary model used to compute late, diffuse
@@ -272,38 +272,6 @@ Rather than summing all contributions directly to the output buffer, several
 buffers are created, one per frequency band.  The contributions for each band
 are summed into each buffer individually.  The final output of the simulation
 is created by band-passing and then mixing down the buffers.
-
-## Integration with Ray Tracing Algorithm
-
-The beginning of the image-source process relies on randomly ray tracing a
-certain number of reflections.  This ray tracing process is similar to that
-used for estimating late, diffuse reflections.  When the simulation is run,
-rays are actually traced to a much greater depth of maybe 100 reflections or
-more.  The first few reflections are routed to image-source processing, while
-the entire set of reflections is used for finding the reverb tail.
-
-It is important to note that the stochastic ray tracing process will record
-both specular and diffuse reflections.  At the beginning of the impulse
-response, this will lead to a duplication of energy, as the energy from
-specular reflections will be recorded by both the image-source and ray-tracing
-processes.  To solve this problem, the stochastic ray tracer records specular
-and diffuse contributions separately.  Specular contributions from the ray
-tracer are only added to the output for reflections of higher order than the
-highest image-source order.
-
-A second problem is surface scattering.  When simulating scenes with high
-surface scattering coefficients, specular reflections should be quiet, with a
-greater degree of scattered energy.  Unfortunately, the image-source process
-cannot account for scattered sound energy by design.  The solution is to use
-diffuse contributions from the stochastic ray tracer, so that the image-source
-and ray-traced outputs "overlap".  To ensure that the amount of energy in the
-simulation remains constant, the image-source finder must account for energy
-lost to scattering during reflections.  Therefore, after finding the
-reflectance of each surface using the method outlined above, the reflectance is
-further multiplied by $(1 - s)$ where s is the frequency-dependent scattering
-coefficient of the surface.  This causes the image-source contributions to die
-away faster, and the "missing" energy will be made up by the diffuse output of
-the ray tracer.
 
 <!--
 

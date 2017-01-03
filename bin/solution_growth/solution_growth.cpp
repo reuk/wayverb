@@ -66,7 +66,6 @@ struct make_soft_source_functor final {
 int main(int /*argc*/, char** /*argv*/) {
     try {
         const glm::vec3 source{4.8, 2.18, 2.12};
-        // const glm::vec3 receiver{3.91, 1.89, 1.69};
         const glm::vec3 receiver{4.7, 2.08, 2.02};
         const auto sampling_frequency = 10000.0;
 
@@ -83,12 +82,6 @@ int main(int /*argc*/, char** /*argv*/) {
                 wayverb::core::geo::get_scene_data(boundary, surface);
 
         const auto rt60 = max_element(sabine_reverb_time(scene_data, 0));
-
-        // const size_t simulation_length =
-        //        std::pow(std::floor(std::log(sampling_frequency * rt60 * 2) /
-        //                            std::log(2)) +
-        //                         1,
-        //                 2);
 
         const size_t simulation_length =
                 std::ceil(sampling_frequency * rt60) / 2;
@@ -170,21 +163,6 @@ int main(int /*argc*/, char** /*argv*/) {
                   audio_file::format::aiff,
                   audio_file::bit_depth::float32);
 
-            {
-                auto normalised = kernel;
-                wayverb::core::normalize(normalised);
-                write(util::build_string("solution_growth.",
-                                         name,
-                                         '.',
-                                         type_string,
-                                         ".normalised.input.aif")
-                              .c_str(),
-                      normalised,
-                      sampling_frequency,
-                      audio_file::format::aiff,
-                      audio_file::bit_depth::float32);
-            }
-
             auto prep = callback(source_index, kernel.begin(), kernel.end());
 
             wayverb::core::callback_accumulator<
@@ -207,27 +185,12 @@ int main(int /*argc*/, char** /*argv*/) {
                                      name,
                                      '.',
                                      type_string,
-                                     ".output.wav")
+                                     ".output.aif")
                           .c_str(),
                   output,
                   sampling_frequency,
                   audio_file::format::aiff,
                   audio_file::bit_depth::float32);
-
-            {
-                auto normalised = output;
-                wayverb::core::normalize(normalised);
-                write(util::build_string("solution_growth.",
-                                         name,
-                                         '.',
-                                         type_string,
-                                         ".normalised.output.aif")
-                              .c_str(),
-                      normalised,
-                      sampling_frequency,
-                      audio_file::format::aiff,
-                      audio_file::bit_depth::float32);
-            }
         };
 
         for (const auto& i : signals) {

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export CL_LOG_ERRORS=stdout
-#export GTEST_FILTER="*sample_rate_conversion*"
+#export GTEST_FILTER="*image_source*"
 #export GTEST_FILTER="*app_model*:*round_trip*"
 
 if ./build.sh ; then
@@ -22,7 +22,7 @@ cd build
 
 #./tests/mesh_impulse_response/write_compensation_signal
 
-cd bin/solution_growth && ./solution_growth
+#cd bin/solution_growth && ./solution_growth
 
 #cd bin/sheaffer2014 && ./sheaffer2014
 
@@ -31,7 +31,7 @@ cd bin/solution_growth && ./solution_growth
 #cd bin/diffuse_decay && ./diffuse_decay
 
 #cd bin/southern2011 && ./southern2011
-#cd bin/siltanen2013 && ./siltanen2013
+cd bin/siltanen2013 && ./siltanen2013
 #cd bin/level_match && ./level_match ~/development/waveguide/demo/assets/test_models/vault.obj
 
 #cd ../bin/boundary_test && ./run_and_graph.sh

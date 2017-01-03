@@ -5,18 +5,31 @@ declaration, according to guidelines
 demo
 	vid
 	sounds
+	impulse responses + spectrograms of some demo spaces
 
 re-do diagrams for test setup and boundary types, using sketch
+	maybe show an actual mesh with colour coded boundary nodes
 
 write
-	waveguide
-		nodes inside/outside
-
-	hybrid
+	abstract
 
 	microphone
 	
 	evaluation + future
+
+	nice demos + diagrams
+
+overall diagram?
+
+screenshots (appendix)
+analytical evaluation
+
+images click to zoom
+fix image sizes 
+
+--------------------------------------------------------------------------------
+
+# General
 
 research aims
 	highlight specific work undertaken, actual problems solved

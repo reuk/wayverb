@@ -19,7 +19,7 @@ pandoc:
     extensions:
         - smart
         - mathjax
-        - csl: ieee.csl
+        - csl: ieee-with-url.csl
         - bibliography: wayverb.bib
         - metadata: "link-citations:true"
         - toc
@@ -39,7 +39,10 @@ exclude:
     - serve.sh
     - apa.csl
     - ieee.csl
+    - ieee-with-url.csl
     - ubuntu-xenial-16.04-cloudimg-console.log
     - missfont.log
     - wayverb.pdf
     - wayverb.bib
+    - images/sketch
+    - images/*.pdf

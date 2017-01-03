@@ -1,7 +1,5 @@
 var NAVTREEINDEX5 =
 {
-"representation_8h_source.html":[3,0,0,2,0,0,1,5],
-"reverb__time_8h_source.html":[3,0,0,2,0,0,29],
 "run_8h_source.html":[3,0,0,5,0,0,1,6],
 "scene_8h_source.html":[3,0,0,1,0,0,0,12],
 "scene__buffers_8h_source.html":[3,0,0,2,0,0,4,3],
@@ -10,8 +8,9 @@ var NAVTREEINDEX5 =
 "scene__structs_8h_source.html":[3,0,0,2,0,0,1,6],
 "schroeder_8h_source.html":[3,0,0,2,0,0,32],
 "scoped__thread_8h_source.html":[3,0,0,6,0,0,15],
-"serialize_2filter__coefficients_8h_source.html":[3,0,0,2,0,0,3,2],
-"serialize_2orientation_8h_source.html":[3,0,0,2,0,0,3,3],
+"serialize_2az__el_8h_source.html":[3,0,0,2,0,0,3,1],
+"serialize_2filter__coefficients_8h_source.html":[3,0,0,2,0,0,3,3],
+"serialize_2orientation_8h_source.html":[3,0,0,2,0,0,3,4],
 "set_8h_source.html":[3,0,0,6,0,0,0,3],
 "setup_8h_source.html":[3,0,0,7,1,0,23],
 "sinc_8h_source.html":[3,0,0,2,0,0,33],
@@ -249,5 +248,6 @@ var NAVTREEINDEX5 =
 "structwayverb_1_1core_1_1triangle__verts.html#ad314f220870eabf33b2a026b82f9b432":[2,0,7,1,69,0],
 "structwayverb_1_1core_1_1unit__constructor.html":[2,0,7,1,70],
 "structwayverb_1_1core_1_1unit__constructor_3_01cl__float1_01_4.html":[2,0,7,1,71],
-"structwayverb_1_1core_1_1unit__constructor_3_01cl__float2_01_4.html":[2,0,7,1,72]
+"structwayverb_1_1core_1_1unit__constructor_3_01cl__float2_01_4.html":[2,0,7,1,72],
+"structwayverb_1_1core_1_1unit__constructor_3_01cl__float4_01_4.html":[2,0,7,1,73]
 };

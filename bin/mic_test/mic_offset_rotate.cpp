@@ -165,13 +165,7 @@ int main(int argc, char** argv) {
     run("img_src", [&](const auto& source, const auto& receiver) {
         const auto simulation_time = 2 / env.speed_of_sound;
         const auto raw = run_exact_img_src(
-                box,
-                wayverb::core::make_surface<1>(absorption, scattering),
-                source,
-                receiver,
-                env,
-                simulation_time,
-                false);
+                box, absorption, source, receiver, env, simulation_time);
         return wayverb::raytracer::image_source::postprocess(begin(raw),
                                                              end(raw),
                                                              mic,

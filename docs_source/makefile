@@ -1,3 +1,20 @@
+.PHONY: all
+all: wayverb.pdf
+
+wayverb.pdf: $(SOURCES) pdfs
+	pandoc $(PANDOC_OPTIONS) -o $@ $(SOURCES)
+
+.PHONY: pdfs
+pdfs: sketches $(patsubst %.svg,%.pdf,$(wildcard images/*))
+
+.PHONY: sketches
+sketches:
+	$(MAKE) -C images/sketch
+	cp images/sketch/*.svg images
+
+%.pdf: %.svg
+	inkscape --export-pdf=$@ --without-gui $<
+
 PANDOC_OPTIONS = \
 	--smart \
 	--chapter \
@@ -8,7 +25,7 @@ PANDOC_OPTIONS = \
 	--metadata=link-citations:true \
 	--latex-engine=lualatex \
 	--bibliography=wayverb.bib \
-	--csl=ieee.csl \
+	--csl=ieee-with-url.csl \
 	--default-image-extension=pdf
 
 SOURCES := \
@@ -25,17 +42,17 @@ SOURCES := \
 	evaluation.md \
 	bibliography.md
 
-%.pdf : %.svg
-	inkscape --export-pdf=$@ --without-gui $<
+.PHONY: check
+check:
+	- echo "weasel"
+	- ./writegood/weasel.sh $(SOURCES)
+	- echo
+	- echo "passive"
+	- ./writegood/passive.sh $(SOURCES)
+	- echo
+	- echo "duplicates"
+	- ./writegood/dups.pl $(SOURCES)
 
-PDF_FILES := $(patsubst %.svg,%.pdf,$(wildcard images/*))
-
-wayverb.pdf : $(SOURCES) $(PDF_FILES)
-	pandoc $(PANDOC_OPTIONS) -o $@ $(SOURCES)
-
-.PHONY: all clean
-
-all : wayverb.pdf
-
+.PHONY: clean
 clean:
 	- rm wayverb.pdf

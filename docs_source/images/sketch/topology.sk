@@ -194,11 +194,11 @@ def interpolated {
             | (p11)
 }
 
-def spacing 1.4
+def spacing 1.6
 
 def width spacing * 4 + 1
 
-def eye (width / 2, 4, 10)
+def eye (width / 2, 5, 10)
 def look_at (width / 2, 0, -5)
 
 put { view ((eye), (look_at)) then perspective (30) } { 

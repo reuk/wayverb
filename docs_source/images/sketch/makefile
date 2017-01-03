@@ -1,15 +1,11 @@
-%.tex : %.sk
-	sketch -t template.tex $< -o $@
+.PHONY: all
+all: $(patsubst %.sk,%.svg,$(wildcard ./*))
 
-%.pdf : %.tex
-	xelatex $< -o $@
-
-%.svg : %.pdf
+%.svg: %.pdf
 	pdf2svg $< $@
 
-# probably not needed ever
+%.pdf: %.tex
+	xelatex $<
 
-%.mps : %.mp
-	mpost $<
-
-all : house.svg topology.svg
+%.tex: %.sk
+	sketch -t template.tex $< -o $@

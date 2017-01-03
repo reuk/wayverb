@@ -1282,7 +1282,7 @@ body, input, select, textarea {
   font-family: Helvetica, Arial, sans-serif;
   font-size: 16.5pt;
   font-weight: normal;
-  line-height: 1.75; }
+  line-height: 1.4; }
   @media screen and (max-width: 1680px) {
     body, input, select, textarea {
       font-size: 13pt; } }
@@ -1416,7 +1416,7 @@ pre {
   margin: 0 0 2em 0; }
   pre code {
     display: block;
-    line-height: 1.75em;
+    line-height: 1.4em;
     padding: 1em 1.5em;
     overflow-x: auto; }
 
@@ -2027,10 +2027,9 @@ dl {
   margin: 0 0 2em 0; }
   dl dt {
     display: block;
-    font-weight: bold;
-    margin: 0 0 1em 0; }
+    font-weight: bold; }
   dl dd {
-    margin-left: 2em; }
+    margin: 0 0 1em 2em; }
 
 /* Section/Article */
 section.special, article.special {
@@ -2335,26 +2334,28 @@ table {
   .wrapper.fade.inactive > .inner, body.is-loading .wrapper.fade > .inner {
     opacity: 0; }
 
-/* Header */
-#header {
+header {
   background-color: #5e42a6;
   padding: 1em 1em;
   font-size: 1.25em;
   font-weight: bold;
   display: none; }
   @media screen and (max-width: 980px) {
-    #header {
+    header {
       display: block; } }
-  #header .nav_menu {
-    display: none;
-    margin: 0em 2em 0em 0em;
-    border: 0; }
+  header ul {
+    padding: 0;
+    margin: 0; }
+    header ul > li {
+      display: inline-block;
+      margin: 0em 2em 0em 0em; }
+      header ul > li > a {
+        border: 0; }
+  header .nav_menu {
+    display: none; }
     @media screen and (max-width: 980px) {
-      #header .nav_menu.open {
+      header .nav_menu.open {
         display: inline-block; } }
-  #header .title {
-    display: inline-block;
-    border: 0; }
 
 /* Wrapper (main) */
 #sidebar + #wrapper {
@@ -2727,11 +2728,17 @@ table {
   @media screen and (max-width: 980px) {
     #page_main {
       margin-left: 0; } }
+  #page_main code {
+    white-space: pre; }
+  #page_main q {
+    quotes: "“" "”" "‘" "’"; }
   #page_main > .inner {
     background: white;
     color: #261c3e;
     padding: 5em 5em 3em 5em ;
     max-width: 60em; }
+    #page_main > .inner strong, #page_main > .inner b {
+      color: #000; }
     #page_main > .inner a {
       -moz-transition: color 0.2s ease, border-bottom-color 0.2s ease;
       -webkit-transition: color 0.2s ease, border-bottom-color 0.2s ease;
@@ -2745,6 +2752,10 @@ table {
         color: #5e42a6; }
     #page_main > .inner h1, #page_main > .inner h2, #page_main > .inner h3, #page_main > .inner h4, #page_main > .inner h5, #page_main > .inner h6 {
       color: #312450; }
+      #page_main > .inner h1:after, #page_main > .inner h2:after, #page_main > .inner h3:after, #page_main > .inner h4:after, #page_main > .inner h5:after, #page_main > .inner h6:after {
+        height: 0; }
+      #page_main > .inner h1.major, #page_main > .inner h2.major, #page_main > .inner h3.major, #page_main > .inner h4.major, #page_main > .inner h5.major, #page_main > .inner h6.major {
+        margin: 0; }
     #page_main > .inner table tr:nth-child(even) {
       background-color: #e2dcf1; }
     #page_main > .inner table thead {
@@ -2755,9 +2766,33 @@ table {
       border-left: solid 4px #5e42a6; }
     #page_main > .inner figure {
       margin: 0 0 2em 0;
-      border: dotted 2px #e2dcf1; }
+      padding: 1em;
+      border: solid 1px #9681cd;
+      border-radius: 0.25em; }
       #page_main > .inner figure figcaption {
         text-align: center; }
+    #page_main > .inner img {
+      display: block;
+      margin: 0 auto;
+      max-width: 80%;
+      height: auto; }
+    #page_main > .inner code {
+      background-color: #e2dcf1;
+      border: solid 1px #9681cd;
+      padding: 0.05em 0.05em; }
+    #page_main > .inner #TOC {
+      display: block;
+      background-color: #e2dcf1;
+      border: solid 1px #9681cd;
+      border-radius: 0.25em;
+      float: right;
+      margin: 0 0 0 1em;
+      padding: 1em 1em 1em 0;
+      position: relative;
+      z-index: 10; }
+      #page_main > .inner #TOC ul {
+        list-style: none;
+        margin: 0; }
     @media screen and (max-width: 736px) {
       #page_main > .inner {
         padding: 2em 2em 0.1em 2em ; } }

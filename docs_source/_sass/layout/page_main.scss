@@ -69,7 +69,9 @@
 
         figure {
             margin: 0 0 2em 0;
-            border: dotted (_size(border-width) * 2) lighten(#5e42a6, 45);
+            padding: 1em;
+            border: solid 1px lighten(#5e42a6, 20);
+			border-radius: 0.25em;
 
             figcaption {
                 text-align: center;
@@ -83,9 +85,17 @@
             height: auto;
         }
 
+        code {
+            background-color: lighten(#5e42a6, 45);
+            border: solid 1px lighten(#5e42a6, 20);
+			padding: 0.05em 0.05em;
+        }
+
         #TOC {
             display: block;
             background-color: lighten(#5e42a6, 45);
+            border: solid 1px lighten(#5e42a6, 20);
+			border-radius: 0.25em;
             float: right;
             margin: 0 0 0 1em;
             padding: 1em 1em 1em 0;

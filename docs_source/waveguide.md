@@ -65,7 +65,7 @@ respectively, and $n$ and $m$ are integral [@smith_iii_equivalence_2004].
 
 An implementation of these equations will take the form of two parallel delay
 lines, which propagate wave components in opposite directions.  This is shown
-in the following diagram \text{(\ref{fig:one_d_waveguide})}.  The "output" of
+in the following diagram\text{ (\ref{fig:one_d_waveguide})}.  The "output" of
 the simulation, that is, the physical displacement of the modelled string over
 time, is found by adding the wave components in both delay lines at a single
 point.
@@ -195,9 +195,7 @@ costly to compute, whichever method is used.
 
 ## Design Choices
 
-### Mesh Type
-
-#### Mesh Topology
+### Mesh Topology
 
 There is no single optimal implementation of the digital waveguide mesh.
 Perhaps the most important decision is the mesh topology or *stencil* that will
@@ -216,9 +214,13 @@ implement, as the nodes can be stored in memory in a three-dimensional array,
 in which the array extents define the mesh dimensions, and the array indices
 refer to the positions of individual nodes.  Other options for the topology
 include tetrahedral, octahedral, and dodecahedral, in which nodes have 4, 8,
-and 12 neighbours respectively.
+and 12 neighbours respectively, as shown in the following
+figure\text{ (\ref{fig:topology})}.
 
-TODO topology diagrams
+![Some of the most common mesh topologies. Black lines show connections to
+nodes that will be checked during update. Note that the tetrahedral topology is
+unique, in that nodes can have two different
+orientations.\label{fig:topology}](images/topology)
 
 The accuracy may be increased by overlaying or "superposing" cubic, octahedral,
 and dodecahedral schemes together, as all nodes are oriented uniformly, and
@@ -422,19 +424,23 @@ Some particular possibilities for the input signal are the *sine-modulated
 Gaussian pulse*, the *differentiated Gaussian pulse*, and the *Ricker wavelet*.
 All of these signals satisfy the differentiation constraint and the length
 constraint.  However, they all have non-flat pass-bands, as shown in the
-following figure \text{(\ref{fig:input_signal_info})}.  A final option is the
+following figure\text{ (\ref{fig:input_signal_info})}.  A final option is the
 *physically constrained source* (PCS) model presented in
 [@sheaffer_physical_2014].  This method can be used to create input signals
 with pass-bands much flatter than those of the more conventional pulse and
-wavelet signals.
+wavelet signals. PCS signals obey the differentiation constraint, have wide and
+flat passbands, and are short in time.  They use soft-source injection, so will
+not cause scattering artefacts, and as they have no DC component, they should
+not introduce solution-growth.  A PCS input signal seems like and obvious
+choice for this application.  
 
-TODO frequency response of inputs
-
-A PCS input signal, combined with the transparent source input method, seems
-perfect for this application.  It obeys the differentiation constraint, has a
-wide and flat passband, and is short in time.  The soft source will not cause
-scattering artefacts, and as the input signal has no DC component, it should
-not introduce solution-growth.
+![The time-domain and frequency-domain responses of some signals commonly used
+as FDTD excitations.  All signals are shown with an upper cutoff of $0.2f_s$.
+The pulse signals have their centre frequencies set to $0.1f_s$.  The PCS
+signal shown has a sampling rate of 10KHz, a mass of 25g, a low cutoff of
+100Hz, and a Q of 0.7. It *includes* the injection filter, which means the
+signal shown could be injected like a soft source.
+\label{fig:input_signal_info}](images/kernel_properties)
 
 A test was devised to ensure that the source injection method did not cause
 solution-growth.  A standard rectilinear waveguide mesh with a sampling
@@ -460,14 +466,21 @@ Finally, the simulation was run for around 85000 steps (less than the expected
 Sabine RT60 of the room) with each of the four sources, and the response at the
 receiver was recorded.
 
-The results of the experiment are shown in the following figure
-\text{(\ref{fig:solution_growth_results})}.  The response of a transparent
-Dirac source (which has a strong DC component) is also shown.  All the sources
-with no DC component show significantly less solution-growth than the
-transparent Dirac source.  However, they *do* all show the effects of
-solution-growth.
+The results of the experiment are shown in the following figure\text{
+(\ref{fig:solution_growth_results})}.  The response of a transparent Dirac
+source (which has a strong DC component) is also shown.  Solution growth can be
+seen in all the outputs. However, the magnitude of growth is different
+depending on the input signal.  As expected, the Dirac signal exhibits the
+largest rate of growth, followed by the differentiated Gaussian, sine-modulated
+Gaussian, Ricker wavelet, and finally the PCS signal.  All the sources with no
+DC component show significantly less solution-growth than the transparent Dirac
+source.  The PCS especially has a much lower rate of growth than the
+alternatives. However, all inputs *do* show the effects of solution-growth.
 
-TODO solution growth results
+![Solution growth in the waveguide mesh with a selection of different inputs.
+Results are normalized so that the initial wave-fronts have the same magnitude.
+Note the different amplitude scales.
+\label{fig:solution_growth_results}](images/solution_growth)
 
 The solution-growth seen here only becomes prominent towards the end of the
 simulation, after around 60000 steps.  However, papers which propose
@@ -510,15 +523,203 @@ Though undesirable, this behaviour has a physical analogue: in a
 physical recording, reflected wave-fronts would be scattered from the speaker
 cabinet or starter pistol used to excite the space.
 
-Code for modelling soft sources remains in the Wayverb repository, so if future
-research uncovers a soft source without solution-growth, it will be easy to
-replace the current source model with an improved one.
+The creation of soft sources which do not cause solution growth is an important
+area for future research.  Code for modelling soft sources remains in the
+Wayverb repository, to ease further development work in this area. If a better
+excitation method is discovered, it will be easy to replace the current source
+model with the improved one.
 
 ## Implementation
 
-Here, the final waveguide, as implemented in Wayverb, is described.
+Here, the final waveguide, as implemented in Wayverb, is described.  Room
+acoustics papers tend not to discuss the set-up process for 3D waveguide
+meshes, so this process will be described in detail here.
 
-TODO mesh setup - nodes inside / outside, storage method TODO sample rate,
-update equations etc. Courant number
+### Inner and Outer Nodes 
 
-TODO mention boundary setup?
+Prerequisites for the simulation are: a 3D scene, made up of triangles, each of
+which has multi-band absorption coefficients; a source and receiver position
+within the scene; the speed of sound $c$ and acoustic impedance of air $Z_0$,
+and the sampling frequency of the mesh $f_s$.  This sampling frequency may be
+derived from a maximum cutoff frequency and an oversampling coefficient.
+
+The first step is to calculate the position of each node in the mesh.
+The inter-nodal spacing $X$ (that is, the spatial sampling period) is given by
+
+(@) $$X=\frac{c}{f_s\lambda} = \frac{c\sqrt{3}}{f_s}$$
+
+where $\lambda$ is the Courant number, set to its maximum stable value.  Now,
+the axis-aligned bounding box of the scene is found, and padded to exact
+multiples of the grid spacing along all axes.  The exact padding is chosen so
+that one node will fall exactly at the receiver position, and so that there is
+room for an "outer layer" at least two nodes deep around the scene.  If the new
+padded bounding box has minimum and maximum corners at 3D points $c_0$ and
+$c_1$, then the position of the node with integer indices $(i, j, k)$ is given
+by $c_0 + X(i, j, k)$. The number of nodes in each direction is given by
+$\frac{c_1 - c_0}{X}$. The actual node positions are never computed and stored,
+because this would take a lot of memory. Instead, because the calculation is so
+cheap, they are recomputed from the node index, bounding box, and mesh spacing
+whenever they are needed.
+
+Each node position must be checked, to determine whether it falls inside or
+outside the scene.  The algorithm for checking whether a node is inside or
+outside is conceptually very simple: Follow a ray from the node position in a
+uniformly random direction, until it leaves the scene bounding box.  If the ray
+intersects with an odd number of surfaces, the point is inside; otherwise it is
+outside.  There is an important special case to consider. Floating-point math
+is imprecise, so rays which "graze" the edge of a triangle may be falsely
+reported as intersecting or not-intersecting. This is especially problematic if
+the ray intersects an edge between two triangles, in which case zero, one, or
+two intersections may be registered. To solve this problem, the intersection
+test can return three states instead of two ("uncertain" as well as "definite
+intersection" and "definitely no intersection"), and if the result is
+"uncertain" a new random ray is fired. The process then repeats until a ray
+with no grazing intersections is found.  Note that this algorithm relies on
+ray-casting, which means that it can be accelerated using the voxel-based
+method discussed in the [Image Source]({{ site.baseurl }}{% link
+image_source.md %}) section. All tests are carried out in parallel on the GPU,
+and the results are stored.
+
+### Boundary Node Classification
+
+Now the inner nodes are known. However, the remaining nodes are not all
+"outside" the simulation: some are "boundary" nodes (see [Boundary
+Modelling]({{ site.baseurl }}{% link boundary.md %})). These boundary nodes
+must be found and classified.
+
+Boundary nodes fall into four main categories, shown in the following
+diagram\text{ (\ref{fig:boundary_types})}:
+
+* **1D** nodes are situated directly adjacent to a single inner node in one of the six axial directions.
+* **2D** nodes are next to a single inner node in one of the twelve on-axis diagonal directions.
+* **3D** nodes are next to a single inner node in one of the eight off-axis diagonal directions.
+* **Re-entrant** nodes are adjacent to two or more inner nodes.
+
+![A given node (represented by a large dot) is a boundary node if it is *not*
+an inner node, but there is an adjacent inner node at one of the locations
+shown by smaller dots.\label{fig:boundary_types}](images/boundary_types)
+
+The classification proceeds as follows: For a given node, if it is inside,
+return.  Otherwise, check the node's six axial neighbours.  If one neighbour is
+inside, the node is a 1D boundary; if two neighbours are inside, the node is
+re-entrant; if no neighbours are inside the node remains unclassified.  If the
+node is unclassified, check the twelve on-axis diagonal neighbours. If one
+neighbour is inside, the node is a 2D boundary; if two neighbours are inside,
+the node is re-entrant; if no neighbours are inside the node is still
+unclassified. Finally, check the eight off-axis diagonal neighbours. If one
+neighbour is inside, the node is a 3D boundary; if two neighbours are inside,
+the node is re-entrant; if no neighbours are inside, the node is an "outer"
+node and can be ignored for the remainder of the simulation.  This
+classification process can of course be run in parallel on the GPU.
+
+The classification is a little too involved to recompute regularly, so the
+results of the classification are cached.  Each node stores its characteristics
+into a integer which behaves as a bitfield, allowing the characteristics to be
+stored in a compact form.  Bits have the following significance:
+
+    typedef enum : cl_int {
+		id_none = 0,
+		id_inside = 1 << 0,
+		id_nx = 1 << 1,
+		id_px = 1 << 2,
+		id_ny = 1 << 3,
+		id_py = 1 << 4,
+		id_nz = 1 << 5,
+		id_pz = 1 << 6,
+		id_reentrant = 1 << 7,
+    } node_type;
+
+The descriptor field for an inner node will be set to `id_inside`, and for a
+re-entrant node will be set to `id_reentrant`. Boundary nodes are described by
+setting bits equal to the direction of the adjacent inner node. A 1D node with
+an inner neighbour in the negative-x direction will have the descriptor
+`id_nx`, a 2D node with an inner neighbour on the positive-y-z diagonal will
+have the descriptor `id_py | id_pz` (where `|` is a bitwise-or operator), and a
+3D node with an inner neighbour on the positive-x, negative-y, positive-z
+diagonal will have the descriptor `id_px | id_ny | id_pz`.
+
+### Boundary Behaviour and Materials
+
+Each boundary node behaves as if it has an internal IIR filter. More precisely,
+1D nodes have a single internal IIR filter, while 2D and 3D nodes have two and
+three internal filters respectively. To operate, these filters must reference
+filter coefficients which approximate the wall behaviour, and must also have
+dedicated storage for their filter delay lines.
+
+First, the numbers of 1D, 2D, and 3D boundary nodes are counted.  An array of
+single-filter delay lines is created, containing one delay line for each 1D
+node.  The same is done for the 2D and 3D nodes, but each element in these
+arrays has storage for two and three filter delay lines respectively.  Now,
+each boundary node is given a unique index which is used to reference an
+element in its corresponding filter memory array.  These unique indices are
+simple to compute: for each node in the simulation, if it is 1D (or 2D, or 3D),
+increment a counter, and use the counter value as the unique index.
+
+For each material in the scene, the Yule-Walker method is used to
+generate an IIR filter representing that material, resulting in an array of IIR
+filter coefficients. Each filter delay line is paired with an index field,
+which allows it to reference the filter coefficients which should be used when
+updating the filter.
+
+The final step is to find which filter coefficients should be linked to which
+filter delay line.  For 1D boundaries this is simple: find the closest triangle
+to the node; find the material index of that triangle; get the node's filter
+data entry; set the coefficient index field to be equal to the closest
+triangle's material index.  For 2D and 3D boundaries, adjacent boundary nodes
+are checked (instead of checking the closest triangle), and all unique filter
+coefficient indices are used. The actual method is quite involved, and a prose
+description would inevitably end up reading like under-specified code, so the
+interested reader is directed to inspect the `boundary_*` files in the [Wayverb
+repository](https://github.com/reuk/wayverb/blob/master/src/waveguide/src).
+
+![Efficient memory usage is important with large-scale simulations such as
+this. The waveguide storage scheme in Wayverb aims to minimise redundant
+duplication of data.\label{fig:memory_layout}](images/memory_layout)
+
+### Running the Simulation
+
+With node properties and boundary information set up, all that remains is to
+run the simulation itself.  Two arrays of floating-point numbers are allocated,
+with length equal to the number of nodes in the simulation.  These arrays
+represent the current and previous pressures at each node. The simulation is
+then run for a certain number of steps. Normally this would be derived from an
+estimate of the scene's RT60, but in Wayverb the simulation length is found
+using the time of the final ray-traced histogram bin, divided by the mesh
+sampling frequency.
+
+During a single step of the simulation, each node is updated. These updates
+occur in parallel, using the GPU.  The "descriptor" field of each node is
+checked, and if it is `id_none` then the node is ignored.  If the descriptor is
+`id_inside` or `id_reentrant` then the node is updated like a normal air node;
+that is, the "next" pressure of the node is equal to the sum of current
+axially-adjacent pressures divided by three, minus the previous pressure of the
+node. This is shown in the following equation, where $i$, $j$, and $k$ are
+spatial indices on the $x$, $y$ and $z$ axes respectively, and $n$ is a time
+index.
+
+(@) $$p_{i,j,k}^{n+1} = \frac{1}{3}(p_{i-1,j,k}^n + p_{i+1,j,k}^n + p_{i,j-1,k}^n + p_{i,j+1,k}^n + p_{i,j,k-1}^n + p_{i,j,k+1}^n) - p_{i,j,k}^{n-1}$$
+
+If the node is a boundary node, then it is instead updated according to the
+boundary update equations found in [@kowalczyk_modeling_2008].
+
+A useful property of the update equations is that the *previous* pressure of
+each node is *only* used when updating that node.  This means that the result
+of the update can be written back to the "previous" pressure array, instead of
+being written to a third array, which is a significant memory saving.  For the
+following step of the simulation, the "current" and "previous" arrays are
+swapped. If the arrays are referenced through pointers, then this can be
+achieved by just swapping the pointers, which is much faster than swapping the
+actual array contents.
+
+The simulation inputs and outputs are handled using generic callbacks.  Before
+each step, a reference to the "current" pressure array is passed to a
+preprocessor callback, which may modify the pressure at any node. This
+architecture allows different source types to be implemented and swapped very
+easily. For example, hard and soft sources are just two different types of
+stateful callback. This also gives the option of excitations which span several
+nodes on the mesh.  At the end of the step, the "current" pressure array is
+passed to the post-processor callback, which in general will append the value
+of a single node to an array, which can be retrieved at the end of the
+simulation.  Again, the architecture is flexible, in that it allows for
+different receiver types, such as those discussed in [Microphone Modelling]({{
+site.baseurl }}{% link microphone.md %}).

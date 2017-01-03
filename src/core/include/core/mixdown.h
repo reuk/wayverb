@@ -3,6 +3,7 @@
 #include "hrtf/multiband.h"
 
 #include "utilities/map_to_vector.h"
+#include <iostream>
 
 namespace wayverb {
 namespace core {

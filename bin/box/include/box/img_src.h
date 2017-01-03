@@ -10,21 +10,19 @@
 #include "core/mixdown.h"
 #include "core/pressure_intensity.h"
 
-template <size_t Bands>
+template <typename T>
 auto run_exact_img_src(const wayverb::core::geo::box& box,
-                       const wayverb::core::surface<Bands>& surface,
+                       const T& absorption,
                        const glm::vec3& source,
                        const glm::vec3& receiver,
                        const wayverb::core::environment& env,
-                       float simulation_time,
-                       bool flip_phase) {
+                       float simulation_time) {
     auto ret = wayverb::raytracer::image_source::find_impulses(
             box,
             source,
             receiver,
-            surface,
-            simulation_time * env.speed_of_sound,
-            flip_phase);
+            absorption,
+            simulation_time * env.speed_of_sound);
 
     //  Correct for distance travelled.
     for (auto& it : ret) {
@@ -32,6 +30,17 @@ auto run_exact_img_src(const wayverb::core::geo::box& box,
                 it.distance, env.acoustic_impedance);
     }
     return ret;
+}
+
+template <size_t Bands>
+auto run_exact_img_src(const wayverb::core::geo::box& box,
+                       const wayverb::core::surface<Bands>& surface,
+                       const glm::vec3& source,
+                       const glm::vec3& receiver,
+                       const wayverb::core::environment& env,
+                       float simulation_time) {
+    return run_exact_image_src(
+            box, surface.absorption, source, receiver, env, simulation_time);
 }
 
 auto run_fast_img_src(

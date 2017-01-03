@@ -116,6 +116,14 @@ $(document).ready(function(){initNavTree('index.html','');});
 <li><b>stochastic ray-tracing</b> for high-frequency late reflections, and</li>
 <li><b>rectilinear waveguide mesh</b> for all low-frequency content.</li>
 </ul>
+<h1>Usage Notes </h1>
+<p>You'll need a 3D model of the space. This model <em>must</em> be solid and watertight, without holes or no-thickness planes. The waveguide mesh setup process must be able to work out whether each node is 'inside' or 'outside' the space, and it will not be able to do so if the model does not have a well-defined inside and outside.</p>
+<p>To ensure that your model is valid, you can: </p><pre class="fragment">* Open the model in Sketchup.
+* Select-all and Edit &gt; Make Group.
+* Check the info window (Window &gt; Entity Info).
+* If this window displays a volume, it is correct.
+</pre><p>If the model is not valid, you can debug it using the <a href="https://extensions.sketchup.com/en/content/solid-inspector">'Solid Inspector' plugin</a>.</p>
+<p>These instructions are taken from the readme for <a href="https://github.com/juuli/ParallelFDTD">ParallelFDTD</a>, which uses a similar (but not idential) technique to Wayverb for setting up a waveguide mesh.</p>
 <h1>Requirements </h1>
 <p>This project has been tested on macOS 10.11.6.</p>
 <p>The library code <em>should</em> be platform-independent, but relies on experimental language features from C++17, so you'll need a recent compiler to build it. It also links against the OpenCL framework. It should be possible to build on Linux by modifying the 'OpenCL' section of <code>dependencies.txt</code> to find your system's OpenCL drivers.</p>

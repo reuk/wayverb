@@ -67,9 +67,9 @@ section.
 ![An overview of different acoustic simulation methods, grouped by
 category.\label{fig:simulation_techniques}](images/simulation_techniques)
 
-### Geometric
+### Geometric Methods
 
-Geometric methods can largely be grouped into two categories: *stochastic* and
+Geometric methods can be grouped into two categories: *stochastic* and
 *deterministic*. 
 
 Stochastic methods are generally based on statistical approximation via some
@@ -98,7 +98,7 @@ exact solution to the wave equation.  However, by its nature, it can only model
 specular (perfect) reflections, ignoring diffuse and diffracted components.
 For this reason, it is inexact for arbitrary enclosures, and unsuitable for
 calculating reverb tails, which are predominantly diffuse.  The technique also
-becomes very expensive beyond low orders of reflection.  The naive
+becomes prohibitively expensive beyond low orders of reflection.  The naive
 implementation reflects the sound source against all surfaces in the scene,
 resulting in a set of *image sources*.  Then, each of these image sources is
 itself reflected against all surfaces.  For high orders of reflection, the
@@ -110,7 +110,7 @@ response.
 For a detailed reference on geometric acoustic methods, see
 [@savioja_overview_2015].
 
-### Wave-based 
+### Wave-based Methods
 
 The main advantage of wave-based methods is that they inherently account for
 wave effects like diffraction and interference [@shelley_diffuse_2007], while

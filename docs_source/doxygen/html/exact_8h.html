@@ -111,36 +111,31 @@ $(document).ready(function(){initNavTree('exact_8h.html','');});
 <div class="textblock"><code>#include &quot;<a class="el" href="fast__pressure__calculator_8h_source.html">raytracer/image_source/fast_pressure_calculator.h</a>&quot;</code><br />
 <code>#include &quot;core/callback_accumulator.h&quot;</code><br />
 <code>#include &quot;core/geo/box.h&quot;</code><br />
+<code>#include &lt;iostream&gt;</code><br />
 </div>
 <p><a href="exact_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a6581c67152bfcc2eb1a579301d304cf3"><td class="memTemplParams" colspan="2"><a class="anchor" id="a6581c67152bfcc2eb1a579301d304cf3"></a>
+<tr class="memitem:a78c3ebcaeab0310edfecfe795d718e82"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a78c3ebcaeab0310edfecfe795d718e82"></a>
+auto&#160;</td><td class="memItemRight" valign="bottom"><b>wayverb::raytracer::image_source::image_source_position</b> (const glm::ivec3 &amp;order, const glm::vec3 &amp;source, const glm::vec3 &amp;dim)</td></tr>
+<tr class="separator:a78c3ebcaeab0310edfecfe795d718e82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98e72e9a491a6fcc18d312d89e324a5b"><td class="memTemplParams" colspan="2"><a class="anchor" id="a98e72e9a491a6fcc18d312d89e324a5b"></a>
 template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a6581c67152bfcc2eb1a579301d304cf3"><td class="memTemplItemLeft" align="right" valign="top">constexpr T&#160;</td><td class="memTemplItemRight" valign="bottom"><b>wayverb::raytracer::image_source::power</b> (T t, size_t exponent)</td></tr>
-<tr class="separator:a6581c67152bfcc2eb1a579301d304cf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a735f7063acfefe8d6e4c6e8104bb990c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a735f7063acfefe8d6e4c6e8104bb990c"></a>
-constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>wayverb::raytracer::image_source::width_for_shell</b> (size_t shell)</td></tr>
-<tr class="separator:a735f7063acfefe8d6e4c6e8104bb990c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad69417744116b996c86561bb8b24c9f7"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ad69417744116b996c86561bb8b24c9f7"></a>
-constexpr auto&#160;</td><td class="memItemRight" valign="bottom"><b>wayverb::raytracer::image_source::num_images</b> (size_t shell)</td></tr>
-<tr class="separator:ad69417744116b996c86561bb8b24c9f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab99e46dc8e8797a5c1c8d4436a54c71e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ab99e46dc8e8797a5c1c8d4436a54c71e"></a>
-auto&#160;</td><td class="memItemRight" valign="bottom"><b>wayverb::raytracer::image_source::image_position</b> (const core::geo::box &amp;box, const glm::vec3 &amp;source, const glm::ivec3 &amp;image_index)</td></tr>
-<tr class="separator:ab99e46dc8e8797a5c1c8d4436a54c71e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a57a457bd8dec04d3875f77e1beee91f1"><td class="memTemplParams" colspan="2"><a class="anchor" id="a57a457bd8dec04d3875f77e1beee91f1"></a>
-template&lt;typename Callback &gt; </td></tr>
-<tr class="memitem:a57a457bd8dec04d3875f77e1beee91f1"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>wayverb::raytracer::image_source::image_at_index</b> (const core::geo::box &amp;box, const glm::vec3 &amp;source, const glm::vec3 &amp;receiver, const glm::ivec3 &amp;image_index, double max_distance, util::aligned::vector&lt; reflection_metadata &gt; &amp;scratch, const Callback &amp;callback)</td></tr>
-<tr class="separator:a57a457bd8dec04d3875f77e1beee91f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa03fa0bc148a13d4ced602f7c6d389db"><td class="memTemplParams" colspan="2"><a class="anchor" id="aa03fa0bc148a13d4ced602f7c6d389db"></a>
-template&lt;typename Callback &gt; </td></tr>
-<tr class="memitem:aa03fa0bc148a13d4ced602f7c6d389db"><td class="memTemplItemLeft" align="right" valign="top">void&#160;</td><td class="memTemplItemRight" valign="bottom"><b>wayverb::raytracer::image_source::traverse_images</b> (const core::geo::box &amp;box, const glm::vec3 &amp;source, const glm::vec3 &amp;receiver, size_t shells, double max_distance, const Callback &amp;callback)</td></tr>
-<tr class="separator:aa03fa0bc148a13d4ced602f7c6d389db"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa83adb1c6bae988d4f19291f25fe8f33"><td class="memTemplParams" colspan="2"><a class="anchor" id="aa83adb1c6bae988d4f19291f25fe8f33"></a>
+<tr class="memitem:a98e72e9a491a6fcc18d312d89e324a5b"><td class="memTemplItemLeft" align="right" valign="top">constexpr T&#160;</td><td class="memTemplItemRight" valign="bottom"><b>wayverb::raytracer::image_source::power</b> (T t, size_t p)</td></tr>
+<tr class="separator:a98e72e9a491a6fcc18d312d89e324a5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a00623196d64f3f9c1f2bd1f541908c7c"><td class="memTemplParams" colspan="2"><a class="anchor" id="a00623196d64f3f9c1f2bd1f541908c7c"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a00623196d64f3f9c1f2bd1f541908c7c"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>wayverb::raytracer::image_source::attenuation_factor</b> (const glm::ivec3 &amp;order, const glm::vec3 &amp;image_source, const glm::vec3 &amp;receiver, const T &amp;impedance)</td></tr>
+<tr class="separator:a00623196d64f3f9c1f2bd1f541908c7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f6fc01ec41da6a3f252a418ff69d222"><td class="memTemplParams" colspan="2"><a class="anchor" id="a5f6fc01ec41da6a3f252a418ff69d222"></a>
+template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a5f6fc01ec41da6a3f252a418ff69d222"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>wayverb::raytracer::image_source::traverse_images</b> (const core::geo::box &amp;box, const glm::vec3 &amp;source, const glm::vec3 &amp;receiver, double max_distance, const T &amp;impedance)</td></tr>
+<tr class="separator:a5f6fc01ec41da6a3f252a418ff69d222"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d5ecbea5c62516e06bae6c4cff1abe6"><td class="memTemplParams" colspan="2"><a class="anchor" id="a8d5ecbea5c62516e06bae6c4cff1abe6"></a>
 template&lt;typename Surface &gt; </td></tr>
-<tr class="memitem:aa83adb1c6bae988d4f19291f25fe8f33"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>wayverb::raytracer::image_source::find_impulses</b> (const core::geo::box &amp;box, const glm::vec3 &amp;source, const glm::vec3 &amp;receiver, const Surface &amp;surface, double max_distance, bool flip_phase)</td></tr>
-<tr class="separator:aa83adb1c6bae988d4f19291f25fe8f33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d5ecbea5c62516e06bae6c4cff1abe6"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><b>wayverb::raytracer::image_source::find_impulses</b> (const core::geo::box &amp;box, const glm::vec3 &amp;source, const glm::vec3 &amp;receiver, const Surface &amp;surface, double max_distance)</td></tr>
+<tr class="separator:a8d5ecbea5c62516e06bae6c4cff1abe6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>For a cuboid with perfectly reflective walls, the image source solution is exact and fast to calculate. Here we implement a fast solver for image sources in a cuboid. </p>
