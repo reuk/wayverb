@@ -617,17 +617,19 @@ results of the classification are cached.  Each node stores its characteristics
 into a integer which behaves as a bitfield, allowing the characteristics to be
 stored in a compact form.  Bits have the following significance:
 
-    typedef enum : cl_int {
-		id_none = 0,
-		id_inside = 1 << 0,
-		id_nx = 1 << 1,
-		id_px = 1 << 2,
-		id_ny = 1 << 3,
-		id_py = 1 << 4,
-		id_nz = 1 << 5,
-		id_pz = 1 << 6,
-		id_reentrant = 1 << 7,
-    } node_type;
+~~~ {.cpp}
+typedef enum : cl_int {
+	id_none = 0,
+	id_inside = 1 << 0,
+	id_nx = 1 << 1,
+	id_px = 1 << 2,
+	id_ny = 1 << 3,
+	id_py = 1 << 4,
+	id_nz = 1 << 5,
+	id_pz = 1 << 6,
+	id_reentrant = 1 << 7,
+} node_type;
+~~~
 
 The descriptor field for an inner node will be set to `id_inside`, and for a
 re-entrant node will be set to `id_reentrant`. Boundary nodes are described by

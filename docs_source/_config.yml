@@ -46,3 +46,4 @@ exclude:
     - wayverb.bib
     - images/sketch
     - images/*.pdf
+    - writegood

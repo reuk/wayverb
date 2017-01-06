@@ -14,6 +14,8 @@ Is it worth checking all paths in the image source tree?
 
 Soft source without solution growth.
 
+Only ambisonic output?
+
 ### app stuff
 
 Finish adding the help panel info.

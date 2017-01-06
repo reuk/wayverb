@@ -158,7 +158,7 @@ def main():
         plt.savefig(
             os.path.join(out_dir, 'boundary_response.svg'),
             bbox_inches='tight',
-            dpi=300,
+            dpi=96,
             format='svg')
 
 

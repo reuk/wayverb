@@ -91,6 +91,12 @@
 			padding: 0.05em 0.05em;
         }
 
+        pre {
+            code {
+                padding: 1em;
+            }
+        }
+
         #TOC {
             display: block;
             background-color: lighten(#5e42a6, 45);

@@ -66,6 +66,12 @@ auto run_single_angle(float angle,
     constexpr util::range<double> valid_frequency_range{0.01, 0.16};
     const auto params = frequency_domain::compute_multiband_params<8>(
             valid_frequency_range, 1);
+
+    std::cout << "band edges:\n"; 
+    for (const auto& i : params.edges) {
+        std::cout << i << '\n';
+    }
+
     const auto signal = callback(source, receiver);
     return make_angle_info(angle,
                            frequency_domain::per_band_energy(
@@ -162,6 +168,7 @@ int main(int argc, char** argv) {
                 raw, mic, env.acoustic_impedance, sample_rate);
     });
 
+    /*
     run("img_src", [&](const auto& source, const auto& receiver) {
         const auto simulation_time = 2 / env.speed_of_sound;
         const auto raw = run_exact_img_src(
@@ -173,6 +180,7 @@ int main(int argc, char** argv) {
                                                              env.speed_of_sound,
                                                              sample_rate);
     });
+    */
 
     return EXIT_SUCCESS;
 }

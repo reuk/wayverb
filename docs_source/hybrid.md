@@ -1,6 +1,6 @@
 ---
 layout: page
-title: Hybrid
+title: Hybrid Model
 navigation_weight: 5
 ---
 
@@ -8,7 +8,7 @@ navigation_weight: 5
 reference-section-title: References
 ...
 
-# Hybrid {.major}
+# Hybrid Model {.major}
 
 ## Background
 

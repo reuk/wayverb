@@ -15,11 +15,11 @@ reference-section-title: References
 ### Basic Method
 
 The image-source method aims to find the purely specular reflection paths
-between a source and a receiver.  This relies on the simplifying assumption
-that sound propagates only along straight lines or "rays".  Sound energy
-travels at a fixed speed, corresponding to the speed of sound, along these
-rays.  The intensity of each "packet" of sound energy decreases with $1/r^2$,
-where $r$ is the distance along the ray that the packet has travelled
+between a source and a receiver.  This process is simplified by assuming that
+sound propagates only along straight lines or "rays".  Sound energy travels at
+a fixed speed, corresponding to the speed of sound, along these rays.  The
+intensity of each "packet" of sound energy decreases with $1/r^2$, where $r$ is
+the distance along the ray that the packet has travelled
 [@vorlander_auralization:_2007, p. 58].
 
 Rays are perfectly reflected at boundaries.  When a ray is reflected, it spawns
@@ -42,21 +42,21 @@ be modified depending on the characteristics of the boundaries in which that
 source was reflected.
 
 Each image source represents a perfect specular reflection, so there is no way
-for the image model to calculate scattered or diffuse responses.  Though this
-may sound troubling, it is not very problematic.  The conversion of specular
-into diffuse sound energy is unidirectional, so repeated reflections cause the
-ratio of scattered to specular energy to increase monotonically.  It is shown
-in [@kuttruff_room_2009, p. 126] that though the earliest reflections may be
+for the image model to calculate scattered or diffuse responses.  The
+conversion of specular into diffuse sound energy is unidirectional, so repeated
+reflections cause the ratio of scattered to specular energy to increase
+monotonically.  Kuttruff shows that, though the earliest reflections may be
 largely specular, after a few reflections the large majority of sound energy
-becomes diffuse.  This suggests that the image model should be used only for
-very early reflections, and a secondary model used to compute late, diffuse
-reflections.
+becomes diffuse [@kuttruff_room_2009, p. 126].  This suggests that the image
+model should be used only for very early reflections, and a secondary model
+used to compute late, diffuse reflections. In Wayverb, the image model is used
+for early reflections, and stochastic ray-tracing is used for the diffuse tail.
 
-### Validity Checks
+### Audibility Checking
 
-Having found the position of an image-source, by reflecting it in one or more
-surfaces, it must be checked to ensure it represents a specular path to the
-receiver.  This is known as an *audibility test*
+The position of an image source is found by reflecting it in one or more
+surfaces. Next, it must be checked to ensure it represents a specular path to
+the receiver.  This is known as an *audibility test*
 [@vorlander_auralization:_2007, p. 202].
 
 Consider first a source $S$, a receiver $R$, and a single wall $A$.  The source
@@ -85,9 +85,9 @@ of tracing backwards from the receiver to each of the image sources is known as
 \rightarrow A \rightarrow R$ is an invalid path because $R \rightarrow S_{BA}$
 does not intersect $A$.\label{fig:backtracking}](images/backtracking)
 
-### Acceleration
+### Accelerating the Algorithm
 
-The naive method to find all the image sources for a scene is very expensive.
+The naive method to find all the image sources for a scene is very expensive:
 Consider that to find a single first-order image source, the original source
 must be mirrored in a surface, and then an intersection test must be conducted
 between that surface and the image-source-to-receiver ray.  To find all
@@ -101,15 +101,15 @@ therefore exponential, meaning that high orders are impossible to compute in a
 reasonable time.
 
 The majority of higher-order image sources found with the naive algorithm will
-be invalid.  That is, they will fail the visibility/intersection test.  For
-example, [@kuttruff_room_2009, p. 323] shows that, for tenth-order
-image-sources in a shoebox-shaped room, there are around 1.46e7 different image
-sources, only 1560 of which are valid.  If the invalid image-sources can be
-discarded early, without requiring individual checking, then the amount of
-computation can be greatly reduced to a viable level.  As explained above,
-image sources above order four or five are rarely required, but even these can
-be very time-consuming to find with the naive method.  Optimisations are,
-therefore, a necessity for any but the simplest simulations.
+be invalid.  That is, they will fail the audibility test.  For example, for
+tenth-order image-sources in a shoebox-shaped room, there are around 1.46e7
+different image sources, only 1560 of which are valid [@kuttruff_room_2009, p.
+323].  If the invalid image-sources can be discarded early, without requiring
+individual checking, then the amount of computation can be greatly reduced to a
+viable level.  As explained above, image sources above order four or five are
+rarely required, but even these can be very time-consuming to find with the
+naive method.  Optimisations are, therefore, a necessity for any but the
+simplest simulations.
 
 To accelerate the image-source process, [@vorlander_auralization:_2007]
 suggests tracing a large number of rays in random directions from the source,
@@ -138,7 +138,7 @@ smaller than would be required by a naive implementation.
 Here the concrete implementation of the image-source method is presented, as it
 is used in Wayverb.  Details of the microphone-modelling process are discussed
 separately, in the [Microphone Modelling]({{ site.baseurl }}{% link
-microphone.md %}) section.  The following image
+microphone.md %}) section.  The following figure
 \text{(\ref{fig:image_source_process})} gives an overview of the entire
 process.
 
@@ -167,9 +167,9 @@ triangles, the simplest method is to check the ray against each triangle
 individually, which is very time consuming.  The voxel mesh allows the number
 to checks to be greatly reduced, by checking only triangles that are within
 voxels that the ray intersects.  These voxels can be found very quickly, by
-"walking" the voxels along the ray, using an algorithm presented in
-[@amanatides_fast_1987].  For large scenes with many triangles, this method can
-lead to speed-ups of an order of magnitude or more.  Assume all
+"walking" the voxels along the ray, using an algorithm presented by Amanatides,
+Woo et al. [@amanatides_fast_1987].  For large scenes with many triangles,
+this method can lead to speed-ups of an order of magnitude or more.  Assume all
 ray-intersection tests mentioned throughout this thesis use the
 voxel-acceleration method, unless explicitly noted.
 
@@ -178,12 +178,13 @@ checked for an intersection with the scene, and if an intersection is found,
 some data about the intersection is recorded.  Specifically, the record
 includes the triangle which was intersected, and whether or not the receiver is
 visible from the intersection point.  Then, the vector-based scattering method
-[@christensen_new_2005] is used to find the directions of new rays, which are
-fired from the intersection points.  The ray-tracing process continues up to a
-certain depth, which is artificially limited to ten reflections in Wayverb.
-For most simulations, three or four reflections should be adequate, though this
-depends somewhat on the scattering coefficients of the surfaces, as explained
-in the [Basic Method] subsection.
+[@christensen_new_2005] (see the [Ray Tracing]({{ site.baseurl }}{% link
+ray_tracer.md %}) section for details on this) is used to find the directions
+of new rays, which are fired from the intersection points.  The ray-tracing
+process continues up to a certain depth, which is artificially limited to ten
+reflections in Wayverb.  For most simulations, three or four reflections should
+be adequate, though this depends somewhat on the scattering coefficients of the
+surfaces, as explained in the [Basic Method] subsection above.
 
 The ray tracer produces a list of reflection paths for each ray.  Some rays may
 follow the same paths, and so duplicates must be removed.  This is achieved by
@@ -204,12 +205,12 @@ fit for an OpenCL implementation, so native (CPU) threads are used instead.
 Some paths in the tree may not actually produce valid image sources, and these
 paths are discarded.  For paths which *do* contribute valid image sources, the
 propagation delay and frequency-dependent pressure of the image source signal
-must be found.  According to [@kuttruff_room_2009, p. 325], the propagation
-delay is equal to the distance from the receiver to the image source, divided
-by the speed of sound.  The pressure content is found by convolving together
-the reflectances of all intermediate surfaces.  This is equivalent to a single
-multiplication per frequency band, as long as reflectances can be represented
-by real values.
+must be found.  As described by Kuttruff, the propagation delay is equal to the
+distance from the receiver to the image source, divided by the speed of sound,
+[@kuttruff_room_2009, p. 325].  The pressure content is found by convolving
+together the reflectances of all intermediate surfaces.  This is equivalent to
+a single multiplication per frequency band, as long as reflectances can be
+represented by real values.
 
 The surface reflectances are found by converting per-band absorptions into
 per-band normal-incidence reflectance magnitudes by $|R|=\sqrt{1-\alpha}$.
@@ -248,12 +249,13 @@ unlikely to be an integer, and so will not coincide with a sample index.  The
 simplest solution would be to round to the closest integer, and use this as the
 sample index.  However, for applications such as multi-microphone simulation
 which are sensitive to arrival time, this can lead to obvious phase errors.  A
-better solution is suggested in [@fu_gpu-based_2016]: The contribution can be
-positioned with sub-sample accuracy, by replacing the impulsive $\delta$ signal
-with the impulse-response of an ideal low-pass filter, with cut-off equal to
-the output Nyquist frequency.  Such an impulse response is infinitely long, but
-tends to zero quickly, so it can be Hanning windowed to reduce the number of
-additions required.  This form of the impulse is as follows:
+better solution is suggested by Fu and Li [@fu_gpu-based_2016]: The
+contribution can be positioned with sub-sample accuracy, by replacing the
+impulsive $\delta$ signal with the impulse-response of an ideal low-pass
+filter, with cut-off equal to the output Nyquist frequency.  Such an impulse
+response is infinitely long, but tends to zero quickly, so it can be Hanning
+windowed to reduce the number of additions required.  This form of the impulse
+is as follows:
 
 (@) $$
 \delta_{\text{LPF}}(n - \epsilon)=

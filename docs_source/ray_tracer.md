@@ -47,8 +47,8 @@ allowing it to be represented as a point.
 
 In ray tracing, each ray represents a finite portion of the initial source
 energy.  The reduction of energy over a given distance is accounted-for by the
-spreading-out of the rays.  This can be illustrated very simply: First, imagine
-a sphere placed very close to a point.  Assuming rays are fired with a uniform
+spreading-out of the rays.  This can be illustrated very simply: Imagine a
+sphere placed very close to a point.  Assuming rays are fired with a uniform
 random distribution from that point, a certain proportion of those rays will
 intersect with the sphere.  If the sphere is moved further away, a smaller
 proportion of rays will hit it (see the following figure
@@ -63,8 +63,8 @@ The exact proportion of intersecting rays is equal to $s/4r^2$
 the receiver, and $r$ is the distance between the source and receiver.  That
 is, the proportion of rays intersecting the receiver is inversely proportional
 to the square of the distance between the source and receiver.  The energy
-recorded is proportional to the number of ray intersections recorded,
-therefore, the ray model intrinsically accounts for the inverse-square law for
+registered is proportional to the number of ray intersections recorded,
+therefore the ray model intrinsically accounts for the inverse-square law for
 energy, and the per-ray energy does not need to be scaled proportionally to the
 distance travelled.  This differs to the image-source model, in which only
 valid specular reflections are recorded, and the inverse-square law may be
@@ -102,9 +102,9 @@ number of rays required becomes even greater.  Even on modern hardware, this
 sheer quantity of rays is prohibitive.
 
 If, on the other hand, audio-rate results are not required, then the number of
-necessary rays is much lower.  [@vorlander_auralization:_2007, p. 186] suggests
-a sampling period of the order of magnitude of milliseconds, which requires at
-least 40-times fewer rays.
+necessary rays is much lower.  Vorlander suggests a sampling period of the
+order of magnitude of milliseconds, which requires at least 40-times fewer rays
+[@vorlander_auralization:_2007, p. 186].
 
 Now, the ray tracer can be thought to produce an *energy envelope*, describing
 the decay tail of the impulse response.  To produce the impulse response
@@ -134,10 +134,10 @@ visible from this position.  This data will be used later on, when calculating
 energy loss, and the directional distribution of received energy.
 
 A new ray direction is calculated using the *vector-based scattering* method,
-described in [@christensen_new_2005].  A uniformly random vector is generated,
-within the hemisphere oriented in the same direction as the triangle normal.
-The ideal specular direction is also calculated, and the two vectors are
-combined by
+described by Christensen and Rindel [@christensen_new_2005].  A uniformly
+random vector is generated, within the hemisphere oriented in the same
+direction as the triangle normal.  The ideal specular direction is also
+calculated, and the two vectors are combined by
 
 (@) $$\overrightarrow{R}_\text{outgoing}=s\overrightarrow{R}_\text{random} +
 (1-s)\overrightarrow{R}_\text{specular}$$
@@ -227,7 +227,7 @@ $t$, the enclosure volume $V$ and the speed of sound $c$:
 
 (@) $$\mu = \frac{4\pi c^3 t^2}{V}$$
 
-It can be seen that the mean occurrence is proportional to the square-inverse
+It can be seen that the mean occurrence is proportional to the square
 of the current time, producing an increase in event density over time.  The
 first event occurs at time $t_0$:
 
@@ -266,12 +266,41 @@ Now, we are left with a set of broadband signals, each with different
 envelopes.  The output signal is found by bandpass filtering each of these
 signals, and then mixing them down.
 
-The filtering of each signal is accomplished by computing the signal's
-frequency-domain representation, attenuating bins outside the passband, and
-then transforming the altered spectrum back to the time domain.  To ensure
-perfect reconstruction, and to avoid artificial-sounding discontinuities in the
-spectrum, the filter shape suggested in [@antoni_orthogonal-like_2010] is used.
-This paper suggests equations which describe the band-edge magnitudes:
+The filter bank should have perfect reconstruction characteristics: a signal
+passed through all filters in parallel and then summed should have the same
+frequency response as the original signal. In the case where all the materials
+in a scene have the same coefficients in all bands, the input to each filter
+would be identical. Then, the expected output would be this same as the input
+to any band (though band-passed between the lower cutoff of the lowest band and
+the upper cutoff of the highest band).  Perfect-reconstruction filters maintain
+the correct behaviour in this (unusual) case. It is especially important that
+the bandpass filters are zero-phase, so that Dirac events in all bands are
+in-phase, without group delay, after filtering. Finally, the filters should
+have slow roll-off and no resonance, so that if adjacent bands have very
+mismatched levels, there are no obvious filtering artefacts.
+
+An efficient filtering method is to use a bank of infinite-impulse-response
+filters.  These filters are fast, and have low memory requirements. They can
+also be made zero-phase when filtering is offline, by running the filter
+forwards then backwards over the input signal (though this causes filter
+roll-off to become twice as steep). This was the initial method used in
+Wayverb: the filter bank was constructed from second-order Linkwitz-Riley
+bandpass filters. This method had two main drawbacks: the roll-off is limited
+to 12 dB/octave [@linkwitz_active_1976], which may cause an obvious "brick
+wall" effect in the final output; and the forward-backward filtering method
+requires computing the initial filter conditions in order to maintain
+perfect-reconstruction, which is non-trivial to implement
+[@gustafsson_determining_1994].
+
+A better method, which allows for shallower filter roll-offs while retaining
+perfect-reconstruction capabilities is to filter each band directly in the
+frequency domain.  The filtering of each signal is accomplished by computing
+the signal's frequency-domain representation, attenuating bins outside the
+passband, and then transforming the altered spectrum back to the time domain.
+To ensure perfect reconstruction, and to avoid artificial-sounding
+discontinuities in the spectrum, the filter shape suggested in
+[@antoni_orthogonal-like_2010] is used.  This paper suggests equations which
+describe the band-edge magnitudes:
 
 (@)
 $$

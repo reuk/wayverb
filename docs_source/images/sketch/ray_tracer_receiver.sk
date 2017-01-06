@@ -1,0 +1,57 @@
+def I [1, 0, 0]
+def J [0, 1, 0]
+def K [0, 0, 1]
+
+def n_x 24 
+def n_y 12
+
+def rad 1
+
+def sphere {
+    sweep [fillcolor=gray] { n_x, rotate (360 / n_x, [J]) }
+        sweep { n_y, rotate (180 / n_y) }
+            (0, -rad)
+}
+
+def highlight {
+    def e 0.01
+
+    def i (rad + e)
+
+    def p_x 4
+    def p_y 1
+
+    def az_0 ((p_x + 0) * 360 / n_x)
+    def az_1 ((p_x + 1) * 360 / n_x)
+
+    def el_0 ((p_y + 0) * 180 / n_y)
+    def el_1 ((p_y + 1) * 180 / n_y)
+
+    def q_0 (i * cos(el_0) * cos(az_0), i * sin(el_0), i * cos(el_0) * sin(az_0))
+    def q_1 (i * cos(el_1) * cos(az_0), i * sin(el_1), i * cos(el_1) * sin(az_0))
+    def q_2 (i * cos(el_1) * cos(az_1), i * sin(el_1), i * cos(el_1) * sin(az_1))
+    def q_3 (i * cos(el_0) * cos(az_1), i * sin(el_0), i * cos(el_0) * sin(az_1))
+
+    polygon [fillcolor=red] (q_0) (q_1) (q_2) (q_3)
+}
+
+def box {
+    sweep { 1, translate ([0, 1, 0]) } polygon (0, 0, 0) (1, 0, 0) (1, 0, 1) (0, 0, 1)
+}
+
+def band {
+    repeat { 16, translate ([1.1, 0, 0]), scale ([1, 0.8, 1]) } {box}
+}
+
+def graph {
+    repeat { 8, translate ([0, 0, 1.1]), scale ([1, 0.9, 1]) } {band}
+}
+
+def eye (0, 5, 10)
+def look_at (0, 0, -5)
+
+put { view ((eye), (look_at)) then perspective (30) } { 
+    {sphere}
+    {highlight}
+    put { scale ([0.1, 1, 0.1]) then rotate (-45, (0, 0, 0), [0, 1, 0]) then translate ([2, 0, 0]) } {graph}
+}

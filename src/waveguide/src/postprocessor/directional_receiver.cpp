@@ -46,19 +46,19 @@ directional_receiver::return_type directional_receiver::operator()(
                          mesh_spacing_;
     }
 
-    //  the approximation of the pressure gradient is obtained by
+    //  The approximation of the pressure gradient is obtained by
     //  multiplying the difference vector by the inverse projection matrix,
     //  which looks like
     //      -0.5  0.5    0    0    0    0
     //         0    0 -0.5  0.5    0    0
     //         0    0    0    0 -0.5  0.5
-    //  so I think the product is like this:
+    //  so the product looks like this:
     const glm::dvec3 m{(surrounding[1] - surrounding[0]) * 0.5,
                        (surrounding[3] - surrounding[2]) * 0.5,
                        (surrounding[5] - surrounding[4]) * 0.5};
 
-    //  the result is scaled by the negative inverse of the ambient density
-    //  and integrated using a discrete-time integrator
+    //  The result is scaled by the negative inverse of the ambient density
+    //  and integrated using a discrete-time integrator:
     velocity_ -= (m / (ambient_density_ * sample_rate_));
 
     //  the instantaneous intensity is obtained by multiplying the velocity

@@ -18,7 +18,7 @@ cd build
 #./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
 #./impulse_gen/impulse_gen
 
-#cd ../bin/mic_test && ./run_and_graph.sh
+cd ../bin/mic_test && ./run_and_graph.sh
 
 #./tests/mesh_impulse_response/write_compensation_signal
 
@@ -31,7 +31,7 @@ cd build
 #cd bin/diffuse_decay && ./diffuse_decay
 
 #cd bin/southern2011 && ./southern2011
-cd bin/siltanen2013 && ./siltanen2013
+#cd bin/siltanen2013 && ./siltanen2013
 #cd bin/level_match && ./level_match ~/development/waveguide/demo/assets/test_models/vault.obj
 
 #cd ../bin/boundary_test && ./run_and_graph.sh
