@@ -72,6 +72,6 @@ int main(int /*argc*/, char** /*argv*/) {
               results,
               output_sr,
               audio_file::format::aiff,
-              audio_file::bit_depth::pcm16);
+              audio_file::bit_depth::pcm24);
     }
 }
