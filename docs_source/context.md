@@ -15,8 +15,8 @@ reference-section-title: References
 Room acoustics algorithms fall into two main categories: *geometric*, and
 *wave-based* [@southern_spatial_2011].  Wave-based methods aim to solve the
 wave equation numerically, simulating the actual behaviour of sound waves
-within an enclosure.  Geometric methods instead make some simplifying
-assumptions about the behaviour of sound waves, which result in faster but less
+within an enclosed space.  Geometric methods instead make some simplifying
+assumptions about the behaviour of sound, which result in faster but less
 accurate simulations.  These assumptions generally ignore all wave properties
 of sound, choosing to model sound as independent *rays*, *particles*, or
 *phonons*.
@@ -31,15 +31,15 @@ little or no visible effect.
 
 The assumption that rays and waves are interchangeable falls down somewhat when
 modelling sound.  The wavelengths of sound in air range from 17m to 0.017m for
-the frequency range 20Hz to 20KHz, so while the simulation may be accurate at
-high frequencies, at low frequencies the wavelength is of the same order as the
-wall surfaces in the scene.  Failure to take wave effects such as interference
-and diffraction into account at these frequencies therefore results in
-noticeable approximation error [@savioja_overview_2015].
+the audible frequency range (20Hz to 20KHz), so while the simulation may be
+accurate at high frequencies, at low frequencies the wavelength is of the same
+order as the wall surfaces in the scene.  Failure to take wave effects such as
+interference and diffraction into account at these frequencies therefore
+results in noticeable approximation error [@savioja_overview_2015].
 
 In many cases, some inaccuracy is an acceptable (or even necessary) trade-off.
 Wave-modelling is so computationally expensive that using it to simulate a
-large scene over a broad spectrum could take weeks on consumer hardware.  This
+large scene over a broad spectrum might take weeks on consumer hardware.  This
 leaves geometric methods as the only viable alternative.  Though wave-modelling
 been studied for some time [@smith_physical_1992], and even applied to small
 simulations of strings and membranes in consumer devices such as keyboards, it
@@ -49,15 +49,17 @@ have been seriously considered for room acoustics simulation.
 Given that wave-based methods are accurate, but become more expensive at higher
 frequencies, and that geometric methods are inexpensive, but become less
 accurate at lower frequencies, it is natural to combine the two models in a way
-that takes advantage of the desirable characteristics of each.  That is, by
-using wave-modelling for low-frequency content, and geometric methods for
-high-frequency content, simulations may be produced which are accurate across
-the entire spectrum, without incurring massive computational costs.
+that takes advantage of the desirable characteristics of each
+[@aretz_combined_2009].  That is, by using wave-modelling for low-frequency
+content, and geometric methods for high-frequency content, simulations may be
+produced which are accurate across the entire spectrum, without incurring
+massive computational costs.
 
-## Characteristics of Simulation Methods
+## Characteristics of Room Acoustics Simulation Methods
 
-A short review of simulation methods will be given here.  For a detailed survey
-of methods used in room acoustics, see [@svensson_computational_2002].
+A short review of acoustic simulation methods will be given here.  For a more
+detailed survey of methods used in room acoustics, see
+[@savioja_overview_2015].
 
 The following figure \text{(\ref{fig:simulation_techniques})} shows the
 relationships between the most common simulation methods.  The advantages and
@@ -73,11 +75,13 @@ Geometric methods can be grouped into two categories: *stochastic* and
 *deterministic*. 
 
 Stochastic methods are generally based on statistical approximation via some
-kind of Monte Carlo algorithm.  Such algorithms are approximate by nature.
-They aim to randomly and repeatedly sample the problem space , combining the
-results from multiple trials so that they converge upon the correct answer.
-The balance of quality and speed can be adjusted in a straightforwward manner,
-simply by adjusting the number of samples taken.
+kind of Monte Carlo method.  Such methods are approximate by nature.  They aim
+to randomly and repeatedly sample the problem space, recording samples which
+fulfil some correctness criteria, and discarding the rest. By combining the
+results from multiple samples, the probability of an incorrect result is
+reduced, and the accuracy is increased.  The balance of quality and speed can
+be adjusted in a straightforward manner, simply by adjusting the number of
+samples taken.
 
 In room acoustics, stochastic algorithms may be based directly on reflection
 paths, using *ray tracing* or *beam tracing*, in which rays or beams are
@@ -113,9 +117,9 @@ For a detailed reference on geometric acoustic methods, see
 ### Wave-based Methods
 
 The main advantage of wave-based methods is that they inherently account for
-wave effects like diffraction and interference [@shelley_diffuse_2007], while
-geometric methods do not.  This means that these wave-based methods are capable
-of accurately simulating the low-frequency component of a room
+wave effects such as diffraction and interference [@shelley_diffuse_2007],
+while geometric methods do not.  This means that these wave-based methods are
+capable of accurately simulating the low-frequency component of a room
 impulse-response, where constructive and destructive wave interference form
 *room modes*.  Room modes have the effect of amplifying and attenuating
 specific frequencies in the room impulse response, and produce much of the
@@ -125,7 +129,7 @@ halls and recording studios, or when producing musically pleasing reverbs.
 
 Wave-based methods may be derived from the *Finite Element Method* (FEM),
 *Boundary Element Method* (BEM) or *Finite-Difference Time-Domain* (FDTD)
-method. The FEM and BEM may be known together as *element methods*.
+method. The FEM and BEM are known together as *Element Methods*.
 
 The FEM is an iterative numerical method for finding natural resonances of a
 bounded enclosure.  It models the air pressure inside the enclosure using a
@@ -135,15 +139,17 @@ of simultaneous equations, which can be solved for displacement at each node,
 and then the solved equations can be used to calculate pressure values at
 certain elements.  The BEM is similar, but models nodes on the surface of the
 enclosure, instead of within it.  This in turn allows it to model unbounded
-spaces. [@murphy_digital_2000]
+spaces, whereas the FEM is limited to bounded spaces [@murphy_digital_2000, pp.
+52-55].
 
 The FDTD method works by dividing the space to be modelled into a regular grid,
-and computing changes in some quantity at each grid point over time.  The
-formula used to update each grid point, along with the topology of the grid,
-may be varied depending on the accuracy, efficiency, and complexity required by
-the application.  FDTD methods are generally applied to problems in
-electromagnetics, but a subclass of the FDTD method known as the *Digital
-Waveguide Mesh* (DWM) is often used for solving acoustics problems.
+and computing changes in some quantity (such as pressure or particle velocity)
+at each grid point over time.  The formula used to update each grid point,
+along with the topology of the grid, may be varied depending on the accuracy,
+efficiency, and complexity required by the application.  FDTD methods are
+generally applied to problems in electromagnetics, but a subclass of the FDTD
+method known as the *Digital Waveguide Mesh* (DWM) is often used for solving
+acoustics problems.
 
 The FDTD process shares some characteristics with the element methods.  They
 all become rapidly more computationally expensive as the maximum output
@@ -157,6 +163,12 @@ The major advantage of FDTD over element methods is that it is run directly in
 the time domain, rather than producing frequency-domain results, which in turn
 affords a much simpler implementation.
 
+FDTD simulations can also be implemented with relative efficiency by taking
+advantage of their "embarrassingly parallel" nature.  Each individual node in
+the simulation (of which there may be thousands or millions) can be updated
+without synchronisation.  As a result, the nodes may be updated entirely in
+parallel, leading to massive reductions in simulation time.
+
 The main disadvantage of the FDTD method is that it is susceptible to
 *numerical dispersion*, in which wave components travel at different speeds
 depending on their frequency and direction, especially at high frequencies.
@@ -168,17 +180,15 @@ the computational load of the simulation, while using different topologies and
 post-processing both introduce additional complexity.
 
 Despite its drawbacks, the FDTD method is generally preferred for room
-acoustics simulation [@valimaki_fifty_2012], probably due to its
-straightforward implementation, intuitive behaviour, and its ability to
+acoustics simulation [@valimaki_fifty_2012], due to its straightforward
+implementation, inherent parallelism, intuitive behaviour, and its ability to
 directly produce time-domain impulse responses.
-
-TODO note that FDTD is embarrassingly parallel
 
 ## Existing Software
 
-Searching online and in the literature uncovers a handful of programs for
-acoustic simulation.  The following table \text{(\ref{tab:software})} shows a
-selection which is not exhaustive, but which is felt to be representative.
+A handful of programs exist for acoustic simulation.  The following table
+\text{(\ref{tab:software})} shows a selection which, whilst not exhaustive, is
+representative.
 
 Table: Some of the most prominent tools for acoustic
 simulation.\label{tab:software}
@@ -217,7 +227,7 @@ run from Python or Matlab scripts.  This is a good approach for research
 software, but would probably not be straightforward for users with limited
 programming experience.
 
-At time of writing, December 2016, it appears that no generally-available
+At time of writing (December 2016) it appears that no generally-available
 (commercially or otherwise) piece of software has taken the approach of
 combining wave-modelling and geometric methods, although this technique is
 well-known in the literature [@southern_hybrid_2013; @aretz_combined_2009;
@@ -226,17 +236,52 @@ well-known in the literature [@southern_hybrid_2013; @aretz_combined_2009;
 
 ## Research Aims
 
-With the preceding context in mind, it appears that there are obvious benefits
-to a program which combines geometric and wave-based methods to produce
-simulations which are accurate across the audible spectrum. Rather than
-focussing on performance, or interactive simulation (which is already
-implemented in the commercial software above), such a program should strive
-towards accuracy first, and performance second.  To be useful to end-users, the
-program should have a graphical interface, though a scripting or library
-interface might be provided for research purposes.  Finally, the program would
-ideally be free and open-source, to maximise adoption and to aid future
-research and collaboration.  The goal of the Wayverb project was to produce a
-program which satisfied these requirements.
+--------------------------------------------------------------------------------
+
+TODO
+
+OK - I think this  or “Performance vs Accuracy” 1 - I think you lack a clear
+over-arching set of aims - what uses/users are you aiming for? / why have you
+implemented various extensions (richness/sophisticated/realistic results). - I
+think a paragraph set of bullets about who/what you are aiming for first would
+make this clearer and give you a rationale for the inclusion/decisions you’ve
+made.
+
+2 - It’s a bit verbose - as a solution I propose making an opening
+punchy/bullet pointed paragraph about aims, and then using sub-headings such as
+“Extensions to pre-existing models” / “Investigation of Practical Implemention”
+/ “Performance” to clarify the text. That way the reader can pick up easily an
+overview of your aims rather than lots of text
+
+Move bullets earlier?
+
+Note that performance is still an issue.
+
+--------------------------------------------------------------------------------
+
+The fundamental goals of the project are:
+
+* **Accuracy**: Provide a way of generating accurate impulse responses of 
+  arbitrary enclosed spaces.
+* **Efficiency**: Ensure that the simulation is fast. Simulations times should
+  be minutes, rather than hours or days.
+* **Accessibility**: It should be possible for someone with no programming
+  experience to generate impulse responses. It should also be possible for
+  other programmers to extend and modify the project's code.
+
+TODO
+
+It appears that there are obvious benefits to a program which combines
+geometric and wave-based methods to produce simulations which are accurate
+across the audible spectrum. Rather than focussing solely on performance, or
+interactive simulation (which is already implemented in the commercial software
+above), such a program should strive towards accuracy first, and performance
+second.  To be useful to end-users, the program should have a graphical
+interface, though a scripting or library interface might be provided for
+research purposes.  Finally, the program would ideally be free and open-source,
+to maximise adoption and to aid future research and collaboration.  The goal of
+the Wayverb project was to produce a program which satisfied these
+requirements.
 
 At time of writing, Wayverb is the only public graphical acoustics tool
 incorporating geometric and wave-based methods.  Although hybrid acoustics
@@ -266,15 +311,15 @@ a dedicated chapter with detailed explanation:
   frequency responses, within all three simulation-types.
 * A boundary model with matched performance in all three simulation-types.
 
-The project acts as a survey of room acoustics techniques.  Rather than
-designing completely new simulation methods, existing techniques were
-investigated, compared, and evaluated in terms of their accuracy and
-performance. Then, optimum techniques could be chosen and further developed for
-use in the final program. An especially important consideration is the
-matching of parameters between models. For example, all models should produce
-the same sound energy at a given distance, and should exhibit the same reverb
-time for a given scene. Therefore, the acoustics techniques were chosen so that
-they produce consistent results.
+The project acts as a survey of room acoustics techniques, and related issues
+regarding practical implementation.  Rather than designing completely new
+simulation methods, existing techniques were investigated, compared, and
+evaluated in terms of their accuracy and performance. Then, optimum techniques
+could be chosen and further developed for use in the final program. An
+especially important consideration is the matching of parameters between
+models. For example, all models should produce the same sound energy at a given
+distance, and should exhibit the same reverb time for a given scene. Therefore,
+the acoustics techniques were chosen so that they produce consistent results.
 
 Sometimes the models required development beyond the methods presented in the
 literature in order to become useful. An example of this is the waveguide
@@ -303,14 +348,15 @@ hours to render, even on purpose-built compute clusters.
 
 ### Chosen Simulation Techniques
 
-As the image-source method is well-suited to finding early reflections, and
-stochastic methods are reasonably accurate at computing the more diffuse late
-reflections, it made sense to combine these two methods for high-frequency
-simulation.  Specifically, a simple ray tracing method was chosen over a
-phonon- or surface-based method for the late-reflection simulation, for two
-reasons.  Firstly, ray tracing is broadly discussed in the literature
-[@krokstad_calculating_1968; @kuttruff_room_2009;
-@vorlander_auralization:_2007; @schroder_physically_2011;
+The image-source and stochastic ray-tracing methods were chosen for modelling
+high-frequency content.  These models are complementary: the image model can
+find early reflections with great accuracy but is slow at finding later
+reflections; while the ray-tracer is much faster but more approximate, making
+it better suited to finding naturally-diffuse late reflections.  Specifically,
+a simple ray tracing method was chosen over a phonon- or surface-based method
+for the late-reflection simulation, for several reasons.  Firstly, ray tracing
+is broadly discussed in the literature [@krokstad_calculating_1968;
+@kuttruff_room_2009; @vorlander_auralization:_2007; @schroder_physically_2011;
 @alpkocak_computing_2010], so would not require a great deal of experimentation
 to implement.  Secondly, ray tracing has the property of being an
 *embarrassingly parallel* algorithm, because each individual ray can be
@@ -318,31 +364,42 @@ simulated entirely independently, without requiring communication or
 synchronisation.  By running the algorithm on graphics hardware, which is
 designed to run great numbers of calculations in parallel, all rays could be
 simulated in one go, yielding much greater performance than processing each ray
-sequentially.
+sequentially.  Finally, though surface-based methods are capable of real-time
+operation, they do not pose any performance benefit for non-real-time or
+"one-off" simulations. Their performance comes from re-using pre-computed
+information when the receiver position changes, but in a one-off simulation the
+receiver position is fixed. Ray tracing is also less complex and better
+documented than surface-based methods, making it the superior choice for this
+application.
 
 A logistical reason for choosing the image-source and ray tracing solution for
 high-frequency modelling was that the author had previously implemented such a
 system for an undergraduate project.  It was hoped that much of the code from
-that project could be re-used, but it transpired that much of the code was
-unsuitable or incorrect (!), so that the majority was completely re-written.
-The author was, however, able to re-use much of the knowledge and experience
-gained from the previous project, which would not have been possible if a
-completely new stochastic method had been introduced.
+that project could be re-used, but it transpired that the project suffered from
+accuracy and implementation issues, making it unsuitable for direct integration
+within Wayverb.  Therefore, the majority of this code was completely
+re-written.  The author was, however, able to re-use much of the knowledge and
+experience gained from the previous project, which would not have been possible
+if a completely new stochastic method had been introduced.
 
 For low-frequency simulation, a FDTD-based DWM model was chosen.  There is a
 great deal of writing on this method [@van_duyne_3d_1996;
 @savioja_interpolated_2014; @kowalczyk_room_2011; @campos_computational_2005;
 @murphy_digital_2000], it is relatively simple to implement, and shares with
-ray tracing the characteristic of being embarrassingly parallel.  Each element
-in the waveguide mesh can be updated individually and simultaneously, which it
-was hoped would yield performance benefits.
+ray tracing the characteristic of being embarrassingly parallel.  As
+wave-modelling is especially costly, a parallel implementation is necessary in
+order to achieve simulation times in the order of minutes rather than hours or
+days.
 
 An in-depth description of the algorithms implemented is given in the
 [Image-Source]({{ site.baseurl }}{% link image_source.md %}), [Ray Tracer]({{
 site.baseurl }}{% link ray_tracer.md %}), and [Waveguide]({{ site.baseurl }}{%
 link waveguide.md %}) sections.  The following figure
 \text{(\ref{fig:regions})} shows how the outputs from the different methods
-work together to produce a broadband impulse response.
+work together to produce a broadband impulse response.  It shows that the lower
+portion of the spectrum is generated entirely with the waveguide, while the
+upper portion is simulated using the image-source method for early reflections,
+and the ray tracing method for the reverb tail.
 
 ![The structure of a simulated impulse
 response.\label{fig:regions}](images/regions)
@@ -382,17 +439,17 @@ target Nvidia hardware.  OpenCL was chosen as it would allow the final program
 to be run on a wider variety of systems, with fewer limitations on their
 graphics hardware.
 
-The only deployment target was macOS.  This was mainly to ease development, as
-maintaining software across multiple platforms is often time-consuming.  macOS
-also tends to have support for newer C++ language features than Windows.
-Visual Studio 2015 for Windows still does not support all of the C++11 language
-features [@_visual_2016], while the Clang compiler used by macOS has supported
-newer C++14 features since version 3.4 [@_clang_2016], released in May 2014
-[@_download_2016].  Targeting a single platform avoids the need to use only the
-lowest common denominator of language features.  As far as possible, the
+The only deployment target was Mac OS.  This was mainly to ease development, as
+maintaining software across multiple platforms is often time-consuming.  Mac OS
+also tends to have support for newer C++ language features than Windows, which
+allows code to be more concise, flexible, and performant ^[Visual Studio 2015
+for Windows still does not support all of the C++11 language features
+[@_visual_2016], while the Clang compiler used by Mac OS has supported newer
+C++14 features since version 3.4 [@_clang_2016], released in May 2014
+[@_download_2016].].  Targeting a single platform avoids the need to use only
+the lowest common denominator of language features.  As far as possible, the
 languages and libraries have been selected to be portable if the decision to
-support other platforms is made in the future.  Once Windows fully supports
-C++14, it should be possible to port the program with a minimum of effort.
+support other platforms is made in the future.
 
 The following additional libraries were used to speed development.  They are
 all open-source and freely available.

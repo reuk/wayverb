@@ -1,6 +1,6 @@
 ---
 title: >
-    Wayverb: A Graphical Tool for Hybrid Modelling Auralisation
+    Wayverb: A Graphical Tool for Hybrid Room Acoustics Simulation
 
 subtitle: |
     A thesis submitted to the University of Huddersfield in partial fulfilment

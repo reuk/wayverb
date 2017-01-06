@@ -73,10 +73,15 @@ public:
     intermediate& operator=(intermediate&&) noexcept = default;
     virtual ~intermediate() noexcept = default;
 
+    /// Takes attenuator and sample rate.
     virtual util::aligned::vector<float> postprocess(
             const core::attenuator::null&, double) const = 0;
+
+    /// Takes attenuator and sample rate.
     virtual util::aligned::vector<float> postprocess(
             const core::attenuator::hrtf&, double) const = 0;
+
+    /// Takes attenuator and sample rate.
     virtual util::aligned::vector<float> postprocess(
             const core::attenuator::microphone&, double) const = 0;
 };

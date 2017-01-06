@@ -18,7 +18,7 @@ cd build
 #./tests/hybrid_test/hybrid_test ../tests/hybrid_test/output
 #./impulse_gen/impulse_gen
 
-cd ../bin/mic_test && ./run_and_graph.sh
+#cd ../bin/mic_test && ./run_and_graph.sh
 
 #./tests/mesh_impulse_response/write_compensation_signal
 
@@ -37,5 +37,7 @@ cd ../bin/mic_test && ./run_and_graph.sh
 #cd ../bin/boundary_test && ./run_and_graph.sh
 
 #cd ../bin/fitted_boundary && ./run_and_graph.sh
+
+cd bin/crackly_tunnel && ./crackly_tunnel
 
 fi

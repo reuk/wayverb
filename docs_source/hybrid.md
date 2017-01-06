@@ -289,8 +289,16 @@ resulting frequency responses are shown below\text{ (figure
 
 ![Frequency responses analysis of image-source and waveguide outputs. The
 initial waveguide level has been calibrated using the technique described
-above.Room mode frequencies are shown in
+above. Room mode frequencies are shown in
 grey.\label{fig:calibration}](images/calibration)
+
+In the graphs, room modes are shown. One of the properties of the waveguide is
+that it models wave effects which directly contribute to this low-frequency
+modal behaviour. In the case of arbitrarily-shaped rooms, the image model is
+not exact, and cannot be used to model low-frequency behaviour in this way,
+while the waveguide will accurately model low-frequency behaviour in any
+enclosed space. This is the main reason for using a wave-modelling technique at
+all, instead of using geometric methods for the entire spectrum.
 
 The frequency responses match closely, to with a decibel between 30 and 70Hz.
 There is some divergence at 80Hz, after which the results match closely again
@@ -324,5 +332,5 @@ room modes to change (which again would be more pronounced at higher
 frequencies), which might lead to a perceived spectral shift relative to a room
 with exact dimensions.
 
-Despite the small differences, between the frequency responses, the close level
+Despite the small differences between the frequency responses, the close level
 match between models suggests that the calibration coefficient is correct.
