@@ -71,7 +71,7 @@ int main(int /*argc*/, char** /*argv*/) {
         write(util::build_string("crackly1e", i, ".aif").c_str(),
               results,
               output_sr,
-              audio_file::format::aiff,
+              audio_file::format::aif,
               audio_file::bit_depth::pcm24);
     }
 }

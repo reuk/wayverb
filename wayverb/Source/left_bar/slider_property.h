@@ -11,7 +11,7 @@ namespace left_bar {
 class slider_property final : public PropertyComponent,
                               public Slider::Listener {
 public:
-    slider_property(const String& name, double min, double max);
+    slider_property(const String& name, double min, double max, double inc=0, const String& suffix="");
 
     double get() const;
     void set(double x);

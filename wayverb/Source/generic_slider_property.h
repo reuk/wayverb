@@ -11,7 +11,8 @@ public:
             const String& name,
             double min,
             double max,
-            double inc = 0)
+            double inc = 0,
+            const String& suffix="")
             : generic_property_component<Model, double, Slider>{
                       model,
                       name,
@@ -23,6 +24,7 @@ public:
         this->content.setTextBoxStyle(
                 Slider::TextEntryBoxPosition::TextBoxLeft, false, 80, 21);
         this->content.setRange(min, max, inc);
+        this->content.setTextValueSuffix(suffix);
     }
 
     void sliderValueChanged(Slider* s) override {

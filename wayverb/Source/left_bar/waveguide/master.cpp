@@ -74,7 +74,7 @@ private:
     class cutoff_property final : public generic_slider_property<model_t> {
     public:
         cutoff_property(model_t& model)
-                : generic_slider_property{model, "cutoff / Hz", 20, 20000, 1} {
+                : generic_slider_property{model, "cutoff", 20, 20000, 1, " Hz"} {
             update_from_model();
         }
 
@@ -92,7 +92,7 @@ private:
             : public generic_slider_property<model_t> {
     public:
         usable_portion_property(model_t& model)
-                : generic_slider_property{model, "usable portion", 0.1, 0.6} {
+                : generic_slider_property{model, "usable portion", 0.1, 0.6, 0.01} {
             update_from_model();
         }
 
@@ -142,7 +142,7 @@ private:
     class cutoff_property final : public generic_slider_property<model_t> {
     public:
         cutoff_property(model_t& model)
-                : generic_slider_property{model, "cutoff / Hz", 20, 20000, 1} {
+                : generic_slider_property{model, "cutoff", 20, 20000, 1, " Hz"} {
             update_from_model();
         }
 
@@ -160,7 +160,7 @@ private:
             : public generic_slider_property<model_t> {
     public:
         usable_portion_property(model_t& model)
-                : generic_slider_property{model, "usable portion", 0.1, 0.6} {
+                : generic_slider_property{model, "usable portion", 0.1, 0.6, 0.01} {
             update_from_model();
         }
 

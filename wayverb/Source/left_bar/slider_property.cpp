@@ -2,7 +2,11 @@
 
 namespace left_bar {
 
-slider_property::slider_property(const String& name, double min, double max)
+slider_property::slider_property(const String& name,
+                                 double min,
+                                 double max,
+                                 double inc,
+                                 const String& suffix)
         : PropertyComponent{name, 25}
         , slider_{Slider::SliderStyle::IncDecButtons,
                   Slider::TextEntryBoxPosition::TextBoxLeft} {
@@ -10,7 +14,8 @@ slider_property::slider_property(const String& name, double min, double max)
             Slider::IncDecButtonMode::incDecButtonsDraggable_AutoDirection);
     slider_.setTextBoxStyle(
             Slider::TextEntryBoxPosition::TextBoxLeft, false, 80, 21);
-    slider_.setRange(min, max);
+    slider_.setRange(min, max, inc);
+    slider_.setTextValueSuffix(suffix);
     addAndMakeVisible(slider_);
 }
 

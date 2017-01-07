@@ -126,9 +126,9 @@ public:
             : model_{model} {
         auto orientation =
                 std::make_unique<azimuth_elevation_property>("orientation");
-        auto shape = std::make_unique<slider_property>("shape", 0, 1);
+        auto shape = std::make_unique<slider_property>("polar pattern", 0, 1);
         auto display =
-                std::make_unique<PolarPatternProperty>("shape display", 80);
+                std::make_unique<PolarPatternProperty>("pattern display", 80);
 
         const auto update_from_microphone = [
             this,

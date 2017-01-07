@@ -9,12 +9,21 @@ namespace left_bar {
 
 namespace {
 constexpr auto elevation_range = util::make_range(-M_PI / 2, M_PI / 2);
+
+constexpr auto radians(double t) {
+    return t * M_PI / 180;
+}
+
+constexpr auto degrees(double t) {
+    return t * 180 / M_PI;
+}
+
 }  // namespace
 
 azimuth_elevation_editor::azimuth_elevation_editor() {
-    auto az = std::make_unique<slider_property>("azimuth", -M_PI, M_PI);
+    auto az = std::make_unique<slider_property>("azimuth", degrees(-M_PI), degrees(M_PI), 1, " deg");
     auto el = std::make_unique<slider_property>(
-            "elevation", elevation_range.get_min(), elevation_range.get_max());
+            "elevation", degrees(elevation_range.get_min()), degrees(elevation_range.get_max()), 1, " deg");
 
     const auto callback = [this](auto&, auto) { on_change_(*this, get()); };
 
@@ -30,12 +39,12 @@ azimuth_elevation_editor::connect_on_change(on_change::callback_type callback) {
 }
 
 wayverb::core::az_el azimuth_elevation_editor::get() const {
-    return wayverb::core::az_el(az_->get(), el_->get());
+    return wayverb::core::az_el(radians(az_->get()), radians(el_->get()));
 }
 
 void azimuth_elevation_editor::set(wayverb::core::az_el az_el) {
-    az_->set(az_el.azimuth);
-    el_->set(az_el.elevation);
+    az_->set(degrees(az_el.azimuth));
+    el_->set(degrees(az_el.elevation));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

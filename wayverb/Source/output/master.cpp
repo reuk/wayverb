@@ -75,7 +75,7 @@ public:
             : generic_combo_box_property{
                       model,
                       "format",
-                      {audio_file::format::aiff, audio_file::format::wav},
+                      {audio_file::format::aif, audio_file::format::wav},
                       [](auto e) { return audio_file::get_extension(e); }} {}
 
 private:

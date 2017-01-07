@@ -6,11 +6,11 @@ namespace left_bar {
 
 vec3_editor::vec3_editor(const util::range<glm::vec3>& range) {
     auto x = std::make_unique<slider_property>(
-            "x", range.get_min().x, range.get_max().x);
+            "x", range.get_min().x, range.get_max().x, 0.001, " m");
     auto y = std::make_unique<slider_property>(
-            "y", range.get_min().y, range.get_max().y);
+            "y", range.get_min().y, range.get_max().y, 0.001, " m");
     auto z = std::make_unique<slider_property>(
-            "z", range.get_min().z, range.get_max().z);
+            "z", range.get_min().z, range.get_max().z, 0.001, " m");
 
     const auto callback = [this](auto&, auto) { on_change_(*this, get()); };
 

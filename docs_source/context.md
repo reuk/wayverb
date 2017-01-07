@@ -234,30 +234,7 @@ well-known in the literature [@southern_hybrid_2013; @aretz_combined_2009;
 @murphy_hybrid_2008; @southern_room_2013; @vorlander_simulation_2009;
 @southern_spatial_2011].
 
-## Research Aims
-
---------------------------------------------------------------------------------
-
-TODO
-
-OK - I think this  or “Performance vs Accuracy” 1 - I think you lack a clear
-over-arching set of aims - what uses/users are you aiming for? / why have you
-implemented various extensions (richness/sophisticated/realistic results). - I
-think a paragraph set of bullets about who/what you are aiming for first would
-make this clearer and give you a rationale for the inclusion/decisions you’ve
-made.
-
-2 - It’s a bit verbose - as a solution I propose making an opening
-punchy/bullet pointed paragraph about aims, and then using sub-headings such as
-“Extensions to pre-existing models” / “Investigation of Practical Implemention”
-/ “Performance” to clarify the text. That way the reader can pick up easily an
-overview of your aims rather than lots of text
-
-Move bullets earlier?
-
-Note that performance is still an issue.
-
---------------------------------------------------------------------------------
+## Project Aims
 
 The fundamental goals of the project are:
 
@@ -269,57 +246,65 @@ The fundamental goals of the project are:
   experience to generate impulse responses. It should also be possible for
   other programmers to extend and modify the project's code.
 
-TODO
+The project is primarily designed to help musicians and sound designers, who
+require high-quality reverberation effects. These users also need fast
+iteration times between making parameter adjustments and hearing the results,
+so that the "right" sound can be created quickly. The solution must run on
+commodity hardware, as musicians are not expected to have access to dedicated
+compute clusters or server farms.
 
-It appears that there are obvious benefits to a program which combines
-geometric and wave-based methods to produce simulations which are accurate
-across the audible spectrum. Rather than focussing solely on performance, or
-interactive simulation (which is already implemented in the commercial software
-above), such a program should strive towards accuracy first, and performance
-second.  To be useful to end-users, the program should have a graphical
-interface, though a scripting or library interface might be provided for
-research purposes.  Finally, the program would ideally be free and open-source,
-to maximise adoption and to aid future research and collaboration.  The goal of
-the Wayverb project was to produce a program which satisfied these
-requirements.
+Accuracy and efficiency are competing goals, which must be balanced.  Extreme
+performance, allowing real-time usage,  has already been implemented in several
+of the commercial programs listed above, and generally relies on simplified
+acoustic models, which in turn reduce accuracy. This runs counter to the aims
+of the project.  Similarly, extreme accuracy generally requires long compute
+times and specialised hardware, both of which are inaccessible to the target
+user.  Therefore, the focus of the project cannot be solely on accuracy.
+Software which balances these two aims does not exist, at time of writing, and
+there is a clear need for a solution which is both reasonably fast and
+accurate.
 
-At time of writing, Wayverb is the only public graphical acoustics tool
-incorporating geometric and wave-based methods.  Although hybrid acoustics
-methods are well documented [@southern_hybrid_2013; @aretz_combined_2009;
-@murphy_hybrid_2008], they have only been used in specific research settings,
-for producing experimental results. It may be assumed that these tools have
-been built to model specific test-cases, rather than general simulation tasks,
-but this is uncertain as no tools incorporating these techniques have been made
-public. Wayverb is able to model arbitrary enclosures, and has the additional
-benefits of a graphical interface (making it more accessible to a wider
-audience) and an open-source code-base (allowing it to be modified by other
-researchers).
+Accessibility is extremely important, and the final product must be accessible
+to two main groups.  Firstly, it must be useful to the target users. It must be
+simple to install and run, and should not require specialist training in
+acoustics or programming. Secondly, the code and supporting materials must be
+made free to researchers, to encourage further research and modification.
 
-The notable components of the Wayverb project are as follows, each of which has
-a dedicated chapter with detailed explanation:
+### Proposed Solution
 
-* Image-source model, accelerated with parallel ray-casting, for early
-  reflections. Uses a novel method for speeding up audibility tests by re-using 
-  reflection paths from the ray tracer.
-* Parallel stochastic ray-tracer, for late reflections.
-* Parallel digital waveguide mesh, for low frequency modelling. Uses a novel
-  set-up procedure to create meshes with correctly-placed boundary nodes in 
-  arbitrary scenes.
-* Calibration, automatically matching the output levels of the different 
-  models.
-* A microphone model, capable of simulating capsules with direction-dependent 
-  frequency responses, within all three simulation-types.
-* A boundary model with matched performance in all three simulation-types.
+It appears that an approach combining geometric and wave-based methods will be
+most flexible in achieving both accuracy and efficiency: wave-based methods are
+accurate but slow; and geometric methods are faster but less accurate. Accuracy
+and efficiency can be balanced by adjusting the proportion of the output
+generated with each method. The Wayverb project puts forward an acoustic
+simulator based on this hybrid method.
+
+To achieve the goal of accessibility, the Wayverb program runs on consumer
+hardware, and is accessed through a graphical interface which allows
+simulations to be configured, stored, and run. Code for the project is public
+and permissively licensed.
+
+## Original Contributions
+
+Most importantly, at time of writing, Wayverb is the only public graphical
+acoustics tool incorporating geometric and wave-based methods.  Although hybrid
+acoustics methods are well documented [@southern_hybrid_2013;
+@aretz_combined_2009; @murphy_hybrid_2008], they have only been used in
+specific research settings, for producing experimental results. It may be
+assumed that these tools have been built to model specific test-cases, rather
+than general simulation tasks, but this is uncertain as no tools incorporating
+these techniques have been made public. However, Wayverb is able to model
+arbitrary enclosures.
 
 The project acts as a survey of room acoustics techniques, and related issues
 regarding practical implementation.  Rather than designing completely new
 simulation methods, existing techniques were investigated, compared, and
 evaluated in terms of their accuracy and performance. Then, optimum techniques
-could be chosen and further developed for use in the final program. An
-especially important consideration is the matching of parameters between
-models. For example, all models should produce the same sound energy at a given
-distance, and should exhibit the same reverb time for a given scene. Therefore,
-the acoustics techniques were chosen so that they produce consistent results.
+were chosen and further developed for use in the final program. An especially
+important consideration is the matching of parameters between models. For
+example, all models should produce the same sound energy at a given distance,
+and should exhibit the same reverb time for a given scene. Therefore, the
+acoustics techniques were chosen so that they produce consistent results.
 
 Sometimes the models required development beyond the methods presented in the
 literature in order to become useful. An example of this is the waveguide
@@ -344,7 +329,21 @@ approaches taken in computer graphics, where "overview" renders may take
 seconds to generate, but physically-modelled simulations for film often take
 hours to render, even on purpose-built compute clusters.
 
-## Strategy
+The notable components of the Wayverb project are as follows, each of which has
+a dedicated chapter with detailed explanation:
+
+* Image-source model, accelerated with parallel ray-casting, for early
+  reflections. Uses a novel method for speeding up audibility tests by re-using 
+  reflection paths from the ray tracer.
+* Parallel stochastic ray-tracer, for late reflections.
+* Parallel digital waveguide mesh, for low frequency modelling. Uses a novel
+  set-up procedure to create meshes with correctly-placed boundary nodes in 
+  arbitrary scenes.
+* Calibration, automatically matching the output levels of the different 
+  models.
+* A microphone model, capable of simulating capsules with direction-dependent 
+  frequency responses, within all three simulation-types.
+* A boundary model with matched performance in all three simulation-types.
 
 ### Chosen Simulation Techniques
 

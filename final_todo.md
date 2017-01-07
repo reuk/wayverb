@@ -1,10 +1,9 @@
-Monday: software status
-
 Software is the priority!
-	Ray tracer crackly-ness
-		Why don't we see this in the waveguide?
-
 	Generate parts separately 
+
+	Check logs, reconstruct crashes
+
+	instrument malloc stuff
 
 Research aims
 	Make it clear that I'm assessing the efficiency + scalability of the approaches

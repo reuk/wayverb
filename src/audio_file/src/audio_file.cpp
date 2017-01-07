@@ -14,7 +14,7 @@ namespace {
 constexpr auto get_sndfile_format(format f) {
     switch (f) {
         case format::wav: return SF_FORMAT_WAV;
-        case format::aiff: return SF_FORMAT_AIFF;
+        case format::aif: return SF_FORMAT_AIFF;
     }
 }
 

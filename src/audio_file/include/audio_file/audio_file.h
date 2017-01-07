@@ -16,12 +16,12 @@ constexpr auto get_description(bit_depth b) {
     }
 }
 
-enum class format { wav = 1, aiff };
+enum class format { wav = 1, aif };
 
 constexpr auto get_extension(format f) {
     switch (f) {
         case format::wav: return "wav";
-        case format::aiff: return "aiff";
+        case format::aif: return "aif";
     }
 }
 

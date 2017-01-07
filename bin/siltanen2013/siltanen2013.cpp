@@ -31,7 +31,7 @@ void write_tuple(It b, It e, const char* prefix, double sample_rate) {
         write(util::build_string(prefix, '.', i.name, ".aif").c_str(),
               i.value,
               sample_rate,
-              audio_file::format::aiff,
+              audio_file::format::aif,
               audio_file::bit_depth::float32);
     });
 }

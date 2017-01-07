@@ -160,7 +160,7 @@ int main(int /*argc*/, char** /*argv*/) {
                           .c_str(),
                   kernel,
                   sampling_frequency,
-                  audio_file::format::aiff,
+                  audio_file::format::aif,
                   audio_file::bit_depth::float32);
 
             auto prep = callback(source_index, kernel.begin(), kernel.end());
@@ -189,7 +189,7 @@ int main(int /*argc*/, char** /*argv*/) {
                           .c_str(),
                   output,
                   sampling_frequency,
-                  audio_file::format::aiff,
+                  audio_file::format::aif,
                   audio_file::bit_depth::float32);
         };
 

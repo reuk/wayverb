@@ -18,6 +18,6 @@ public:
     void removeListener(FileDropComponent::Listener* l);
 
 private:
-    FileDropComponent content_component{"drop a file here, or",
+    FileDropComponent content_component{"drop a .way or .obj file here, or",
                                         "click to load"};
 };

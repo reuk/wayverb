@@ -26,7 +26,7 @@ main_window::main_window(ApplicationCommandTarget& next,
         , finished_connection_{model_.connect_finished([this] {
             wayverb_application::get_command_manager().commandStatusChanged();
         })} {
-    content_component_.setSize(800, 500);
+    content_component_.setSize(800, 600);
     setContentNonOwned(&content_component_, true);
     setUsingNativeTitleBar(true);
     centreWithSize(getWidth(), getHeight());

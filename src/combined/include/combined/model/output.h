@@ -51,8 +51,8 @@ private:
         swap(unique_id_, other.unique_id_);
     };
 
-    audio_file::bit_depth bit_depth_ = audio_file::bit_depth::pcm16;
-    audio_file::format format_ = audio_file::format::aiff;
+    audio_file::bit_depth bit_depth_ = audio_file::bit_depth::pcm24;
+    audio_file::format format_ = audio_file::format::wav;
     sample_rate sample_rate_ = sample_rate::sr44_1KHz;
 
     std::string output_directory_ = "";
