@@ -59,6 +59,11 @@ public:
     util::aligned::vector<reflection> get_reflections();
     util::aligned::vector<cl_float> get_rng();
 
+    /// The constant buffer size required per parallel ray.
+    static constexpr auto get_per_ray_size() {
+        return sizeof(core::ray) + sizeof(reflection) + 2 * sizeof(cl_float);
+    }
+
 private:
     using kernel_t = decltype(std::declval<program>().get_kernel());
 
