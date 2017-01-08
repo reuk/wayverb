@@ -1,9 +1,7 @@
 #include "PolarPatternDisplay.h"
 
 PolarPatternView::PolarPatternView() {
-    set_help("polar pattern",
-             "Shows the polar pattern corresponding to the selected shape "
-             "parameter");
+    setTooltip("Shows the polar pattern corresponding to the selected shape parameter");
 }
 
 void PolarPatternView::paint(Graphics& g) {

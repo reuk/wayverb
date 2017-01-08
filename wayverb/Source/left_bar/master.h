@@ -1,13 +1,11 @@
 #pragma once
 
-#include "../HelpWindow.h"
-
 #include "bottom_panel.h"
 #include "main_model.h"
 
 namespace left_bar {
 
-class master : public Component, public SettableHelpPanelClient {
+class master : public Component {
 public:
     master(main_model& model);
 

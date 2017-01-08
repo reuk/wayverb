@@ -96,10 +96,6 @@ master::master(main_model& model)
             property_panel_.setEnabled(true);
             bottom_.set_state(bottom::state::idle);
         })} {
-    set_help("configuration panel",
-             "Use the options in this panel to adjust the various settings of "
-             "the simulation.");
-
     const auto aabb = wayverb::core::geo::compute_aabb(
             model_.project.get_scene_data().get_vertices());
 

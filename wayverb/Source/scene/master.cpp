@@ -19,7 +19,7 @@
 
 namespace scene {
 
-class master::impl final : public Component, public generic_renderer<view>::Listener {
+class master::impl final : public Component, public generic_renderer<view>::Listener, public SettableTooltipClient {
 public:
     impl(main_model& model)
             : model_{model}
@@ -117,8 +117,14 @@ public:
         //  We want to catch mouse events and dispatch our own commands to the
         //  view, so we'll disable mouse events directly on the view.
         view_.setInterceptsMouseClicks(false, false);
+
         //  Make the view visible.
         addAndMakeVisible(view_);
+
+        setTooltip("left-click: move sources and receivers\n"
+               "right-click: rotate view\n"
+               "middle-click: pan view\n"
+               "scroll: zoom view");
     }
 
     void resized() override {
@@ -177,14 +183,14 @@ public:
     void context_closing(generic_renderer<scene::view>&) override {}
 
 private:
+    //  Keep a reference to the global model.
+    main_model& model_;
+
     //  We don't directly use the view, because it needs to run on its own gl
     //  thread.
     //  Instead, we wrap it in an object which supplies async command queues.
     generic_renderer<scene::view> view_;
     model::Connector<generic_renderer<scene::view>> view_connector_{&view_, this};
-
-    //  Keep a reference to the global model.
-    main_model& model_;
 
     //  This object decides how to interpret user input, and updates the models
     //  as appropriate.
@@ -211,9 +217,7 @@ private:
 
 master::master(main_model& model)
         : pimpl_{std::make_unique<impl>(model)} {
-    set_help("model viewport",
-             "This area displays the currently loaded 3D model. Click and drag "
-             "to rotate the model, or use the mouse wheel to zoom in and out.");
+
 
     addAndMakeVisible(*pimpl_);
 }

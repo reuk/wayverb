@@ -135,7 +135,7 @@ master::master(const main_model::capsule_presets_t& presets,
                                 shared, [&presets, aabb](auto shared) {
                                     return std::make_unique<receiver_editor>(
                                             presets, aabb, shared);
-                                });
+                                }, "receiver");
                     },
                     [aabb](auto& model) {
                         wayverb::combined::model::receiver to_insert{};

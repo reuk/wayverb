@@ -1,10 +1,8 @@
 #pragma once
 
-#include "HelpWindow.h"
-
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class PolarPatternView : public Component, public SettableHelpPanelClient {
+class PolarPatternView : public Component, public SettableTooltipClient {
 public:
     PolarPatternView();
     void paint(Graphics& g) override;

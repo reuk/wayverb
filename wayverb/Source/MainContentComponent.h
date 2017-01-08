@@ -1,14 +1,11 @@
 #pragma once
 
-#include "HelpWindow.h"
-
 #include "left_bar/master.h"
 #include "scene/master.h"
 
 class main_model;
 
-class MainContentComponent final : public Component,
-                                   public SettableHelpPanelClient {
+class MainContentComponent final : public Component {
 public:
     MainContentComponent(main_model& model);
 

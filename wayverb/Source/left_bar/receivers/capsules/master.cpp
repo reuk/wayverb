@@ -264,7 +264,7 @@ master::master(
                                 shared, [](auto shared) {
                                     return std::make_unique<capsule_editor>(
                                             shared);
-                                });
+                                }, "capsule");
                     },
                     [](auto& model) {
                         model.insert(model.end(),

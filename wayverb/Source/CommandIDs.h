@@ -10,7 +10,6 @@ enum {
     idStartRender,
     idCancelRender,
     idVisualise,
-    idShowHelp,
     idResetView,
 };
 

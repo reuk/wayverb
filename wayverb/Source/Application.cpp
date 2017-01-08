@@ -1,7 +1,6 @@
 #include "Application.h"
 #include "AngularLookAndFeel.h"
 #include "CommandIDs.h"
-#include "HelpWindow.h"
 #include "try_and_explain.h"
 
 #include "UtilityComponents/LoadWindow.h"
@@ -42,6 +41,7 @@ public:
             , stored_settings_{owner.getApplicationName().toStdString(),
                                get_options()}
             , main_menu_bar_model_{command_manager_, stored_settings_} {
+
         main_menu_bar_model_.connect_recent_file_selected(
                 [&](auto fname) { open_project(fname); });
 
@@ -57,7 +57,6 @@ public:
     }
 
     ~instance() noexcept {
-        help_window_.deleteAndZero();
         MenuBarModel::setMacMainMenu(nullptr);
     }
 
@@ -69,7 +68,7 @@ public:
 
     void getAllCommands(Array<CommandID>& commands) override {
         commands.addArray({
-                CommandIDs::idOpenProject, CommandIDs::idShowHelp,
+                CommandIDs::idOpenProject,
         });
     }
 
@@ -85,14 +84,6 @@ public:
                         KeyPress('o', ModifierKeys::commandModifier, 0));
                 break;
             }
-
-            case CommandIDs::idShowHelp: {
-                result.setInfo("Show Help Window",
-                               "Show descriptions of UI components and actions",
-                               "General",
-                               0);
-                break;
-            }
         }
     }
 
@@ -100,11 +91,6 @@ public:
         switch (info.commandID) {
             case CommandIDs::idOpenProject: {
                 open_project_from_dialog();
-                return true;
-            }
-
-            case CommandIDs::idShowHelp: {
-                show_help_window();
                 return true;
             }
         }
@@ -213,8 +199,6 @@ private:
                               PopupMenu& menu) {
             menu.addCommandItem(&command_manager, CommandIDs::idVisualise);
             menu.addCommandItem(&command_manager, CommandIDs::idResetView);
-            menu.addSeparator();
-            menu.addCommandItem(&command_manager, CommandIDs::idShowHelp);
         }
 
         using recent_file_selected = util::event<std::string>;
@@ -289,34 +273,6 @@ private:
         }
     }
 
-    void show_help_window() {
-        if (!help_window_) {
-            help_window_ = new AutoDeleteDocumentWindow(
-                    "help viewer",
-                    Colours::darkgrey,
-                    AutoDeleteDocumentWindow::closeButton);
-
-            auto panel = std::make_unique<HelpPanel>();
-            panel->setSize(200, 300);
-
-            Rectangle<int> area(0, 0, 200, 300);
-            RectanglePlacement placement(RectanglePlacement::xRight |
-                                         RectanglePlacement::doNotResize);
-            auto result = placement.appliedTo(area,
-                                              Desktop::getInstance()
-                                                      .getDisplays()
-                                                      .getMainDisplay()
-                                                      .userArea.reduced(20));
-
-            help_window_->setBounds(result);
-            help_window_->setContentOwned(panel.release(), true);
-            help_window_->setResizable(false, false);
-            help_window_->setUsingNativeTitleBar(true);
-            help_window_->setVisible(true);
-            help_window_->setAlwaysOnTop(true);
-        }
-    }
-
     static constexpr const char* valid_file_formats =
             "*.way;*.fbx;*.dae;*.gltf;*.glb;*.blend;*.3ds;*.ase;*.obj;*.ifc;*."
             "xgl;*.zgl;*.ply;*.dxf;*.lwo;*.lws;*.lxo;*.stl;*.x;*.ac;*.ms3d;*."
@@ -358,8 +314,6 @@ private:
     std::unordered_set<std::unique_ptr<main_window>> main_windows_;
 
     SharedResourcePointer<TooltipWindow> tooltip_window_;
-
-    Component::SafePointer<DocumentWindow> help_window_;
 };
 
 constexpr const char* wayverb_application::instance::valid_file_formats;

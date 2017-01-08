@@ -1,6 +1,6 @@
 #pragma once
 
-#include "HelpWindow.h"
+#include "../JuceLibraryCode/JuceHeader.h"
 
 #include <memory>
 
@@ -8,7 +8,7 @@ class main_model;
 
 namespace scene {
 
-class master final : public Component, public SettableHelpPanelClient {
+class master final : public Component, public SettableTooltipClient {
 public:
     master(main_model& model);
     ~master() noexcept;

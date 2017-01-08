@@ -60,7 +60,8 @@ master::master(wayverb::core::geo::box aabb,
                                 shared, [aabb](auto shared) {
                                     return std::make_unique<source_editor>(
                                             aabb, shared);
-                                });
+                                },
+                                "source");
                     },
                     [aabb](auto& model) {
                         wayverb::combined::model::source to_insert{};

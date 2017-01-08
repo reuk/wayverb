@@ -11,7 +11,6 @@ MainContentComponent::MainContentComponent(main_model& model)
         , scene_master_{model}
         , components_to_position_{
                   &left_bar_master_, &resizer_bar_, &scene_master_} {
-    set_help("wayverb", "This is the main wayverb app window.");
     const auto left_bar_master_width = 300;
     layout_manager_.setItemLayout(0,
                                   left_bar_master_width,

@@ -208,6 +208,9 @@ config_item::config_item(wayverb::combined::model::scene& scene,
     addAndMakeVisible(show_button_);
     addAndMakeVisible(config_button_);
 
+    show_button_.setTooltip("Display the triangles which use this material.");
+    config_button_.setTooltip("Configure this material.");
+
     setSize(300, 30);
 }
 

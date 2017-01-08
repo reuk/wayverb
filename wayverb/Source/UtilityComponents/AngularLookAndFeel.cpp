@@ -48,6 +48,10 @@ AngularLookAndFeel::AngularLookAndFeel() {
     setColour(ListBox::backgroundColourId, Colours::transparentBlack);
     setColour(ListBox::textColourId, Colours::lightgrey);
 
+    setColour(TooltipWindow::ColourIds::backgroundColourId, Colours::darkgrey.darker());
+    setColour(TooltipWindow::ColourIds::textColourId, Colours::lightgrey);
+    setColour(TooltipWindow::ColourIds::outlineColourId, emphasis);
+
     setUsingNativeAlertWindows(true);
 }
 

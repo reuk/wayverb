@@ -16,7 +16,7 @@ class list_config_item : public updatable_component<std::shared_ptr<T>>,
 public:
     using get_callout_component = std::function<std::unique_ptr<Component>(std::shared_ptr<T>)>;
 
-    list_config_item(std::shared_ptr<T> model, get_callout_component get_callout_component)
+    list_config_item(std::shared_ptr<T> model, get_callout_component get_callout_component, const String& name)
             : model_{std::move(model)}
             , get_callout_component_{std::move(get_callout_component)} {
         label_.setInterceptsMouseClicks(false, false);
@@ -25,6 +25,8 @@ public:
 
         this->addAndMakeVisible(label_);
         this->addAndMakeVisible(button_);
+
+        button_.setTooltip("Configure this " + name + ".");
     }
 
     list_config_item(const list_config_item&) = delete;
@@ -68,9 +70,10 @@ private:
 
 template <typename T>
 auto make_list_config_item_ptr(
-        std::shared_ptr<T> model, typename list_config_item<T>::get_callout_component callback) {
+        std::shared_ptr<T> model, typename list_config_item<T>::get_callout_component callback, const String& name) {
     return std::make_unique<list_config_item<T>>(std::move(model),
-                                                 std::move(callback));
+                                                 std::move(callback),
+                                                 name);
 }
 
 }  // namespace left_bar

@@ -26,8 +26,8 @@ private:
     double progress_ = 0;
 
     juce::ProgressBar bar_;
-    TextButton button_;
-    model::Connector<TextButton> button_connector_{&button_, this};
+    TextButton render_button_;
+    model::Connector<TextButton> button_connector_{&render_button_, this};
 };
 
 }  // namespace left_bar

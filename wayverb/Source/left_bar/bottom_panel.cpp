@@ -7,7 +7,7 @@ namespace left_bar {
 bottom::bottom()
         : bar_{progress_} {
     addAndMakeVisible(bar_);
-    addAndMakeVisible(button_);
+    addAndMakeVisible(render_button_);
 
     set_state(state::idle);
 }
@@ -16,10 +16,13 @@ void bottom::paint(Graphics& g) { g.fillAll(Colours::darkgrey); }
 
 void bottom::resized() {
     const auto button_width = 100;
-    auto bounds = getLocalBounds().reduced(2, 2);
+    constexpr auto padding = 2;
+    auto bounds = getLocalBounds().reduced(padding, padding);
 
-    bar_.setBounds(bounds.withTrimmedRight(button_width + 1));
-    button_.setBounds(bounds.removeFromRight(button_width - 1));
+    render_button_.setBounds(bounds.removeFromRight(button_width));
+    bounds.removeFromRight(padding);
+
+    bar_.setBounds(bounds);
 }
 
 //  View methods
@@ -31,14 +34,14 @@ void bottom::set_state(state s) {
     state_ = s;
     switch (s) {
         case state::idle: {
-            button_.setButtonText("render");
+            render_button_.setButtonText("render");
             bar_.setTextToDisplay("");
             progress_ = 0;
             break;
         }
 
         case state::rendering: {
-            button_.setButtonText("cancel");
+            render_button_.setButtonText("cancel");
             break;
         }
     };
