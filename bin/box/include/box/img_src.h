@@ -48,8 +48,7 @@ auto run_fast_img_src(
         const wayverb::core::surface<wayverb::core::simulation_bands>& surface,
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const wayverb::core::environment& env,
-        bool flip_phase) {
+        const wayverb::core::environment& env) {
     const auto voxelised = make_voxelised_scene_data(
             wayverb::core::geo::get_scene_data(box, surface), 2, 0.1f);
 
@@ -61,6 +60,5 @@ auto run_fast_img_src(
             voxelised,
             source,
             receiver,
-            env,
-            flip_phase);
+            env);
 }

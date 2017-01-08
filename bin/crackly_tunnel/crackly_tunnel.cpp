@@ -7,8 +7,10 @@
 #include "core/cl/common.h"
 #include "core/dsp_vector_ops.h"
 #include "core/environment.h"
+#include "core/reverb_time.h"
 #include "core/scene_data_loader.h"
 
+#include "raytracer/hit_rate.h"
 #include "raytracer/simulation_parameters.h"
 
 #include "waveguide/simulation_parameters.h"
@@ -38,40 +40,50 @@ int main(int /*argc*/, char** /*argv*/) {
             wayverb::core::make_surface<wayverb::core::simulation_bands>(0.1,
                                                                          0.1));
 
-    for (const size_t i : {3, 4, 5, 6}) {
-        wayverb::combined::engine engine{
-                wayverb::core::compute_context{},
-                scene_data,
-                glm::vec3{0, 0, -1},
-                glm::vec3{0, 0, 1},
-                wayverb::core::environment{},
-                wayverb::raytracer::simulation_parameters{power(size_t{10}, i),
-                                                          0},
-                wayverb::combined::make_waveguide_ptr(
-                        wayverb::waveguide::single_band_parameters{500, 0.6})};
+    const wayverb::core::environment environment{};
 
-        util::progress_bar pb{std::cout};
+    const auto raytracer_params =
+            wayverb::raytracer::make_simulation_parameters(
+                    10,
+                    0.1,
+                    environment.speed_of_sound,
+                    1000,
+                    estimate_room_volume(scene_data),
+                    3);
 
-        engine.connect_engine_state_changed([&](auto state, auto progress) {
-            std::cout << '\r' << std::setw(40) << to_string(state)
-                      << std::setw(40) << progress;
-        });
+    std::cout << "required rays: " << raytracer_params.rays << '\n';
 
-        const auto intermediate = engine.run(true);
+    wayverb::combined::engine engine{
+            wayverb::core::compute_context{},
+            scene_data,
+            glm::vec3{0, 0, -1},
+            glm::vec3{0, 0, 1},
+            environment,
+            raytracer_params,
+            wayverb::combined::make_waveguide_ptr(
+                    wayverb::waveguide::single_band_parameters{500, 0.6})};
 
-        constexpr auto output_sr = 44100.0;
-        auto results = intermediate->postprocess(
-                wayverb::core::attenuator::null{}, output_sr);
+    util::progress_bar pb{std::cout};
 
-        const auto max_magnitude = wayverb::core::max_mag(results);
-        const auto norm_factor = 1.0 / max_magnitude;
+    engine.connect_engine_state_changed([&](auto state, auto progress) {
+        std::cout << '\r' << std::setw(40) << to_string(state) << std::setw(40)
+                  << progress;
+    });
 
-        wayverb::core::mul(results, norm_factor);
+    const auto intermediate = engine.run(true);
 
-        write(util::build_string("crackly1e", i, ".aif").c_str(),
-              results,
-              output_sr,
-              audio_file::format::aif,
-              audio_file::bit_depth::pcm24);
-    }
+    constexpr auto output_sr = 44100.0;
+    auto results = intermediate->postprocess(wayverb::core::attenuator::null{},
+                                             output_sr);
+
+    const auto max_magnitude = wayverb::core::max_mag(results);
+    const auto norm_factor = 1.0 / max_magnitude;
+
+    wayverb::core::mul(results, norm_factor);
+
+    write(util::build_string("crackly_", raytracer_params.rays, ".aif").c_str(),
+          results,
+          output_sr,
+          audio_file::format::aif,
+          audio_file::bit_depth::pcm24);
 }

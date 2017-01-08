@@ -56,8 +56,7 @@ void image_source_test() {
                                               voxelised,
                                               source,
                                               receiver,
-                                              environment,
-                                              false);
+                                              environment);
 
     check_distances(inexact_impulses);
 

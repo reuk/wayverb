@@ -21,6 +21,16 @@ struct simulation_parameters final {
     /// contributions.
     /// Values from 0-5 are reasonable.
     size_t maximum_image_source_order;
+
+    /// The radius of the receiver. Should basically always be 0.1 because this
+    /// is the size of a person's head.
+    /// Small == really expensive, large == inaccurate, 0.1 is a good
+    /// compromise.
+    double receiver_radius = 0.1;
+
+    /// The frequency of the energy histogram.
+    /// Smaller intervals need more rays, longer intervals are inaccurate.
+    double histogram_sample_rate = 0.001;
 };
 
 constexpr auto to_tuple(const simulation_parameters& x) {

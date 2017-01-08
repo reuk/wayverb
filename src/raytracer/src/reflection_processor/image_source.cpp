@@ -10,7 +10,6 @@ namespace reflection_processor {
 
 image_source::image_source(
         size_t max_order,
-        bool flip_phase,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const core::environment& environment,
@@ -23,7 +22,6 @@ image_source::image_source(
         , environment_{environment}
         , voxelised_{voxelised}
         , max_image_source_order_{max_order}
-        , flip_phase_{flip_phase}
         , builder_{items} {}
 
 util::aligned::vector<impulse<8>> image_source::get_results() {
@@ -39,7 +37,7 @@ util::aligned::vector<impulse<8>> image_source::get_results() {
             source_,
             receiver_,
             voxelised_,
-            flip_phase_);
+            false);
 
     //  Add the line-of-sight contribution, which isn't directly detected by
     //  the image-source machinery.
@@ -57,12 +55,11 @@ util::aligned::vector<impulse<8>> image_source::get_results() {
     return ret;
 }
 
-make_image_source::make_image_source(size_t max_order, bool flip_phase)
-        : max_order_{max_order}
-        , flip_phase_{flip_phase} {}
+make_image_source::make_image_source(size_t max_order)
+        : max_order_{max_order} {}
 
 image_source make_image_source::operator()(
-        const core::compute_context& cc,
+        const core::compute_context& /*cc*/,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const core::environment& environment,
@@ -71,7 +68,6 @@ image_source make_image_source::operator()(
                 voxelised,
         size_t num_directions) const {
     return {max_order_,
-            flip_phase_,
             source,
             receiver,
             environment,

@@ -21,11 +21,11 @@ auto run(
                 voxelised,
         const glm::vec3& source,
         const glm::vec3& receiver,
-        const core::environment& environment,
-        bool flip_phase) {
+        const core::environment& environment) {
     const auto callbacks =
             std::make_tuple(raytracer::reflection_processor::make_image_source{
-                    std::numeric_limits<size_t>::max(), flip_phase});
+                    std::numeric_limits<size_t>::max()});
+
     auto results = raytracer::run(b,
                                   e,
                                   cc,
@@ -34,7 +34,7 @@ auto run(
                                   receiver,
                                   environment,
                                   true,
-                                  [](auto i, auto steps) {},
+                                  [](auto /*i*/, auto /*steps*/) {},
                                   callbacks);
 
     if (!results) {

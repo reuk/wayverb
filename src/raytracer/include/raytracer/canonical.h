@@ -11,7 +11,8 @@ namespace raytracer {
 std::tuple<reflection_processor::make_image_source,
            reflection_processor::make_directional_histogram,
            reflection_processor::make_visual>
-make_canonical_callbacks(size_t max_image_source_order, size_t visual_items);
+make_canonical_callbacks(const simulation_parameters& params,
+                         size_t visual_items);
 
 template <typename Histogram>
 struct simulation_results final {
@@ -55,18 +56,16 @@ auto canonical(
         Callback&& callback) {
     const auto directions = core::get_random_directions(sim_params.rays);
 
-    auto tup =
-            run(begin(directions),
-                end(directions),
-                cc,
-                scene,
-                source,
-                receiver,
-                environment,
-                keep_going,
-                std::forward<Callback>(callback),
-                make_canonical_callbacks(sim_params.maximum_image_source_order,
-                                         visual_items));
+    auto tup = run(begin(directions),
+                   end(directions),
+                   cc,
+                   scene,
+                   source,
+                   receiver,
+                   environment,
+                   keep_going,
+                   std::forward<Callback>(callback),
+                   make_canonical_callbacks(sim_params, visual_items));
     return tup ? std::experimental::make_optional(make_canonical_results(
                          make_simulation_results(std::move(std::get<0>(*tup)),
                                                  std::move(std::get<1>(*tup))),

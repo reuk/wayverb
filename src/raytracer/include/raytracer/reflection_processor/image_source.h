@@ -13,7 +13,6 @@ namespace reflection_processor {
 class image_source final {
 public:
     image_source(size_t max_order,
-                 bool flip_phase,
                  const glm::vec3& source,
                  const glm::vec3& receiver,
                  const core::environment& environment,
@@ -43,14 +42,13 @@ private:
                                      core::surface<core::simulation_bands>>&
             voxelised_;
     size_t max_image_source_order_;
-    bool flip_phase_;
 
     raytracer::image_source::reflection_path_builder builder_;
 };
 
 class make_image_source final {
 public:
-    make_image_source(size_t max_order, bool flip_phase);
+    make_image_source(size_t max_order);
 
     image_source operator()(
             const core::compute_context& cc,
@@ -64,7 +62,6 @@ public:
 
 private:
     size_t max_order_;
-    bool flip_phase_;
 };
 
 }  // namespace reflection_processor
