@@ -30,7 +30,7 @@ struct simulation_parameters final {
 
     /// The frequency of the energy histogram.
     /// Smaller intervals need more rays, longer intervals are inaccurate.
-    double histogram_sample_rate = 0.001;
+    double histogram_sample_rate = 1000;
 };
 
 constexpr auto to_tuple(const simulation_parameters& x) {

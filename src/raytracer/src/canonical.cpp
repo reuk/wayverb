@@ -12,9 +12,10 @@ make_canonical_callbacks(const simulation_parameters& params,
             raytracer::reflection_processor::make_image_source(
                     params.maximum_image_source_order),
             raytracer::reflection_processor::make_directional_histogram(
+                    params.rays,
+                    params.maximum_image_source_order + 1,
                     params.receiver_radius,
-                    params.histogram_sample_rate,
-                    params.maximum_image_source_order + 1),
+                    params.histogram_sample_rate),
             raytracer::reflection_processor::make_visual{visual_items});
 }
 

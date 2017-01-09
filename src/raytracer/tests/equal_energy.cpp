@@ -1,8 +1,10 @@
+#include "raytracer/hit_rate.h"
 #include "raytracer/image_source/get_direct.h"
 #include "raytracer/raytracer.h"
 #include "raytracer/reflection_processor/stochastic_histogram.h"
 
 #include "core/attenuator/microphone.h"
+#include "core/reverb_time.h"
 
 #include "gtest/gtest.h"
 
@@ -28,29 +30,40 @@ void run_test(const Attenuator& attenuator) {
             2,
             0.1f);
 
-    const auto histogram_sample_rate = 1000.0f;
-    const auto callbacks =
-            std::make_tuple(Histogram{1.0f, histogram_sample_rate, 0});
+    const auto params = wayverb::raytracer::make_simulation_parameters(
+            100,
+            1.0,
+            environment.speed_of_sound,
+            1000.0,
+            estimate_room_volume(voxelised.get_scene_data()),
+            0);
 
-    const auto directions = get_random_directions(1 << 16);
-    const auto results = run(begin(directions),
-                             end(directions),
-                             compute_context{},
-                             voxelised,
-                             source,
-                             receiver,
-                             environment,
-                             true,
-                             [](auto, auto) {},
-                             callbacks);
+    std::default_random_engine engine{std::random_device{}()};
+
+    const auto results =
+            run(make_random_direction_generator_iterator(0, engine),
+                make_random_direction_generator_iterator(params.rays, engine),
+                compute_context{},
+                voxelised,
+                source,
+                receiver,
+                environment,
+                true,
+                [](auto i, auto tot) {
+                    std::cout << "chunk " << i << " of " << tot << '\n';
+                },
+                std::make_tuple(Histogram(params.rays,
+                                          params.maximum_image_source_order,
+                                          params.receiver_radius,
+                                          params.histogram_sample_rate)));
 
     ASSERT_TRUE(results);
 
     const auto direct_energy = [&] {
         const auto direct =
                 image_source::get_direct(source, receiver, voxelised);
-        const auto att = attenuation(
-                attenuator, glm::normalize(source - receiver));
+        const auto att =
+                attenuation(attenuator, glm::normalize(source - receiver));
         return att * att * intensity_for_distance(direct->distance);
     }();
 
@@ -59,7 +72,7 @@ void run_test(const Attenuator& attenuator) {
                 compute_summed_histogram(std::get<0>(*results), attenuator)
                         .histogram;
         const auto histogram_bin = glm::distance(source, receiver) *
-                                   histogram_sample_rate /
+                                   params.histogram_sample_rate /
                                    environment.speed_of_sound;
         return histogram[histogram_bin];
     }();

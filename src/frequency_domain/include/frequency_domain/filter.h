@@ -40,14 +40,17 @@ public:
     template <typename In, typename Out>
     void run(In begin, In end, Out output_it, const callback& callback) {
         const auto dist = std::distance(begin, end);
-        if (dist > rbuf_.size()) {
-            throw std::runtime_error{"Filter input signal is too long."};
-        }
 
-        rbuf_.zero();
-        std::copy(begin, end, rbuf_.begin());
-        filter_impl(callback);
-        std::copy(rbuf_.begin(), rbuf_.begin() + dist, output_it);
+        if (dist > 0) {
+            if (dist > rbuf_.size()) {
+                throw std::runtime_error{"Filter input signal is too long."};
+            }
+
+            rbuf_.zero();
+            std::copy(begin, end, rbuf_.begin());
+            filter_impl(callback);
+            std::copy(rbuf_.begin(), rbuf_.begin() + dist, output_it);
+        }
     }
 
 private:

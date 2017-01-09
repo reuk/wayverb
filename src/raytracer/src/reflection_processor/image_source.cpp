@@ -8,32 +8,44 @@ namespace wayverb {
 namespace raytracer {
 namespace reflection_processor {
 
-image_source::image_source(
-        size_t max_order,
+image_source_group_processor::image_source_group_processor(size_t max_order,
+                                                           size_t items)
+        : max_image_source_order_{max_order}
+        , builder_{items} {}
+
+////////////////////////////////////////////////////////////////////////////////
+
+image_source_processor::image_source_processor(
         const glm::vec3& source,
         const glm::vec3& receiver,
         const core::environment& environment,
         const core::voxelised_scene_data<cl_float3,
                                          core::surface<core::simulation_bands>>&
                 voxelised,
-        size_t items)
+        size_t max_order)
         : source_{source}
         , receiver_{receiver}
         , environment_{environment}
         , voxelised_{voxelised}
-        , max_image_source_order_{max_order}
-        , builder_{items} {}
+        , max_order_{max_order} {}
 
-util::aligned::vector<impulse<8>> image_source::get_results() {
-    raytracer::image_source::tree tree{};
-    for (const auto& path : builder_.get_data()) {
-        tree.push(path);
+image_source_group_processor image_source_processor::get_group_processor(
+        size_t num_directions) const {
+    return {max_order_, num_directions};
+}
+
+void image_source_processor::accumulate(
+        const image_source_group_processor& processor) {
+    for (const auto& path : processor.get_results()) {
+        tree_.push(path);
     }
+}
 
+util::aligned::vector<impulse<8>> image_source_processor::get_results() const {
     //  Fetch the image source results.
     auto ret = raytracer::image_source::postprocess_branches(
-            begin(tree.get_branches()),
-            end(tree.get_branches()),
+            begin(tree_.get_branches()),
+            end(tree_.get_branches()),
             source_,
             receiver_,
             voxelised_,
@@ -55,24 +67,20 @@ util::aligned::vector<impulse<8>> image_source::get_results() {
     return ret;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 make_image_source::make_image_source(size_t max_order)
         : max_order_{max_order} {}
 
-image_source make_image_source::operator()(
+image_source_processor make_image_source::get_processor(
         const core::compute_context& /*cc*/,
         const glm::vec3& source,
         const glm::vec3& receiver,
         const core::environment& environment,
         const core::voxelised_scene_data<cl_float3,
                                          core::surface<core::simulation_bands>>&
-                voxelised,
-        size_t num_directions) const {
-    return {max_order_,
-            source,
-            receiver,
-            environment,
-            voxelised,
-            num_directions};
+                voxelised) const {
+    return {source, receiver, environment, voxelised, max_order_};
 }
 
 }  // namespace reflection_processor

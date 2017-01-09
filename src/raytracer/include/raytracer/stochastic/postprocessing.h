@@ -60,12 +60,34 @@ struct energy_histogram final {
     util::aligned::vector<core::bands_type> histogram;
 };
 
+template <typename T>
+void sum_vectors(T& a, const T& b) {
+    a.resize(std::max(a.size(), b.size()));
+    auto i = begin(a);
+    for (auto j = begin(b), e = end(b); j != e; ++i, ++j) {
+        *i += *j;
+    }
+}
+
+void sum_histograms(energy_histogram& a, const energy_histogram& b);
+
 template <size_t Az, size_t El>
 struct directional_energy_histogram final {
     double sample_rate;
     core::vector_look_up_table<util::aligned::vector<core::bands_type>, Az, El>
             histogram;
 };
+
+template <size_t Az, size_t El>
+void sum_histograms(directional_energy_histogram<Az, El>& a,
+                    const directional_energy_histogram<Az, El>& b) {
+    for (auto i = 0; i != Az; ++i) {
+        for (auto j = 0; j != El; ++j) {
+            sum_vectors(a.histogram.table[i][j], b.histogram.table[i][j]);
+        }
+    }
+    a.sample_rate = b.sample_rate;
+}
 
 template <size_t Az, size_t El>
 auto max_size(const core::vector_look_up_table<

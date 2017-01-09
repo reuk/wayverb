@@ -47,6 +47,11 @@ dirac_sequence generate_dirac_sequence(double speed_of_sound,
     return {ret, sample_rate};
 }
 
+void sum_histograms(energy_histogram& a, const energy_histogram& b) {
+    sum_vectors(a.histogram, b.histogram);
+    a.sample_rate = b.sample_rate;
+}
+
 util::aligned::vector<core::bands_type> weight_sequence(
         const energy_histogram& histogram,
         const dirac_sequence& sequence,

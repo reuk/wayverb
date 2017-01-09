@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export CL_LOG_ERRORS=stdout
-#export GTEST_FILTER="*image_source*"
+#export GTEST_FILTER="*equal_energy*"
 #export GTEST_FILTER="*app_model*:*round_trip*"
 
 if ./build.sh ; then

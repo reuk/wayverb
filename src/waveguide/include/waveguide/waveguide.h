@@ -39,6 +39,7 @@ size_t run(const core::compute_context& cc,
            step_preprocessor&& pre,
            step_postprocessor&& post,
            const std::atomic_bool& keep_going) {
+
     const auto num_nodes = mesh.get_structure().get_condensed_nodes().size();
 
     const program program{cc};

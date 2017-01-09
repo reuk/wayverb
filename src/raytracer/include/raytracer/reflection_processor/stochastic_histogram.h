@@ -1,6 +1,7 @@
 #pragma once
 
 #include "raytracer/histogram.h"
+#include "raytracer/simulation_parameters.h"
 #include "raytracer/stochastic/finder.h"
 #include "raytracer/stochastic/postprocessing.h"
 
@@ -40,31 +41,38 @@ struct energy_histogram_sum_functor final {
 /// Where Histogram is probably a stochastic::energy_histogram or a
 /// stochastic::directional_energy_histogram.
 template <typename Histogram>
-class stochastic_histogram final {
+class stochastic_group_processor final {
 public:
     /// A max_image_source_order of 0 = direct energy from image-source
     /// An order of 1 = direct and one reflection from image-source
     /// i.e. the order == the number of reflections for each image
-    stochastic_histogram(const core::compute_context& cc,
-                         const glm::vec3& source,
-                         const glm::vec3& receiver,
-                         const core::environment& environment,
-                         float receiver_radius,
-                         float sample_rate,
-                         size_t max_image_source_order,
-                         size_t items)
-            : finder_{cc, source, receiver, receiver_radius, items}
+    stochastic_group_processor(const core::compute_context& cc,
+                               const glm::vec3& source,
+                               const glm::vec3& receiver,
+                               const core::environment& environment,
+                               size_t total_rays,
+                               size_t max_image_source_order,
+                               float receiver_radius,
+                               float histogram_sample_rate,
+                               size_t group_items)
+            : finder_(cc,
+                      group_items,
+                      source,
+                      receiver,
+                      receiver_radius,
+                      stochastic::compute_ray_energy(
+                              total_rays, source, receiver, receiver_radius))
             , receiver_{receiver}
             , environment_{environment}
             , max_image_source_order_{max_image_source_order}
-            , histogram_{sample_rate} {}
+            , histogram_{histogram_sample_rate} {}
 
     template <typename It>
     void process(It b,
                  It e,
                  const core::scene_buffers& buffers,
                  size_t step,
-                 size_t total) {
+                 size_t /*total*/) {
         const auto output = finder_.process(b, e, buffers);
 
         struct intermediate_impulse final {
@@ -112,48 +120,108 @@ private:
     Histogram histogram_;
 };
 
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename Histogram>
+class stochastic_processor final {
+public:
+    stochastic_processor(const core::compute_context& cc,
+                         const glm::vec3& source,
+                         const glm::vec3& receiver,
+                         const core::environment& environment,
+                         size_t total_rays,
+                         size_t max_image_source_order,
+                         float receiver_radius,
+                         float histogram_sample_rate)
+            : cc_{cc}
+            , source_{source}
+            , receiver_{receiver}
+            , environment_{environment}
+            , total_rays_{total_rays}
+            , max_image_source_order_{max_image_source_order}
+            , receiver_radius_{receiver_radius}
+            , histogram_sample_rate_{histogram_sample_rate}
+            , histogram_{histogram_sample_rate} {}
+
+    stochastic_group_processor<Histogram> get_group_processor(
+            size_t num_directions) const {
+        return {cc_,
+                source_,
+                receiver_,
+                environment_,
+                total_rays_,
+                max_image_source_order_,
+                receiver_radius_,
+                histogram_sample_rate_,
+                num_directions};
+    }
+
+    void accumulate(const stochastic_group_processor<Histogram>& processor) {
+        sum_histograms(histogram_, processor.get_results());
+    }
+
+    Histogram get_results() const { return histogram_; }
+
+private:
+    core::compute_context cc_;
+    glm::vec3 source_;
+    glm::vec3 receiver_;
+    core::environment environment_;
+    size_t total_rays_;
+    size_t max_image_source_order_;
+    float receiver_radius_;
+    float histogram_sample_rate_;
+
+    Histogram histogram_;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
 class make_stochastic_histogram final {
 public:
-    make_stochastic_histogram(float receiver_radius,
-                              float sample_rate,
-                              size_t max_order);
+    make_stochastic_histogram(size_t total_rays,
+                              size_t max_image_source_order,
+                              float receiver_radius,
+                              float histogram_sample_rate);
 
-    stochastic_histogram<stochastic::energy_histogram> operator()(
+    stochastic_processor<stochastic::energy_histogram> get_processor(
             const core::compute_context& cc,
             const glm::vec3& source,
             const glm::vec3& receiver,
             const core::environment& environment,
             const core::voxelised_scene_data<
                     cl_float3,
-                    core::surface<core::simulation_bands>>& voxelised,
-            size_t num_directions) const;
+                    core::surface<core::simulation_bands>>& voxelised) const;
 
 private:
+    size_t total_rays_;
+    size_t max_image_source_order_;
     float receiver_radius_;
-    float sample_rate_;
-    size_t max_order_;
+    float histogram_sample_rate_;
 };
 
 class make_directional_histogram final {
 public:
-    make_directional_histogram(float receiver_radius,
-                               float sample_rate,
-                               size_t max_order);
+    make_directional_histogram(size_t total_rays,
+                               size_t max_image_source_order,
+                               float receiver_radius,
+                               float histogram_sample_rate);
 
-    stochastic_histogram<stochastic::directional_energy_histogram<20, 9>>
-    operator()(const core::compute_context& cc,
-               const glm::vec3& source,
-               const glm::vec3& receiver,
-               const core::environment& environment,
-               const core::voxelised_scene_data<
-                       cl_float3,
-                       core::surface<core::simulation_bands>>& voxelised,
-               size_t num_directions) const;
+    stochastic_processor<stochastic::directional_energy_histogram<20, 9>>
+    get_processor(
+            const core::compute_context& cc,
+            const glm::vec3& source,
+            const glm::vec3& receiver,
+            const core::environment& environment,
+            const core::voxelised_scene_data<
+                    cl_float3,
+                    core::surface<core::simulation_bands>>& voxelised) const;
 
 private:
+    size_t total_rays_;
+    size_t max_image_source_order_;
     float receiver_radius_;
-    float sample_rate_;
-    size_t max_order_;
+    float histogram_sample_rate_;
 };
 
 }  // namespace reflection_processor

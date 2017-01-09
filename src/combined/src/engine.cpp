@@ -130,6 +130,7 @@ public:
                                           step / (total_steps - 1.0));
                 });
 
+
         if (!(keep_going && raytracer_output)) {
             return nullptr;
         }

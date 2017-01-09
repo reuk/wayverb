@@ -54,18 +54,19 @@ auto canonical(
         size_t visual_items,
         const std::atomic_bool& keep_going,
         Callback&& callback) {
-    const auto directions = core::get_random_directions(sim_params.rays);
+    std::default_random_engine engine{std::random_device{}()};
 
-    auto tup = run(begin(directions),
-                   end(directions),
-                   cc,
-                   scene,
-                   source,
-                   receiver,
-                   environment,
-                   keep_going,
-                   std::forward<Callback>(callback),
-                   make_canonical_callbacks(sim_params, visual_items));
+    auto tup = run(
+            make_random_direction_generator_iterator(0, engine),
+            make_random_direction_generator_iterator(sim_params.rays, engine),
+            cc,
+            scene,
+            source,
+            receiver,
+            environment,
+            keep_going,
+            std::forward<Callback>(callback),
+            make_canonical_callbacks(sim_params, visual_items));
     return tup ? std::experimental::make_optional(make_canonical_results(
                          make_simulation_results(std::move(std::get<0>(*tup)),
                                                  std::move(std::get<1>(*tup))),

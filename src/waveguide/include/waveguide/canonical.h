@@ -54,8 +54,11 @@ std::experimental::optional<band> canonical_impl(
 
     const auto input = [&] {
         auto raw = util::aligned::vector<float>(ideal_steps, 0.0f);
-        raw.front() = rectilinear_calibration_factor(
-                mesh.get_descriptor().spacing, environment.acoustic_impedance);
+        if (!raw.empty()) {
+            raw.front() = rectilinear_calibration_factor(
+                    mesh.get_descriptor().spacing,
+                    environment.acoustic_impedance);
+        }
         return raw;
     }();
 

@@ -33,7 +33,16 @@ TEST(stochastic, bad_reflections_box) {
             reflection{cl_float3{{4, 2.46449089, 1.54567611}}, 7, 1, 1},
     };
 
-    stochastic::finder diff{cc, source, receiver, 1.0f, bad_reflections.size()};
+    const auto receiver_radius = 1.0f;
+
+    stochastic::finder diff{
+            cc,
+            bad_reflections.size(),
+            source,
+            receiver,
+            receiver_radius,
+            stochastic::compute_ray_energy(
+                    bad_reflections.size(), source, receiver, receiver_radius)};
 
     diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }
@@ -63,7 +72,16 @@ TEST(stochastic, bad_reflections_vault) {
                        1},
     };
 
-    stochastic::finder diff{cc, source, receiver, 1.0f, bad_reflections.size()};
+    const auto receiver_radius = 1.0f;
+
+    stochastic::finder diff{
+            cc,
+            bad_reflections.size(),
+            source,
+            receiver,
+            receiver_radius,
+            stochastic::compute_ray_energy(
+                    bad_reflections.size(), source, receiver, receiver_radius)};
 
     diff.process(begin(bad_reflections), end(bad_reflections), buffers);
 }

@@ -15,13 +15,30 @@ namespace wayverb {
 namespace raytracer {
 namespace stochastic {
 
+constexpr auto compute_ray_energy(size_t total_rays,
+                                  float dist,
+                                  float open_angle) {
+    //  see schroder2011 5.54
+    //  The extra factor of 4pi here is because image-source intensity =
+    //  1 / 4pir^2 instead of just 1 / r^2
+    return 2.0 / (4 * M_PI * total_rays * dist * dist * (1 - open_angle));
+}
+
+float compute_ray_energy(size_t total_rays,
+                         const glm::vec3& source,
+                         const glm::vec3& receiver,
+                         float receiver_radius);
+
+////////////////////////////////////////////////////////////////////////////////
+
 class finder final {
 public:
     finder(const core::compute_context& cc,
+           size_t group_size,
            const glm::vec3& source,
            const glm::vec3& receiver,
            float receiver_radius,
-           size_t rays);
+           float starting_energy);
 
     struct results final {
         util::aligned::vector<impulse<core::simulation_bands>> specular;

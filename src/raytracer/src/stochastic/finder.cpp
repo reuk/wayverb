@@ -4,45 +4,48 @@ namespace wayverb {
 namespace raytracer {
 namespace stochastic {
 
+float compute_ray_energy(size_t total_rays,
+                         const glm::vec3& source,
+                         const glm::vec3& receiver,
+                         float receiver_radius) {
+    const auto dist = glm::distance(source, receiver);
+    const auto sin_y = receiver_radius / std::max(receiver_radius, dist);
+    const auto cos_y = std::sqrt(1 - sin_y * sin_y);
+    return compute_ray_energy(total_rays, dist, cos_y);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 finder::finder(const core::compute_context& cc,
+               size_t group_size,
                const glm::vec3& source,
                const glm::vec3& receiver,
                float receiver_radius,
-               size_t rays)
+               float starting_energy)
         : cc_{cc}
         , queue_{cc.context, cc.device}
         , kernel_{program{cc}.get_kernel()}
         , receiver_{core::to_cl_float3{}(receiver)}
         , receiver_radius_{receiver_radius}
-        , rays_{rays}
+        , rays_{group_size}
         , reflections_buffer_{cc.context,
                               CL_MEM_READ_WRITE,
-                              sizeof(reflection) * rays}
+                              sizeof(reflection) * group_size}
         , stochastic_path_buffer_{cc.context,
                                   CL_MEM_READ_WRITE,
-                                  sizeof(stochastic_path_info) * rays}
+                                  sizeof(stochastic_path_info) * group_size}
         , stochastic_output_buffer_{cc.context,
                                     CL_MEM_READ_WRITE,
                                     sizeof(impulse<core::simulation_bands>) *
-                                            rays}
+                                            group_size}
         , specular_output_buffer_{
                   cc.context,
                   CL_MEM_READ_WRITE,
-                  sizeof(impulse<core::simulation_bands>) * rays} {
-    //  see schroder2011 5.54
-    const auto dist = glm::distance(source, receiver);
-    const auto sin_y = receiver_radius / std::max(receiver_radius, dist);
-    const auto cos_y = std::sqrt(1 - sin_y * sin_y);
-
-    //  The extra factor of 4pi here is because
-    //  image-source intensity = 1 / 4pir^2 instead of just 1 / r^2
-    const auto starting_intensity =
-            2.0 / (4 * M_PI * rays * dist * dist * (1 - cos_y));
-
+                  sizeof(impulse<core::simulation_bands>) * group_size} {
     program{cc_}.get_init_stochastic_path_info_kernel()(
             cl::EnqueueArgs{queue_, cl::NDRange{rays_}},
             stochastic_path_buffer_,
-            core::make_bands_type(starting_intensity),
+            core::make_bands_type(starting_energy),
             core::to_cl_float3{}(source));
 }
 

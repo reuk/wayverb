@@ -91,8 +91,8 @@ speed of sound, and $V$ is the room volume.
 
 For an output which covers the human hearing range, the sampling rate must be
 at least 40KHz, which corresponds to a sampling period of 25μs.  Therefore, for
-a receiver radius of 0.1m, and assuming 100 detections-per-second is adequate,
-the minimum number of rays is
+a receiver radius of 0.1m, and assuming 100 detections-per-sampling-period is
+adequate, the minimum number of rays is
 
 (@) $$N=\frac{kV}{\pi r^2c\Delta t} = \frac{100V}{340 \cdot 0.000025 \cdot
 0.1^2 \pi} \approx 374500V$$

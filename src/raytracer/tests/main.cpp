@@ -2,6 +2,6 @@
 
 int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
-    //::testing::GTEST_FLAG(filter) = "*equal_energy*";
+    ::testing::GTEST_FLAG(filter) = "*equal_energy*";
     return RUN_ALL_TESTS();
 }

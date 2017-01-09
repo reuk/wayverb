@@ -19,7 +19,7 @@ auto produce_histogram(
         const wayverb::core::environment& environment) {
     const wayverb::core::compute_context cc{};
 
-    const auto directions = wayverb::core::get_random_directions(1 << 16);
+    const auto rays = 1 << 16;
 
     const wayverb::core::scene_buffers buffers{cc.context, voxelised};
 
@@ -27,7 +27,13 @@ auto produce_histogram(
     constexpr auto histogram_sr = 1000.0f;
 
     wayverb::raytracer::stochastic::finder finder{
-            cc, source, receiver, receiver_radius, directions.size()};
+            cc,
+            rays,
+            source,
+            receiver,
+            receiver_radius,
+            wayverb::raytracer::stochastic::compute_ray_energy(
+                    rays, source, receiver, receiver_radius)};
     util::aligned::vector<wayverb::core::bands_type> histogram;
 
     const auto make_ray_iterator = [&](auto it) {
@@ -37,10 +43,17 @@ auto produce_histogram(
                 });
     };
 
-    wayverb::raytracer::reflector ref{cc,
-                                      receiver,
-                                      make_ray_iterator(begin(directions)),
-                                      make_ray_iterator(end(directions))};
+    std::default_random_engine engine{std::random_device{}()};
+
+    wayverb::raytracer::reflector ref{
+            cc,
+            receiver,
+            make_ray_iterator(wayverb::raytracer::
+                                      make_random_direction_generator_iterator(
+                                              0, engine)),
+            make_ray_iterator(wayverb::raytracer::
+                                      make_random_direction_generator_iterator(
+                                              rays, engine))};
 
     for (auto i = 0ul; i != 100; ++i) {
         const auto reflections = ref.run_step(buffers);
