@@ -44,7 +44,7 @@ int main(int /*argc*/, char** /*argv*/) {
 
     const auto raytracer_params =
             wayverb::raytracer::make_simulation_parameters(
-                    1,
+                    10,
                     0.1,
                     environment.speed_of_sound,
                     1000,

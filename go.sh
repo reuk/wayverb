@@ -1,14 +1,14 @@
 #!/bin/sh
 
 export CL_LOG_ERRORS=stdout
-#export GTEST_FILTER="*equal_energy*"
+export GTEST_FILTER="*fast_pressure*"
 #export GTEST_FILTER="*app_model*:*round_trip*"
 
 if ./build.sh ; then
 #if ./build.sh 2>&1 | tee build_log.txt ; then
 cd build
 
-#ctest -V
+ctest -V
 
 #cd bin/image_source_comparison && ./image_source_comparison
 
@@ -38,6 +38,6 @@ cd build
 
 #cd ../bin/fitted_boundary && ./run_and_graph.sh
 
-cd bin/crackly_tunnel && ./crackly_tunnel
+#cd bin/crackly_tunnel && ./crackly_tunnel
 
 fi

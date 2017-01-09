@@ -216,7 +216,7 @@ auto run(
     using return_type = decltype(util::apply_each(
             util::map(make_get_results_functor_adapter{}, processors)));
 
-    constexpr auto segment_size = 1 << 12;
+    constexpr auto segment_size = 1 << 13;
     const auto reflection_depth =
             compute_optimum_reflection_number(voxelised.get_scene_data());
 

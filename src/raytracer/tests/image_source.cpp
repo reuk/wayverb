@@ -3,6 +3,8 @@
 #include "raytracer/image_source/run.h"
 #include "raytracer/raytracer.h"
 
+#include "glm/gtc/random.hpp"
+
 #include "gtest/gtest.h"
 
 using namespace wayverb::raytracer;
@@ -27,14 +29,29 @@ bool approximately_matches(const impulse<channels>& a,
 
 void image_source_test() {
     const geo::box box{glm::vec3{0, 0, 0}, glm::vec3{4, 3, 6}};
-    constexpr glm::vec3 source{1, 1, 1}, receiver{2, 1, 5};
+
+    std::default_random_engine engine{std::random_device{}()};
+
+    std::uniform_real_distribution<float> x_dist{box.get_min().x,
+                                                 box.get_max().x};
+    std::uniform_real_distribution<float> y_dist{box.get_min().y,
+                                                 box.get_max().y};
+    std::uniform_real_distribution<float> z_dist{box.get_min().z,
+                                                 box.get_max().z};
+
+    const glm::vec3 source{x_dist(engine), y_dist(engine), z_dist(engine)};
+    const glm::vec3 receiver{x_dist(engine), y_dist(engine), z_dist(engine)};
     constexpr wayverb::core::environment environment{};
 
     constexpr auto absorption = 0.1f;
     constexpr auto surface = make_surface<simulation_bands>(absorption, 0);
 
     auto exact_impulses = image_source::find_impulses(
-            box, source, receiver, surface.absorption, 20);
+            box, source, receiver, surface.absorption, 10);
+    for (auto& it : exact_impulses) {
+        it.volume *= wayverb::core::pressure_for_distance(
+                it.distance, environment.acoustic_impedance);
+    }
 
     const auto check_distances = [&](const auto& range) {
         for (const auto& imp : range) {
@@ -49,14 +66,14 @@ void image_source_test() {
     const auto voxelised = make_voxelised_scene_data(
             geo::get_scene_data(box, surface), 5, 0.1f);
 
-    const auto directions = get_random_directions(10000);
-    auto inexact_impulses = image_source::run(directions.begin(),
-                                              directions.end(),
-                                              compute_context{},
-                                              voxelised,
-                                              source,
-                                              receiver,
-                                              environment);
+    auto inexact_impulses = image_source::run(
+            make_random_direction_generator_iterator(0, engine),
+            make_random_direction_generator_iterator(10000, engine),
+            compute_context{},
+            voxelised,
+            source,
+            receiver,
+            environment);
 
     check_distances(inexact_impulses);
 
