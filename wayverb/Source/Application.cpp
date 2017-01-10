@@ -219,8 +219,11 @@ private:
     void open_project(const std::string& fname) {
         try_and_explain(
                 [&] {
+                    std::cerr << "opening project\n";
+                    std::cerr << "creating window\n";
                     auto new_window = std::make_unique<main_window>(
                             *this, owner_.getApplicationName(), fname);
+                    std::cerr << "connecting window-close handler\n";
 
                     //  When window asks to close, find it in the set and delete
                     //  it.
@@ -237,8 +240,12 @@ private:
 
                         show_hide_load_window();
                     });
+
+                    std::cerr << "inserting window\n";
                     main_windows_.insert(std::move(new_window));
+                    std::cerr << "registering recent\n";
                     register_recent_file(fname);
+                    std::cerr << "hiding initial window\n";
                     show_hide_load_window();
                 },
                 "opening project",

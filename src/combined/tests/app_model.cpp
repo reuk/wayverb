@@ -73,7 +73,7 @@ TEST(app_model, copy_assignment) {
                           model::material{},
                           model::microphone{},
                           model::output{},
-                          model::raytracer{},
+                          model::raytracer{100},
                           model::receiver{},
                           model::source{},
                           model::single_band_waveguide{},

@@ -3,6 +3,8 @@
 #include "CommandIDs.h"
 #include "try_and_explain.h"
 
+#include "core/reverb_time.h"
+
 #include "output/master.h"
 
 //  init from as much outside info as possible
@@ -38,6 +40,10 @@ main_window::main_window(ApplicationCommandTarget& next,
     auto& command_manager = wayverb_application::get_command_manager();
     command_manager.registerAllCommandsForTarget(this);
     addKeyListener(command_manager.getKeyMappings());
+
+    const auto volume = wayverb::core::estimate_room_volume(
+            model_.project.get_scene_data());
+    model_.project.persistent.raytracer()->set_room_volume(volume);
 
     model_.reset_view();
     model_.scene.set_visualise(true);
@@ -220,7 +226,8 @@ void main_window::save_as() {
     }
 }
 
-std::experimental::optional<std::string> main_window::browse_for_file_to_save() {
+std::experimental::optional<std::string>
+main_window::browse_for_file_to_save() {
     FileChooser fc{"save location...", File(), project::project_wildcard};
     if (fc.browseForFileToSave(true)) {
         const auto path = fc.getResult();

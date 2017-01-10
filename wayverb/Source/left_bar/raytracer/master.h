@@ -8,12 +8,21 @@
 namespace left_bar {
 namespace raytracer {
 
-class ray_number_property final
-        : public generic_combo_box_property<
-                  wayverb::combined::model::raytracer,
-                  wayverb::combined::model::raytracer::ray_number> {
+class rays_required_property final
+        : public text_display_property<wayverb::combined::model::raytracer> {
 public:
-    ray_number_property(model_t& model);
+    rays_required_property(model_t& model);
+
+private:
+    std::string get_model(const model_t& model) const override;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+
+class quality_property final
+        : public generic_slider_property<wayverb::combined::model::raytracer> {
+public:
+    quality_property(model_t& model);
 
 private:
     void set_model(model_t& model, const value_t& e) override;

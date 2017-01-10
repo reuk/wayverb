@@ -1,21 +1,5 @@
 # TODO
 
-declaration, according to guidelines
-
-demo
-	vid
-	sounds
-	impulse responses + spectrograms of some demo spaces
-
-write
-	abstract
-	
-	evaluation + future
-
---------------------------------------------------------------------------------
-
-# nice
-
 overall diagram?
 
 screenshots (appendix)

@@ -91,8 +91,6 @@ TEST(round_trip, receiver) {
 
 TEST(round_trip, raytracer) {
     round_trip(model::raytracer{});
-    round_trip(model::raytracer{model::raytracer::ray_number::r1e6, 10});
-    round_trip(model::raytracer{model::raytracer::ray_number::r1e3, 0});
 }
 
 TEST(round_trip, single_band_waveguide) {

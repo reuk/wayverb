@@ -10,22 +10,6 @@ namespace left_bar {
 namespace waveguide {
 namespace {
 
-template <typename Model>
-class text_display_property
-        : public generic_property_component<Model, std::string, Label> {
-public:
-    text_display_property(Model& model, const String& name)
-            : generic_property_component<Model, std::string, Label>{
-                      model, name, 25} {}
-
-private:
-    void labelTextChanged(Label*) override {}
-    void set_model(Model& model, const std::string& value) override {}
-    void set_view(const std::string& value) override {
-        this->content.setText(value, dontSendNotification);
-    }
-};
-
 template <typename WaveguideModel>
 class effective_sample_rate_property final
         : public text_display_property<WaveguideModel> {

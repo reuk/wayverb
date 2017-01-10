@@ -37,7 +37,8 @@ public:
 
     bool needs_save() const;
 
-    wayverb::core::generic_scene_data<cl_float3, std::string> get_scene_data() const;
+    wayverb::core::generic_scene_data<cl_float3, std::string> get_scene_data()
+            const;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -78,17 +79,18 @@ public:
 
     //  CALLBACKS  /////////////////////////////////////////////////////////////
 
-    using engine_state_changed = wayverb::combined::complete_engine::engine_state_changed;
+    using engine_state_changed =
+            wayverb::combined::complete_engine::engine_state_changed;
     engine_state_changed::connection connect_engine_state(
             engine_state_changed::callback_type t);
 
-    using waveguide_node_positions_changed =
-            wayverb::combined::complete_engine::waveguide_node_positions_changed;
+    using waveguide_node_positions_changed = wayverb::combined::
+            complete_engine::waveguide_node_positions_changed;
     waveguide_node_positions_changed::connection connect_node_positions(
             waveguide_node_positions_changed::callback_type t);
 
-    using waveguide_node_pressures_changed =
-            wayverb::combined::complete_engine::waveguide_node_pressures_changed;
+    using waveguide_node_pressures_changed = wayverb::combined::
+            complete_engine::waveguide_node_pressures_changed;
     waveguide_node_pressures_changed::connection connect_node_pressures(
             waveguide_node_pressures_changed::callback_type t);
 
@@ -97,7 +99,8 @@ public:
     raytracer_reflections_generated::connection connect_reflections(
             raytracer_reflections_generated::callback_type t);
 
-    using encountered_error = wayverb::combined::complete_engine::encountered_error;
+    using encountered_error =
+            wayverb::combined::complete_engine::encountered_error;
     encountered_error::connection connect_error_handler(
             encountered_error::callback_type t);
 

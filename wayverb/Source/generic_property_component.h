@@ -56,3 +56,20 @@ private:
     typename model_t::scoped_connection connection_{
             model_.connect([this](auto& model) { this->update_from_model(); })};
 };
+
+
+template <typename Model>
+class text_display_property
+        : public generic_property_component<Model, std::string, Label> {
+public:
+    text_display_property(Model& model, const String& name)
+            : generic_property_component<Model, std::string, Label>{
+                      model, name, 25} {}
+
+private:
+    void labelTextChanged(Label*) override {}
+    void set_model(Model& model, const std::string& value) override {}
+    void set_view(const std::string& value) override {
+        this->content.setText(value, dontSendNotification);
+    }
+};

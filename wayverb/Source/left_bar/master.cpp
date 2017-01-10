@@ -7,6 +7,8 @@
 #include "sources/master.h"
 #include "waveguide/master.h"
 
+#include "core/reverb_time.h"
+
 #include "utilities/string_builder.h"
 
 namespace {
@@ -73,6 +75,20 @@ Array<PropertyComponent*> make_material_options(
 
 namespace left_bar {
 
+class label_property_component final : public PropertyComponent {
+public:
+    label_property_component(const String& name, const String& value)
+            : PropertyComponent(name)
+            , label_{"", value} {
+        addAndMakeVisible(label_);
+    }
+
+    void refresh() override {}
+
+private:
+    Label label_;
+};
+
 master::master(main_model& model)
         : model_{model}
         , begun_connection_{model_.connect_begun([this] {
@@ -99,6 +115,20 @@ master::master(main_model& model)
     const auto aabb = wayverb::core::geo::compute_aabb(
             model_.project.get_scene_data().get_vertices());
 
+    const auto dim = dimensions(aabb);
+    const auto dim_string = util::build_string(dim.x, 'x', dim.y, 'x', dim.z);
+
+    const auto volume = wayverb::core::estimate_room_volume(
+            model_.project.get_scene_data());
+    const auto volume_string = util::build_string(volume);
+
+    property_panel_.addSection(
+            "info",
+            {new label_property_component{"dimensions / m", dim_string},
+             new label_property_component{
+                     CharPointer_UTF8{"approx. volume / m\xc2\xb3"},
+                     volume_string}});
+
     //  Populate the property panel
     property_panel_.addSection(
             "sources",
@@ -117,8 +147,11 @@ master::master(main_model& model)
                                   *model_.project.persistent.materials()));
     property_panel_.addSection(
             "raytracer",
-            {static_cast<PropertyComponent*>(new raytracer::ray_number_property{
+            {static_cast<PropertyComponent*>(new raytracer::quality_property{
                      *model_.project.persistent.raytracer()}),
+             static_cast<PropertyComponent*>(
+                     new raytracer::rays_required_property{
+                             *model_.project.persistent.raytracer()}),
              static_cast<PropertyComponent*>(
                      new raytracer::img_src_order_property{
                              *model_.project.persistent.raytracer()})});

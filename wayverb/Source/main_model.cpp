@@ -27,8 +27,8 @@ project::project(const std::string& fpath)
 
     //  Set up surfaces.
     const auto& surface_strings = scene_data_.get_scene_data()->get_surfaces();
-    *persistent.materials() = wayverb::combined::model::materials_from_names<1>(begin(surface_strings),
-                                                      end(surface_strings));
+    *persistent.materials() = wayverb::combined::model::materials_from_names<1>(
+            begin(surface_strings), end(surface_strings));
 
     //  If there's a config file, we'll just overwrite the state we just set,
     //  but that's probably fine.
@@ -37,7 +37,8 @@ project::project(const std::string& fpath)
 
         //  load the config
         std::ifstream stream{config_file};
-        cereal::JSONInputArchive{stream}(persistent);
+        cereal::JSONInputArchive archive{stream};
+        archive(persistent);
     }
 
     persistent.connect([&](auto&) { needs_save_ = true; });
@@ -80,8 +81,8 @@ void project::save_to(const std::string& fpath) {
 
 bool project::needs_save() const { return needs_save_; }
 
-wayverb::core::generic_scene_data<cl_float3, std::string> project::get_scene_data()
-        const {
+wayverb::core::generic_scene_data<cl_float3, std::string>
+project::get_scene_data() const {
     return *scene_data_.get_scene_data();
 }
 
@@ -120,24 +121,25 @@ class main_model::impl final {
 
 public:
     impl()
-        : begun_connection_{engine_.connect_begun(
-                  make_queue_forwarding_call(begun_))}
-        , engine_state_changed_connection_{engine_.connect_engine_state_changed(
-                  make_queue_forwarding_call(engine_state_changed_))}
-        , node_positions_changed_connection_{engine_.connect_waveguide_node_positions_changed(
-                  make_queue_forwarding_call(node_positions_changed_))}
-        , node_pressures_changed_connection_{engine_.connect_waveguide_node_pressures_changed(
-                  make_queue_forwarding_call(node_pressures_changed_))}
-        , reflections_generated_connection_{engine_.connect_raytracer_reflections_generated(
-                  make_queue_forwarding_call(reflections_generated_))}
-        , encountered_error_connection_{engine_.connect_encountered_error(
-                  make_queue_forwarding_call(encountered_error_))}
-        , finished_connection_{engine_.connect_finished(
-                  make_queue_forwarding_call(finished_))} {}
+            : begun_connection_{engine_.connect_begun(
+                      make_queue_forwarding_call(begun_))}
+            , engine_state_changed_connection_{engine_.connect_engine_state_changed(
+                      make_queue_forwarding_call(engine_state_changed_))}
+            , node_positions_changed_connection_{engine_.connect_waveguide_node_positions_changed(
+                      make_queue_forwarding_call(node_positions_changed_))}
+            , node_pressures_changed_connection_{engine_.connect_waveguide_node_pressures_changed(
+                      make_queue_forwarding_call(node_pressures_changed_))}
+            , reflections_generated_connection_{engine_.connect_raytracer_reflections_generated(
+                      make_queue_forwarding_call(reflections_generated_))}
+            , encountered_error_connection_{engine_.connect_encountered_error(
+                      make_queue_forwarding_call(encountered_error_))}
+            , finished_connection_{engine_.connect_finished(
+                      make_queue_forwarding_call(finished_))} {}
 
     ~impl() noexcept { cancel_render(); }
 
-    void start_render(const class project& project, const wayverb::combined::model::output& output) {
+    void start_render(const class project& project,
+                      const wayverb::combined::model::output& output) {
         engine_.run(wayverb::core::compute_context{},
                     generate_scene_data(project),
                     project.persistent,
@@ -147,7 +149,7 @@ public:
     void cancel_render() { engine_.cancel(); }
 
     bool is_rendering() const { return engine_.is_running(); }
-    
+
     engine_state_changed::connection connect_engine_state(
             engine_state_changed::callback_type t) {
         return engine_state_changed_.connect(std::move(t));
@@ -182,9 +184,11 @@ public:
     }
 
 private:
-    wayverb::core::gpu_scene_data generate_scene_data(const class project& project) const {
-        util::aligned::unordered_map<std::string,
-                                     wayverb::core::surface<wayverb::core::simulation_bands>>
+    wayverb::core::gpu_scene_data generate_scene_data(
+            const class project& project) const {
+        util::aligned::unordered_map<
+                std::string,
+                wayverb::core::surface<wayverb::core::simulation_bands>>
                 material_map;
 
         for (const auto& i : *project.persistent.materials()) {
@@ -201,10 +205,10 @@ private:
 
     begun begun_;
     begun::scoped_connection begun_connection_;
-    
+
     engine_state_changed engine_state_changed_;
     engine_state_changed::scoped_connection engine_state_changed_connection_;
-    
+
     waveguide_node_positions_changed node_positions_changed_;
     waveguide_node_positions_changed::scoped_connection
             node_positions_changed_connection_;
@@ -235,9 +239,7 @@ main_model::main_model(const std::string& name)
 
 main_model::~main_model() noexcept = default;
 
-void main_model::start_render() {
-    pimpl_->start_render(project, output);
-}
+void main_model::start_render() { pimpl_->start_render(project, output); }
 
 void main_model::cancel_render() { pimpl_->cancel_render(); }
 

@@ -1,9 +1,5 @@
 #include "master.h"
 
-#include "../../UtilityComponents/connector.h"
-#include "../../generic_combo_box_property.h"
-#include "../../generic_slider_property.h"
-
 #include "utilities/string_builder.h"
 
 #include <iomanip>
@@ -11,33 +7,29 @@
 namespace left_bar {
 namespace raytracer {
 
-ray_number_property::ray_number_property(model_t& model)
-        : generic_combo_box_property{
-                  model,
-                  "rays",
-                  {model_t::ray_number::r1e3,
-                   model_t::ray_number::r1e4,
-                   model_t::ray_number::r1e5,
-                   model_t::ray_number::r1e6},
-                  [](auto e) {
-                      return util::build_string(
-                              get_ray_number_description(e),
-                              " (",
-                              std::scientific,
-                              std::setprecision(0),
-                              static_cast<double>(get_ray_number(e)),
-                              ')');
-                  }} {
+rays_required_property::rays_required_property(model_t& model)
+        : text_display_property{model, "rays"} {
+    this->update_from_model();
+}
+
+std::string rays_required_property::get_model(const model_t& model) const {
+    return std::to_string(model.get().rays);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+quality_property::quality_property(model_t& model)
+        : generic_slider_property{model, "quality", 1, 20, 1} {
     update_from_model();
 }
 
-void ray_number_property::set_model(model_t& model, const value_t& e) {
-    model.set_ray_number(e);
+void quality_property::set_model(model_t& model, const value_t& e) {
+    model.set_quality(e);
 }
 
-ray_number_property::value_t ray_number_property::get_model(
+quality_property::value_t quality_property::get_model(
         const model_t& model) const {
-    return model.get_ray_number();
+    return model.get_quality();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
