@@ -3,8 +3,6 @@
 #include "raytracer/image_source/run.h"
 #include "raytracer/raytracer.h"
 
-#include "glm/gtc/random.hpp"
-
 #include "gtest/gtest.h"
 
 using namespace wayverb::raytracer;
@@ -112,4 +110,5 @@ void image_source_test() {
 }
 
 TEST(image_source, fast_pressure) { ASSERT_NO_THROW(image_source_test()); }
+
 }  // namespace

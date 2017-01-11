@@ -8,22 +8,18 @@
 namespace left_bar {
 
 namespace {
-constexpr auto elevation_range = util::make_range(-M_PI / 2, M_PI / 2);
 
-constexpr auto radians(double t) {
-    return t * M_PI / 180;
-}
+constexpr auto radians(double t) { return t * M_PI / 180; }
 
-constexpr auto degrees(double t) {
-    return t * 180 / M_PI;
-}
+constexpr auto degrees(double t) { return t * 180 / M_PI; }
 
 }  // namespace
 
 azimuth_elevation_editor::azimuth_elevation_editor() {
-    auto az = std::make_unique<slider_property>("azimuth", degrees(-M_PI), degrees(M_PI), 1, " deg");
+    auto az = std::make_unique<slider_property>(
+            "azimuth", degrees(-M_PI), degrees(M_PI), 1, " deg");
     auto el = std::make_unique<slider_property>(
-            "elevation", degrees(elevation_range.get_min()), degrees(elevation_range.get_max()), 1, " deg");
+            "elevation", degrees(-M_PI / 2), degrees(M_PI / 2), 1, " deg");
 
     const auto callback = [this](auto&, auto) { on_change_(*this, get()); };
 

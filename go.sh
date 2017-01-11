@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export CL_LOG_ERRORS=stdout
-#export GTEST_FILTER="*fast_pressure*"
+export GTEST_FILTER="*binaural_amplitude*"
 #export GTEST_FILTER="*app_model*:*round_trip*"
 
 if ./build.sh ; then

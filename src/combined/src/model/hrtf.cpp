@@ -21,13 +21,9 @@ void hrtf::set_channel(core::attenuator::hrtf::channel channel) {
 
 core::attenuator::hrtf hrtf::get() const { return hrtf_; }
 
-bool operator==(const hrtf& a, const hrtf& b) {
-    return a.get() == b.get();
-}
+bool operator==(const hrtf& a, const hrtf& b) { return a.get() == b.get(); }
 
-bool operator!=(const hrtf& a, const hrtf& b) {
-    return !(a == b);
-}
+bool operator!=(const hrtf& a, const hrtf& b) { return !(a == b); }
 
 }  // namespace model
 }  // namespace combined

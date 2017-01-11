@@ -35,6 +35,8 @@ Go back over Alex's comments
 		- impulse response + dry/wet demo for each
 		- waveform or spectrogram as appropriate
 
+		- check reverb times
+
 - evaluation
 	- talk about the demos a bit
 		- how to structure demos + evaluation?

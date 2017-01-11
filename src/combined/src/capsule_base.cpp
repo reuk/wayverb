@@ -6,6 +6,8 @@
 #include "core/az_el.h"
 #include "core/orientation.h"
 
+#include <iostream>
+
 namespace wayverb {
 namespace combined {
 

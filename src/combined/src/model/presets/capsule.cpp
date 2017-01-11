@@ -15,11 +15,11 @@ const std::vector<capsule> capsules{
         capsule{"binaural pair",
                 {wayverb::combined::model::capsule{
                          "left ear",
-                         hrtf{core::orientation{{-1, 0, 0}},
+                         hrtf{core::orientation{},
                               core::attenuator::hrtf::channel::left}},
                  wayverb::combined::model::capsule{
                          "right ear",
-                         hrtf{core::orientation{{1, 0, 0}},
+                         hrtf{core::orientation{},
                               core::attenuator::hrtf::channel::right}}}},
 
         capsule{"xy pair",

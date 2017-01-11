@@ -20,7 +20,7 @@ if(ONLY_BUILD_DOCS)
             ${CMAKE_CURRENT_BINARY_DIR})
     endif(DOXYGEN_FOUND)
 else()
-    set(CMAKE_VERBOSE_MAKEFILE ON)
+    set(CMAKE_VERBOSE_MAKEFILE OFF)
 
     include(${CMAKE_CURRENT_SOURCE_DIR}/config/dependencies.cmake)
 
