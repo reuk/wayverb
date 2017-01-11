@@ -20,13 +20,14 @@ Go back over Alex's comments
 
 - demos
 	- set up demos and save a Wayverb project for each
-		- [x] reverb times for three different room sizes (constant materials + source/receiver spacing)		different cuboids
-		- [ ] three different source/receiver spacings in the same room											medium cuboid
-		- [ ] high- and low-rolloff in a more complex room														(other models)
-		- [x] tunnel for late echoes																			echo_tunnel
-		- [x] hidden receiver (no direct)																		vault
-		- [ ] cardioid receiver (no direct response)															concert hall
-		- [ ] binaural receiver (different ITD and ILD)															concert hall
+		- [x] reverb times for three different room sizes (constant materials +
+			  source/receiver spacing)											different cuboids
+		- [x] different source/receiver spacings in the same room				medium cuboid
+		- [ ] high- and low-rolloff in a more complex room						(other models)
+		- [x] tunnel for late echoes											echo_tunnel
+		- [x] hidden receiver (no direct)										vault
+		- [ ] cardioid receiver (no direct response)							medium sized room
+		- [x] binaural receiver (different ITD and ILD)							concert hall
 
 		- a couple of show-off outputs?
 		
@@ -34,9 +35,9 @@ Go back over Alex's comments
 		- impulse response + dry/wet demo for each
 		- waveform or spectrogram as appropriate
 
-	- talk about them a bit
-
 - evaluation
+	- talk about the demos a bit
+		- how to structure demos + evaluation?
 
 - abstract
 
@@ -45,3 +46,9 @@ Go back over Alex's comments
 - go back over writing
 
 - declaration, according to guidelines
+
+# IMPORTANT
+
+- hrtf is back to front: or, do orientations matter?
+	- check how I set up orientations originally: should both ears 'point'
+	  in the same direction?

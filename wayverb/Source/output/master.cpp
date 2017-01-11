@@ -98,11 +98,13 @@ public:
                 label_.setText(model_.get_output_directory(),
                                dontSendNotification);
             })} {
-        model_.set_output_directory(
-                File::getSpecialLocation(
-                        File::SpecialLocationType::userHomeDirectory)
-                        .getFullPathName()
-                        .toStdString());
+        if (model_.get_output_directory().empty()) {
+            model_.set_output_directory(
+                    File::getSpecialLocation(
+                            File::SpecialLocationType::userHomeDirectory)
+                            .getFullPathName()
+                            .toStdString());
+        }
 
         addAndMakeVisible(label_);
         addAndMakeVisible(text_button_);
