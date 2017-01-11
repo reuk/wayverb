@@ -36,16 +36,16 @@ TEST(attenuator, transform) {
 
     {
         const auto test = [](auto a, auto b) {
-            check_nearby_vectors(transform(orientation{{1, 0, 0}, {0, 1, 0}}, a),
-                                 b);
+            check_nearby_vectors(
+                    transform(orientation{{1, 0, 0}, {0, 1, 0}}, a), b);
         };
 
-        test(glm::vec3{1, 0, 0}, glm::vec3{0, 0, 1});
-        test(glm::vec3{-1, 0, 0}, glm::vec3{0, 0, -1});
+        test(glm::vec3{1, 0, 0}, glm::vec3{0, 0, -1});
+        test(glm::vec3{-1, 0, 0}, glm::vec3{0, 0, 1});
         test(glm::vec3{0, 1, 0}, glm::vec3{0, 1, 0});
         test(glm::vec3{0, -1, 0}, glm::vec3{0, -1, 0});
-        test(glm::vec3{0, 0, 1}, glm::vec3{-1, 0, 0});
-        test(glm::vec3{0, 0, -1}, glm::vec3{1, 0, 0});
+        test(glm::vec3{0, 0, 1}, glm::vec3{1, 0, 0});
+        test(glm::vec3{0, 0, -1}, glm::vec3{-1, 0, 0});
     }
 
     {
@@ -54,12 +54,12 @@ TEST(attenuator, transform) {
                     transform(orientation{{0, 0, 1}, {0, -1, 0}}, a), b);
         };
 
-        test(glm::vec3{1, 0, 0}, glm::vec3{-1, 0, 0});
-        test(glm::vec3{-1, 0, 0}, glm::vec3{1, 0, 0});
+        test(glm::vec3{1, 0, 0}, glm::vec3{1, 0, 0});
+        test(glm::vec3{-1, 0, 0}, glm::vec3{-1, 0, 0});
         test(glm::vec3{0, 1, 0}, glm::vec3{0, -1, 0});
         test(glm::vec3{0, -1, 0}, glm::vec3{0, 1, 0});
-        test(glm::vec3{0, 0, 1}, glm::vec3{0, 0, 1});
-        test(glm::vec3{0, 0, -1}, glm::vec3{0, 0, -1});
+        test(glm::vec3{0, 0, 1}, glm::vec3{0, 0, -1});
+        test(glm::vec3{0, 0, -1}, glm::vec3{0, 0, 1});
     }
 
     {
@@ -68,12 +68,12 @@ TEST(attenuator, transform) {
                     transform(orientation{{1, 0, 0}, {0, -1, 0}}, a), b);
         };
 
-        test(glm::vec3{1, 0, 0}, glm::vec3{0, 0, 1});
-        test(glm::vec3{-1, 0, 0}, glm::vec3{0, 0, -1});
+        test(glm::vec3{1, 0, 0}, glm::vec3{0, 0, -1});
+        test(glm::vec3{-1, 0, 0}, glm::vec3{0, 0, 1});
         test(glm::vec3{0, 1, 0}, glm::vec3{0, -1, 0});
         test(glm::vec3{0, -1, 0}, glm::vec3{0, 1, 0});
-        test(glm::vec3{0, 0, 1}, glm::vec3{1, 0, 0});
-        test(glm::vec3{0, 0, -1}, glm::vec3{-1, 0, 0});
+        test(glm::vec3{0, 0, 1}, glm::vec3{-1, 0, 0});
+        test(glm::vec3{0, 0, -1}, glm::vec3{1, 0, 0});
     }
 }
 
@@ -143,12 +143,12 @@ TEST(attenuator, hrtf_ear_position) {
         check_nearby_vectors(ear_pos, pos);
     };
 
-    test(glm::vec3{0, 0, 1},
+    test(glm::vec3{0, 0, -1},
          glm::vec3{0, 1, 0},
          attenuator::hrtf::channel::left,
          glm::vec3{-radius, 0, 0});
 
-    test(glm::vec3{0, 0, 1},
+    test(glm::vec3{0, 0, -1},
          glm::vec3{0, 1, 0},
          attenuator::hrtf::channel::right,
          glm::vec3{radius, 0, 0});
@@ -166,10 +166,10 @@ TEST(attenuator, hrtf_ear_position) {
     test(glm::vec3{1, 0, 0},
          glm::vec3{0, -1, 0},
          attenuator::hrtf::channel::left,
-         glm::vec3{0, 0, -radius});
+         glm::vec3{0, 0, radius});
 
     test(glm::vec3{1, 0, 0},
          glm::vec3{0, -1, 0},
          attenuator::hrtf::channel::right,
-         glm::vec3{0, 0, radius});
+         glm::vec3{0, 0, -radius});
 }

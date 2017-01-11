@@ -1,5 +1,7 @@
 #pragma once
 
+#include "utilities/aligned/vector.h"
+
 #include "core/scene_data.h"
 
 #include <algorithm>
@@ -46,8 +48,23 @@ size_t compute_optimum_reflection_number(It begin, It end) {
 template <typename Vertex, typename Surface>
 size_t compute_optimum_reflection_number(
         const core::generic_scene_data<Vertex, Surface>& scene) {
-    return compute_optimum_reflection_number(scene.get_surfaces().begin(),
-                                             scene.get_surfaces().end());
+    std::vector<bool> used_surfaces_hash(scene.get_surfaces().size(), false);
+    for (const auto& tri : scene.get_triangles()) {
+        if (0 <= tri.surface && tri.surface < used_surfaces_hash.size()) {
+            used_surfaces_hash[tri.surface] = true;
+        }
+    }
+
+    util::aligned::vector<Surface> used_surfaces;
+    used_surfaces.reserve(used_surfaces_hash.size());
+    for (size_t i = 0; i != used_surfaces_hash.size(); ++i) {
+        if (used_surfaces_hash[i]) {
+            used_surfaces.emplace_back(scene.get_surfaces()[i]);
+        }
+    }
+
+    return compute_optimum_reflection_number(std::begin(used_surfaces),
+                                             std::end(used_surfaces));
 }
 
 }  // namespace raytracer

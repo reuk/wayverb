@@ -14,12 +14,15 @@ TEST(orientation, compute_azimuth) {
     const auto test = [](auto pt, auto az) {
         ASSERT_NEAR(compute_azimuth(pt), az, 0.0001);
     };
-    test(glm::vec3{-1, 0, 0}, -M_PI * 0.5);
-    test(glm::vec3{1, 0, 0}, M_PI * 0.5);
-    test(glm::vec3{0, -1, 0}, 0);
-    test(glm::vec3{0, 1, 0}, 0);
-    test(glm::vec3{0, 0, -1}, M_PI);
-    test(glm::vec3{0, 0, 1}, 0);
+
+    test(normalize(glm::vec3{-1, 0, -1}), -M_PI / 4);
+    test(normalize(glm::vec3{1, 0, -1}), M_PI / 4);
+
+    test(glm::vec3{-1, 0, 0}, -M_PI / 2);
+    test(glm::vec3{1, 0, 0}, M_PI / 2);
+
+    test(glm::vec3{0, 0, -1}, 0);
+    test(glm::vec3{0, 0, 1}, M_PI);
 }
 
 TEST(orientation, compute_elevation) {
@@ -32,6 +35,25 @@ TEST(orientation, compute_elevation) {
     test(glm::vec3{0, 1, 0}, M_PI / 2);
     test(glm::vec3{0, 0, -1}, 0);
     test(glm::vec3{0, 0, 1}, 0);
+}
+
+TEST(orientation, compute_pointing) {
+    const auto eps = 0.00001;
+    ASSERT_TRUE(
+            nearby(compute_pointing(az_el{0, 0}), glm::vec3{0, 0, -1}, eps));
+    ASSERT_TRUE(nearby(
+            compute_pointing(az_el{-M_PI / 2, 0}), glm::vec3{-1, 0, 0}, eps));
+    ASSERT_TRUE(nearby(
+            compute_pointing(az_el{M_PI / 2, 0}), glm::vec3{1, 0, 0}, eps));
+    ASSERT_TRUE(
+            nearby(compute_pointing(az_el{-M_PI, 0}), glm::vec3{0, 0, 1}, eps));
+    ASSERT_TRUE(
+            nearby(compute_pointing(az_el{M_PI, 0}), glm::vec3{0, 0, 1}, eps));
+
+    ASSERT_TRUE(nearby(
+            compute_pointing(az_el{0, M_PI / 2}), glm::vec3{0, 1, 0}, eps));
+    ASSERT_TRUE(nearby(
+            compute_pointing(az_el{0, -M_PI / 2}), glm::vec3{0, -1, 0}, eps));
 }
 
 TEST(orientation, round_trip) {
@@ -58,11 +80,32 @@ std::ostream& operator<<(std::ostream& os, const glm::vec3& p) {
 
 }  // namespace
 
+TEST(orientation, matrix) {
+    ASSERT_EQ(orientation{}.get_matrix(), glm::mat4{});
+}
+
 TEST(orientation, pointing) {
+    const auto test = [](auto v) {
+        ASSERT_TRUE(nearby(
+                transform(orientation{glm::vec3{0, 0, -1}}, v), v, 0.00001))
+                << v.x << ", " << v.y << ", " << v.z;
+    };
+
+    test(glm::vec3{0, 0, -0.1});
+    test(glm::vec3{0, 0, 0.1});
+
+    test(glm::vec3{-0.1, 0, 0});
+    test(glm::vec3{0.1, 0, 0});
+
+    test(glm::vec3{0, -0.1, 0});
+    test(glm::vec3{0, 0.1, 0});
+
     for (auto i = 0; i != 100; ++i) {
         const auto v = glm::sphericalRand(1.0f);
 
-        nearby(transform(orientation{v}, v), glm::vec3{0, 0, 1}, 0.00001);
+        ASSERT_TRUE(nearby(
+                transform(orientation{v}, v), glm::vec3{0, 0, -1}, 0.00001));
+        test(v);
     }
 }
 
@@ -70,24 +113,28 @@ TEST(orientation, combine) {
     {
         const orientation a{glm::vec3{1, 0, 0}};
         const orientation b{glm::vec3{1, 0, 0}};
-        std::cout << combine(a, b).get_pointing() << '\n';
+        ASSERT_TRUE(nearby(
+                combine(a, b).get_pointing(), glm::vec3{0, 0, 1}, 0.00001));
     }
 
     {
         const orientation a{glm::vec3{-1, 0, 0}};
         const orientation b{glm::vec3{-1, 0, 0}};
-        std::cout << combine(a, b).get_pointing() << '\n';
+        ASSERT_TRUE(nearby(
+                combine(a, b).get_pointing(), glm::vec3{0, 0, 1}, 0.00001));
     }
 
     {
         const orientation a{glm::vec3{1, 0, 0}};
         const orientation b{glm::vec3{-1, 0, 0}};
-        std::cout << combine(a, b).get_pointing() << '\n';
+        ASSERT_TRUE(nearby(
+                combine(a, b).get_pointing(), glm::vec3{0, 0, -1}, 0.00001));
     }
 
     {
         const orientation a{glm::vec3{-1, 0, 0}};
         const orientation b{glm::vec3{1, 0, 0}};
-        std::cout << combine(a, b).get_pointing() << '\n';
+        ASSERT_TRUE(nearby(
+                combine(a, b).get_pointing(), glm::vec3{0, 0, -1}, 0.00001));
     }
 }

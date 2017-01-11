@@ -35,7 +35,7 @@ Go back over Alex's comments
 		- impulse response + dry/wet demo for each
 		- waveform or spectrogram as appropriate
 
-		- check reverb times
+		- check reverb times / rt60s
 
 - evaluation
 	- talk about the demos a bit
@@ -49,8 +49,4 @@ Go back over Alex's comments
 
 - declaration, according to guidelines
 
-# IMPORTANT
-
-- hrtf is back to front: or, do orientations matter?
-	- check how I set up orientations originally: should both ears 'point'
-	  in the same direction?
+- how do we work out how many reflections to do?

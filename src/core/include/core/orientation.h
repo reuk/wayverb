@@ -5,11 +5,17 @@
 namespace wayverb {
 namespace core {
 
+
+/// Re-writing at the last minute so that this uses a right-handed coordinate 
+/// system, similar to OpenGL.
+/// Positive-y is up, positive-x is right, and *negative-z* is forwards.
+/// Yeah ugh idk.
+
 /// Invariant: pointing_ is a unit vector.
 class orientation final {
 public:
-    explicit orientation(const glm::vec3& pointing = {0, 0, 1},
-                        const glm::vec3& up = {0, 1, 0});
+    explicit orientation(const glm::vec3& pointing = {0, 0, -1},
+                         const glm::vec3& up = {0, 1, 0});
 
     glm::vec3 get_pointing() const;
     void set_pointing(const glm::vec3& u);

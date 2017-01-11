@@ -134,7 +134,8 @@ glm::vec3 get_ear_position(const hrtf& hrtf, const glm::vec3& base_position) {
     const auto x = hrtf.get_channel() == hrtf::channel::left
                            ? -hrtf.get_radius()
                            : hrtf.get_radius();
-    return base_position + transform(hrtf.orientation, glm::vec3{x, 0, 0});
+    return base_position +
+           glm::vec3{hrtf.orientation.get_matrix() * glm::vec4{x, 0, 0, 0}};
 }
 
 }  // namespace attenuator

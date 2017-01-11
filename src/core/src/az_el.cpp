@@ -51,7 +51,7 @@ az_el operator/(const az_el& a, const az_el& b) {
 ////////////////////////////////////////////////////////////////////////////////
 
 float compute_azimuth(const glm::vec3& pointing) {
-    return std::atan2(pointing.x, pointing.z);
+    return std::atan2(pointing.x, -pointing.z);
 }
 
 float compute_elevation(const glm::vec3& pointing) {
@@ -70,7 +70,7 @@ az_el compute_azimuth_elevation(const glm::vec3& pointing) {
 glm::vec3 compute_pointing(const az_el& azel) {
     return glm::vec3(std::sin(azel.azimuth) * std::cos(azel.elevation),
                      std::sin(azel.elevation),
-                     std::cos(azel.azimuth) * std::cos(azel.elevation));
+                     -std::cos(azel.azimuth) * std::cos(azel.elevation));
 }
 
 }  // namespace core

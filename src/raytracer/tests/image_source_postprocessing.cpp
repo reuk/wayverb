@@ -15,8 +15,6 @@ TEST(image_source, binaural_amplitude) {
     constexpr auto absorption = 0.1f;
     constexpr auto surface = make_surface<simulation_bands>(absorption, 0);
 
-    constexpr glm::vec3 pointing{0, 0, -1};
-
     constexpr auto radius = 0.1f;
 
     struct distances final {
@@ -65,7 +63,7 @@ TEST(image_source, binaural_amplitude) {
                                          glm::vec3{0.5, 1.5, 5},
                                          glm::vec3{0, 0, -1},
                                          voxelised);
-            ASSERT_LT(d.l, d.r);
+            ASSERT_LT(d.r, d.l);
         }
 
         {
@@ -73,7 +71,7 @@ TEST(image_source, binaural_amplitude) {
                                          glm::vec3{3.5, 1.5, 5},
                                          glm::vec3{0, 0, -1},
                                          voxelised);
-            ASSERT_LT(d.r, d.l);
+            ASSERT_LT(d.l, d.r);
         }
 
         {
@@ -81,7 +79,7 @@ TEST(image_source, binaural_amplitude) {
                                          glm::vec3{0.5, 1.5, 5},
                                          glm::vec3{0, 0, 1},
                                          voxelised);
-            ASSERT_LT(d.r, d.l);
+            ASSERT_LT(d.l, d.r);
         }
 
         {
@@ -89,7 +87,7 @@ TEST(image_source, binaural_amplitude) {
                                          glm::vec3{3.5, 1.5, 5},
                                          glm::vec3{0, 0, 1},
                                          voxelised);
-            ASSERT_LT(d.l, d.r);
+            ASSERT_LT(d.r, d.l);
         }
     }
 

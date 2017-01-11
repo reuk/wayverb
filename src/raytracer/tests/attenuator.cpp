@@ -70,7 +70,7 @@ TEST(attenuator, microphone) {
 TEST(attenuator, hrtf) {
     {
         constexpr auto receiver_position = glm::vec3{0, 0, 0};
-        constexpr auto pointing = glm::vec3{0, 0, 1};
+        constexpr auto pointing = glm::vec3{0, 0, -1};
         constexpr auto up = glm::vec3{0, 1, 0};
 
         constexpr auto radius = 0.1f;
