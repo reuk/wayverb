@@ -1,7 +1,7 @@
 #!/bin/sh
 
 export CL_LOG_ERRORS=stdout
-export GTEST_FILTER="*compute_azimuth*:*compute_elevation*:*compute_pointing*:*round_trip*"
+export GTEST_FILTER="*binaural*:*combine*"
 #export GTEST_FILTER="*app_model*:*round_trip*"
 
 if ./build.sh ; then

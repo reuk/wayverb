@@ -103,6 +103,28 @@ TEST(image_source, binaural_amplitude) {
                                          voxelised);
             ASSERT_LT(d.r, d.l);
         }
+
+        {
+            const auto v = compute_pointing(az_el{M_PI, 0});
+            ASSERT_TRUE(nearby(v, glm::vec3{0, 0, 1}, 0.00001));
+
+            const auto d = get_distances(glm::vec3{0, 1.5, 0},
+                                         glm::vec3{-10, 1.5, -20},
+                                         v,
+                                         voxelised);
+            ASSERT_LT(d.l, d.r);
+        }
+
+        {
+            const auto v = compute_pointing(az_el{0, 0});
+            ASSERT_TRUE(nearby(v, glm::vec3{0, 0, -1}, 0.00001));
+
+            const auto d = get_distances(glm::vec3{0, 1.5, 0},
+                                         glm::vec3{-10, 1.5, -10},
+                                         v,
+                                         voxelised);
+            ASSERT_LT(d.r, d.l);
+        }
     }
 }
 

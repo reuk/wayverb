@@ -53,7 +53,7 @@ RingObject::RingObject(const std::shared_ptr<mglu::generic_shader>& shader,
 LineObject::LineObject(const std::shared_ptr<mglu::generic_shader>& shader,
                        const glm::vec4& color)
         : BasicDrawableObject(shader,
-                              {{0, 0, 0}, {0, 0, 1}},
+                              {{0, 0, 0}, {0, 0, -1}},
                               util::aligned::vector<glm::vec4>(2, color),
                               {0, 1},
                               GL_LINES) {}

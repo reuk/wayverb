@@ -30,10 +30,10 @@ public:
             p = position.get(),
             o = orientation.get()
         ](auto& receiver) {
+            const auto q = receiver.get_orientation().get_pointing();
             n->set(receiver.get_name());
             p->set(receiver.get_position());
-            o->set(wayverb::core::compute_azimuth_elevation(
-                    receiver.get_orientation().get_pointing()));
+            o->set(wayverb::core::compute_azimuth_elevation(q));
         };
 
         update_from_receiver(receiver_);

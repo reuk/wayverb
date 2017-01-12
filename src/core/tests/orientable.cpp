@@ -110,31 +110,35 @@ TEST(orientation, pointing) {
 }
 
 TEST(orientation, combine) {
-    {
-        const orientation a{glm::vec3{1, 0, 0}};
-        const orientation b{glm::vec3{1, 0, 0}};
-        ASSERT_TRUE(nearby(
-                combine(a, b).get_pointing(), glm::vec3{0, 0, 1}, 0.00001));
-    }
-
-    {
-        const orientation a{glm::vec3{-1, 0, 0}};
-        const orientation b{glm::vec3{-1, 0, 0}};
-        ASSERT_TRUE(nearby(
-                combine(a, b).get_pointing(), glm::vec3{0, 0, 1}, 0.00001));
-    }
-
-    {
-        const orientation a{glm::vec3{1, 0, 0}};
-        const orientation b{glm::vec3{-1, 0, 0}};
-        ASSERT_TRUE(nearby(
-                combine(a, b).get_pointing(), glm::vec3{0, 0, -1}, 0.00001));
-    }
-
-    {
-        const orientation a{glm::vec3{-1, 0, 0}};
-        const orientation b{glm::vec3{1, 0, 0}};
-        ASSERT_TRUE(nearby(
-                combine(a, b).get_pointing(), glm::vec3{0, 0, -1}, 0.00001));
-    }
+    const auto eps = 0.00001;
+    ASSERT_TRUE(nearby(combine(orientation{glm::vec3{1, 0, 0}},
+                               orientation{glm::vec3{1, 0, 0}})
+                               .get_pointing(),
+                       glm::vec3{0, 0, 1},
+                       eps));
+    ASSERT_TRUE(nearby(combine(orientation{glm::vec3{-1, 0, 0}},
+                               orientation{glm::vec3{-1, 0, 0}})
+                               .get_pointing(),
+                       glm::vec3{0, 0, 1},
+                       eps));
+    ASSERT_TRUE(nearby(combine(orientation{glm::vec3{1, 0, 0}},
+                               orientation{glm::vec3{-1, 0, 0}})
+                               .get_pointing(),
+                       glm::vec3{0, 0, -1},
+                       eps));
+    ASSERT_TRUE(nearby(combine(orientation{glm::vec3{-1, 0, 0}},
+                               orientation{glm::vec3{1, 0, 0}})
+                               .get_pointing(),
+                       glm::vec3{0, 0, -1},
+                       eps));
+    ASSERT_TRUE(nearby(combine(orientation{glm::vec3{0, 0, -1}},
+                               orientation{glm::vec3{0, 0, -1}})
+                               .get_pointing(),
+                       glm::vec3{0, 0, -1},
+                       eps));
+    ASSERT_TRUE(nearby(combine(orientation{glm::vec3{0, 0, 1}},
+                               orientation{glm::vec3{0, 0, 1}})
+                               .get_pointing(),
+                       glm::vec3{0, 0, -1},
+                       eps));
 }
