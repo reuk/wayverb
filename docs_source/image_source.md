@@ -119,7 +119,7 @@ different image sources, only 1560 of which are valid [@kuttruff_room_2009, p.
 individual checking, then the amount of computation can be greatly reduced to a
 viable level.  As explained above, image sources above order four or five are
 rarely required, but even these can be very time-consuming to find with the
-naive method.  Optimisations are, therefore, a necessity for any but the
+naive method.  Optimisations are, therefore, a necessity for all but the
 simplest simulations.
 
 To accelerate the image-source process, [@vorlander_auralization:_2007]
@@ -221,14 +221,14 @@ a reference to a triangle in the scene, and whether or not the receiver is
 visible from this triangle.  Each unique path starting from a root node in the
 tree represents a possible image source contribution, which must be checked.
 This checking is carried out using the backtracking method explained above
-(item 4).  A nice property of the tree structure is that it can be traversed
-using depth-first recursion, allowing the results of some intermediate
-calculations to be cached between ray paths, speeding up the calculation with
-only minimal memory overhead.  This is similar to the approach mentioned in
-[@savioja_overview_2015].  Also, because the tree is immutable, it can be
-shared between multiple worker threads, which independently check each branch
-for valid image sources.  The nature of the recursive algorithm makes it a poor
-fit for an OpenCL implementation, so native (CPU) threads are used instead.
+(item 4). The tree structure can be traversed using depth-first recursion,
+allowing the results of some intermediate calculations to be cached between ray
+paths, speeding up the calculation with only minimal memory overhead.  This is
+similar to the approach mentioned in [@savioja_overview_2015].  Also, because
+the tree is immutable, it can be shared between multiple worker threads, which
+independently check each branch for valid image sources.  The nature of the
+recursive algorithm makes it a poor fit for an OpenCL implementation, so native
+(CPU) threads are used instead.
 
 Some paths in the tree may not actually produce valid image sources, and these
 paths are discarded (item 5).  For paths which *do* contribute valid image

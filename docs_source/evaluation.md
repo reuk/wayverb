@@ -693,7 +693,7 @@ The user interface is less fully-featured than may be expected of a
 professional simulation program.  The reason for this is simple: the entire
 application was developed by a single developer, over sixteen months. To ensure
 that the application would reach a usable state, its scope had to be limited.
-In it's first release, the application is only capable of loading, saving,
+In its first release, the application is only capable of loading, saving,
 configuring, and running simulations.
 
 Originally, the app was designed to include built-in convolution support, so
@@ -783,7 +783,7 @@ accurate. The ray-tracing and image-source methods respond appropriately to
 changes in room size, material, source/receiver spacing and receiver type.
 This is also true of the waveguide, which additionally is capable of modelling
 low-frequency modal responses, taking wave-effects such as diffraction into
-account. However, he accuracy of the waveguide is a drawback in some respects.
+account. However, the accuracy of the waveguide is a drawback in some respects.
 When waveguide outputs are combined with geometric outputs, the relative
 inaccuracies of the geometric results are often highlighted by obvious
 discontinuities in the blended spectrum.  Although use of the waveguide

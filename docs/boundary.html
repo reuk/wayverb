@@ -76,12 +76,6 @@
             </li>
         
             <li>
-                <a href="/wayverb/demos.html" >
-                    Demos
-                </a>
-            </li>
-        
-            <li>
                 <a href="/wayverb/bibliography.html" >
                     References
                 </a>
@@ -140,8 +134,6 @@
             
                 <a href="/wayverb/evaluation.html" class="next_page">Evaluation</a>
             
-        
-    
         
     
         
@@ -273,7 +265,7 @@ E_{\text{scattered}} &amp; = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\t
 <p>This method is described in <span class="citation" data-cites="murphy_kw-boundary_2007">[<a href="#ref-murphy_kw-boundary_2007">9</a>]</span> and <span class="citation" data-cites="kelloniemi_frequency-dependent_2006">[<a href="#ref-kelloniemi_frequency-dependent_2006">10</a>]</span>.</p>
 <p>As described in the <a href="/wayverb/waveguide.html">Digital Waveguide Mesh</a> section, there are two technically-equivalent formulations of digital waveguides meshes, known as <em>W-models</em> and <em>K-models</em>. W-models allow for straightforward interaction with a variety of termination types, such as wave digital filters, which can be used to model frequency-dependent boundaries and air absorption. However, W-models use more than twice the memory of the equivalent K-model <span class="citation" data-cites="beeson_roomweaver:_2004">[<a href="#ref-beeson_roomweaver:_2004">11</a>]</span>. For large-scale simulations, K-models are preferable for their reduced memory usage. However, K-models cannot interact directly with wave digital filters.</p>
 <p>The KW-pipe is a “converter” between wave- and Kirchhoff- variables, which is designed to allow the majority of a model (that is, the air-filled space inside it) to be constructed as a K-model waveguide mesh. At the boundaries of the model, the KW-pipe is used to connect K-model nodes to W-model nodes. These W-model nodes can then be connected to wave digital filters to simulate frequency-dependent absorption of wave energy. The complete model retains both the memory-efficiency of the K-model and the termination flexibility of the W-model, with the drawback of additional implementation complexity at the interface between the two model types.</p>
-<p>This sounds extremely promising, but has a major drawback, as described by Kowalczyk and Van Walstijn <span class="citation" data-cites="kowalczyk_modeling_2008">[<a href="#ref-kowalczyk_modeling_2008">12</a>]</span>: while the inside of the mesh will be 2- or 3-dimensional, the boundary termination afforded by the wave-variable boundary is 1-dimensional. Each boundary node connects to just the closest interior node. As a result, the edges and corners are not considered to be part of the model, as these nodes do not have a directly adjacent interior node. Additionally, the 1D boundary termination equation implies a smaller inter-nodal distance than that of the 2D or 3D mesh interior. This means that when updating an interior node next to a boundary, the inter-nodal distance is greater than when updating the boundary node itself. For these reasons, the 1D termination is unphysical and can lead to large errors in the phase and amplitude of reflections [kowalczyk_modeling_2008].</p>
+<p>This sounds extremely promising, but has a major drawback, as described by Kowalczyk and Van Walstijn <span class="citation" data-cites="kowalczyk_modeling_2008">[<a href="#ref-kowalczyk_modeling_2008">12</a>]</span>: while the inside of the mesh will be 2- or 3-dimensional, the boundary termination afforded by the wave-variable boundary is 1-dimensional. Each boundary node connects to just the closest interior node. As a result, the edges and corners are not considered to be part of the model, as these nodes do not have a directly adjacent interior node. Additionally, the 1D boundary termination equation implies a smaller inter-nodal distance than that of the 2D or 3D mesh interior. This means that when updating an interior node next to a boundary, the inter-nodal distance is greater than when updating the boundary node itself. For these reasons, the 1D termination is unphysical and can lead to large errors in the phase and amplitude of reflections <span class="citation" data-cites="kowalczyk_modeling_2008">[<a href="#ref-kowalczyk_modeling_2008">12</a>]</span>.</p>
 <h4 id="locally-reactive-surfaces-technique">Locally Reactive Surfaces Technique</h4>
 <p>This method, described in <span class="citation" data-cites="kowalczyk_modeling_2008">[<a href="#ref-kowalczyk_modeling_2008">12</a>]</span>, aims to create physically correct higher-dimensional boundaries by combining a boundary condition, defined by a boundary impedance, with the multidimensional wave equation. This leads to a model for a <em>locally reacting surface</em> (LRS), in which boundary impedance is represented by an infinite-impulse-response (IIR) filter.</p>
 <p>As noted above, a surface is locally reacting if the normal component of the particle velocity on the boundary surface is dependent solely upon the sound pressure in front of the boundary. In most physical surfaces, the velocity at the surface boundary will also be influenced by the velocity at adjacent points on the boundary, so LRS is not a realistic physical model in the vast majority of cases.</p>
@@ -446,8 +438,6 @@ E_{\text{scattered}} &amp; = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\t
             
                 <a href="/wayverb/evaluation.html" class="next_page">Evaluation</a>
             
-        
-    
         
     
         

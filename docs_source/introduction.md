@@ -25,18 +25,16 @@ not currently widely available.  Often, software produced for research purposes
 is not made public.  Such software that *is* available generally suffers from
 one or more of an array of issues:
 
-* Most software relies only on fast geometric methods, which are inaccurate,
+- Most software relies only on fast geometric methods, which are inaccurate,
   especially at low frequencies.  Conversely, programs opting to use more
   accurate wave-modelling methods require long time periods, in the order of
   days, or significant computing power to run.
-
-* Licensing is also an problem.  Most room-acoustics packages are the product
+- Licensing is also an problem.  Most room-acoustics packages are the product
   of years of combined research by multiple contributors, which is only made
   viable by releasing the software commercially.  However, this inhibits 
   further research, as the code is not freely available.  This model also 
   limits users to those able to pay, restricting widespread adoption.
-
-* When software is made available freely, often the user experience suffers.
+- When software is made available freely, often the user experience suffers.
   Code requires manual compilation, or perhaps can only be run from a textual
   interface, or else the project is outdated and unmaintained.
 

@@ -269,7 +269,7 @@ implies a smaller inter-nodal distance than that of the 2D or 3D mesh interior.
 This means that when updating an interior node next to a boundary, the
 inter-nodal distance is greater than when updating the boundary node itself.
 For these reasons, the 1D termination is unphysical and can lead to large
-errors in the phase and amplitude of reflections [kowalczyk_modeling_2008].
+errors in the phase and amplitude of reflections [@kowalczyk_modeling_2008].
 
 #### Locally Reactive Surfaces Technique
 

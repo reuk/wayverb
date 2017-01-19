@@ -2,7 +2,7 @@
 
 **Hybrid waveguide and ray-tracing room acoustic simulator with GPU acceleration.**
 
-![](docs_source/images/wayverb_ui.svg)
+![](docs_source/images/wayverb_ui.png)
 
 # Synopsis
 

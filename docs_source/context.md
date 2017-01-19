@@ -405,11 +405,11 @@ response.\label{fig:regions}](images/regions)
 Deciding on the simulation techniques led to three questions:
 
 * To produce a final output, the three simulations must be automatically mixed
-  in some way.  How can this be done? 
+  in some way. How can this be done?
 * Binaural simulation requires some method for direction- and
   frequency-dependent attenuation at the receiver.  How can receivers with polar
   patterns other than omnidirectional be modelled consistently in all three
-  simulation methods?  
+  simulation methods?
 * The reverb time and character depends heavily on the nature of the reflective
   surfaces in the scene.  How can frequency-dependent reflective boundaries be
   modelled consistently in all methods?

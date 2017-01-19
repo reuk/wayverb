@@ -67,9 +67,6 @@ They may also be useful to architects, for checking the acoustic properties of
 spaces (such as reverb time and speech intelligibility), without having to
 physically build anything.
 
-<ul class="actions">
-<li><a href="{{ site.baseurl }}{% link demos.md %}" class="button">View demos</a></li>
-</ul>
 </div>
 </div>
 </section>

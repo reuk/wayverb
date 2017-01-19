@@ -76,12 +76,6 @@
             </li>
         
             <li>
-                <a href="/wayverb/demos.html" >
-                    Demos
-                </a>
-            </li>
-        
-            <li>
                 <a href="/wayverb/bibliography.html" >
                     References
                 </a>
@@ -140,10 +134,8 @@
             
             
             
-                <a href="/wayverb/demos.html" class="next_page">Demos</a>
+                <a href="/wayverb/bibliography.html" class="next_page">References</a>
             
-        
-    
         
     
         
@@ -552,7 +544,7 @@
 <p>Alternatively, the speed may be acceptable for architectural applications, where absolute accuracy is most important. In this scenario, the focus is upon checking the acoustics of a previously-specified enclosure, rather than experimenting to find the most pleasing output. This means that longer times between renders can be justified if the results are highly accurate. Additionally, users may have access to more powerful server or specialised compute hardware which could lead to speed-ups.</p>
 <p>The simulation methods have been implemented to minimise average-case computational complexity wherever possible, but both the ray-tracing and waveguide processes are limited to a complexity of <span class="math inline">\(O(n)\)</span> where n refers to the number of rays or nodes required in the simulation. Any further performance improvements may only be gained by improving the per-ray or per-node processing speed. This is certainly possible, but would yield relatively small improvements to the simulation speed. It may be equally valid to simply wait for hardware with increased parallelism support: a machine with twice as many graphics cores will run the program twice as fast. Such machines are likely to be commonplace in two or three years. Therefore, a better use of time would be to spend those two years focusing on the algorithm’s functional problems rather than optimisation.</p>
 <h4 id="user-interface">User Interface</h4>
-<p>The user interface is less fully-featured than may be expected of a professional simulation program. The reason for this is simple: the entire application was developed by a single developer, over sixteen months. To ensure that the application would reach a usable state, its scope had to be limited. In it’s first release, the application is only capable of loading, saving, configuring, and running simulations.</p>
+<p>The user interface is less fully-featured than may be expected of a professional simulation program. The reason for this is simple: the entire application was developed by a single developer, over sixteen months. To ensure that the application would reach a usable state, its scope had to be limited. In its first release, the application is only capable of loading, saving, configuring, and running simulations.</p>
 <p>Originally, the app was designed to include built-in convolution support, so that generated impulse responses could be previewed without leaving the application. This feature would greatly improve the usability of the program. However, it would not contribute to the main goal of the program, which is the accurate and fast acoustic simulation of virtual environments. Convolution reverb tools already exist, and many users will have their own favourite programs and plug-ins for this purpose. The time that would have been spent replicating this functionality was better spent working on the unique and novel features of the program.</p>
 <p>Similarly, the ability to edit the virtual spaces themselves from within the app was not implemented. Writing an intuitive editor for 3D objects would be a large undertaking, even for a team of developers. Instead, the ability to load a variety of 3D file formats was included, and users are advised to use dedicated software such as Blender or Sketchup to create their simulated spaces.</p>
 <p>Some further usability features which are missing, which would ideally be included in a future release, include:</p>
@@ -568,7 +560,7 @@
 <h2 id="conclusion">Conclusion</h2>
 <p>The goal of the Wayverb project was to create a program which was capable of simulating the acoustics arbitrary enclosed spaces. For the program to be useful to its target audience of musicians and sound designers, it must be simultaneously accurate, efficient, and accessible.</p>
 <p>The aims of accuracy and efficiency would be met by combining wave-modelling and geometric simulation methods, benefiting from both the physical realism of wave-modelling, and the computational performance of geometric simulation. This technique is not used by any other publicly available simulation package, so it was thought that a program implementing both models would be both faster and more accurate than competing programs. To further improve performance, the simulation would be implemented to run in parallel on graphics hardware. The program would be free and open-source, with a graphical interface, to ensure accessibility and encourage adoption.</p>
-<p>Testing shows that the individual modelling methods are individually reasonably accurate. The ray-tracing and image-source methods respond appropriately to changes in room size, material, source/receiver spacing and receiver type. This is also true of the waveguide, which additionally is capable of modelling low-frequency modal responses, taking wave-effects such as diffraction into account. However, he accuracy of the waveguide is a drawback in some respects. When waveguide outputs are combined with geometric outputs, the relative inaccuracies of the geometric results are often highlighted by obvious discontinuities in the blended spectrum. Although use of the waveguide increases accuracy at low frequencies, generated outputs may be less useful than if generated entirely with geometric techniques, simply because of these discontinuities. This indicates that the goals of the project were misguided: an additional, primary goal of “usefulness” or “fitness” should have been considered. Future work may seek to improve the match between the outputs of the different models, perhaps sacrificing some low-frequency accuracy in the interests of sound quality.</p>
+<p>Testing shows that the individual modelling methods are individually reasonably accurate. The ray-tracing and image-source methods respond appropriately to changes in room size, material, source/receiver spacing and receiver type. This is also true of the waveguide, which additionally is capable of modelling low-frequency modal responses, taking wave-effects such as diffraction into account. However, the accuracy of the waveguide is a drawback in some respects. When waveguide outputs are combined with geometric outputs, the relative inaccuracies of the geometric results are often highlighted by obvious discontinuities in the blended spectrum. Although use of the waveguide increases accuracy at low frequencies, generated outputs may be less useful than if generated entirely with geometric techniques, simply because of these discontinuities. This indicates that the goals of the project were misguided: an additional, primary goal of “usefulness” or “fitness” should have been considered. Future work may seek to improve the match between the outputs of the different models, perhaps sacrificing some low-frequency accuracy in the interests of sound quality.</p>
 <p>In terms of efficiency, simulations generally complete within minutes, rather than hours or days, meeting the project’s efficiency target. It is also possible to observe the progression of the simulation, and to retry it with less intensive parameters, if it is progressing too slowly. Unfortunately, the time taken to generate outputs is not necessarily reflected in the quality of the results. For example, it is disappointing to wait for ten minutes for an impulse response, only to find that the output has markedly different reverb times at the top and bottom of the spectrum. Good user experience relies on users being able to generate results with acceptable quality as quickly as possible. If the user has to tweak and re-render, waiting for several minutes each time, before eventually finding appropriate settings, this translates to a poor user experience. This may be solved in two ways: by improving the quality of the outputs; and/or by further optimisation of the simulation algorithms.</p>
 <p>The application has an accessible graphical interface. Although some desirable features (such as built-in convolution and 3D editing) are missing, the interface is focused and functional. It is possible to install and use without specialist training. Additionally, all code is open-source, allowing collaboration and contribution from interested third-parties. While the accuracy and efficiency goals were not conclusively met, it is clear that the finished project is sufficiently accessible.</p>
 <p>Most importantly, the Wayverb project demonstrates that the hybrid modelling approach is viable in consumer software.</p>
@@ -626,10 +618,8 @@
             
             
             
-                <a href="/wayverb/demos.html" class="next_page">Demos</a>
+                <a href="/wayverb/bibliography.html" class="next_page">References</a>
             
-        
-    
         
     
         
