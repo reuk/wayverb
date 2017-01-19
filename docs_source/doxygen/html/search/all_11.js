@@ -19,9 +19,10 @@ var searchData=
   ['soft_5fsource',['soft_source',['../classwayverb_1_1waveguide_1_1preprocessor_1_1soft__source.html',1,'wayverb::waveguide::preprocessor']]],
   ['source',['source',['../classwayverb_1_1combined_1_1model_1_1source.html',1,'wayverb::combined::model']]],
   ['state',['state',['../structwayverb_1_1raytracer_1_1image__source_1_1traversal__callback_1_1state.html',1,'wayverb::raytracer::image_source::traversal_callback']]],
-  ['stochastic_5fhistogram',['stochastic_histogram',['../classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__histogram.html#a0ef1a5042cdad517c1d415659ca9d729',1,'wayverb::raytracer::reflection_processor::stochastic_histogram']]],
-  ['stochastic_5fhistogram',['stochastic_histogram',['../classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__histogram.html',1,'wayverb::raytracer::reflection_processor']]],
+  ['stochastic_5fgroup_5fprocessor',['stochastic_group_processor',['../classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__group__processor.html',1,'wayverb::raytracer::reflection_processor']]],
+  ['stochastic_5fgroup_5fprocessor',['stochastic_group_processor',['../classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__group__processor.html#a1d5f4d5f061d72b2e703eb428d267d2d',1,'wayverb::raytracer::reflection_processor::stochastic_group_processor']]],
   ['stochastic_5fpath_5finfo',['stochastic_path_info',['../structwayverb_1_1raytracer_1_1stochastic__path__info.html',1,'wayverb::raytracer']]],
+  ['stochastic_5fprocessor',['stochastic_processor',['../classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__processor.html',1,'wayverb::raytracer::reflection_processor']]],
   ['surface',['surface',['../structwayverb_1_1core_1_1surface.html',1,'wayverb::core']]],
   ['surface_3c_20core_3a_3asimulation_5fbands_20_3e',['surface&lt; core::simulation_bands &gt;',['../structwayverb_1_1core_1_1surface.html',1,'wayverb::core']]],
   ['suspicious_5fvalue',['suspicious_value',['../classwayverb_1_1core_1_1exceptions_1_1suspicious__value.html',1,'wayverb::core::exceptions']]]

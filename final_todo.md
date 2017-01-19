@@ -1,18 +1,13 @@
 # TODO
 
--[ ] fix audio table formatting in pdf
+-[ ] final pass over the text
 
--[ ] more demos										<--
-	-[x] plus audible demos for the evaluation
+-[ ] more demos
 
 -[ ] build downloadable distro
 	-[x] check readmes
   	-[ ] put release on github
 	-[ ] make it clear where the demo projects are in the evaluation
-
--[ ] video????
-
--[ ] microphone waveguide magnitude affecting reverb times?
 
 --------------------------------------------------------------------------------
 

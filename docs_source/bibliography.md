@@ -25,10 +25,7 @@ guided the development of the project, or might shape its future.
 
 \let\oldhypertarget\hypertarget
 
-\renewcommand{\hypertarget}[2]{%
-	\penalty 0%
-	\oldhypertarget{#1}{#2}%
-}
+\renewcommand{\hypertarget}[2]{ \leavevmode \oldhypertarget{#1}{#2} }
 
 <div id="refs">
 </div>

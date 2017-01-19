@@ -115,12 +115,12 @@ $(document).ready(function(){initNavTree('classwayverb_1_1raytracer_1_1reflectio
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a9c00ab557b6349daaa4ba4f803b7532e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9c00ab557b6349daaa4ba4f803b7532e"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>make_stochastic_histogram</b> (float receiver_radius, float sample_rate, size_t max_order)</td></tr>
-<tr class="separator:a9c00ab557b6349daaa4ba4f803b7532e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a615f94556ac174a6a3407c3749dada61"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a615f94556ac174a6a3407c3749dada61"></a>
-<a class="el" href="classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__histogram.html">stochastic_histogram</a>&lt; <a class="el" href="structwayverb_1_1raytracer_1_1stochastic_1_1energy__histogram.html">stochastic::energy_histogram</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>operator()</b> (const <a class="el" href="classwayverb_1_1core_1_1compute__context.html">core::compute_context</a> &amp;cc, const glm::vec3 &amp;source, const glm::vec3 &amp;receiver, const <a class="el" href="structwayverb_1_1core_1_1environment.html">core::environment</a> &amp;environment, const <a class="el" href="classwayverb_1_1core_1_1voxelised__scene__data.html">core::voxelised_scene_data</a>&lt; cl_float3, <a class="el" href="structwayverb_1_1core_1_1surface.html">core::surface</a>&lt; core::simulation_bands &gt;&gt; &amp;voxelised, size_t num_directions) const </td></tr>
-<tr class="separator:a615f94556ac174a6a3407c3749dada61"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48160eab3bba2db20bb1dd42f6ecbd09"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a48160eab3bba2db20bb1dd42f6ecbd09"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>make_stochastic_histogram</b> (size_t total_rays, size_t max_image_source_order, float receiver_radius, float histogram_sample_rate)</td></tr>
+<tr class="separator:a48160eab3bba2db20bb1dd42f6ecbd09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c3b1fff2d83609bba20b8b8211c70f3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5c3b1fff2d83609bba20b8b8211c70f3"></a>
+<a class="el" href="classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__processor.html">stochastic_processor</a>&lt; <a class="el" href="structwayverb_1_1raytracer_1_1stochastic_1_1energy__histogram.html">stochastic::energy_histogram</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><b>get_processor</b> (const <a class="el" href="classwayverb_1_1core_1_1compute__context.html">core::compute_context</a> &amp;cc, const glm::vec3 &amp;source, const glm::vec3 &amp;receiver, const <a class="el" href="structwayverb_1_1core_1_1environment.html">core::environment</a> &amp;environment, const <a class="el" href="classwayverb_1_1core_1_1voxelised__scene__data.html">core::voxelised_scene_data</a>&lt; cl_float3, <a class="el" href="structwayverb_1_1core_1_1surface.html">core::surface</a>&lt; core::simulation_bands &gt;&gt; &amp;voxelised) const </td></tr>
+<tr class="separator:a5c3b1fff2d83609bba20b8b8211c70f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/raytracer/include/raytracer/reflection_processor/<a class="el" href="stochastic__histogram_8h_source.html">stochastic_histogram.h</a></li>

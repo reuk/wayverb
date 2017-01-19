@@ -7,6 +7,7 @@ var dir_198152dd46c6fbdd08b47ca635d66a0e =
     [ "attenuator.h", "raytracer_2include_2raytracer_2attenuator_8h_source.html", null ],
     [ "canonical.h", "raytracer_2include_2raytracer_2canonical_8h_source.html", null ],
     [ "histogram.h", "histogram_8h_source.html", null ],
+    [ "hit_rate.h", "hit__rate_8h_source.html", null ],
     [ "iterative_builder.h", "iterative__builder_8h_source.html", null ],
     [ "multitree.h", "multitree_8h_source.html", null ],
     [ "optimum_reflection_number.h", "optimum__reflection__number_8h_source.html", null ],

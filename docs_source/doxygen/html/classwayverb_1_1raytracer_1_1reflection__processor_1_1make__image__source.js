@@ -1,5 +1,5 @@
 var classwayverb_1_1raytracer_1_1reflection__processor_1_1make__image__source =
 [
-    [ "make_image_source", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__image__source.html#a342922e977162e3d7526ed4a62912382", null ],
-    [ "operator()", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__image__source.html#a87c012e2e41799cabda07ccb30986e49", null ]
+    [ "make_image_source", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__image__source.html#a815c733e1874ff0c06528885ccc2154e", null ],
+    [ "get_processor", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__image__source.html#acb929ba150cf8148aebf1c25599e8c20", null ]
 ];

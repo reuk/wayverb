@@ -36,14 +36,13 @@ exclude:
     - abstract.md
     - acknowledgements.md
     - template.html
-    - serve.sh
-    - apa.csl
-    - ieee.csl
-    - ieee-with-url.csl
-    - ubuntu-xenial-16.04-cloudimg-console.log
-    - missfont.log
-    - wayverb.pdf
-    - wayverb.bib
     - images/sketch
-    - images/*.pdf
     - writegood
+    - haskell
+    - '*.sh'
+    - '*.py'
+    - '*.csl'
+    - '*.log'
+    - '*.bib'
+    - '*.wav'
+    - '*.pdf'

@@ -61,7 +61,7 @@ during export. For best results, it is recommended to export to `.obj` wherever
 possible.
 The following dialog shows optimum settings for the Sketchup Object exporter.
 
-![](docs_source/demos/export_options.png)
+![](docs_source/images/export_options.png)
 
 # Requirements
 

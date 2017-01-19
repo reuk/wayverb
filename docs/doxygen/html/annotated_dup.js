@@ -328,4 +328,4 @@ var annotated_dup =
     [ "Triangle3", "struct_triangle3.html", "struct_triangle3" ],
     [ "troublesome", "structtroublesome.html", "structtroublesome" ],
     [ "Type", "struct_type.html", null ]
-];
+];                                                                                                                                                                                                                       

@@ -1,6 +1,7 @@
 var searchData=
 [
   ['r',['r',['../structwayverb_1_1core_1_1linear__regression.html#a06e94eeb11b3503f5f8c74a9fc9abda8',1,'wayverb::core::linear_regression::r()'],['../structwayverb_1_1core_1_1reverb__time.html#ae39b378803eba996fdb9d608f1773547',1,'wayverb::core::reverb_time::r()']]],
+  ['random_5fdirection_5fgenerator_5fiterator',['random_direction_generator_iterator',['../classwayverb_1_1raytracer_1_1random__direction__generator__iterator.html',1,'wayverb::raytracer']]],
   ['range',['range',['../classutil_1_1range.html',1,'util']]],
   ['range',['range',['../classutil_1_1range.html#a739c7cf3ac578df96f135f88b411d46f',1,'util::range']]],
   ['range_3c_20double_20_3e',['range&lt; double &gt;',['../classutil_1_1range.html',1,'util']]],
@@ -17,6 +18,7 @@ var searchData=
   ['really_5fbasic_5fscene',['really_basic_scene',['../structreally__basic__scene.html',1,'']]],
   ['rebind',['rebind',['../structutil_1_1aligned_1_1allocator_1_1rebind.html',1,'util::aligned::allocator']]],
   ['receiver',['receiver',['../classwayverb_1_1combined_1_1model_1_1receiver.html',1,'wayverb::combined::model']]],
+  ['receiver_5fradius',['receiver_radius',['../structwayverb_1_1raytracer_1_1simulation__parameters.html#a58eac3492eef9308604b0c268a521c3d',1,'wayverb::raytracer::simulation_parameters']]],
   ['recursive_5fvector',['recursive_vector',['../classwayverb_1_1core_1_1recursive__vector.html',1,'wayverb::core']]],
   ['recursive_5fvector_5fbacked_5fset',['recursive_vector_backed_set',['../classwayverb_1_1core_1_1recursive__vector__backed__set.html',1,'wayverb::core']]],
   ['recursive_5fvector_5fimpl',['recursive_vector_impl',['../classwayverb_1_1core_1_1detail_1_1recursive__vector__impl.html',1,'wayverb::core::detail']]],

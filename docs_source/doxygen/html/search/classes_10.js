@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['random_5fdirection_5fgenerator_5fiterator',['random_direction_generator_iterator',['../classwayverb_1_1raytracer_1_1random__direction__generator__iterator.html',1,'wayverb::raytracer']]],
   ['range',['range',['../classutil_1_1range.html',1,'util']]],
   ['range_3c_20double_20_3e',['range&lt; double &gt;',['../classutil_1_1range.html',1,'util']]],
   ['range_3c_20n_20_3e',['range&lt; n &gt;',['../classutil_1_1range.html',1,'util']]],

@@ -8,9 +8,4 @@ var classwayverb_1_1combined_1_1model_1_1raytracer =
     ] ],
     [ "raytracer", "classwayverb_1_1combined_1_1model_1_1raytracer.html#a2c539a40eee528576444e680133dc24e", null ],
     [ "get", "classwayverb_1_1combined_1_1model_1_1raytracer.html#ad4eb82bfed0e52a819929d51b81b78be", null ],
-    [ "get_max_img_src_order", "classwayverb_1_1combined_1_1model_1_1raytracer.html#a57f479051755b9dfe5128beb0399ac6e", null ],
-    [ "get_ray_number", "classwayverb_1_1combined_1_1model_1_1raytracer.html#a8bdc344e351b6e66a8f24555d784b3ab", null ],
-    [ "serialize", "classwayverb_1_1combined_1_1model_1_1raytracer.html#ae085edb9621abb7c30b771806299f1d5", null ],
-    [ "set_max_img_src_order", "classwayverb_1_1combined_1_1model_1_1raytracer.html#a660eff997c8b96cedc79662949faf37e", null ],
-    [ "set_ray_number", "classwayverb_1_1combined_1_1model_1_1raytracer.html#a47bf16657f0e17d33d48470c136e2303", null ]
-];
+    [ "get_max_img_src_order

@@ -2739,6 +2739,11 @@ header {
     max-width: 60em; }
     #page_main > .inner strong, #page_main > .inner b {
       color: #000; }
+    #page_main > .inner #audio_table table {
+      background: #312450;
+      color: white; }
+    #page_main > .inner #audio_table audio {
+      width: 100%; }
     #page_main > .inner a {
       -moz-transition: color 0.2s ease, border-bottom-color 0.2s ease;
       -webkit-transition: color 0.2s ease, border-bottom-color 0.2s ease;
@@ -2756,12 +2761,18 @@ header {
         height: 0; }
       #page_main > .inner h1.major, #page_main > .inner h2.major, #page_main > .inner h3.major, #page_main > .inner h4.major, #page_main > .inner h5.major, #page_main > .inner h6.major {
         margin: 0; }
-    #page_main > .inner table tr:nth-child(even) {
-      background-color: #e2dcf1; }
+    #page_main > .inner table tr {
+      border: none; }
+      #page_main > .inner table tr:nth-child(odd) {
+        background-color: rgba(94, 66, 166, 0.25); }
+    #page_main > .inner table td {
+      vertical-align: middle; }
     #page_main > .inner table thead {
-      border-bottom: solid 2px #312450; }
-    #page_main > .inner table tfoot {
-      border-top: solid 2px #312450; }
+      background: #261c3e;
+      border: none; }
+      #page_main > .inner table thead th {
+        padding: 0.75em;
+        color: white; }
     #page_main > .inner blockquote {
       border-left: solid 4px #5e42a6; }
     #page_main > .inner figure {
@@ -2780,6 +2791,8 @@ header {
       background-color: #e2dcf1;
       border: solid 1px #9681cd;
       padding: 0.05em 0.05em; }
+    #page_main > .inner pre code {
+      padding: 1em; }
     #page_main > .inner #TOC {
       display: block;
       background-color: #e2dcf1;

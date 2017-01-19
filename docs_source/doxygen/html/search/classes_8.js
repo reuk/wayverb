@@ -1,13 +1,14 @@
 var searchData=
 [
   ['identity_5ffunctor',['identity_functor',['../structutil_1_1identity__functor.html',1,'util']]],
-  ['image_5fsource',['image_source',['../classwayverb_1_1raytracer_1_1reflection__processor_1_1image__source.html',1,'wayverb::raytracer::reflection_processor']]],
+  ['image_5fsource_5fgroup_5fprocessor',['image_source_group_processor',['../classwayverb_1_1raytracer_1_1reflection__processor_1_1image__source__group__processor.html',1,'wayverb::raytracer::reflection_processor']]],
+  ['image_5fsource_5fprocessor',['image_source_processor',['../classwayverb_1_1raytracer_1_1reflection__processor_1_1image__source__processor.html',1,'wayverb::raytracer::reflection_processor']]],
   ['img_5fsrc_5fcalculation',['img_src_calculation',['../structraytracer_1_1img__src__calculation.html',1,'raytracer']]],
-  ['impl',['impl',['../classwayverb_1_1core_1_1scene__data__loader_1_1impl.html',1,'wayverb::core::scene_data_loader']]],
+  ['impl',['impl',['../classfrequency__domain_1_1filter_1_1impl.html',1,'frequency_domain::filter']]],
   ['impl',['impl',['../classfrequency__domain_1_1dft__1d_1_1impl.html',1,'frequency_domain::dft_1d']]],
+  ['impl',['impl',['../classwayverb_1_1core_1_1scene__data__loader_1_1impl.html',1,'wayverb::core::scene_data_loader']]],
   ['impl',['impl',['../classwayverb_1_1combined_1_1engine_1_1impl.html',1,'wayverb::combined::engine']]],
   ['impl',['impl',['../classfrequency__domain_1_1convolver_1_1impl.html',1,'frequency_domain::convolver']]],
-  ['impl',['impl',['../classfrequency__domain_1_1filter_1_1impl.html',1,'frequency_domain::filter']]],
   ['impulse',['impulse',['../structwayverb_1_1raytracer_1_1impulse.html',1,'wayverb::raytracer']]],
   ['impulsegenerator',['ImpulseGenerator',['../class_impulse_generator.html',1,'']]],
   ['index',['index',['../structwayverb_1_1core_1_1indexing_1_1index.html',1,'wayverb::core::indexing']]],

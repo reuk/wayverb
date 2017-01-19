@@ -24,7 +24,4 @@ var searchData=
   ['min_5fsize_5fvector',['min_size_vector',['../classwayverb_1_1combined_1_1model_1_1min__size__vector.html',1,'wayverb::combined::model']]],
   ['moving_5faverage',['moving_average',['../classwayverb_1_1core_1_1filter_1_1moving__average.html',1,'wayverb::core::filter']]],
   ['multiple_5fband_5fconstant_5fspacing_5fparameters',['multiple_band_constant_spacing_parameters',['../structwayverb_1_1waveguide_1_1multiple__band__constant__spacing__parameters.html',1,'wayverb::waveguide']]],
-  ['multiple_5fband_5fwaveguide',['multiple_band_waveguide',['../classwayverb_1_1combined_1_1model_1_1multiple__band__waveguide.html',1,'wayverb::combined::model']]],
-  ['multitree',['multitree',['../structwayverb_1_1raytracer_1_1multitree.html',1,'wayverb::raytracer']]],
-  ['multitree_3c_20wayverb_3a_3araytracer_3a_3aimage_5fsource_3a_3apath_5felement_20_3e',['multitree&lt; wayverb::raytracer::image_source::path_element &gt;',['../structwayverb_1_1raytracer_1_1multitree.html',1,'wayverb::raytracer']]]
-];
+  ['multiple_5fband_5fwaveguide',['multiple_band_waveguide',['../classwayverb_1_1combined_1_1model_1_1multiple__band__waveguide.html',1,'wayverb::combin

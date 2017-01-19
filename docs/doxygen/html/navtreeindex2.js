@@ -248,6 +248,4 @@ var NAVTREEINDEX2 =
 "classwayverb_1_1core_1_1filter_1_1delay__line.html#a7e912a44cb0b5494b46fe1f9320f5a10":[2,0,7,1,3,2,2],
 "classwayverb_1_1core_1_1filter_1_1delay__line.html#a80d5358ee3864ff8550f0205f53037ba":[2,0,7,1,3,2,1],
 "classwayverb_1_1core_1_1filter_1_1delay__line.html#af38f82cd01f9d740b3e41df92650f4b1":[2,0,7,1,3,2,0],
-"classwayverb_1_1core_1_1filter_1_1delay__line.html#afcaaaf74f5d974b6ef92f4f9e432799b":[2,0,7,1,3,2,4],
-"classwayverb_1_1core_1_1filter_1_1extra__linear__dc__blocker.html":[2,0,7,1,3,3]
-};
+"classwayverb_1_1core_1_1filter_1_1delay__line.html#afcaaaf74f5d974b6ef92f4f9e432799b":[2,0,7,1,3,2,4

@@ -382,8 +382,7 @@ only 2D boundaries are tested. Therefore the test shown in this thesis is a
 novel contribution, as no previous empirical evidence exists for the 3D LRS
 boundary implementation in the waveguide mesh. The test used here is an
 extension of the test procedure presented in  [@kowalczyk_modeling_2008], but
-extended to three dimensions. Code for the test can be seen at
-<https://github.com/reuk/wayverb/blob/master/bin/boundary_test/boundary_test.cpp>.
+extended to three dimensions. 
 
 ### Method
 

@@ -6,5 +6,6 @@ var searchData=
   ['get_5fextensions',['get_extensions',['../classwayverb_1_1core_1_1scene__data__loader.html#a6e0eafe8c47c76ab5e4ca56d72e4957b',1,'wayverb::core::scene_data_loader']]],
   ['get_5fkernel',['get_kernel',['../classwayverb_1_1waveguide_1_1program.html#aded638bc20bef215072d86ac7467f14d',1,'wayverb::waveguide::program']]],
   ['get_5fnode_5fboundary_5fkernel',['get_node_boundary_kernel',['../classwayverb_1_1waveguide_1_1setup__program.html#a191f2faf7fa2434e6916ccda5d810ed1',1,'wayverb::waveguide::setup_program']]],
-  ['get_5fnode_5finside_5fkernel',['get_node_inside_kernel',['../classwayverb_1_1waveguide_1_1setup__program.html#aeb6cc56dca372b00917a6f19a60c6d36',1,'wayverb::waveguide::setup_program']]]
+  ['get_5fnode_5finside_5fkernel',['get_node_inside_kernel',['../classwayverb_1_1waveguide_1_1setup__program.html#aeb6cc56dca372b00917a6f19a60c6d36',1,'wayverb::waveguide::setup_program']]],
+  ['get_5fper_5fray_5fsize',['get_per_ray_size',['../classwayverb_1_1raytracer_1_1reflector.html#ace324d0ac4e24e5ee497f1858e804bfc',1,'wayverb::raytracer::reflector']]]
 ];

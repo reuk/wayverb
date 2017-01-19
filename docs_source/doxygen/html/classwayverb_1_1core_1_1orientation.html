@@ -120,9 +120,9 @@ $(document).ready(function(){initNavTree('classwayverb_1_1core_1_1orientation.ht
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:aba0de40127fc343d475519ff7dcdc14e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aba0de40127fc343d475519ff7dcdc14e"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>orientation</b> (const glm::vec3 &amp;pointing={0, 0, 1}, const glm::vec3 &amp;up={0, 1, 0})</td></tr>
-<tr class="separator:aba0de40127fc343d475519ff7dcdc14e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6eef46e919688cacd83f58c75e86013c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6eef46e919688cacd83f58c75e86013c"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>orientation</b> (const glm::vec3 &amp;pointing={0, 0,-1}, const glm::vec3 &amp;up={0, 1, 0})</td></tr>
+<tr class="separator:a6eef46e919688cacd83f58c75e86013c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bc33c0d624d9809fbc915d873f7efe0"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a6bc33c0d624d9809fbc915d873f7efe0"></a>
 glm::vec3&#160;</td><td class="memItemRight" valign="bottom"><b>get_pointing</b> () const </td></tr>
 <tr class="separator:a6bc33c0d624d9809fbc915d873f7efe0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -145,6 +145,7 @@ template&lt;typename Archive &gt; </td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Invariant: pointing_ is a unit vector. </p>
+<p>Re-writing at the last minute so that this uses a right-handed coordinate system, similar to OpenGL. Positive-y is up, positive-x is right, and <em>negative-z</em> is forwards. Yeah ugh idk. </p>
 </div><hr/>The documentation for this class was generated from the following files:<ul>
 <li>src/core/include/core/<a class="el" href="orientation_8h_source.html">orientation.h</a></li>
 <li>src/core/src/orientation.cpp</li>

@@ -386,4 +386,4 @@ var hierarchy =
     [ "wayverb::combined::waveguide_base", "classwayverb_1_1combined_1_1waveguide__base.html", [
       [ "wayverb::combined::concrete_waveguide< T >", "classwayverb_1_1combined_1_1concrete__waveguide.html", null ]
     ] ]
-];
+];                                                                                                                                                                                                  

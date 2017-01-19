@@ -13,6 +13,4 @@ var searchData=
   ['program',['program',['../classprogram.html',1,'']]],
   ['program',['program',['../classwayverb_1_1raytracer_1_1program.html',1,'wayverb::raytracer']]],
   ['program_5fwrapper',['program_wrapper',['../classwayverb_1_1core_1_1program__wrapper.html',1,'wayverb::core']]],
-  ['progress_5fbar',['progress_bar',['../classutil_1_1progress__bar.html',1,'util']]],
-  ['projection_5f2d',['projection_2d',['../structwayverb_1_1core_1_1geo_1_1detail_1_1projection__2d.html',1,'wayverb::core::geo::detail']]]
-];
+  ['progress_5fbar',['progress_bar',['../classutil_1_1progress__bar.html',1,'

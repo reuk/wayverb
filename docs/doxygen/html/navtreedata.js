@@ -32,4 +32,4 @@ var NAVTREEINDEX =
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
-var SYNCOFFMSG = 'click to enable panel synchronisation';
+var SYNCOFFMSG = 'click to enable panel 

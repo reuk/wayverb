@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title>Wayverb - Hybrid</title>
+    <title>Wayverb - Hybrid Model</title>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="shortcut icon" type="image/x-icon" href="/wayverb/assets/favicon.ico" />
@@ -35,7 +35,7 @@
         
             <li>
                 <a href="/wayverb/image_source.html" >
-                    Image-source
+                    Image-source Model
                 </a>
             </li>
         
@@ -53,7 +53,7 @@
         
             <li>
                 <a href="/wayverb/hybrid.html" class="active">
-                    Hybrid
+                    Hybrid Model
                 </a>
             </li>
         
@@ -71,7 +71,7 @@
         
             <li>
                 <a href="/wayverb/evaluation.html" >
-                    Evaluation and Future
+                    Evaluation
                 </a>
             </li>
         
@@ -152,11 +152,12 @@
 
         <div id="TOC">
 <ul>
-<li><a href="#hybrid">Hybrid</a><ul>
+<li><a href="#hybrid-model">Hybrid Model</a><ul>
 <li><a href="#background">Background</a></li>
 <li><a href="#transitions">Transitions</a><ul>
 <li><a href="#early-and-late-reflections">Early and Late Reflections</a></li>
 <li><a href="#crossover-position">Crossover Position</a></li>
+<li><a href="#combining-outputs">Combining Outputs</a></li>
 </ul></li>
 <li><a href="#level-matching">Level Matching</a><ul>
 <li><a href="#image-source-and-ray-tracer">Image-Source and Ray Tracer</a></li>
@@ -166,7 +167,7 @@
 <li><a href="#bibliography">References</a></li>
 </ul>
 </div>
-<h1 id="hybrid" class="major">Hybrid</h1>
+<h1 id="hybrid-model" class="major">Hybrid Model</h1>
 <h2 id="background">Background</h2>
 <p>The previous sections have looked at the theory and implementation of three different acoustic simulation techniques. The image-source method is accurate for early reflections, but slow for longer responses. The ray tracing method is inaccurate, but produces acceptable responses for “diffuse” reverb tails. The waveguide method models physical phenomena better than the geometric methods, but is expensive at high frequencies. By combining all three models together, accurate broadband impulse responses can be created, without requiring exceptional computing power.</p>
 <p>This section will focus on the two most important factors governing the combination of modelling techniques. The first is positioning transitions: in the time domain, from early to late reflections; and in the frequency domain, between geometric and waveguide modelling. The second is matching the output levels of the different methods, so that there are no sudden discontinuities in level, and the transitions are seamless.</p>
@@ -182,6 +183,10 @@
 <li><span class="math display">\[2000\sqrt{\frac{RT60}{V}}\]</span></li>
 </ol>
 <p>Here, <span class="math inline">\(RT60\)</span> is the time taken for the reverb tail to decay by 60dB, and <span class="math inline">\(V\)</span> is the room volume in cubic metres. Note that the Schroeder frequency is inversely proportional to the square root of the room volume. This implies that in larger rooms, the shift from modal to non-modal behaviour is lower, and therefore wave-based methods will be required to compute a smaller portion of the spectrum. In turn, this helps to keep the computational cost of the waveguide simulations within reasonable bounds. Although the cost of wave-based methods increases with output frequency and simulation size, larger simulations require a lower maximum output frequency. As a result, a hybrid acoustic simulator should be able to simulate even very large enclosures with reasonable perceived accuracy, without incurring excessive costs.</p>
+<p>The Schroeder frequency is only an estimate. The actual frequency dividing “resonant” and “even” behaviours will vary depending on the surface area, absorption coefficients, and shape of the modelled space. The optimum crossover frequency should also be guided by the accuracy and time constraints imposed by the user. For this reason, the Schroeder frequency is not displayed in the Wayverb interface. It does, however, illustrate that in the general case it is justified to use a lower crossover frequency for larger simulated volumes.</p>
+<h3 id="combining-outputs">Combining Outputs</h3>
+<p>Once the geometric and waveguide outputs have been produced, they must be combined into a single signal. This combination process requires that the geometric and waveguide outputs have the same sampling frequency. However, the waveguide sampling frequency will almost certainly be lower than the final output sampling frequency, so the waveguide results must be up-sampled. Wayverb uses the Libsamplerate library for this purpose. The sampling rate conversion preserves the signal magnitude, but not its energy level. The re-sampled waveguide output is therefore scaled by a factor of <span class="math inline">\(f_{s\text{in}} / f_{s\text{out}}\)</span> (where <span class="math inline">\(f_{s\text{in}}\)</span> is the waveguide sampling rate, and <span class="math inline">\(f_{s\text{out}}\)</span> is the output sampling rate), so that the correct energy level is maintained.</p>
+<p>Once the waveguide sampling rate has been corrected, the waveguide and geometric outputs are filtered and mixed. The filtering is carried out using the frequency-domain filtering method described in the <a href="/wayverb/ray_tracer.html">Ray Tracing</a> section. The waveguide is low-passed, and the geometric outputs are high-passed, using the same centre frequency and crossover width in both cases. The final output is produced by summing the filtered responses.</p>
 <h2 id="level-matching">Level Matching</h2>
 <h3 id="image-source-and-ray-tracer">Image-Source and Ray Tracer</h3>
 <p>The <a href="/wayverb/image_source.html">Image Source</a> model operates in terms of pressure. This means that the pressure contribution of each individual image is inversely proportional to the distance between that image source and the receiver. In contrast, the <a href="/wayverb/ray_tracer.html">Ray Tracing</a> method operates in terms of acoustic intensity, and the total intensity measured at the receiver depends only on the number of rays which intersect with it. The distance travelled by each ray is not taken into account.</p>
@@ -190,7 +195,8 @@
 <ol start="2" class="example" type="1">
 <li><span class="math display">\[E_{\text{image source}}=\frac{E_{\text{source}}}{4\pi r^2}\]</span></li>
 </ol>
-<p>For the ray tracing method, the intensity of the direct contribution is a function of the number of rays <span class="math inline">\(N\)</span>, and the intensity of each ray <span class="math inline">\(E_r\)</span>. Only rays intersecting the receiver will be registered, so ray intensity must be normalised taking into account the proportion of rays which will intersect the receiver. For a spherical receiver, and uniformly distributed rays, the proportion of rays which intersect the receiver is the ratio between the area covered by the receiver, and the total area over which the rays are distributed. If the receiver is at a distance <span class="math inline">\(r\)</span> from the source, with an opening angle <span class="math inline">\(\gamma\)</span>, then its area is that of a spherical cap (see the following figure):</p>
+<p>This is the standard equation for describing the power radiated from a point source.</p>
+<p>For the ray tracing method, the intensity of the direct contribution is a function of the number of rays <span class="math inline">\(N\)</span>, and the intensity of each ray <span class="math inline">\(E_r\)</span>. Only rays intersecting the receiver will be registered, so ray intensity must be normalised taking into account the proportion of rays which will intersect the receiver. For a spherical receiver, and uniformly distributed rays, the proportion of rays which intersect the receiver can be estimated as the ratio between the area covered by the receiver, and the total area over which the rays are distributed. If the receiver is at a distance <span class="math inline">\(r\)</span> from the source, with an opening angle <span class="math inline">\(\gamma\)</span>, then its area is that of a spherical cap (see the following figure):</p>
 <ol start="3" class="example" type="1">
 <li><span class="math display">\[ A_{\text{intersection}} = 2\pi r^2(1-\cos\gamma) \]</span></li>
 </ol>
@@ -220,14 +226,14 @@ E_r &amp;= \frac{E_{\text{source}}}{2 \pi r^2 N (1 - \cos\gamma)}
 <p>As long as the initial ray intensities are set according to this equation, both methods will produce outputs with the correct relative levels. The outputs from the two methods are combined by simple signal addition, with no need for additional level adjustment.</p>
 <h3 id="geometric-and-waveguide">Geometric and Waveguide</h3>
 <p>Setting the waveguide mesh level should follow a similar procedure. The waveguide output level should be normalised so that the direct intensity observed at the receiver is equal to that observed in the image-source model. The normalisation is achieved through the use of a <em>calibration coefficient</em> which can be used to scale the waveguide output, or alternatively to adjust the magnitude of the input signal.</p>
-<p>Several suggestions for finding the calibration coefficient are suggested in the literature. One option, which is perhaps the simplest (short of manual calibration), is found in <span class="citation" data-cites="southern_spatial_2011">[<a href="#ref-southern_spatial_2011">3</a>]</span>. The average magnitude of a certain frequency band is calculated for both the waveguide and geometric output. The calibration coefficient is then equal to the ratio of these two magnitudes. This approach is flawed, in that the frequency band used must have the same bounds, or at least close, for both signals. The frequency band will therefore be towards the lower end of the geometric output, which is known to be inaccurate (this is the entire reason for hybrid modelling). It is impossible to compute an accurate calibration coefficient from inaccurate data.</p>
+<p>Several suggestions for finding the calibration coefficient are suggested in the literature. One option, which is perhaps the simplest (short of manual calibration), is found in <span class="citation" data-cites="southern_spatial_2011">[<a href="#ref-southern_spatial_2011">3</a>]</span>. The average magnitude of a certain frequency band is calculated for both the waveguide and geometric output. The calibration coefficient is then equal to the ratio of these two magnitudes. This approach is flawed, in that the same frequency band must be used for both signals. This frequency band will therefore be towards the lower end of the geometric output, which is known to be inaccurate (this is the entire reason for hybrid modelling), and at the to end of the waveguide output (which may be inaccurate due to numerical dispersion). It is impossible to compute an accurate calibration coefficient from inaccurate data.</p>
 <p>Another method, suggested in the same paper <span class="citation" data-cites="southern_spatial_2011">[<a href="#ref-southern_spatial_2011">3</a>]</span>, is to find the intensity produced by the waveguide at a distance of 1m, and then to normalise both models so that they produce the same intensity at this distance. The image-source direct response is low-pass filtered, so that it only contains energy in the same frequency band as the waveguide output. Then, the maximum magnitude in the initial portion (up to the first reflection) of the output signal is found, for the image-source and waveguide output. The calibration parameter is found by taking the ratio of these maximum magnitudes. This differs from the first technique, in that the calibration coefficient is derived from a single contribution in the time-domain, instead of from frequency-domain magnitudes accumulated over the entire duration of the signal.</p>
-<p>The second method is superior, in that it will produce an accurate calibration coefficient. Unfortunately, it requires analysis of the waveguide output signal which, while not time-consuming, seems unnecessary. A given mesh topology and excitation signal should always require the same calibration coefficient, assuming that the geometric source level remains constant. It should be possible to calculate the calibration coefficient for a certain mesh topology, and then to re-use this coefficient across simulations. This is the approach taken in <span class="citation" data-cites="siltanen_finite-difference_2013">[<a href="#ref-siltanen_finite-difference_2013">4</a>]</span>.</p>
+<p>The second method is superior, in that it will produce an accurate calibration coefficient. Unfortunately, it requires analysis of the waveguide output signal which, while not time-consuming, seems unnecessary. A given mesh topology and excitation signal should always require the same calibration coefficient, assuming that the geometric source level remains constant. It should be possible to calculate the calibration coefficient for a certain mesh topology, and then to re-use this coefficient across simulations. This is the approach taken in <span class="citation" data-cites="siltanen_finite-difference_2013">[<a href="#ref-siltanen_finite-difference_2013">4</a>]</span> which provides Wayverb’s calibration method.</p>
 <p>This general calibration coefficient is found by exciting a waveguide mesh with an impulsive signal, and recording the pressure at a receiver node immediately adjacent to the source node. The simulation continues until the magnitude of vibrations at the receiver have reduced below some threshold (perhaps falling below the noise floor). Now, the change in pressure at a distance <span class="math inline">\(X\)</span> is known, where <span class="math inline">\(X\)</span> is the inter-nodal spacing of the waveguide mesh. The geometric pressure level at the same distance is given by</p>
 <ol start="6" class="example" type="1">
 <li><span class="math display">\[ p_g=\sqrt{\frac{PZ_0}{4\pi}} / X \]</span></li>
 </ol>
-<p>where <span class="math inline">\(P\)</span> is the source strength and <span class="math inline">\(Z_0\)</span> is the acoustic impedance of air. The waveguide pressure level cannot be directly compared to the geometric pressure level, because the upper portion of the waveguide output frequency range is invalid. The waveguide output must, therefore, be low-pass filtered to extract the valid portion of the spectrum. If the low-pass cutoff is set low enough, then only the DC component of the waveguide output will remain. This DC component can more simply be found simply by accumulating the signal at the receiver. Now, the calibration coefficient <span class="math inline">\(\eta\)</span> can be expressed like so:</p>
+<p>where <span class="math inline">\(P\)</span> is the source strength and <span class="math inline">\(Z_0\)</span> is the acoustic impedance of air. The waveguide pressure level cannot be directly compared to the geometric pressure level, because the upper portion of the waveguide output frequency range is invalid. Instead, the DC levels are compared. The DC component of the waveguide output can be found simply by accumulating the signal at the receiver. Now, the calibration coefficient <span class="math inline">\(\eta\)</span> can be expressed like so:</p>
 <ol start="7" class="example" type="1">
 <li><span class="math display">\[\eta = \frac{p_\text{init}R}{p_\text{DC}X}\]</span></li>
 </ol>
@@ -235,36 +241,97 @@ E_r &amp;= \frac{E_{\text{source}}}{2 \pi r^2 N (1 - \cos\gamma)}
 <p>Experimentally-obtained values of <span class="math inline">\(\frac{p_\text{DC}}{p_\text{init}}\)</span> are given in <span class="citation" data-cites="siltanen_finite-difference_2013">[<a href="#ref-siltanen_finite-difference_2013">4</a>]</span> for several different mesh topologies. To produce normalised waveguide outputs, a calibration coefficient is calculated, using the experimental result corresponding to a rectilinear mesh. The waveguide excitation is then scaled by this calibration coefficient.</p>
 <h4 id="testing">Testing</h4>
 <p>To validate the waveguide calibration procedure, a simple cuboid-shaped room is simulated using the image-source and waveguide methods. The outputs are compared in the frequency-domain, to ensure that the modal responses of the two models match, in shape and in magnitude.</p>
-<p>For cuboid rooms with perfectly reflective surfaces, the image-source method is exact <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">1</a>]</span>, and it remains reasonably accurate for slightly-absorbing surfaces. Additionally, for this room shape, the image source method can be dramatically accelerated, making it possible to calculate extended impulse responses <span class="citation" data-cites="allen_image_1979">[<a href="#ref-allen_image_1979">5</a>]</span>. This accelerated method differs from Wayverb’s image-source finder, in that it can calculate long impulse responses for one specific room shape, whereas Wayverb’s can calculate short responses for arbitrary geometry.</p>
+<p>Although geometric methods are generally not capable of modelling low-frequency modal behaviour, the image-source model in a geometric room is a special case. For cuboid rooms with perfectly reflective surfaces, the image-source method is exact <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">1</a>]</span>, and it remains reasonably accurate for slightly-absorbing surfaces. In cuboid rooms the image-source model can, therefore, predict modal behaviour. Additionally, for this room shape, the image source method can be dramatically accelerated, making it possible to calculate extended impulse responses <span class="citation" data-cites="allen_image_1979">[<a href="#ref-allen_image_1979">5</a>]</span>. This accelerated method differs from Wayverb’s image-source finder, in that it can calculate long impulse responses for one specific room shape, whereas Wayverb’s can calculate short responses for arbitrary geometry.</p>
 <p>If the accelerated method is implemented, it can be used to generate impulse responses which are close to ideal (depending on the surface absorptions used). These impulse responses can be compared to those produced by the waveguide, and if the calibration coefficient has been chosen correctly, then their frequency responses should match.</p>
 <!-- TODO is it worth talking about implementation issues for the accelerated image-source? -->
 <p>A room, measuring <span class="math inline">\(5.56 \times 3.97 \times 2.81\)</span> metres is simulated, using the accelerated image-source and waveguide methods. The source is placed at (1, 1, 1), with a receiver at (2, 3, 1.5). Both methods are run at a sampling rate of 16KHz. The simulation is carried out three times, with surface absorptions of 0.2, 0.1, and 0.05, and in all cases the simulation is run up until the Sabine-estimated RT60, which is 0.52, 1.03 and 2.06 seconds respectively. The resulting frequency responses are shown below.</p>
 <figure>
-<img src="images/calibration.svg" alt="Frequency responses analysis of image-source and waveguide outputs. The initial waveguide level has been calibrated using the technique described above.Room mode frequencies are shown in grey." /><figcaption>Frequency responses analysis of image-source and waveguide outputs. The initial waveguide level has been calibrated using the technique described above.Room mode frequencies are shown in grey.</figcaption>
+<img src="images/calibration.svg" alt="Frequency responses analysis of image-source and waveguide outputs. The initial waveguide level has been calibrated using the technique described above. Room mode frequencies are shown in grey." /><figcaption>Frequency responses analysis of image-source and waveguide outputs. The initial waveguide level has been calibrated using the technique described above. Room mode frequencies are shown in grey.</figcaption>
 </figure>
-<p>The frequency responses match closely, to with a decibel between 30 and 70Hz. There is some divergence at 80Hz, after which the results match closely again until the upper limit of 200Hz. At the upper end of the spectrum, the levels match closely between outputs, but the peaks and troughs are slightly “shifted”.</p>
-<p>There are several possible causes for the differences seen between the outputs of the different models. Firstly, the image-source technique is only exact for perfectly reflecting boundaries. The boundary model used in this image-source implementation is the same locally-reacting surface model that Wayverb uses: the reflection factor is real-valued and angle-dependent. A more physically correct method would be to use complex reflection factors, which would allow phase changes at boundaries to be represented. The boundary model is almost certainly the cause of the largest discrepancy, at around 80Hz: results given in <span class="citation" data-cites="aretz_combined_2009">[<a href="#ref-aretz_combined_2009">6</a>, p. 78]</span> show similar artefacts of the real-value angle-dependent reflection factor, compared against other more accurate image-source boundary types. Due to time constraints, these more complicated boundary models could not be tested here.</p>
+<p>In the graphs, room modes are shown. One of the properties of the waveguide is that it models wave effects which directly contribute to this low-frequency modal behaviour. In the case of arbitrarily-shaped rooms, the image model is not exact, and cannot be used to model low-frequency behaviour in this way, while the waveguide will accurately model low-frequency behaviour in any enclosed space. This is the main reason for using a wave-modelling technique at all, instead of using geometric methods for the entire spectrum.</p>
+<p>Below 30Hz, the responses show significant differences. Between 30 and 70Hz, the responses match closely, to within a decibel. There is some divergence at 80Hz, after which the results match closely again until the upper limit of 200Hz. At the upper end of the spectrum, the levels match closely between outputs, but the peaks and troughs are slightly “shifted”.</p>
+<p>The low-frequency differences can be explained as error introduced by the hard-source/Dirac-delta waveguide excitation method (see <a href="/wayverb/waveguide.html">Digital Waveguide Mesh</a>). This source type has previously been demonstrated to cause significant error at very low frequencies <span class="citation" data-cites="sheaffer_physical_2014">[<a href="#ref-sheaffer_physical_2014">6</a>]</span>.</p>
+<p>There are several possible causes for the remaining differences seen between the outputs of the different models. Firstly, the image-source technique is only exact for perfectly reflecting boundaries. The boundary model used in this image-source implementation is the same locally-reacting surface model that Wayverb uses: the reflection factor is real-valued and angle-dependent. A more physically correct method would be to use complex reflection factors, which would allow phase changes at boundaries to be represented. The boundary model is almost certainly the cause of the largest discrepancy, at around 80Hz: results given in <span class="citation" data-cites="aretz_combined_2009">[<a href="#ref-aretz_combined_2009">7</a>, p. 78]</span> show similar artefacts of the real-value angle-dependent reflection factor, compared against other more accurate image-source boundary types. Due to time constraints, these more complicated boundary models could not be tested here.</p>
 <p>The small frequency shift at the top of the spectrum is most likely to be caused by numerical dispersion in the waveguide mesh. Numerical dispersion becomes more pronounced as frequency increases, which is consistent with the shift seen in the results, which is greater at higher frequencies. The shift may also be caused by slight differences in the dimensions of the modelled room, or the source and receiver positions. In the image-source model, all measurements and positions are exact, but the waveguide must “quantise” the boundary, source, and receiver positions so that they coincide with mesh nodes. If the dimensions of the room were adjusted slightly, this would also cause the room modes to change (which again would be more pronounced at higher frequencies), which might lead to a perceived spectral shift relative to a room with exact dimensions.</p>
-<p>Despite the small differences, between the frequency responses, the close level match between models suggests that the calibration coefficient is correct.</p>
+<p>Despite the small differences between the frequency responses, the close level match between models suggests that the calibration coefficient is correct.</p>
+<p>The reverb times of the outputs are also compared and shown in the following table.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">absorption</th>
+<th style="text-align: left;">method</th>
+<th style="text-align: left;">T20 / s</th>
+<th style="text-align: left;">T30 / s</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">0.05</td>
+<td style="text-align: left;">exact image source</td>
+<td style="text-align: left;">1.044</td>
+<td style="text-align: left;">1.065</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">0.05</td>
+<td style="text-align: left;">waveguide</td>
+<td style="text-align: left;">1.165</td>
+<td style="text-align: left;">1.180</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">0.10</td>
+<td style="text-align: left;">exact image source</td>
+<td style="text-align: left;">0.5401</td>
+<td style="text-align: left;">0.5633</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">0.10</td>
+<td style="text-align: left;">waveguide</td>
+<td style="text-align: left;">0.5689</td>
+<td style="text-align: left;">0.5905</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">0.20</td>
+<td style="text-align: left;">exact image source</td>
+<td style="text-align: left;">0.2768</td>
+<td style="text-align: left;">0.2990</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">0.20</td>
+<td style="text-align: left;">waveguide</td>
+<td style="text-align: left;">0.2674</td>
+<td style="text-align: left;">0.2880</td>
+</tr>
+</tbody>
+</table>
+<p>There is a difference of 11% for the lowest absorption, which falls to 6% for an absorption of 0.10, and to 4% for an absorption of 0.20. Given that the image-source method is nearly exact in cuboid rooms, these differences are small enough to suggest that the waveguide and its boundary model have been implemented correctly.</p>
 <h1 id="bibliography" class="unnumbered">References</h1>
 <div id="refs" class="references">
 <div id="ref-kuttruff_room_2009">
 <p>[1] H. Kuttruff, <em>Room Acoustics, Fifth Edition</em>. CRC Press, 2009. </p>
 </div>
 <div id="ref-schroder_physically_2011">
-<p>[2] D. Schröder, <em>Physically based real-time auralization of interactive virtual environments</em>, vol. 11. Logos Verlag Berlin GmbH, 2011 [Online]. Available: <a href="https://books.google.com/books?hl=en&amp;lr=&amp;id=HtDxSt0jcRkC&amp;oi=fnd&amp;pg=PR17&amp;dq=+Dirk+Schro+%CC%88der+Physically+Based+Real-Time+Auralization+of+Interactive+Virtual+Environments&amp;ots=CCbCVBNlmn&amp;sig=CAlxZysU-fxjnSkG_X1_dffQ72o">https://books.google.com/books?hl=en&amp;lr=&amp;id=HtDxSt0jcRkC&amp;oi=fnd&amp;pg=PR17&amp;dq=+Dirk+Schro+%CC%88der+Physically+Based+Real-Time+Auralization+of+Interactive+Virtual+Environments&amp;ots=CCbCVBNlmn&amp;sig=CAlxZysU-fxjnSkG_X1_dffQ72o</a>. [Accessed: 05-Dec-2016]</p>
+<p>[2] D. Schröder, <em>Physically based real-time auralization of interactive virtual environments</em>, vol. 11. Logos Verlag Berlin GmbH, 2011. </p>
 </div>
 <div id="ref-southern_spatial_2011">
-<p>[3] A. Southern, S. Siltanen, and L. Savioja, “Spatial room impulse responses with a hybrid modeling method,” in <em>Audio Engineering Society Convention 130</em>, 2011 [Online]. Available: <a href="http://www.aes.org/e-lib/browse.cfm?elib=15852" class="uri">http://www.aes.org/e-lib/browse.cfm?elib=15852</a>. [Accessed: 05-Dec-2016]</p>
+<p>[3] A. Southern, S. Siltanen, and L. Savioja, “Spatial room impulse responses with a hybrid modeling method,” in <em>Audio Engineering Society Convention 130</em>, 2011. </p>
 </div>
 <div id="ref-siltanen_finite-difference_2013">
-<p>[4] S. Siltanen, A. Southern, and L. Savioja, “Finite-difference time domain method source calibration for hybrid acoustics modeling,” in <em>2013 IEEE International Conference on Acoustics, Speech and Signal Processing</em>, 2013, pp. 166–170 [Online]. Available: <a href="http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6637630" class="uri">http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6637630</a>. [Accessed: 05-Dec-2016]</p>
+<p>[4] S. Siltanen, A. Southern, and L. Savioja, “Finite-difference time domain method source calibration for hybrid acoustics modeling,” in <em>2013 IEEE International Conference on Acoustics, Speech and Signal Processing</em>, 2013, pp. 166–170. </p>
 </div>
 <div id="ref-allen_image_1979">
-<p>[5] J. B. Allen and D. A. Berkley, “Image method for efficiently simulating small-room acoustics,” <em>The Journal of the Acoustical Society of America</em>, vol. 65, no. 4, pp. 943–950, 1979 [Online]. Available: <a href="http://scitation.aip.org/content/asa/journal/jasa/65/4/10.1121/1.382599" class="uri">http://scitation.aip.org/content/asa/journal/jasa/65/4/10.1121/1.382599</a>. [Accessed: 05-Dec-2016]</p>
+<p>[5] J. B. Allen and D. A. Berkley, “Image method for efficiently simulating small-room acoustics,” <em>The Journal of the Acoustical Society of America</em>, vol. 65, no. 4, pp. 943–950, 1979. </p>
+</div>
+<div id="ref-sheaffer_physical_2014">
+<p>[6] J. Sheaffer, M. van Walstijn, and B. Fazenda, “Physical and numerical constraints in source modeling for finite difference simulation of room acousticsa),” <em>The Journal of the Acoustical Society of America</em>, vol. 135, no. 1, pp. 251–261, 2014. </p>
 </div>
 <div id="ref-aretz_combined_2009">
-<p>[6] M. Aretz, R. Nöthen, M. Vorländer, and D. Schröder, “Combined broadband impulse responses using FEM and hybrid ray-based methods,” in <em>EAA Symposium on Auralization</em>, 2009 [Online]. Available: <a href="https://www.researchgate.net/profile/Dirk_Schroeder/publication/258098666_Combined_Broadband_Impulse_Responses_Using_FEM_and_Hybrid_Ray-Based_Methods/links/54fd4d800cf2c3f52424436f.pdf" class="uri">https://www.researchgate.net/profile/Dirk_Schroeder/publication/258098666_Combined_Broadband_Impulse_Responses_Using_FEM_and_Hybrid_Ray-Based_Methods/links/54fd4d800cf2c3f52424436f.pdf</a>. [Accessed: 05-Dec-2016]</p>
+<p>[7] M. Aretz, R. Nöthen, M. Vorländer, and D. Schröder, “Combined broadband impulse responses using FEM and hybrid ray-based methods,” in <em>EAA Symposium on Auralization</em>, 2009. </p>
 </div>
 </div>
 

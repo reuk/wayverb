@@ -97,6 +97,7 @@ section shows that the waveguide boundaries exhibit the expected wall impedance
 
 In the tests below, all impulse responses are produced using the Wayverb
 software.  Reverb times are calculated using the Room EQ Wizard [@_room_2017].
+The test projects can be found in the Wayverb repository.
 
 <div id="audio_table">
 
@@ -212,14 +213,8 @@ sizes.\label{fig:room_size_spectrograms}](images/room_size_spectrograms)
 This result is difficult to explain. A shorter reverb time indicates that
 energy is removed from the model at a greater rate than expected. Energy in the
 waveguide model is lost only at boundaries, so the most likely explanation is
-that these boundaries are too absorbent.  However, the tests in the [Hybrid
-Model]({{ site.baseurl }}{% link hybrid.md %}) section show that the waveguide
-reverb times match the reverb times of the exact image-source model, which will
-be close to the analytical solution in a cuboid room. Additionally, the tests
-in the [Boundary Modelling]({{ site.baseurl }}{% link boundary.md %}) section
-show that wall impedances are accurately modelled. These test results suggest
-that the waveguide implementation is correct, in which case the error must lie
-with the ray tracer output.
+that these boundaries are too absorbent. It is also possible that the
+microphone model causes additional unexpected attenuation.
 
 Further tests (not shown) of the three rooms were carried out to check possible
 causes of error.  In one test, the Yule-Walker-generated boundary filters were
@@ -229,27 +224,34 @@ In a second test, the modelled omnidirectional microphone at the receiver was
 removed, and the raw pressure value at the output node was used instead, to
 check that the microphone was not introducing undesired additional attenuation.
 However, in both tests, similar results were produced, with reverb times
-significantly lower than the Sabine prediction.
+significantly lower than the Sabine prediction. The boundary and microphone
+models do not appear to be the cause of the problem.
 
-One possibility is that the Sabine equation is simply a poor predictor of
+The reverb-time test at the end of the [Hybrid Model]({{ site.baseurl }}{% link
+hybrid.md %}) section shows that the waveguide reverb times match the reverb
+times of the exact image-source model, which will be close to the analytical
+solution in a cuboid room. The close match to the almost-exact image-source
+model suggests that the waveguide and boundary model have been implemented
+correctly. Additionally, the tests in the [Boundary Modelling]({{ site.baseurl
+}}{% link boundary.md %}) section show that wall impedances are accurately
+modelled.
+
+Given that in all previous tests the waveguide behaves as expected, one
+possibility is that the Sabine equation is simply a poor predictor of
 low-frequency reverb times, or reverb times in regularly-shaped rooms with
 well-defined reflection patterns (such as cuboids). If this were the case, this
-might justify the waveguide results. This is a reasonable possibility: the
+might justify the waveguide results. This is a reasonable suggestion: the
 Sabine equation assumes that the sound field is diffuse, which in turn requires
 that at any position within the room, reverberant sound has equal intensity in
 all directions, and random phase relations [@hodgson_when_1994]. This is
 obviously untrue in a cuboid at low frequencies, where the non-random phase of
 reflected waves causes strong modal behaviour due to waves resonating between
 the parallel walls of the enclosure.
- 
-If the waveguide behaviour is accepted as correct, then the geometric results
-with their relatively extended reverb times must be incorrect. This is not
-unexpected, as geometric methods are approximate by nature.  The difference in
-reverb times is an obvious artefact in the output, which affects the impulse
-response's suitability for musical applications. The only solution in this case
-is to generate as much of the spectrum as possible with the waveguide. Of
-course, this solution fails to retain the efficiency benefits of the hybrid
-approach to acoustic simulation.
+
+Further testing is required to locate the exact cause of the differences in
+reverb times. In the present implementation, the mismatch is an obvious
+artefact in the output, which affects the impulse response's suitability for
+musical applications.
 
 <div id="audio_table">
 
@@ -682,7 +684,7 @@ improvements to the simulation speed. It may be equally valid to simply wait
 for hardware with increased parallelism support: a machine with twice as many
 graphics cores will run the program twice as fast. Such machines are likely to
 be commonplace in two or three years. Therefore, a better use of time would be
-to spend those two years focussing on the algorithm's functional problems
+to spend those two years focusing on the algorithm's functional problems
 rather than optimisation.
 
 #### User Interface
@@ -809,7 +811,7 @@ of the outputs; and/or by further optimisation of the simulation algorithms.
 
 The application has an accessible graphical interface. Although some desirable
 features (such as built-in convolution and 3D editing) are missing, the
-interface is focussed and functional. It is possible to install and use without
+interface is focused and functional. It is possible to install and use without
 specialist training.  Additionally, all code is open-source, allowing
 collaboration and contribution from interested third-parties. While the
 accuracy and efficiency goals were not conclusively met, it is clear that the

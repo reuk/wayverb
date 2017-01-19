@@ -240,14 +240,4 @@ var NAVTREEINDEX5 =
 "structwayverb_1_1core_1_1triangle.html#aa4b5783a18bab1659bddc150e03982af":[2,0,7,1,67,0],
 "structwayverb_1_1core_1_1triangle__inter.html":[2,0,7,1,68],
 "structwayverb_1_1core_1_1triangle__inter.html#a350072414ff884a1304e2d7f236c2a6c":[2,0,7,1,68,2],
-"structwayverb_1_1core_1_1triangle__inter.html#a68a787a9ad9e178dcd07d4f2825e659f":[2,0,7,1,68,1],
-"structwayverb_1_1core_1_1triangle__inter.html#adbe5e417d8d4e6af962e6d0b1cc15fd0":[2,0,7,1,68,0],
-"structwayverb_1_1core_1_1triangle__verts.html":[2,0,7,1,69],
-"structwayverb_1_1core_1_1triangle__verts.html#a27784fd2b270b341a65546c1ef3abdb0":[2,0,7,1,69,1],
-"structwayverb_1_1core_1_1triangle__verts.html#abf63b0e5751be3be63ecc4acce1318c3":[2,0,7,1,69,2],
-"structwayverb_1_1core_1_1triangle__verts.html#ad314f220870eabf33b2a026b82f9b432":[2,0,7,1,69,0],
-"structwayverb_1_1core_1_1unit__constructor.html":[2,0,7,1,70],
-"structwayverb_1_1core_1_1unit__constructor_3_01cl__float1_01_4.html":[2,0,7,1,71],
-"structwayverb_1_1core_1_1unit__constructor_3_01cl__float2_01_4.html":[2,0,7,1,72],
-"structwayverb_1_1core_1_1unit__constructor_3_01cl__float4_01_4.html":[2,0,7,1,73]
-};
+"structway

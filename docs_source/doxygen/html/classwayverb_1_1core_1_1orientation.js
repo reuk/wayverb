@@ -1,6 +1,6 @@
 var classwayverb_1_1core_1_1orientation =
 [
-    [ "orientation", "classwayverb_1_1core_1_1orientation.html#aba0de40127fc343d475519ff7dcdc14e", null ],
+    [ "orientation", "classwayverb_1_1core_1_1orientation.html#a6eef46e919688cacd83f58c75e86013c", null ],
     [ "get_matrix", "classwayverb_1_1core_1_1orientation.html#aab86a34be35d846e651729587612c3bb", null ],
     [ "get_pointing", "classwayverb_1_1core_1_1orientation.html#a6bc33c0d624d9809fbc915d873f7efe0", null ],
     [ "get_up", "classwayverb_1_1core_1_1orientation.html#a7374394e8c792ae16874813574206683", null ],

@@ -15,19 +15,22 @@ reference-section-title: References
 The *digital waveguide mesh* (DWM) is one of several wave-based simulation
 techniques.  Each technique in this family is derived directly from the wave
 equation, allowing them to inherently support wave phenomena such as
-diffraction and interference.  Wave effects such as these are particularly
-important to the low-frequency response of a room.  This means that at low
-frequencies wave-based methods are far more accurate than geometric methods,
-which are not able to model wave effects [@southern_spatial_2011].
+diffraction and interference.  Wave effects such as these have a great effect
+upon the low-frequency response of a room.  This means that at low frequencies
+wave-based methods are far more accurate than geometric methods, which are not
+able to model wave effects [@southern_spatial_2011].
 
 The drawback of wave-based methods is that their computational complexity
-increases rapidly with the maximum output frequency, and with the size of the
-modelled space.  On current consumer hardware, it is not feasible to compute a
-full-spectrum simulation using wave-based techniques.  To optimise computation
-time, while retaining reasonable accuracy across the spectrum, wave-based
-methods can be combined with geometric methods.  Wave-based methods are used to
-calculate accurate low-frequency content, while geometric methods can estimate
-the higher frequency content, which is less dependent upon wave effects.
+increases rapidly with the maximum output frequency, and with the volume of the
+modelled space. A waveguide simulation of a space with volume $V$, at sampling
+frequency $f_s$, will have a complexity of $O(V f_s^3)$. This means that, on
+current consumer hardware, it is not feasible to compute a full-spectrum
+simulation using wave-based techniques.  The hybrid simulation method
+implemented in Wayverb aims to optimise computation time, while retaining
+reasonable accuracy across the spectrum, by combining wave-based methods with
+geometric methods.  Wave-based methods are used to calculate accurate
+low-frequency content, while geometric methods estimate the higher frequency
+content, which is less dependent upon wave effects.
 
 There are, largely speaking, two main types of wave-based simulation used for
 room acoustics: element methods, and finite difference methods.  The waveguide
@@ -54,14 +57,15 @@ and position $x$ can be written as
 (@) $$y(t,x)=y_r\left(t-\frac{x}{c}\right) + y_l\left(t+\frac{x}{c}\right)$$
 
 where $y_r\left(t-\frac{x}{c}\right)$ and $y_l\left(t+\frac{x}{c}\right)$ are
-the right- and left-going travelling waves respectively, with speed $c$.  The
-discrete form of this equation is given in terms of constant time and space
-divisions $T$ and $X$:
+the right- and left-going travelling waves respectively, with speed $c$
+[@smith_physical_1992].  The discrete form of this equation is given in terms
+of constant time and space divisions, $T$ and $X$ respectively:
 
 (@) $$y(nT,mX) \buildrel \Delta \over = y^+(n-m) + y^-(n+m)$$
 
 where superscript $+$ and $-$ denote propagation to the right and left
-respectively, and $n$ and $m$ are integral [@smith_iii_equivalence_2004].
+respectively, and $n$ and $m$ are integers, used to index the
+spatial and temporal sampling intervals [@smith_iii_equivalence_2004].
 
 An implementation of these equations will take the form of two parallel delay
 lines, which propagate wave components in opposite directions.  This is shown
@@ -136,14 +140,22 @@ and so the inequality above can be simplified:
 
 (@) $$T=\frac{X}{c\sqrt{N}}$$
 
-Note that a higher output sampling rate requires a smaller inter-nodal spacing
-and therefore more modelled points per-unit-volume, which in turn requires more
-memory and more calculations per time step.  Unfortunately, the valid bandwidth
-of the output is generally smaller than the maximum available bandwidth, i.e.
-up to the Nyquist frequency [@kowalczyk_room_2011].  The waveguide sampling
-rate must generally be at least four times the maximum required output
-frequency for higher-dimensional simulations (more detailed bandwidths for some
-common topologies are given in [@kowalczyk_room_2011]).
+A higher output sampling rate requires a smaller inter-nodal spacing and
+therefore more modelled points per-unit-volume, which in turn requires more
+memory and more calculations per time step.
+
+An output signal created using a mesh with a sampling frequency $f_s = 1/T$ has
+a maximum available bandwidth which spans from DC to the Nyquist frequency,
+$0.5 \cdot f_s$. However, the *valid* bandwidth of the waveguide output is
+often considerably lower. For example, the highest valid frequency in the
+rectilinear mesh is $0.196 \cdot f_s$. Detailed bandwidth information for other
+mesh topologies is given in [@kowalczyk_room_2011]. The output signal will
+contain high-frequency content above the maximum valid frequency, however
+numerical dispersion in this region is so high that the results are completely
+non-physical. To ensure that the output only contains frequencies within the
+valid bandwidth, the invalid high frequency content must be removed using a
+low-pass filter at the output. Alternatively, the mesh may be excited using an
+input signal with no frequency content above the maximum valid frequency.
 
 ### Strengths and Weaknesses of the DWM
 
@@ -173,23 +185,23 @@ homogeneous physical media, the velocity of wave propagation in the DWM depends
 on the direction of propagation, and also on the frequency of the wave
 component.  This leads to errors in the frequency response of recorded signals,
 especially toward the upper limit of the output bandwidth.  The exact pattern
-of dispersion error is dependent upon the topology of the mesh, and can be
-examined using *Von Neumann* analysis [@van_duyne_3d_1996].  One solution to
-the dispersion problem is to increase the sampling rate of the mesh, moving the
-high-error area out of the region of interest.  Of course, this can quickly
-become very expensive, as the number of nodes, and therefore memory usage and
-computation time is proportional to the inverse cube of the sampling period.
-Another option is to use a mesh topology designed to reduce both direction- and
-frequency-dependent error, such as those presented in [@kowalczyk_room_2011].
-One interesting variation on this option is to reduce only direction-dependent
-error, and then to compensate for frequency-dependent error with a
-post-processing step, which is the approach taken in
-[@savioja_interpolated_2001].  However, these mesh topologies with higher
-accuracy and isotropy require relatively high numbers of calculations per node.
-The interpolated schemes in [@kowalczyk_room_2011] require 27 additions and 4
-multiplications per node, whereas a tetrahedral mesh would require 5 additions
-and 1 multiplication.  It is clear that high-accuracy results will be very
-costly to compute, whichever method is used.
+of dispersion error is dependent upon the topology of the mesh (topology is
+explained in [Mesh Topology] subsection), and can be examined using *Von
+Neumann* analysis [@van_duyne_3d_1996].  One solution to the dispersion problem
+is to increase the sampling rate of the mesh, moving the high-error area out of
+the region of interest.  Of course, this can quickly become very expensive, as
+the number of nodes, and therefore memory usage and computation time is
+proportional to the inverse cube of the sampling period.  Another option is to
+use a mesh topology designed to reduce both direction- and frequency-dependent
+error, such as those presented in [@kowalczyk_room_2011].  One interesting
+variation on this option is to reduce only direction-dependent error, and then
+to compensate for frequency-dependent error with a post-processing step, which
+is the approach taken in [@savioja_interpolated_2001].  However, these mesh
+topologies with higher accuracy and isotropy require relatively high numbers of
+calculations per node.  The interpolated schemes in [@kowalczyk_room_2011]
+require 27 additions and 4 multiplications per node, whereas a tetrahedral mesh
+would require 5 additions and 1 multiplication.  It is clear that high-accuracy
+results will be very costly to compute, whichever method is used.
 
 <!-- TODO how problematic are stepped boundaries? -->
 
@@ -222,40 +234,41 @@ nodes that will be checked during update. Note that the tetrahedral topology is
 unique, in that nodes can have two different
 orientations.\label{fig:topology}](images/topology)
 
-The accuracy may be increased by overlaying or "superposing" cubic, octahedral,
-and dodecahedral schemes together, as all nodes are oriented uniformly, and
-have cubic tessellation.  Such schemes are known as *interpolated*, and in
-these schemes each node has 26 neighbours.  The cubic, octahedral,
-dodecahedral, and interpolated schemes may additionally all be represented by a
-single "unified" update equation, described in [@kowalczyk_room_2011].  In this
-respect the tetrahedral scheme is unique, requiring a dedicated update method.
-This is because the nodes in a tetrahedral mesh may be oriented in either of
-two directions, effectively requiring two update equations instead of one.
+The accuracy may be increased by overlaying or "superposing" rectilinear,
+octahedral, and dodecahedral schemes together, as all nodes are oriented
+uniformly, and have cubic tessellation.  Such schemes are known as
+*interpolated*, and in these schemes each node has 26 neighbours.  The
+rectilinear, octahedral, dodecahedral, and interpolated schemes may
+additionally all be represented by a single "unified" update equation,
+described in [@kowalczyk_room_2011].  In this respect the tetrahedral scheme is
+unique, requiring a dedicated update method.  This is because the node
+connection in a tetrahedral mesh may be oriented in either of two directions,
+effectively requiring two update equations instead of one.
 
 If the primary concern is speed rather than accuracy, a scheme with fewer
 neighbour nodes should be used, as the number of calculations per node is
-proportional to the number of neighbours [@campos_computational_2005].  This is
-especially true for the tetrahedral topology, which is the least dense.  That
-is, it requires the fewest nodes to fill a volume at any given sampling rate.
-Fewer nodes to update means fewer calculations, and a faster overall
-simulation.  Lower density meshes also require less storage, so the tetrahedral
-scheme is the most memory efficient.
+proportional to the number of neighbours [@campos_computational_2005]. The
+tetrahedral mesh has fewest neighbours per node, and also has the lowest
+density. That is, it requires the fewest nodes to fill a volume at any given
+sampling rate.  Fewer nodes to update means fewer calculations, and a faster
+overall simulation.  Lower density meshes also require less storage, so the
+tetrahedral scheme is the most time and memory efficient.
 
-Now, to optimise for accuracy, it now appears that there are two possible
-approaches: The first option is to use an interpolated scheme, which is
-relatively inefficient in terms of time and space requirements, but which is
-most accurate for any given sampling rate.  The second option is to use a
-tetrahedral mesh, which is inaccurate but the most time- and space-efficient,
-and to oversample until the required accuracy is achieved.  Unfortunately,
-there is no prior research comparing the accuracy and efficiency of the
-tetrahedral topology against interpolated schemes.  Due to time constraints,
-this could not be investigated as part of the Wayverb project (implementation
-and numerical analysis of mesh topologies is not trivial).  It was, however,
-noted that the tetrahedral mesh is the more flexible of the two approaches.
-That is, when accuracy is not important, the tetrahedral mesh will always be
-most efficient, but it can be made more accurate by oversampling.  On the other
-hand, the interpolated schemes cannot be tuned to produce less accurate results
-quickly - they will always be accurate but inefficient.  For these reasons, the
+To optimise for accuracy, it appears that there are two possible approaches:
+The first option is to use an interpolated scheme, which is relatively
+inefficient in terms of time and space requirements, but which is most accurate
+for any given sampling rate.  The second option is to use a tetrahedral mesh,
+which is inaccurate but the most time- and space-efficient, and to oversample
+until the required accuracy is achieved.  Unfortunately, there is no prior
+research comparing the accuracy and efficiency of the tetrahedral topology
+against interpolated schemes.  Due to time constraints, this could not be
+investigated as part of the Wayverb project (implementation and numerical
+analysis of mesh topologies is not trivial).  It was, however, noted that the
+tetrahedral mesh is the more flexible of the two approaches.  That is, when
+accuracy is not important, the tetrahedral mesh will always be most efficient,
+but it can be made more accurate by oversampling.  On the other hand, the
+interpolated schemes cannot be tuned to produce less accurate results quickly -
+they will always be accurate but inefficient.  For these reasons, the
 tetrahedral mesh was initially chosen for use in Wayverb.
 
 The tetrahedral mesh was implemented during within the first two months of the
@@ -273,36 +286,38 @@ formulation of boundary conditions for complex room shapes.
 The design of a new boundary formulation is outside the scope of this research,
 which was primarily concerned with the implementation of existing techniques
 rather than the derivation of new ones.  Instead, the standard leapfrog
-(rectilinear) scheme was used.  Most of the tetrahedral code had to be
-rewritten, as the update schemes are very different (tetrahedral nodes have two
-possible update equations depending on node orientation), and the memory layout
-and indexing methods are more involved.  The new scheme is much simpler than
-the tetrahedral mesh, and was quick to implement.
+(rectilinear) scheme was adopted at this point.  Most of the tetrahedral code
+had to be rewritten, as the update schemes are very different (tetrahedral
+nodes have two possible update equations depending on node orientation), and
+the memory layout and indexing methods are more involved.  The new scheme is
+much simpler than the tetrahedral mesh, and was quick to implement.
 
 The rectilinear mesh uses the same cubic tessellation as the more complex
 topologies mentioned earlier, so in the future the update equation could
 conceivably be replaced with a more accurate "interpolated" alternative.  Such
-a scheme would yield better computational efficiency for simulations where high
-accuracy is required.  The conversion would only require changes to the update
-equations (and would complicate the boundary modelling code), but would be more
-straightforward than the move from the tetrahedral to the rectilinear topology.
-Due to time constraints, this was not possible during the project, meaning that
-the waveguide in Wayverb is not the most optimal in terms of accuracy *or*
-speed - instead, it was optimised for ease and speed of implementation.  Use of
-a more suitable mesh topology would be a sensible starting point for future
-development work on the project.
+a scheme would be more suitable than the rectilinear mesh for simulations where
+high accuracy is required.  The conversion would only require changes to the
+update equations (and would complicate the boundary modelling code), but would
+be more straightforward than the move from the tetrahedral to the rectilinear
+topology.  Due to time constraints, this was not possible during the project,
+meaning that the waveguide in Wayverb is not the most optimal in terms of
+accuracy *or* speed. Interpolated meshes are more accurate, and tetrahedral
+meshes are faster, although the rectilinear mesh is the fastest mesh with a
+cubic stencil. Instead, Wayverb's waveguide was optimised for ease and speed of
+implementation.  Use of a more suitable mesh topology would be a sensible
+starting point for future development work on the project.
 
 ### Source Excitation Method
 
-The question of input and output in the digital waveguide mesh is superficially
+Input and output methods for the digital waveguide mesh are superficially
 simple.  The waveguide mesh is a physical model, and so it is easy to draw an
 analogy between the waveguide process, and the process of recording a physical
-impulse response.  For physical spaces, a speaker plays a signal at some
-location within the space, and a microphone reads the change in air pressure
-over time at another point in the space.  The impulse response is found by
-deconvolving the input signal from the recorded signal.  The analogue of this
-process within the waveguide mesh is to excite the mesh at one node, and to
-record the pressure at some output node at each time step, which is then
+impulse response.  Typically, for physical spaces, a speaker plays a signal at
+some location within the space, and a microphone reads the change in air
+pressure over time at another point in the space.  The impulse response is
+found by deconvolving the input signal from the recorded signal.  The analogue
+of this process within the waveguide mesh is to excite the mesh at one node,
+and to record the pressure at some output node at each time step, which is then
 deconvolved as before.  Recording node pressures is simple, and deconvolution
 is a well-known technique.  Injecting a source signal, however, requires
 careful engineering in order to maintain the physical plausibility and
@@ -421,18 +436,18 @@ first time derivative of fluid emergence.  Fluid emergence should start and end
 at zero, which in turn enforces a null DC component.
 
 Some particular possibilities for the input signal are the *sine-modulated
-Gaussian pulse*, the *differentiated Gaussian pulse*, and the *Ricker wavelet*.
-All of these signals satisfy the differentiation constraint and the length
-constraint.  However, they all have non-flat pass-bands, as shown in the
-following figure\text{ (\ref{fig:input_signal_info})}.  A final option is the
-*physically constrained source* (PCS) model presented in
-[@sheaffer_physical_2014].  This method can be used to create input signals
-with pass-bands much flatter than those of the more conventional pulse and
-wavelet signals. PCS signals obey the differentiation constraint, have wide and
-flat passbands, and are short in time.  They use soft-source injection, so will
-not cause scattering artefacts, and as they have no DC component, they should
-not introduce solution-growth.  A PCS input signal seems like and obvious
-choice for this application.  
+Gaussian pulse* [jeong_source_2012], and the *differentiated Gaussian pulse*
+and *Ricker wavelet* [@sheaffer_physical_2014].  All of these signals satisfy
+the differentiation constraint and the length constraint.  However, they all
+have non-flat pass-bands, as shown in the following figure\text{
+(\ref{fig:input_signal_info})}.  A final option is the *physically constrained
+source* (PCS) model presented in [@sheaffer_physical_2014].  This method can be
+used to create input signals with pass-bands much flatter than those of the
+more conventional pulse and wavelet signals. PCS signals obey the
+differentiation constraint, have wide and flat passbands, and are short in
+time.  They use soft-source injection, so will not cause scattering artefacts,
+and as they have no DC component, they should not introduce solution-growth.  A
+PCS input signal seems like and obvious choice for this application.  
 
 ![The time-domain and frequency-domain responses of some signals commonly used
 as FDTD excitations.  All signals are shown with an upper cutoff of $0.2f_s$.
@@ -474,12 +489,14 @@ depending on the input signal.  As expected, the Dirac signal exhibits the
 largest rate of growth, followed by the differentiated Gaussian, sine-modulated
 Gaussian, Ricker wavelet, and finally the PCS signal.  All the sources with no
 DC component show significantly less solution-growth than the transparent Dirac
-source.  The PCS especially has a much lower rate of growth than the
-alternatives. However, all inputs *do* show the effects of solution-growth.
+source.  The PCS has a much lower rate of growth than the alternatives.
+However, all inputs *do* show the effects of solution-growth.
 
 ![Solution growth in the waveguide mesh with a selection of different inputs.
 Results are normalized so that the initial wave-fronts have the same magnitude.
-Note the different amplitude scales.
+The overlays show the initial 500 samples of the response on the same scale,
+highlighting the different shapes of the excitation signals. The full signals
+are shown behind, with *different* amplitude scales.
 \label{fig:solution_growth_results}](images/solution_growth)
 
 The solution-growth seen here only becomes prominent towards the end of the
@@ -505,7 +522,7 @@ multiplies as the simulation progresses.
 
 Whatever the reason, it is clear that using a soft source generally causes a DC
 offset to accumulate, even when the input signal has no DC component.  Soft
-sources may be suitable for shorter simulations, however, without running the
+sources may be suitable for shorter simulations. However, without running the
 simulation, it is impossible to know how much DC will accumulate, and whether
 or not it will remain within acceptable bounds.  Therefore, in general, current
 forms of the soft source are not appropriate for arbitrary room simulation.
@@ -517,11 +534,13 @@ than an exponential growth. The oscillation tends to be below the audible
 range, and therefore can be removed without affecting the perceived quality of
 the simulation. This removal is achieved with no phase modifications by
 transforming the signal into the frequency domain, smoothly attenuating the
-lowest frequencies, and then converting back to the time domain.
-The main drawback of the hard source is its scattering characteristic.
-Though undesirable, this behaviour has a physical analogue: in a
-physical recording, reflected wave-fronts would be scattered from the speaker
-cabinet or starter pistol used to excite the space.
+lowest frequencies, and then converting back to the time domain. This is the
+same filtering process used throughout Wayverb, described in detail in the [Ray
+Tracer]({{ site.baseurl }}{% link ray_tracer.md %}) section.  The main drawback
+of the hard source is its scattering characteristic.  Though undesirable, this
+behaviour has a physical analogue: in a physical recording, reflected
+wave-fronts would be scattered from the speaker cabinet or starter pistol used
+to excite the space.
 
 The creation of soft sources which do not cause solution growth is an important
 area for future research.  Code for modelling soft sources remains in the
@@ -552,29 +571,32 @@ where $\lambda$ is the Courant number, set to its maximum stable value.  Now,
 the axis-aligned bounding box of the scene is found, and padded to exact
 multiples of the grid spacing along all axes.  The exact padding is chosen so
 that one node will fall exactly at the receiver position, and so that there is
-room for an "outer layer" at least two nodes deep around the scene.  If the new
-padded bounding box has minimum and maximum corners at 3D points $c_0$ and
-$c_1$, then the position of the node with integer indices $(i, j, k)$ is given
-by $c_0 + X(i, j, k)$. The number of nodes in each direction is given by
-$\frac{c_1 - c_0}{X}$. The actual node positions are never computed and stored,
-because this would take a lot of memory. Instead, because the calculation is so
-cheap, they are recomputed from the node index, bounding box, and mesh spacing
-whenever they are needed.
+room for an "outer layer" at least two nodes deep around the scene. This outer
+padding is to accommodate for boundary nodes, which will always be quantised to
+positions just outside the modelled enclosure. If the new padded bounding box
+has minimum and maximum corners at 3D points $c_0$ and $c_1$, then the position
+of the node with integer indices $(i, j, k)$ is given by $c_0 + X(i, j, k)$.
+The number of nodes in each direction is given by $\frac{c_1 - c_0}{X}$. The
+actual node positions are never computed and stored, because this would take a
+lot of memory. Instead, because the calculation is so cheap, they are
+recomputed from the node index, bounding box, and mesh spacing whenever they
+are needed.
 
 Each node position must be checked, to determine whether it falls inside or
 outside the scene.  The algorithm for checking whether a node is inside or
 outside is conceptually very simple: Follow a ray from the node position in a
-uniformly random direction, until it leaves the scene bounding box.  If the ray
-intersects with an odd number of surfaces, the point is inside; otherwise it is
-outside.  There is an important special case to consider. Floating-point math
-is imprecise, so rays which "graze" the edge of a triangle may be falsely
-reported as intersecting or not-intersecting. This is especially problematic if
-the ray intersects an edge between two triangles, in which case zero, one, or
-two intersections may be registered. To solve this problem, the intersection
-test can return three states instead of two ("uncertain" as well as "definite
-intersection" and "definitely no intersection"), and if the result is
-"uncertain" a new random ray is fired. The process then repeats until a ray
-with no grazing intersections is found.  Note that this algorithm relies on
+random direction chosen from a uniform distribution, until it leaves the scene
+bounding box.  If the ray intersects with an odd number of surfaces, the point
+is inside; otherwise it is outside.  There is an important special case to
+consider. Floating-point math is imprecise, so rays which "graze" the edge of a
+triangle may be falsely reported as intersecting or not-intersecting. This is
+especially problematic if the ray intersects an edge between two triangles, in
+which case zero, one, or two intersections may be registered. To solve this
+problem, the intersection test can return three states instead of two
+("uncertain" as well as "definite intersection" and "definitely no
+intersection"). If the ray grazes any triangle, then "uncertain" is returned,
+and a new random ray is fired. The process then repeats until a ray with no
+grazing intersections is found.  Note that this algorithm relies on
 ray-casting, which means that it can be accelerated using the voxel-based
 method discussed in the [Image Source]({{ site.baseurl }}{% link
 image_source.md %}) section. All tests are carried out in parallel on the GPU,
@@ -587,17 +609,22 @@ Now the inner nodes are known. However, the remaining nodes are not all
 Modelling]({{ site.baseurl }}{% link boundary.md %})). These boundary nodes
 must be found and classified.
 
-Boundary nodes fall into four main categories, shown in the following
+Boundary nodes fall into three main categories, shown in the following
 diagram\text{ (\ref{fig:boundary_types})}:
 
-* **1D** nodes are situated directly adjacent to a single inner node in one of the six axial directions.
-* **2D** nodes are next to a single inner node in one of the twelve on-axis diagonal directions.
-* **3D** nodes are next to a single inner node in one of the eight off-axis diagonal directions.
-* **Re-entrant** nodes are adjacent to two or more inner nodes.
+- **1D** nodes are situated directly adjacent to a single inner node in one of the six axial directions.
+- **2D** nodes are next to a single inner node in one of the twelve on-axis diagonal directions.
+- **3D** nodes are next to a single inner node in one of the eight off-axis diagonal directions.
 
 ![A given node (represented by a large dot) is a boundary node if it is *not*
 an inner node, but there is an adjacent inner node at one of the locations
 shown by smaller dots.\label{fig:boundary_types}](images/boundary_types)
+
+There is also a fourth category, known as *re-entrant* nodes, which are
+adjacent to two or more inner nodes. These nodes are special, in that they fall
+outside the enclosure (like boundary nodes) but are updated using the standard
+inner node equation. Re-entrant nodes are generally found on corners which face
+"into" the enclosed space.
 
 The classification proceeds as follows: For a given node, if it is inside,
 return.  Otherwise, check the node's six axial neighbours.  If one neighbour is
@@ -664,18 +691,16 @@ which allows it to reference the filter coefficients which should be used when
 updating the filter.
 
 The final step is to find which filter coefficients should be linked to which
-filter delay line.  For 1D boundaries this is simple: find the closest triangle
-to the node; find the material index of that triangle; get the node's filter
-data entry; set the coefficient index field to be equal to the closest
-triangle's material index.  For 2D and 3D boundaries, adjacent boundary nodes
-are checked (instead of checking the closest triangle), and all unique filter
-coefficient indices are used. The actual method is quite involved, and a prose
-description would inevitably end up reading like under-specified code, so the
-interested reader is directed to inspect the `boundary_*` files in the [Wayverb
-repository](https://github.com/reuk/wayverb/blob/master/src/waveguide/src).
+filter delay line.  For 1D boundaries, the process is as follows: find the
+closest triangle to the node; find the material index of that triangle; get the
+node's filter data entry; set the coefficient index field to be equal to the
+closest triangle's material index.  For 2D boundaries, adjacent 1D boundary
+nodes are checked, and their filter coefficient indices are used, which saves
+running further closest-triangle tests. For 3D boundaries, adjacent 1D *and* 2D
+nodes are checked.
 
-![Efficient memory usage is important with large-scale simulations such as
-this. The waveguide storage scheme in Wayverb aims to minimise redundant
+![Efficient memory usage is important in large-scale simulations such as those
+conducted by Wayverb. The waveguide storage scheme aims to minimise redundant
 duplication of data.\label{fig:memory_layout}](images/memory_layout)
 
 ### Running the Simulation
@@ -684,10 +709,13 @@ With node properties and boundary information set up, all that remains is to
 run the simulation itself.  Two arrays of floating-point numbers are allocated,
 with length equal to the number of nodes in the simulation.  These arrays
 represent the current and previous pressures at each node. The simulation is
-then run for a certain number of steps. Normally this would be derived from an
-estimate of the scene's RT60, but in Wayverb the simulation length is found
-using the time of the final ray-traced histogram bin, divided by the mesh
-sampling frequency.
+then run for a certain number of steps.  In Wayverb the simulation length is
+found using the time of the final ray-traced histogram bin, divided by the mesh
+sampling frequency.  In most cases this will lead to a sufficiently accurate
+duration estimate. However, in very large or irregularly-shaped rooms where few
+ray-receiver intersections are recorded, this may lead the waveguide simulation
+time to be underestimated.  In this scenario, the simulation time can be found
+with greater accuracy by increasing the number of rays.
 
 During a single step of the simulation, each node is updated. These updates
 occur in parallel, using the GPU.  The "descriptor" field of each node is
@@ -704,12 +732,16 @@ index.
 If the node is a boundary node, then it is instead updated according to the
 boundary update equations found in [@kowalczyk_modeling_2008].
 
-A useful property of the update equations is that the *previous* pressure of
+The update equation references three points in time ($n$, and $n\pm 1$), which
+suggests that three arrays of node pressures required. That is, during update,
+the "previous" and "current" pressures are read from two arrays, and used to
+compute a value for the "next" pressure, which is then stored to a third array.
+A useful property of the update equations is that the "previous" pressure of
 each node is *only* used when updating that node.  This means that the result
 of the update can be written back to the "previous" pressure array, instead of
-being written to a third array, which is a significant memory saving.  For the
-following step of the simulation, the "current" and "previous" arrays are
-swapped. If the arrays are referenced through pointers, then this can be
+being written to an extra "next" array, which is a significant memory saving.
+For the following step of the simulation, the "current" and "previous" arrays
+are swapped. If the arrays are referenced through pointers, then this can be
 achieved by just swapping the pointers, which is much faster than swapping the
 actual array contents.
 
