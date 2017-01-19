@@ -23,4 +23,12 @@ guided the development of the project, or might shape its future.
 \setlength{\leftskip}{0.5in}
 \setlength{\parskip}{15pt}
 
-<div id="refs"></div>
+\let\oldhypertarget\hypertarget
+
+\renewcommand{\hypertarget}[2]{%
+	\penalty 0%
+	\oldhypertarget{#1}{#2}%
+}
+
+<div id="refs">
+</div>

@@ -1,49 +1,28 @@
-Evaluation:
-	Give examples, show that it kinda works
-		General expectations
-
-	Comparison vs last version
-
-	Things not to do with sound
-		speed, performance etc.
-
-	Mention all the known shortcomings
-		Bugs etc.
-	
-	And all the stuff it does well
-
-Go back over Alex's comments
-
 # TODO
 
-- add dimensions + volume readout to display
+-[ ] fix audio table formatting in pdf
 
-- demos
-	- set up demos and save a Wayverb project for each
-		- [x] reverb times for three different room sizes (constant materials +
-			  source/receiver spacing)											different cuboids
-		- [x] different source/receiver spacings in the same room				medium cuboid
-		- [x] tunnel for late echoes											echo_tunnel
-		- [x] hidden receiver (no direct)										vault
+-[ ] more demos										<--
+	-[x] plus audible demos for the evaluation
 
-		- [ ] cardioid receiver (no direct response)							medium sized room
-		- [x] binaural receiver (different ITD and ILD)							concert hall
-		
-	- present the demos
-		- impulse response + dry/wet demo for each
-		- waveform or spectrogram as appropriate
+-[ ] build downloadable distro
+	-[x] check readmes
+  	-[ ] put release on github
+	-[ ] make it clear where the demo projects are in the evaluation
 
-		- check reverb times / rt60s
-            - it's weird that the raytracer has a longer rt60 than the waveguide
+-[ ] video????
 
-- evaluation
-	- talk about the demos a bit
-		- how to structure demos + evaluation?
+-[ ] microphone waveguide magnitude affecting reverb times?
 
-- abstract
+--------------------------------------------------------------------------------
 
-- software UI documentation
+# Distro
 
-- go back over writing
+What should be included?
 
-- declaration, according to guidelines
+- app
+- readme
+
+- demo models
+- demo sounds
+- maxpat convolver

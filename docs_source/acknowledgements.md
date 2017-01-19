@@ -1,4 +1,4 @@
-# Acknowledgements {-}
+\chapter*{Acknowledgements}
 
 This research was supported by the Creative Coding Lab at the University of
 Huddersfield.

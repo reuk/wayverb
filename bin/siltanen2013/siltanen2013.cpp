@@ -288,12 +288,12 @@ int main(/*int argc, char** argv*/) {
 
                 std::make_tuple(
                         std::make_tuple("null",
-                                        wayverb::core::attenuator::null{})/*,
+                                        wayverb::core::attenuator::null{}),
                         std::make_tuple(
                                 "omnidirectional",
                                 wayverb::core::attenuator::microphone{
                                         wayverb::core::orientation{pointing},
-                                        0.0f}),
+                                        0.0f})/*,
                         std::make_tuple("cardioid",
                                         wayverb::core::attenuator::microphone{
                                                 pointing, 0.5f}),

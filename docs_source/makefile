@@ -1,7 +1,7 @@
 .PHONY: all
 all: wayverb.pdf
 
-wayverb.pdf: $(SOURCES) pdfs
+wayverb.pdf: $(SOURCES) pdfs haskell/audioTable
 	pandoc $(PANDOC_OPTIONS) -o $@ $(SOURCES)
 
 .PHONY: pdfs
@@ -22,11 +22,21 @@ PANDOC_OPTIONS = \
 	--variable=geometry:margin=2cm \
 	--variable=geometry:a4paper \
 	--variable=documentclass:scrreprt \
-	--metadata=link-citations:true \
-	--latex-engine=lualatex \
 	--bibliography=wayverb.bib \
 	--csl=ieee-with-url.csl \
-	--default-image-extension=pdf
+	--default-image-extension=pdf \
+	--filter haskell/audioTable \
+	--metadata=link-citations:true \
+	--latex-engine=lualatex 
+
+%.tex: %.md
+	pandoc $(PANDOC_OPTIONS) --standalone -o $@ $<
+
+%.pdf: %.md
+	pandoc $(PANDOC_OPTIONS) -o $@ $<
+
+haskell/audioTable: haskell/audioTable.hs
+	ghc -package pandoc-types-1.16 --make $<
 
 SOURCES := \
 	title_page.md \

@@ -48,7 +48,7 @@ Vagrant.configure("2") do |config|
     vb.gui = false
   
     # Customize the amount of memory on the VM:
-    vb.memory = "1024"
+    vb.memory = "4096"
   end
 
   # View the documentation for the provider you are using for more
@@ -70,6 +70,8 @@ Vagrant.configure("2") do |config|
     apt-get install -y doxygen cmake ntp
     apt-get install -y pandoc pandoc-citeproc texlive-latex-recommended texlive-xetex inkscape pdf2svg
     apt-get install -y libcurl3 build-essential ruby-dev zlib1g-dev
+    apt-get install -y haskell-platform
+    cabal update && cabal install pandoc
     gem install jekyll jekyll-pandoc rake html-proofer
   SHELL
 

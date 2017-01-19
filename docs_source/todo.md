@@ -2,9 +2,6 @@
 
 overall diagram?
 
-screenshots (appendix)
-analytical evaluation
-
 images click to zoom
 fix image sizes 
 	96 dpi

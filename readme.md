@@ -1,23 +1,23 @@
-Wayverb
-=======
+# Wayverb
 
-*hybrid waveguide and ray-tracing room acoustics with GPU acceleration*
+**Hybrid waveguide and ray-tracing room acoustic simulator with GPU acceleration.**
 
-Synopsis
-========
+![](docs_source/images/wayverb_ui.svg)
+
+# Synopsis
 
 This project contains a library for offline room-acoustics simulations, along
 with a graphical app which can be used to set-up and run these simulations.
 The app produces room impulse responses, which can be used with convolution
-reverbs to create realistic auralisations of virtual spaces.
-Simulated room impulse responses may be particularly useful for architects,
-sound-designers, and musicians.
+reverbs to create realistic auralisations of virtual spaces.  Simulated room
+impulse responses may be particularly useful for architects, sound-designers,
+and musicians.
 
 There are several common methods for simulating room acoustics, which can
 largely be subdivided into two main categories:
 
-* **Geometric methods** are fast but inaccurate, especially at low frequencies.
-* **Wave-modelling methods** are much more accurate, but time-consuming to
+- **Geometric methods** are fast but inaccurate, especially at low frequencies.
+- **Wave-modelling methods** are much more accurate, but time-consuming to
   compute, especially at high frequencies.
 
 As the strengths and weaknesses of the two methods balance one-another out, it
@@ -27,122 +27,133 @@ content.
 
 The approach of this library is to use:
 
-* **image-source** for high-frequency early reflections,
-* **stochastic ray-tracing** for high-frequency late reflections, and
-* **rectilinear waveguide mesh** for all low-frequency content.
+- **image-source** (a geometric method) for high-frequency early reflections,
+- **stochastic ray-tracing** (another geometric method) for high-frequency late
+  reflections, and
+- **rectilinear waveguide mesh** (a wave-based method) for all low-frequency 
+  content.
 
-Usage Notes
-===========
+# Usage Notes
 
-You'll need a 3D model of the space.
-This model *must* be solid and watertight, without holes or no-thickness planes.
-The waveguide mesh setup process must be able to work out whether each node is
-'inside' or 'outside' the space, and it will not be able to do so if the
-model does not have a well-defined inside and outside.
+You'll need a 3D model of the space.  This model *must* be solid and
+watertight, without holes or no-thickness planes.  When the simulation is run,
+the waveguide mesh setup process will attempt to work out whether each node is
+inside or outside the space, and it will not be able to do so if the model does
+not have a well-defined inside and outside.
 
 To ensure that your model is valid, you can:
 
-    * Open the model in Sketchup.
-    * Select-all and Edit > Make Group.
-    * Check the info window (Window > Entity Info).
-    * If this window displays a volume, it is correct.
+1. Open the model in Sketchup.
+2. Select-all and Edit > Make Group.
+3. Check the info window (Window > Entity Info).
+4. If this window displays a volume, it is correct.
 
-If the model is not valid, you can debug it using the
-['Solid Inspector' plugin](https://extensions.sketchup.com/en/content/solid-inspector).
+If the model is not valid, you can debug it using the ['Solid Inspector'
+plugin](https://extensions.sketchup.com/en/content/solid-inspector).
 
-These instructions are taken from the readme for [ParallelFDTD](https://github.com/juuli/ParallelFDTD),
-which uses a similar (but not idential) technique to Wayverb for setting up
-a waveguide mesh.
+These instructions are taken from the readme for
+[ParallelFDTD](https://github.com/juuli/ParallelFDTD), which uses a similar
+(but not idential) technique to Wayverb for setting up a waveguide mesh.
 
-Requirements
-============
+Wayverb interprets the units used in the model file as metres. Some exporters
+(like the Sketchup `.dxf` exporter) silently change the scale of the model
+during export. For best results, it is recommended to export to `.obj` wherever
+possible.
+The following dialog shows optimum settings for the Sketchup Object exporter.
 
-This project has been tested on macOS 10.11.6.
+![](docs_source/demos/export_options.png)
 
-The library code *should* be platform-independent, but relies on experimental
-language features from C++17, so you'll need a recent compiler to build it.
-It also links against the OpenCL framework.
-It should be possible to build on Linux by modifying the 'OpenCL' section of
-`dependencies.txt` to find your system's OpenCL drivers.
+# Requirements
+
+## Running
+
+To run the program you will need:
+
+- Mac OS 10.10 or newer
+- GPU with double-precision support
 
 While this project *might* work on a mac with integrated graphics, ideally you
 should use a recent mac with a discrete graphics card.
 You could be waiting a long time otherwise!
 
-Build Instructions
-==================
+This project has been developed and tested on Mac OS 10.11.6, on a Mac with an
+AMD GPU. It doesn't have any known bugs on this platform.
 
-Library Only
-------------
+Some testing has been carried out on Mac OS 10.10, using an Nvidia GPU. On this
+platform there were reasonably consistent crashes within OpenCL framework code.
+These crashes are difficult to track down and have not been fixed, as the
+author has been unable to secure extended access to a machine with this
+Nvidia/10.10 configuration.
 
-This project has a fairly standard CMake build process.
-You should be able to `git clone` a copy of the repository, then from the
-project folder run:
+Some bugs are to be expected: if you find a bug, please file it using the
+issues tab on the Github repository.
 
-    mkdir -p build      # create a folder to hold built products
-    cd build            # move to that folder
-    cmake ..            # run cmake to configure the build
-    make                # run the build itself
+## Building
 
-The first time you run this, CMake will download all the project's dependencies
-and build local copies of them.
-The build will be quite slow for this reason (depending on the speed of your
-internet connection).
+You will need:
 
-Graphical App
--------------
+- Mac OS 10.10 or newer
+- Really recent Clang with C++14 support and experimental C++17 headers
+  (development used Apple LLVM 8)
+- CMake
 
-The app is built with JUCE, and JUCE likes to own its own build.
+Open `wayverb/Builds/MacOS/wayverb.xcodeproj` and build from there. All
+dependencies should get downloaded and built automatically. **The initial build
+will be really slow**, due to downloading and compiling a lot of libraries.
+This is normal.
 
-An Xcode project is included, which you should be able to open and run in the
-normal way.
+Unfortunately, some of the dependencies have their own dependencies. If
+building fails, you may also need to install the following:
 
-If you have a copy of the Projucer installed, you're welcome to try generating
-a Linux project from the included `wayverb.jucer`, but it's not guaranteed to
-work.
+- autoconf
+- autogen
+- automake
+- libtool
+- pkg-config
 
-Project Structure
-=================
+If you have [Homebrew](http://brew.sh) installed, then you can grab everything
+you might need by running this command:
 
-Important Folders
------------------
+    brew install cmake autoconf autogen automake libtool pkg-config
 
-* **src**: all the library code for the project. This is further subdivided:
-    * **core**: generic utilities such as data structures, architectural
+# Project Structure
+
+## Important Folders
+
+- **src**: all the library code for the project. This is further subdivided:
+    - **core**: generic utilities such as data structures, architectural
       patterns and DSP helpers
-    * **raytracer**: components which relate specifically to geometric acoustics
-    * **waveguide**: components which relate specifically to finite-difference
+    - **raytracer**: components which relate specifically to geometric acoustics
+    - **waveguide**: components which relate specifically to finite-difference
       time-domain (FDTD) air pressure simulation
-    * **combined**: one way of combining the ray-tracer and waveguide components
+    - **combined**: one way of combining the ray-tracer and waveguide components
       for broadband room acoustics simulations
-    * **audio_file**: wrapper round libsndfile. If I ever switch the soundfile
+    - **audio_file**: wrapper round libsndfile. If I ever switch the soundfile
       library from libsndfile (to something with a more flexible license) then
       this module is all that will have to change.
-    * **frequency_domain**: wrapper around fftw. If I ever switch to some other
+    - **frequency_domain**: wrapper around fftw. If I ever switch to some other
       library, this is the only code that will have to change. There are also
       a few utilities to do with analysis and filtering here.
-    * **hrtf**: small utility for generating hrtf data files from audio inputs.
-    * **utilities**: small self-contained utilities which aren't really tied to
+    - **hrtf**: small utility for generating hrtf data files from audio inputs.
+    - **utilities**: small self-contained utilities which aren't really tied to
       this project, but they have to live somewhere.
-
-* **wayverb**: a GUI app interface to the `combined` library written with JUCE
-
-* **bin**: a collection of small command-line programs primarily for testing
+- **wayverb**: a GUI app interface to the `combined` library written with JUCE
+- **bin**: a collection of small command-line programs primarily for testing
   outputs from the library components
+- **docs_source**: the source-code for the accompanying documentation. This
+  gets built into the contents of...
+- **docs**: automatically-generated documentation, visible at
+  [the Wayverb site](https://reuk.github.io/wayverb/).
 
-Other Folders
--------------
+## Other Folders
 
-* **scripts**: a 'scratchpad' folder for python and octave prototypes
-
-* **demo**: assets for testing purposes
-
-* **config**: These files configure the documentation generator. They used to
+- **scripts**: a 'scratchpad' folder for python and octave prototypes
+- **demo**: assets for testing purposes
+- **config**: these files configure the documentation generator. They used to
   configure the Travis CI process which automatically built and published the
   library documentation.
 
-License
-=======
+# License
 
 Please see the `LICENSE` file for details.
 

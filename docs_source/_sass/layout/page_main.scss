@@ -21,6 +21,17 @@
             color: #000;
         }
 
+        #audio_table {
+            table {
+                background: _palette(bg);
+                color: rgb(255, 255, 255);
+            }
+
+            audio {
+                width: 100%;
+            }
+        }
+
         a {
             @include vendor('transition', (
                 'color #{_duration(transition)} ease',
@@ -49,17 +60,29 @@
 
         table {
             tr {
-                &:nth-child(even) {
-                    background-color: lighten(#5e42a6, 45);
+                &:nth-child(odd) {
+                    background-color: rgba(_palette(accent1), 0.25);
                 }
+
+                border: none;
+            }
+
+            td {
+                vertical-align: middle;
             }
 
             thead {
-                border-bottom: solid (_size(border-width) * 2) _palette(bg);
+                background: _palette(bg-alt);
+                border: none;
+                th {
+                    padding: 0.75em;
+                    color: rgb(255, 255, 255);
+                }
+                //border-bottom: solid (_size(border-width) * 2) _palette(bg);
             }
 
             tfoot {
-                border-top: solid (_size(border-width) * 2) _palette(bg);
+                //border-top: solid (_size(border-width) * 2) _palette(bg);
             }
         }
 

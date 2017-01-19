@@ -43,7 +43,7 @@ util::aligned::vector<float> adjust_sampling_rate(const float* data,
                               0,
                               0,
                               0,
-                              out_sr / in_sr};
+                              ratio};
     src_simple(&sample_rate_info, SRC_SINC_BEST_QUALITY, 1);
 
     //  Correct output level.

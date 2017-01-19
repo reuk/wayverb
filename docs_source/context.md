@@ -370,7 +370,6 @@ information when the receiver position changes, but in a one-off simulation the
 receiver position is fixed. Ray tracing is also less complex and better
 documented than surface-based methods, making it the superior choice for this
 application.
-
 A logistical reason for choosing the image-source and ray tracing solution for
 high-frequency modelling was that the author had previously implemented such a
 system for an undergraduate project.  It was hoped that much of the code from

@@ -258,8 +258,8 @@ Finally, the impedances are converted back to *angle-dependent* reflectances by
 
 where $\theta$ is the angle of incidence at the surface.  This is the same
 approach taken in [@southern_room_2013]. $\theta$ must be found for each
-individual reflection, by taking $\acos$ of the dot product between the
-incident ray direction and the surface normal, when both are unit vectors.
+individual reflection, by taking the inverse cosine of the dot product between
+the incident ray direction and the surface normal, when both are unit vectors.
 
 The contribution $g$ of a single image source with intermediate surfaces $m_1
 m_2 \dots m_n$ is given by

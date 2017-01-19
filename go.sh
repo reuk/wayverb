@@ -1,14 +1,14 @@
 #!/bin/sh
 
 export CL_LOG_ERRORS=stdout
-export GTEST_FILTER="*binaural*:*combine*"
+#export GTEST_FILTER="*binaural*:*combine*"
 #export GTEST_FILTER="*app_model*:*round_trip*"
 
 if ./build.sh ; then
 #if ./build.sh 2>&1 | tee build_log.txt ; then
 cd build
 
-ctest -V
+#ctest -V
 
 #cd bin/image_source_comparison && ./image_source_comparison
 
@@ -31,7 +31,7 @@ ctest -V
 #cd bin/diffuse_decay && ./diffuse_decay
 
 #cd bin/southern2011 && ./southern2011
-#cd bin/siltanen2013 && ./siltanen2013
+cd bin/siltanen2013 && ./siltanen2013
 #cd bin/level_match && ./level_match ~/development/waveguide/demo/assets/test_models/vault.obj
 
 #cd ../bin/boundary_test && ./run_and_graph.sh
@@ -39,5 +39,6 @@ ctest -V
 #cd ../bin/fitted_boundary && ./run_and_graph.sh
 
 #cd bin/crackly_tunnel && ./crackly_tunnel
+#cd bin/rt60 && ./rt60
 
 fi

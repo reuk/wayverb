@@ -1,0 +1,53 @@
+# File produced by Open Asset Import Library (http://www.assimp.sf.net)
+# (assimp v3.3.176583636)
+
+mtllib model.model.mtl
+
+# 8 vertex positions
+v  2 -3.5 50
+v  -2 -3.5 50
+v  -2 -3.5 -50
+v  2 -3.5 -50
+v  2 3.5 50
+v  -2 3.5 50
+v  2 3.5 -50
+v  -2 3.5 -50
+
+# 12 UV coordinates
+vt -78.74019622802734 1969.5 0
+vt 78.74019622802734 1969.5 0
+vt 78.74019622802734 -1967.5 0
+vt -78.74019622802734 -1967.5 0
+vt -78.74019622802734 138.7949981689453 0
+vt 78.74019622802734 138.7949981689453 0
+vt 78.74019622802734 -136.7949981689453 0
+vt -78.74019622802734 -136.7949981689453 0
+vt -1968.5 138.7949981689453 0
+vt 1968.5 138.7949981689453 0
+vt 1968.5 -136.7949981689453 0
+vt -1968.5 -136.7949981689453 0
+
+# 6 vertex normals
+vn 0 -1 0
+vn 0 0 1
+vn 1 0 0
+vn 0 0 -1
+vn -1 0 0
+vn 0 1 0
+
+# Mesh 'g g g Mesh1 Model_g Mesh1 Model_g g Mesh1 Model_g Mesh1 Model_g g g Mesh1 Model_g Mesh1 Model_g g Mesh1 Model_g Mesh1 Model' with 12 faces
+g g g g Mesh1 Model_g Mesh1 Model_g g Mesh1 Model_g Mesh1 Model_g g g Mesh1 Model_g Mesh1 Model_g g Mesh1 Model_g Mesh1 Model
+usemtl FrontColor
+f  1/1/1 2/2/1 3/3/1
+f  1/1/1 3/3/1 4/4/1
+f  2/5/2 1/6/2 5/7/2
+f  2/5/2 5/7/2 6/8/2
+f  1/9/3 4/10/3 7/11/3
+f  1/9/3 7/11/3 5/12/3
+f  4/5/4 3/6/4 8/7/4
+f  4/5/4 8/7/4 7/8/4
+f  3/9/5 2/10/5 6/11/5
+f  3/9/5 6/11/5 8/12/5
+f  6/1/6 5/2/6 7/3/6
+f  6/1/6 7/3/6 8/4/6
+

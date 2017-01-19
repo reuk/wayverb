@@ -1,0 +1,48 @@
+# Alias OBJ Model File
+# Exported from SketchUp, (c) 2000-2012 Trimble Navigation Limited
+# File units = meters
+
+mtllib large_cuboid.mtl
+
+g Mesh1 Model
+
+usemtl FrontColor
+v 0 0 -8
+vt 0 314.961
+vn 0 -1 -0
+v 12 0 -8
+vt -472.441 314.961
+v 12 0 -0
+vt -472.441 0
+v 0 0 -0
+vt 0 0
+f 1/1/1 2/2/1 3/3/1 4/4/1 
+
+vn 0 0 -1
+v 0 4 -8
+vt 0 157.48
+v 12 4 -8
+vt -472.441 157.48
+f 2/3/2 1/4/2 5/5/2 6/6/2 
+
+vt -314.961 0
+vn -1 0 -0
+v 0 4 -0
+vt -314.961 157.48
+f 1/7/3 4/4/3 7/5/3 5/8/3 
+
+vn 0 0 1
+vt 472.441 0
+v 12 4 -0
+vt 472.441 157.48
+f 4/4/4 3/9/4 8/10/4 7/5/4 
+
+vn 1 0 -0
+vt 314.961 0
+vt 314.961 157.48
+f 3/4/5 2/11/5 6/12/5 8/5/5 
+
+vt 472.441 314.961
+vn 0 1 -0
+f 6/13/6 5/1/6 7/4/6 8/9/6 
+

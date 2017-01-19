@@ -1,0 +1,779 @@
+\documentclass[]{scrreprt}
+\usepackage{lmodern}
+\usepackage{amssymb,amsmath}
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Ligatures=TeX,Scale=MatchLowercase}
+\fi
+% use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+% use microtype if available
+\IfFileExists{microtype.sty}{%
+\usepackage{microtype}
+\UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\usepackage[a4paper,margin=2cm]{geometry}
+\usepackage{hyperref}
+\PassOptionsToPackage{usenames,dvipsnames}{color} % color is loaded by hyperref
+\hypersetup{unicode=true,
+            pdftitle={References},
+            colorlinks=true,
+            linkcolor=Maroon,
+            citecolor=Blue,
+            urlcolor=Blue,
+            breaklinks=true}
+\urlstyle{same}  % don't use monospace font for urls
+\IfFileExists{parskip.sty}{%
+\usepackage{parskip}
+}{% else
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{0}
+% Redefines (sub)paragraphs to behave more like sections
+\ifx\paragraph\undefined\else
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+\fi
+\ifx\subparagraph\undefined\else
+\let\oldsubparagraph\subparagraph
+\renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+\fi
+
+\title{References}
+\date{}
+
+\begin{document}
+\maketitle
+
+\chapter*{References}\label{references}
+\addcontentsline{toc}{chapter}{References}
+
+This list contains all items cited in the text. It also contains some
+items not directly mentioned, but which nonetheless guided the
+development of the project, or might shape its future.
+
+\begin{center}\rule{0.5\linewidth}{\linethickness}\end{center}
+
+\noindent
+\vspace{-2em} \setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in} \setlength{\parskip}{15pt}
+
+\let\oldhypertarget\hypertarget
+
+\renewcommand{\hypertarget}[2]{%
+    \penalty 0%
+    \oldhypertarget{#1}{#2}%
+}
+
+\hypertarget{refs}{}
+\hypertarget{ref-allardux5fnewux5f1992}{}
+{[}1{]} J.-F. Allard and Y. Champoux, ``New empirical equations for
+sound propagation in rigid frame fibrous materials,'' \emph{The Journal
+of the Acoustical Society of America}, vol. 91, no. 6, pp. 3346--3353,
+1992.
+
+\hypertarget{ref-allenux5fimageux5f1979}{}
+{[}2{]} J. B. Allen and D. A. Berkley, ``Image method for efficiently
+simulating small-room acoustics,'' \emph{The Journal of the Acoustical
+Society of America}, vol. 65, no. 4, pp. 943--950, 1979.
+
+\hypertarget{ref-alpkocakux5fcomputingux5f2010}{}
+{[}3{]} A. Alpkocak and M. Sis, ``Computing impulse response of room
+acoustics using the ray-tracing method in time domain,'' \emph{Archives
+of Acoustics}, vol. 35, no. 4, pp. 505--519, 2010.
+
+\hypertarget{ref-amanatidesux5ffastux5f1987}{}
+{[}4{]} J. Amanatides, A. Woo, and others, ``A fast voxel traversal
+algorithm for ray tracing,'' in \emph{Eurographics}, 1987, vol. 87, pp.
+3--10.
+
+\hypertarget{ref-antoniux5forthogonal-likeux5f2010}{}
+{[}5{]} J. Antoni, ``Orthogonal-like fractional-octave-band filters,''
+\emph{The Journal of the Acoustical Society of America}, vol. 127, no.
+2, pp. 884--895, 2010.
+
+\hypertarget{ref-aretzux5fcombinedux5f2009}{}
+{[}6{]} M. Aretz, R. Nöthen, M. Vorländer, and D. Schröder, ``Combined
+broadband impulse responses using FEM and hybrid ray-based methods,'' in
+\emph{EAA Symposium on Auralization}, 2009.
+
+\hypertarget{ref-bassux5fatmosphericux5f1972}{}
+{[}7{]} H. E. Bass, H.-J. Bauer, and L. B. Evans, ``Atmospheric
+absorption of sound: Analytical expressions,'' \emph{The Journal of the
+Acoustical Society of America}, vol. 52, no. 3B, pp. 821--825, 1972.
+
+\hypertarget{ref-beesonux5froomweaver:ux5f2004}{}
+{[}8{]} M. J. Beeson and D. T. Murphy, ``RoomWeaver: A digital waveguide
+mesh based room acoustics research tool,'' in \emph{Proc. COST G6 Conf.
+Digital Audio Effects (Naples, Italy, October 2004)}, 2004, pp. 268--73.
+
+\hypertarget{ref-murphyux5fkw-boundaryux5f2007}{}
+{[}9{]} D. T. Murphy and M. Beeson, ``The KW-boundary hybrid digital
+waveguide mesh for room acoustics applications,'' \emph{IEEE
+Transactions on Audio, Speech, and Language Processing}, vol. 15, no. 2,
+pp. 552--564, 2007.
+
+\hypertarget{ref-bertramux5fphononux5f2005}{}
+{[}10{]} M. Bertram, E. Deines, J. Mohring, J. Jegorovs, and H. Hagen,
+``Phonon tracing for auralization and visualization of sound,'' in
+\emph{VIS 05. IEEE Visualization, 2005.}, 2005, pp. 151--158.
+
+\hypertarget{ref-bilbaoux5fmodelingux5f2013}{}
+{[}11{]} S. Bilbao, ``Modeling of complex geometries and boundary
+conditions in finite difference/finite volume time domain room acoustics
+simulation,'' \emph{IEEE Transactions on Audio, Speech, and Language
+Processing}, vol. 21, no. 7, pp. 1524--1533, 2013.
+
+\hypertarget{ref-borishux5fextensionux5f1984}{}
+{[}12{]} J. Borish, ``Extension of the image model to arbitrary
+polyhedra,'' \emph{The Journal of the Acoustical Society of America},
+vol. 75, no. 6, pp. 1827--1836, 1984.
+
+\hypertarget{ref-camposux5fparallelux5f2000}{}
+{[}13{]} G. Campos and D. Howard, ``A parallel 3D digital waveguide mesh
+model with tetrahedral topology for room acoustic simulation,'' in
+\emph{Proceedings of the COST G-6 Conference on Digital Audio Effects
+(DAFx),(Verona, Italy)}, 2000, pp. 73--78.
+
+\hypertarget{ref-camposux5fcomputationalux5f2005}{}
+{[}14{]} G. R. Campos and D. M. Howard, ``On the computational
+efficiency of different waveguide mesh topologies for room acoustic
+simulation,'' \emph{IEEE Transactions on Speech and Audio Processing},
+vol. 13, no. 5, pp. 1063--1072, 2005.
+
+\hypertarget{ref-christensenux5fnewux5f2005}{}
+{[}15{]} C. L. Christensen and J. H. Rindel, ``A new scattering method
+that combines roughness and diffraction effects,'' in \emph{Forum
+Acousticum, Budapest, Hungary}, 2005.
+
+\hypertarget{ref-deinesux5fcomparativeux5f2006}{}
+{[}16{]} E. Deines, M. Bertram, J. Mohring, J. Jegorovs, F. Michel, H.
+Hagen, and G. M. Nielson, ``Comparative visualization for wave-based and
+geometric acoustics,'' \emph{IEEE Transactions on Visualization and
+Computer Graphics}, vol. 12, no. 5, pp. 1173--1180, 2006.
+
+\hypertarget{ref-delanyux5facousticalux5f1970}{}
+{[}17{]} M. E. Delany and E. N. Bazley, ``Acoustical properties of
+fibrous absorbent materials,'' \emph{Applied acoustics}, vol. 3, no. 2,
+pp. 105--116, 1970.
+
+\hypertarget{ref-dimitrijevicux5foptimizationux5f2015}{}
+{[}18{]} B. Dimitrijevic, B. Nikolic, S. Aleksic, and N. Raicevic,
+``Optimization of Excitation in FDTD Method and Corresponding Source
+Modeling,'' \emph{RADIOENGINEERING}, vol. 24, no. 1, p. 11, 2015.
+
+\hypertarget{ref-duranyux5fanalyticalux5f2015}{}
+{[}19{]} J. Durany, T. Mateos, and A. Garriga, ``Analytical Computation
+of Acoustic Bidirectional Reflectance Distribution Functions,''
+\emph{Open Journal of Acoustics}, vol. 5, no. 04, p. 207, 2015.
+
+\hypertarget{ref-vanux5fduyneux5f3dux5f1996}{}
+{[}20{]} S. A. Van Duyne and J. O. Smith III, ``The 3D tetrahedral
+digital waveguide mesh with musical applications,'' in \emph{Proceedings
+of the 1996 International Computer Music Conference}, 1996, pp. 9--16.
+
+\hypertarget{ref-vanux5fduyneux5ftetrahedralux5f1995}{}
+{[}21{]} S. A. Van Duyne and J. O. Smith, ``The tetrahedral digital
+waveguide mesh,'' in \emph{Applications of Signal Processing to Audio
+and Acoustics, 1995., IEEE ASSP Workshop on}, 1995, pp. 234--237.
+
+\hypertarget{ref-fontanaux5fsignal-theoreticux5f2001}{}
+{[}22{]} F. Fontana and D. Rocchesso, ``Signal-theoretic
+characterization of waveguide mesh geometries for models of
+two-dimensional wave propagation in elastic media,'' \emph{IEEE
+Transactions on Speech and Audio Processing}, vol. 9, no. 2, pp.
+152--161, 2001.
+
+\hypertarget{ref-escolano-carrascoux5fphysicalux5f2006}{}
+{[}23{]} J. Escolano-Carrasco and F. Jacobsen, ``A physical
+interpretation of frequency dependent boundary conditions in a digital
+waveguide mesh,'' in \emph{Proceedings of Thirteenth International
+Congress on Sound and Vibration}, 2006.
+
+\hypertarget{ref-fuux5fgpu-basedux5f2016}{}
+{[}24{]} Z.-h. Fu and J.-w. Li, ``GPU-based image method for room
+impulse response calculation,'' \emph{Multimedia Tools and
+Applications}, pp. 1--17, 2016.
+
+\hypertarget{ref-furseux5fproblemux5f2000}{}
+{[}25{]} C. M. Furse, D. H. Roper, D. N. Buechler, D. A. Christensen,
+and C. H. Durney, ``The problem and treatment of DC offsets in FDTD
+simulations,'' \emph{IEEE Transactions on Antennas and Propagation},
+vol. 48, no. 8, pp. 1198--1201, 2000.
+
+\hypertarget{ref-gedneyux5fintroductionux5f2011}{}
+{[}26{]} S. D. Gedney, ``Introduction to the finite-difference
+time-domain (FDTD) method for electromagnetics,'' \emph{Synthesis
+Lectures on Computational Electromagnetics}, vol. 6, no. 1, pp. 1--250,
+2011.
+
+\hypertarget{ref-gorzelux5fvirtualux5f2010}{}
+{[}27{]} M. Gorzel, G. Kearney, F. Boland, and H. Rice, ``Virtual
+acoustic recording: An interactive approach,'' in \emph{Proc. of the
+13th internation conference on Digital Audio Effects (DAFX). Graz,
+Austria}, 2010.
+
+\hypertarget{ref-hacihabibogluux5ftime-domainux5f2008}{}
+{[}28{]} H. Hacihabiboglu, B. Gunel, and A. M. Kondoz, ``Time-domain
+simulation of directive sources in 3-D digital waveguide mesh-based
+acoustical models,'' \emph{IEEE transactions on audio, speech, and
+language processing}, vol. 16, no. 5, pp. 934--946, 2008.
+
+\hypertarget{ref-hacihabibogluux5faccuracyux5f2008}{}
+{[}29{]} H. Hacihabiboglu, B. Gunel, and A. M. Kondoz, ``On the accuracy
+of first-order numerical derivatives in multidimensional digital
+waveguide mesh topologies,'' \emph{IEEE Signal Processing Letters}, vol.
+15, pp. 9--12, 2008.
+
+\hypertarget{ref-hacihabibogluux5fsimulationux5f2010}{}
+{[}30{]} H. Hacıhabiboglu, B. Günel, and Z. Cvetkovic, ``Simulation of
+directional microphones in digital waveguide mesh-based models of room
+acoustics,'' \emph{IEEE Trans. on Audio, Speech and Language Process},
+vol. 18, no. 2, pp. 213--223, 2010.
+
+\hypertarget{ref-hadiux5fdiscreteux5f2010}{}
+{[}31{]} M. F. Hadi and N. B. Almutairi, ``Discrete finite-difference
+time domain impulse response filters for transparent field source
+implementations,'' \emph{IET microwaves, antennas \& propagation}, vol.
+4, no. 3, pp. 381--389, 2010.
+
+\hypertarget{ref-hamiltonux5fsamplingux5f2013}{}
+{[}32{]} B. Hamilton, ``Sampling and Reconstruction on a Diamond Grid
+and the Tetrahedral Digital Waveguide Mesh,'' \emph{IEEE Signal
+Processing Letters}, vol. 10, no. 20, pp. 925--928, 2013.
+
+\hypertarget{ref-heinzux5fbinauralux5f1993}{}
+{[}33{]} R. Heinz, ``Binaural room simulation based on an image source
+model with addition of statistical methods to include the diffuse sound
+scattering of walls and to predict the reverberant tail,'' \emph{Applied
+Acoustics}, vol. 38, no. 2, pp. 145--159, 1993.
+
+\hypertarget{ref-huopaniemiux5fmodelingux5f1997}{}
+{[}34{]} J. Huopaniemi, L. Savioja, and M. Karjalainen, ``Modeling of
+reflections and air absorption in acoustical spaces: A digital filter
+design approach,'' in \emph{IEEE Workshop on Applications of Signal
+Processing to Audio and Acoustics}, 1997, pp. 19--22.
+
+\hypertarget{ref-jeongux5fsourceux5f2012}{}
+{[}35{]} H. Jeong and Y. W. Lam, ``Source implementation to eliminate
+low-frequency artifacts in finite difference time domain room acoustic
+simulation,'' \emph{The Journal of the Acoustical Society of America},
+vol. 131, no. 1, pp. 258--268, 2012.
+
+\hypertarget{ref-karjalainenux5fdigitalux5f2004}{}
+{[}36{]} M. Karjalainen and C. Erkut, ``Digital waveguides versus finite
+difference structures: Equivalence and mixed modeling,'' \emph{EURASIP
+Journal on Applied Signal Processing}, vol. 2004, pp. 978--989, 2004.
+
+\hypertarget{ref-kelloniemiux5ffrequency-dependentux5f2006}{}
+{[}37{]} A. Kelloniemi, ``Frequency-dependent boundary condition for the
+3-D digital waveguide mesh,'' in \emph{Proc. Int. Conf. Digital Audio
+Effects (DAFx'06)}, 2006, pp. 161--164.
+
+\hypertarget{ref-kimux5fdomainux5f2009}{}
+{[}38{]} M. Kim and G. P. Scavone, ``Domain decomposition method for the
+digital waveguide mesh,'' in \emph{2009 IEEE Workshop on Applications of
+Signal Processing to Audio and Acoustics}, 2009, pp. 21--24.
+
+\hypertarget{ref-koutsourisux5fcombinationux5f2013}{}
+{[}39{]} G. I. Koutsouris, J. Brunskog, C.-H. Jeong, and F. Jacobsen,
+``Combination of acoustical radiosity and the image source method,''
+\emph{The Journal of the Acoustical Society of America}, vol. 133, no.
+6, pp. 3963--3974, 2013.
+
+\hypertarget{ref-kowalczykux5fmodelingux5f2008}{}
+{[}40{]} K. Kowalczyk and M. van Walstijn, ``Modeling
+frequency-dependent boundaries as digital impedance filters in FDTD and
+K-DWM room acoustics simulations,'' \emph{Journal of the Audio
+Engineering Society}, vol. 56, no. 7/8, pp. 569--583, 2008.
+
+\hypertarget{ref-kowalczykux5fmodellingux5f2008}{}
+{[}41{]} K. Kowalczyk and M. van Walstijn, ``Modelling
+Frequency-Dependent Boundaries as Digital Impedance Filters in FDTD Room
+Acoustic Simulations,'' in \emph{Audio Engineering Society Convention
+124}, 2008.
+
+\hypertarget{ref-kowalczykux5froomux5f2011}{}
+{[}42{]} K. Kowalczyk and M. van Walstijn, ``Room acoustics simulation
+using 3-D compact explicit FDTD schemes,'' \emph{IEEE Transactions on
+Audio, Speech, and Language Processing}, vol. 19, no. 1, pp. 34--46,
+2011.
+
+\hypertarget{ref-kuttruffux5froomux5f2009}{}
+{[}43{]} H. Kuttruff, \emph{Room Acoustics, Fifth Edition}. CRC Press,
+2009.
+
+\hypertarget{ref-lafortuneux5fnon-linearux5f1997}{}
+{[}44{]} E. P. Lafortune, S.-C. Foo, K. E. Torrance, and D. P.
+Greenberg, ``Non-linear approximation of reflectance functions,'' in
+\emph{Proceedings of the 24th annual conference on Computer graphics and
+interactive techniques}, 1997, pp. 117--126.
+
+\hypertarget{ref-lehmannux5fpredictionux5f2008}{}
+{[}45{]} E. A. Lehmann and A. M. Johansson, ``Prediction of energy decay
+in room impulse responses simulated with an image-source model,''
+\emph{The Journal of the Acoustical Society of America}, vol. 124, no.
+1, pp. 269--277, 2008.
+
+\hypertarget{ref-levyux5fcomplex-curveux5f1959}{}
+{[}46{]} E. C. Levy, ``Complex-curve fitting,'' \emph{IRE transactions
+on automatic control}, no. 1, pp. 37--43, 1959.
+
+\hypertarget{ref-marbjergux5fdevelopmentux5f2015}{}
+{[}47{]} G. Marbjerg, J. Brunskog, C.-H. Jeong, and E. Nilsson,
+``Development and validation of a combined phased acoustical radiosity
+and image source model for predicting sound fields in roomsa),''
+\emph{The Journal of the Acoustical Society of America}, vol. 138, no.
+3, pp. 1457--1468, 2015.
+
+\hypertarget{ref-mcgovernux5fimage-sourceux5f2011}{}
+{[}48{]} S. McGovern, ``The image-source reverberation model in an
+N-dimensional space,'' in \emph{Proc. 14th Int. Conf. Digital Audio
+Effects, Paris, France}, 2011, pp. 11--18.
+
+\hypertarget{ref-miklavcicux5fpracticalux5f2004}{}
+{[}49{]} S. J. Miklavcic and J. Ericsson, \emph{Practical implementation
+of the 3D tetrahedral TLM method and visualization of room acoustics}.
+Department of Science; Technology (ITN), Campus Norrköping, Linköping
+University {[}Institutionen för teknik och naturvetenskap (ITN), Campus
+Norrköping, Linköpings universitet{]}, 2004.
+
+\hypertarget{ref-mouchtarisux5feffcientux5f2002}{}
+{[}50{]} A. Mouchtaris, S. S. Narayanan, and C. Kyriakakis, ``Effcient
+multichannel audio resynthesis by subband-based spectral conversion,''
+in \emph{Signal Processing Conference, 2002 11th European}, 2002, pp.
+1--4.
+
+\hypertarget{ref-murphyux5fdigitalux5f2000}{}
+{[}51{]} D. T. Murphy and D. M. Howard, ``Digital waveguide mesh
+topologies in room acoustics modelling,'' PhD thesis, Citeseer, 2000.
+
+\hypertarget{ref-murphyux5fdigitalux5f2002}{}
+{[}52{]} D. T. Murphy and J. Mullen, ``Digital waveguide mesh modelling
+of room acoustics: Improved anechoic boundaries,'' in \emph{Proc. DAFX},
+2002, vol. 2, pp. 163--168.
+
+\hypertarget{ref-murphyux5fhybridux5f2008}{}
+{[}53{]} D. Murphy, M. Beeson, S. Shelley, A. Moore, and A. Southern,
+``Hybrid room impulse response synthesis in digital waveguide mesh based
+room acoustics simulation,'' in \emph{Proceedings of the 11th
+International Conference on Digital Audio Effects (DAFx-08)}, 2008, pp.
+129--136.
+
+\hypertarget{ref-murphyux5fsourceux5f2014}{}
+{[}54{]} D. T. Murphy, A. Southern, and L. Savioja, ``Source excitation
+strategies for obtaining impulse responses in finite difference time
+domain room acoustics simulation,'' \emph{Applied Acoustics}, vol. 82,
+pp. 6--14, 2014.
+
+\hypertarget{ref-nelsonux5fhigh-speedux5f1972}{}
+{[}55{]} G. Nelson, L. Pfeifer, and R. Wood, ``High-speed octave band
+digital filtering,'' \emph{IEEE Transactions on audio and
+electroacoustics}, vol. 20, no. 1, pp. 58--65, 1972.
+
+\hypertarget{ref-howarthux5fapplicationux5f1998}{}
+{[}56{]} M. J. Howarth, ``The application of advanced computer models to
+the prediction of sound in enclosed spaces,'' PhD thesis, University of
+Salford, 1998.
+
+\hypertarget{ref-orourkeux5ffindingux5f1985}{}
+{[}57{]} J. O'Rourke, ``Finding minimal enclosing boxes,''
+\emph{International journal of computer \& information sciences}, vol.
+14, no. 3, pp. 183--199, 1985.
+
+\hypertarget{ref-oxnardux5ffrequency-dependentux5f2015}{}
+{[}58{]} S. Oxnard, D. O'Brien, J. van Mourik, and D. Murphy,
+``Frequency-Dependent Absorbing Boundary Implementations in 3D Finite
+Difference Time Domain Room Acoustics Simulations,'' 2015.
+
+\hypertarget{ref-revellesux5fefficientux5f2000}{}
+{[}59{]} J. Revelles, C. Urena, and M. Lastra, ``An efficient parametric
+algorithm for octree traversal,'' 2000.
+
+\hypertarget{ref-rindelux5fmodellingux5f1993}{}
+{[}60{]} J. H. Rindel, ``Modelling the angle-dependent pressure
+reflection factor,'' \emph{Applied Acoustics}, vol. 38, no. 2, pp.
+223--234, 1993.
+
+\hypertarget{ref-rindelux5fuseux5f2000}{}
+{[}61{]} J. H. Rindel, ``The use of computer modeling in room
+acoustics,'' \emph{Journal of vibroengineering}, vol. 3, no. 4, pp.
+41--72, 2000.
+
+\hypertarget{ref-saviojaux5finterpolatedux5f2001}{}
+{[}62{]} L. Savioja and V. Valimaki, ``Interpolated 3-D digital
+waveguide mesh with frequency warping,'' in \emph{Acoustics, Speech, and
+Signal Processing, 2001. Proceedings.(ICASSP'01). 2001 IEEE
+International Conference on}, 2001, vol. 5, pp. 3345--3348.
+
+\hypertarget{ref-saviojaux5fdspux5f1996}{}
+{[}63{]} L. Savioja, M. Karjalainen, and T. Takala, ``DSP formulation of
+a finite difference method for room acoustics simulation,'' in
+\emph{Proceedings of NORSIG'96 IEEE Nordic Signal Processing Symposium},
+1996, pp. 455--458.
+
+\hypertarget{ref-saviojaux5freductionux5f1999}{}
+{[}64{]} L. Savioja and V. Valimaki, ``Reduction of the dispersion error
+in the interpolated digital waveguide mesh using frequency warping,'' in
+\emph{Acoustics, Speech, and Signal Processing, 1999. Proceedings., 1999
+IEEE International Conference on}, 1999, vol. 2, pp. 973--976.
+
+\hypertarget{ref-saviojaux5foverviewux5f2015}{}
+{[}65{]} L. Savioja and U. P. Svensson, ``Overview of geometrical room
+acoustic modeling techniques,'' \emph{The Journal of the Acoustical
+Society of America}, vol. 138, no. 2, pp. 708--730, 2015.
+
+\hypertarget{ref-saviojaux5finterpolatedux5f2014}{}
+{[}66{]} L. Savioja, T. Lokki, and V. Välimäki, ``The interpolated 3-D
+digital waveguide mesh method for room acoustic simulation and
+auralization,'' \emph{Ultragarsas`` Ultrasound''}, vol. 48, no. 3, pp.
+48--52, 2014.
+
+\hypertarget{ref-saviojaux5fdigitalux5f2001}{}
+{[}67{]} L. Savioja and T. Lokki, ``Digital waveguide mesh for room
+acoustic modeling,'' \emph{CAMPFIRE}, vol. 6, no. 3, p. 13, 2001.
+
+\hypertarget{ref-schneiderux5fimplementationux5f1998}{}
+{[}68{]} J. B. Schneider, C. L. Wagner, and S. L. Broschat,
+``Implementation of transparent sources embedded in acoustic
+finite-difference time-domain grids,'' \emph{The Journal of the
+Acoustical Society of America}, vol. 103, no. 1, pp. 136--142, 1998.
+
+\hypertarget{ref-schroderux5fphysicallyux5f2011}{}
+{[}69{]} D. Schröder, \emph{Physically based real-time auralization of
+interactive virtual environments}, vol. 11. Logos Verlag Berlin GmbH,
+2011.
+
+\hypertarget{ref-schroederux5fnewux5f1965}{}
+{[}70{]} M. R. Schroeder, ``New Method of Measuring Reverberation
+Time,'' \emph{The Journal of the Acoustical Society of America}, vol.
+37, no. 3, pp. 409--412, Mar. 1965.
+
+\hypertarget{ref-sheafferux5ffdtdux2fk-dwmux5f2010}{}
+{[}71{]} J. Sheaffer and B. M. Fazenda, ``FDTD/K-DWM simulation of 3D
+room acoustics on general purpose graphics hardware using compute
+unified device architecture (CUDA),'' \emph{Proc. Institute of
+Acoustics}, vol. 32, no. 5, 2010.
+
+\hypertarget{ref-sheafferux5fmodellingux5f2013}{}
+{[}72{]} J. Sheaffer, C. Webb, and B. M. Fazenda, ``Modelling binaural
+receivers in finite difference simulation of room acoustics,'' in
+\emph{Proceedings of Meetings on Acoustics}, 2013, vol. 19, p. 015098.
+
+\hypertarget{ref-sheafferux5fphysicalux5f2014}{}
+{[}73{]} J. Sheaffer, M. van Walstijn, and B. Fazenda, ``Physical and
+numerical constraints in source modeling for finite difference
+simulation of room acousticsa),'' \emph{The Journal of the Acoustical
+Society of America}, vol. 135, no. 1, pp. 251--261, 2014.
+
+\hypertarget{ref-sheafferux5fbinauralux5f2015}{}
+{[}74{]} J. Sheaffer, M. Van Walstijn, B. Rafaely, and K. Kowalczyk,
+``Binaural reproduction of finite difference simulations using spherical
+array processing,'' \emph{IEEE/ACM Transactions on Audio, Speech, and
+Language Processing}, vol. 23, no. 12, pp. 2125--2135, 2015.
+
+\hypertarget{ref-sheafferux5fsourceux5f2013}{}
+{[}75{]} J. Sheaffer, ``From source to brain: Modelling sound
+propagation and localisation in rooms,'' PhD thesis, Citeseer, 2013.
+
+\hypertarget{ref-shelleyux5fdiffuseux5f2007}{}
+{[}76{]} S. B. Shelley, \emph{Diffuse boundary modelling in the digital
+waveguide mesh}. University of York, 2007.
+
+\hypertarget{ref-shelleyux5fdiffusionux5f2005}{}
+{[}77{]} S. Shelley and D. T. Murphy, ``Diffusion modelling at the
+boundary of a digital waveguide mesh,'' in \emph{Signal Processing
+Conference, 2005 13th European}, 2005, pp. 1--4.
+
+\hypertarget{ref-funkhouserux5fbeamux5f1998}{}
+{[}78{]} T. Funkhouser, I. Carlbom, G. Elko, G. Pingali, M. Sondhi, and
+J. West, ``A beam tracing approach to acoustic modeling for interactive
+virtual environments,'' in \emph{Proceedings of the 25th annual
+conference on Computer graphics and interactive techniques}, 1998, pp.
+21--32.
+
+\hypertarget{ref-siltanenux5froomux5f2007}{}
+{[}79{]} S. Siltanen, T. Lokki, S. Kiminki, and L. Savioja, ``The room
+acoustic rendering equation,'' \emph{The Journal of the Acoustical
+Society of America}, vol. 122, no. 3, pp. 1624--1635, 2007.
+
+\hypertarget{ref-siltanenux5fmodelingux5f2012}{}
+{[}80{]} S. Siltanen, T. Lokki, S. Tervo, and L. Savioja, ``Modeling
+incoherent reflections from rough room surfaces with image sources,''
+\emph{The Journal of the Acoustical Society of America}, vol. 131, no.
+6, pp. 4606--4614, 2012.
+
+\hypertarget{ref-siltanenux5ffinite-differenceux5f2013}{}
+{[}81{]} S. Siltanen, A. Southern, and L. Savioja, ``Finite-difference
+time domain method source calibration for hybrid acoustics modeling,''
+in \emph{2013 IEEE International Conference on Acoustics, Speech and
+Signal Processing}, 2013, pp. 166--170.
+
+\hypertarget{ref-smithux5fphysicalux5f1992}{}
+{[}82{]} J. O. Smith, ``Physical modeling using digital waveguides,''
+\emph{Computer music journal}, vol. 16, no. 4, pp. 74--91, 1992.
+
+\hypertarget{ref-southernux5f2ndux5f2007}{}
+{[}83{]} A. Southern and D. T. Murphy, ``2nd order spherical harmonic
+spatial encoding of digital waveguide mesh room acoustic models,'' in
+\emph{Proceedings of the 10th International Conference on Digital Audio
+Effects (DAFx07), Bordeaux, France}, 2007, pp. 101--108.
+
+\hypertarget{ref-southernux5fmethodsux5f2007}{}
+{[}84{]} A. Southern and D. Murphy, ``Methods for 2 nd Order Spherical
+Harmonic Spatial Encoding in Digital Waveguide Mesh Virtual Acoustic
+Simulations,'' in \emph{2007 IEEE Workshop on Applications of Signal
+Processing to Audio and Acoustics}, 2007, pp. 203--206.
+
+\hypertarget{ref-southernux5fspatialux5f2011}{}
+{[}85{]} A. Southern, S. Siltanen, and L. Savioja, ``Spatial room
+impulse responses with a hybrid modeling method,'' in \emph{Audio
+Engineering Society Convention 130}, 2011.
+
+\hypertarget{ref-southernux5froomux5f2013}{}
+{[}86{]} A. Southern, S. Siltanen, D. T. Murphy, and L. Savioja, ``Room
+impulse response synthesis and validation using a hybrid acoustic
+model,'' \emph{IEEE Transactions on Audio, Speech, and Language
+Processing}, vol. 21, no. 9, pp. 1940--1952, 2013.
+
+\hypertarget{ref-southernux5fhybridux5f2013}{}
+{[}87{]} A. Southern and S. Siltanen, ``A hybrid acoustic model for room
+impulse response synthesis,'' in \emph{Proceedings of Meetings on
+Acoustics}, 2013, vol. 19, p. 015113.
+
+\hypertarget{ref-summersux5fassessingux5f2004}{}
+{[}88{]} J. E. Summers, K. Takahashi, Y. Shimizu, and T. Yamakawa,
+``Assessing the accuracy of auralizations computed using a hybrid
+geometrical-acoustics and wave-acoustics method,'' \emph{The Journal of
+the Acoustical Society of America}, vol. 115, no. 5, pp. 2514--2515,
+2004.
+
+\hypertarget{ref-bilbaoux5fgridux5f2009}{}
+{[}89{]} S. Bilbao, ``Grid Functions and Finite Difference Operators in
+2D,'' in \emph{Numerical Sound Synthesis}, John Wiley \& Sons, Ltd,
+2009, pp. 287--304.
+
+\hypertarget{ref-foteinouux5fhybridux5f2014}{}
+{[}90{]} A. Foteinou, J. Van Mourik, S. Oxnard, and D. Murphy, ``Hybrid
+Acoustic Modelling of Historic Spaces Using Blender,'' 2014.
+
+\hypertarget{ref-vorlanderux5fauralization:ux5f2007}{}
+{[}91{]} M. Vorländer, \emph{Auralization: Fundamentals of acoustics,
+modelling, simulation, algorithms and acoustic virtual reality}.
+Springer Science \& Business Media, 2007.
+
+\hypertarget{ref-vorlanderux5fsimulationux5f2009}{}
+{[}92{]} M. Vorlander, ``Simulation and auralization of broadband room
+impulse responses,'' in \emph{Tecniacústica 2009}, 2009.
+
+\hypertarget{ref-warrenux5fnumericalux5f1998}{}
+{[}93{]} G. S. Warren and W. R. Scott, ``Numerical dispersion in the
+finite-element method using three-dimensional edge elements,''
+\emph{Microwave and Optical Technology Letters}, vol. 18, no. 6, pp.
+423--429, 1998.
+
+\hypertarget{ref-zhangux5fefficientux5f2001}{}
+{[}94{]} C. Zhang and T. Chen, ``Efficient feature extraction for 2D/3D
+objects in mesh representation,'' in \emph{Image Processing, 2001.
+Proceedings. 2001 International Conference on}, 2001, vol. 3, pp.
+935--938.
+
+\hypertarget{ref-ux5feaseux5f2016}{}
+{[}95{]} ``EASE.'' 2016 {[}Online{]}. Available:
+\url{http://ease.afmg.eu/index.php/features.html}. {[}Accessed:
+05-Dec-2016{]}
+
+\hypertarget{ref-ux5faudiobornux5f2016}{}
+{[}96{]} ``Audioborn.'' 2016 {[}Online{]}. Available:
+\url{http://www.audioborn.com}. {[}Accessed: 05-Dec-2016{]}
+
+\hypertarget{ref-ux5fotlux5f2016}{}
+{[}97{]} ``OTL.'' 2016 {[}Online{]}. Available:
+\url{http://www.olivetreelab.com/Room}. {[}Accessed: 05-Dec-2016{]}
+
+\hypertarget{ref-ux5fi-simpaux5f2016}{}
+{[}98{]} ``I-Simpa,'' \emph{I-Simpa}. 2016 {[}Online{]}. Available:
+\url{http://i-simpa.ifsttar.fr/}. {[}Accessed: 05-Dec-2016{]}
+
+\hypertarget{ref-ux5fparallelfdtdux5f2016}{}
+{[}99{]} ``ParallelFDTD,'' \emph{GitHub}. 2016 {[}Online{]}. Available:
+\url{https://github.com/juuli/ParallelFDTD}. {[}Accessed: 05-Dec-2016{]}
+
+\hypertarget{ref-ux5fearux5f2016}{}
+{[}100{]} ``Ear,'' \emph{GitHub}. 2016 {[}Online{]}. Available:
+\url{https://github.com/aothms/ear}. {[}Accessed: 05-Dec-2016{]}
+
+\hypertarget{ref-schroderux5fraven:ux5f2011}{}
+{[}101{]} D. Schröder and M. Vorländer, ``RAVEN: A real-time framework
+for the auralization of interactive virtual environments,'' in
+\emph{Forum Acusticum}, 2011.
+
+\hypertarget{ref-ux5fpachydermux5f2016}{}
+{[}102{]} ``Pachyderm Acoustic,'' \emph{GitHub}. 2016 {[}Online{]}.
+Available: \url{https://github.com/PachydermAcoustic}. {[}Accessed:
+05-Dec-2016{]}
+
+\hypertarget{ref-ux5fodeonux5f2016}{}
+{[}103{]} ``Odeon.'' 2016 {[}Online{]}. Available:
+\url{http://www.odeon.dk/}. {[}Accessed: 05-Dec-2016{]}
+
+\hypertarget{ref-ux5fcatt-acousticux5f2016}{}
+{[}104{]} ``CATT-Acoustic.'' 2016 {[}Online{]}. Available:
+\url{http://www.catt.se/}. {[}Accessed: 05-Dec-2016{]}
+
+\hypertarget{ref-krokstadux5fcalculatingux5f1968}{}
+{[}105{]} A. Krokstad, S. Strom, and S. Sørsdal, ``Calculating the
+acoustical room response by the use of a ray tracing technique,''
+\emph{Journal of Sound and Vibration}, vol. 8, no. 1, pp. 118--125,
+1968.
+
+\hypertarget{ref-siltanenux5fraysux5f2010}{}
+{[}106{]} S. Siltanen, T. Lokki, and L. Savioja, ``Rays or waves?
+Understanding the strengths and weaknesses of computational room
+acoustics modeling techniques,'' in \emph{Proceedings of the
+International Symposium on Room Acoustics}, 2010.
+
+\hypertarget{ref-svenssonux5fcomputationalux5f2002}{}
+{[}107{]} P. Svensson and U. R. Kristiansen, ``Computational modelling
+and simulation of acoutic spaces,'' in \emph{Audio Engineering Society
+Conference: 22nd International Conference: Virtual, Synthetic, and
+Entertainment Audio}, 2002.
+
+\hypertarget{ref-valimakiux5ffiftyux5f2012}{}
+{[}108{]} V. Valimaki, J. D. Parker, L. Savioja, J. O. Smith, and J. S.
+Abel, ``Fifty years of artificial reverberation,'' \emph{IEEE
+Transactions on Audio, Speech, and Language Processing}, vol. 20, no. 5,
+pp. 1421--1448, 2012.
+
+\hypertarget{ref-ux5fodeonux5f2016-1}{}
+{[}109{]} ``Odeon FAQ.'' 2016 {[}Online{]}. Available:
+\url{http://www.odeon.dk/faq-page\#t16n151}. {[}Accessed: 08-Dec-2016{]}
+
+\hypertarget{ref-ux5fvisualux5f2016}{}
+{[}110{]} ``Visual Studio support for C++ language features.'' 2016
+{[}Online{]}. Available:
+\url{https://msdn.microsoft.com/en-us/library/hh567368.aspx}.
+{[}Accessed: 09-Dec-2016{]}
+
+\hypertarget{ref-ux5fdownloadux5f2016}{}
+{[}111{]} ``Download LLVM releases.'' 2016 {[}Online{]}. Available:
+\url{http://llvm.org/releases/}. {[}Accessed: 09-Dec-2016{]}
+
+\hypertarget{ref-ux5fclangux5f2016}{}
+{[}112{]} ``Clang support for C++ language features.'' 2016
+{[}Online{]}. Available: \url{http://clang.llvm.org/cxx_status.html}.
+{[}Accessed: 09-Dec-2016{]}
+
+\hypertarget{ref-ux5fitppux5f2013}{}
+{[}113{]} ``ITPP homepage.'' 2013 {[}Online{]}. Available:
+\url{http://itpp.sourceforge.net/4.3.1/}. {[}Accessed: 13-Dec-2016{]}
+
+\hypertarget{ref-bottsux5fintegratingux5f2013}{}
+{[}114{]} J. Botts and L. Savioja, ``Integrating finite difference
+schemes for scalar and vector wave equations,'' in \emph{2013 IEEE
+International Conference on Acoustics, Speech and Signal Processing},
+2013, pp. 171--175.
+
+\hypertarget{ref-smithux5fiiiux5fequivalenceux5f2004}{}
+{[}115{]} J. O. Smith III, ``On the equivalence of the digital waveguide
+and finite difference time domain schemes,'' \emph{arXiv preprint
+physics/0407032}, 2004.
+
+\hypertarget{ref-yeeux5fnumericalux5f1966}{}
+{[}116{]} K. Yee, ``Numerical solution of initial boundary value
+problems involving maxwell's equations in isotropic media,'' \emph{IEEE
+Transactions on Antennas and Propagation}, vol. 14, no. 3, pp. 302--307,
+May 1966.
+
+\hypertarget{ref-murphyux5facousticux5f2007}{}
+{[}117{]} D. Murphy, A. Kelloniemi, J. Mullen, and S. Shelley,
+``Acoustic modeling using the digital waveguide mesh,'' \emph{IEEE
+Signal Processing Magazine}, vol. 24, no. 2, pp. 55--66, 2007.
+
+\hypertarget{ref-sakamotoux5fphase-errorux5f2007}{}
+{[}118{]} S. Sakamoto, ``Phase-error analysis of high-order finite
+difference time domain scheme and its influence on calculation results
+of impulse response in closed sound field,'' \emph{Acoustical Science
+and Technology}, vol. 28, no. 5, pp. 295--309, 2007.
+
+\hypertarget{ref-lamux5ftimeux5f2012}{}
+{[}119{]} Y. W. Lam and J. A. Hargreaves, ``Time domain modelling of
+room acoustics,'' in \emph{Proceedings of the Institute of Acoustics},
+2012.
+
+\hypertarget{ref-sheafferux5fphysically-constrainedux5f2012}{}
+{[}120{]} J. Sheaffer, M. V. Walstijn, and B. M. Fazenda, ``A
+physically-constrained source model for FDTD acoustic simulation,'' in
+\emph{Proc. of the 15th Int. Conference on Digital Audio Effects
+(DAFx-12)}, 2012.
+
+\hypertarget{ref-aretzux5fcombinedux5f2012}{}
+{[}121{]} M. Aretz, \emph{Combined Wave and Ray Based Room Acoustic
+Simulations of Small Rooms}. Logos Verlag Berlin GmbH, 2012.
+
+\hypertarget{ref-noisternigux5f3dux5f2003}{}
+{[}122{]} M. Noisternig, T. Musil, A. Sontacchi, and R. Holdrich, ``3d
+binaural sound reproduction using a virtual ambisonic approach,'' in
+\emph{Virtual Environments, Human-Computer Interfaces and Measurement
+Systems, 2003. VECIMS'03. 2003 IEEE International Symposium on}, 2003,
+pp. 174--178.
+
+\hypertarget{ref-oliverux5flistenux5f2003}{}
+{[}123{]} W. Oliver, ``Listen HRTF database.'' 2003 {[}Online{]}.
+Available: \url{http://recherche.ircam.fr/equipes/salles/listen/}.
+{[}Accessed: 04-Jan-2017{]}
+
+\hypertarget{ref-linkwitzux5factiveux5f1976}{}
+{[}124{]} S. H. Linkwitz, ``Active Crossover Networks for Noncoincident
+Drivers,'' \emph{Journal of the Audio Engineering Society}, vol. 24, no.
+1, pp. 2--8, Feb. 1976 {[}Online{]}. Available:
+\url{http://www.aes.org/e-lib/browse.cfm?elib=2649}. {[}Accessed:
+05-Jan-2017{]}
+
+\hypertarget{ref-gustafssonux5fdeterminingux5f1994}{}
+{[}125{]} F. Gustafsson, ``Determining the initial states in
+forward-backward filtering,'' 1994.
+
+\hypertarget{ref-ux5fsonicux5f2017}{}
+{[}126{]} ``Sonic Visualiser.'' 2017 {[}Online{]}. Available:
+\url{http://sonicvisualiser.org/}. {[}Accessed: 12-Jan-2017{]}
+
+\hypertarget{ref-ux5froomux5f2017}{}
+{[}127{]} ``Room EQ Wizard Room Acoustics Software.'' 2017 {[}Online{]}.
+Available: \url{https://www.roomeqwizard.com/}. {[}Accessed:
+12-Jan-2017{]}
+
+\hypertarget{ref-ux5freverberationux5f2017}{}
+{[}128{]} ``Reverberation Time RT60.'' 2017 {[}Online{]}. Available:
+\url{http://www.nti-audio.com/en/functions/reverberation-time-rt60.aspx}.
+{[}Accessed: 12-Jan-2017{]}
+
+\hypertarget{ref-hodgsonux5fwhenux5f1994}{}
+{[}129{]} M. Hodgson, ``When is diffuse-field theory accurate?''
+\emph{Canadian Acoustics}, vol. 22, no. 3, pp. 41--42, 1994.
+
+\hypertarget{ref-ux5fassimpux5f2017}{}
+{[}130{]} ``Assimp Supported Formats.'' 2017 {[}Online{]}. Available:
+\url{http://www.assimp.org/main_features_formats.html}. {[}Accessed:
+13-Jan-2017{]}
+
+\hypertarget{ref-ux5foperaticux5f2017}{}
+{[}131{]} ``Operatic Voice The Open Acoustic Impulse Response Library.''
+2017 {[}Online{]}. Available:
+\url{http://www.openairlib.net/anechoicdb/content/operatic-voice}.
+{[}Accessed: 16-Jan-2017{]}
+
+\end{document}
