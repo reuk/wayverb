@@ -24,14 +24,15 @@ ray has travelled [@vorlander_auralization:_2007, p. 58].
 Rays are perfectly reflected at boundaries.  When a ray is reflected, it spawns
 a secondary source "behind" the boundary surface.  This source is located on a
 line perpendicular to the wall, at the same distance from it as the original
-source, as if the original source has been "mirrored" in the surface.  This new
-"image" source now represents a perfect reflection path, in that the distance
-along the straight line between the receiver and the image source has the same
-length as the path from the *real* source to the receiver, reflected in the
-boundary. If the source is reflected in a single boundary, this represents a
-first-order reflection.  A ray which is reflected from several boundaries is
-represented by a "higher-order" image-source, which has been mirrored in each
-of those boundaries in turn [@kuttruff_room_2009, p.  104].
+source, as if the original source has been "mirrored" in the surface (an
+example is shown in +@fig:image_source_construction).  This new "image" source
+now represents a perfect reflection path, in that the distance along the
+straight line between the receiver and the image source has the same length as
+the path from the *real* source to the receiver, reflected in the boundary. If
+the source is reflected in a single boundary, this represents a first-order
+reflection.  A ray which is reflected from several boundaries is represented by
+a "higher-order" image-source, which has been mirrored in each of those
+boundaries in turn [@kuttruff_room_2009, p.  104].
 
 ![Image sources are found by reflecting the source position in a
 boundary.](images/image_source_construction){#fig:image_source_construction}
@@ -244,17 +245,17 @@ value.
 The surface reflectances are found by converting per-band absorptions into
 per-band normal-incidence reflectance magnitudes using
 
-(@) $$|R|=\sqrt{1-\alpha}$$
+$$|R|=\sqrt{1-\alpha}$$ {#eq}
 
 where $R$ is the surface reflectance, and $\alpha$ is the absorption
 coefficient of that frequency band.  These are converted to per-band impedances
 $\xi$ by 
 
-(@) $$\xi=\frac{1+|R|}{1-|R|}$$
+$$\xi=\frac{1+|R|}{1-|R|}$$ {#eq}
 
 Finally, the impedances are converted back to *angle-dependent* reflectances by
 
-(@) $$R(\theta)=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$
+$$R(\theta)=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$ {#eq}
 
 where $\theta$ is the angle of incidence at the surface.  This is the same
 approach taken in [@southern_room_2013]. $\theta$ must be found for each
@@ -264,9 +265,9 @@ the incident ray direction and the surface normal, when both are unit vectors.
 The contribution $g$ of a single image source with intermediate surfaces $m_1
 m_2 \dots m_n$ is given by
 
-(@) $$g_{m_1 m_2 \dots m_n} = \frac{\sqrt{Z_0/4\pi}}{d_{m_1 m_2 \dots m_n}}
+$$g_{m_1 m_2 \dots m_n} = \frac{\sqrt{Z_0/4\pi}}{d_{m_1 m_2 \dots m_n}}
 \cdot R_{m_1} \ast R_{m_2} \ast \dots \ast R_{m_n} \ast \delta(\frac{d_{m_1 m_2
-\dots m_n}}{c})$$
+\dots m_n}}{c})$$ {#eq}
 
 where $Z_0$ is the acoustic impedance of air, $c$ is the speed of sound,
 $d_{m_1 m_2 \dots m_n}$ is the distance from the receiver to the image source,
@@ -293,13 +294,13 @@ Nyquist frequency.  Such an impulse response is infinitely long, but tends to
 zero quickly, so a Hann window can be applied to limit its length.  This form
 of the impulse is as follows:
 
-(@) $$
+$$
 \delta_{\text{LPF}}(n - \epsilon)=
 \begin{cases}
 	\frac{1}{2}(1+\cos\frac{2\pi (n - \epsilon)}{N_w})\text{sinc}(n - \epsilon), & - \frac{N_w}{2} < n < \frac{N_w}{2} \\
 	0, & \text{otherwise}
 \end{cases} 
-$$
+$$ {#eq}
 
 where $n$ is an index in the output buffer, $\epsilon$ is the centre of the
 impulse in samples ($\epsilon=\tau f_s$), and $N_w$ is the width of the window

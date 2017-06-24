@@ -2,7 +2,7 @@
 
 -[x] Page 7 line 13 “is also an problem” should be “is also a problem”
 
--[ ] Figure 2.1 is not referred to in the text
+-[x] Figure 2.1 is not referred to in the text
 
 -[x] Page 19 last sentence of first paragraph – sentence needs qualifying with “when…”
 
@@ -10,17 +10,17 @@
 
 -[x] Page 24 second paragraph line 5 – shouldn’t “statistical” be “stochastic”
 
--[ ] Page 25 last paragraph – “25s” should be “25µs”. Also KHz should be kHz.
+-[x] Page 25 last paragraph – “25s” should be “25µs”. Also KHz should be kHz.
 
 -[x] Page 27 fifth paragraph – “which a common descriptor” should be “which is a common descriptor”
 
--[ ] Page 27 can you give a reference for equation 9 (or are you implying this equation is obvious from your preceding description?) 
+-[x] Page 27 can you give a reference for equation 9 (or are you implying this equation is obvious from your preceding description?) 
 
 -[x] Page 28 KHz should be kHz
 
 -[x] Page 30 “be this same” should be “be the same”
 
--[ ] Page 34 following equation 23 please clarify what c, T and X are.
+-[x] Page 34 following equation 23 please clarify what c, T and X are.
 
 -[ ] Figure 4.2 “Black lines” should be “Blue lines”. Is there any way you can redraw the tetrahedral one so it’s easier to see (maybe put it in twice for the two orientations? Or use different colours for the two orientations?)
 
@@ -74,7 +74,7 @@
 
 -[x] Page 100 “acoustics arbitrary” should be “acoustics of arbitrary”
 
--[ ] Conclusions should be a section in its own right
+-[x] Conclusions should be a section in its own right
 
 -[ ] References – despite the explanatory sentence at the start I feel that references 78 onwards - which are not cited in the text - should be deleted or placed in a Bibliography (or similarly named) section
 

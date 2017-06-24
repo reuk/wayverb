@@ -37,7 +37,7 @@ context.
 
 The reflection factor $R$ is a complex value given by 
 
-(@) $$R=|R|\exp(i\chi)$$
+$$R=|R|\exp(i\chi)$$ {#eq}
 
 which describes a modification to the amplitude and phase of a wave reflected
 in a boundary ($|R|$ is the magnitude term, $\chi$ is phase).
@@ -52,7 +52,7 @@ The wall impedance $Z$ is defined as the ratio of sound pressure to the normal
 component of particle velocity at the wall surface.  It is related to the
 reflection factor by
 
-(@r_in_terms_of_z) $$R=\frac{Z\cos\theta-Z_0}{Z\cos\theta+Z_0}$$
+$$R=\frac{Z\cos\theta-Z_0}{Z\cos\theta+Z_0}$$ {#eq:r_in_terms_of_z}
 
 where $\theta$ is the angle of incidence, and $Z_0$ is the characteristic
 impedance of the propagation medium, normally air.  In the case that the wall
@@ -64,7 +64,7 @@ locally reacting.
 The absorption coefficient $\alpha$ of a wall describes the proportion of
 incident energy which is lost during reflection. It is defined as
 
-(@alpha) $$\alpha =1-|R|^2$$
+ $$\alpha =1-|R|^2$$ {#eq:alpha}
 
 ### Scattering
 
@@ -80,18 +80,18 @@ describes the proportion of outgoing energy which is scattered, and which may
 be dependent on frequency (see +@fig:scattering).  The total outgoing energy
 $E_\text{total}$ is related to the incoming energy $E_\text{incident}$ by
 
-(@) $$E_{\text{total}}=E_{\text{incident}}(1-\alpha)$$
+$$E_{\text{total}}=E_{\text{incident}}(1-\alpha)$$ {#eq}
 
 Then the scattering coefficient $s$ defines the proportion of this outgoing
 energy which is reflected specularly $E_\text{specular}$ or scattered
 $E_\text{scattered}$:
 
-(@) $$
+$$
 \begin{aligned}
 E_{\text{specular}} & =E_{\text{incident}}(1-\alpha)(1-s) \\
 E_{\text{scattered}} & =E_{\text{incident}}(1-\alpha)s
 \end{aligned}
-$$
+$$ {#eq}
 
 ![Reflected components from a rough
 surface.](images/scattering){#fig:scattering}
@@ -120,45 +120,46 @@ The *specific acoustic impedance* $\xi$ for a given surface is defined as the
 impedance of that surface $Z$ divided by the acoustic impedance of the
 propagation medium (air) $Z_0$.
 
-(@) $$\xi=\frac{Z}{Z_0}$$
+$$\xi=\frac{Z}{Z_0}$$ {#eq}
 
-Inserting this equation into (@r_in_terms_of_z) gives:
+Inserting this equation into +@eq:r_in_terms_of_z gives:
 
-(@r_in_terms_of_xi) $$R=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$
+$$R=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$ {#eq:r_in_terms_of_xi}
 
 where $\theta$ is the angle of incidence [@southern_room_2013].
 
 For a general surface, $\xi$ will be a function of the incident angle.
 However, in the case of a locally reacting surface, the impedance is
-independent of the angle of incidence. The $\xi$ term in (@r_in_terms_of_xi)
+independent of the angle of incidence. The $\xi$ term in +@eq:r_in_terms_of_xi
 can then be replaced by $\xi_0$ which represents the normal-incidence specific
 impedance (which will be constant for all angles). Thus, the reflection factor
 of a locally reacting surface is
 
-(@r_normal_incidence) $$R=\frac{\xi_0\cos\theta-1}{\xi_0\cos\theta+1}$$
+$$R=\frac{\xi_0\cos\theta-1}{\xi_0\cos\theta+1}$$ {#eq:r_normal_incidence}
 
 Surfaces in Wayverb are defined in terms of absorption coefficients. To express
 the reflectance in terms of absorption, an equation for $\xi_0$ in terms of
-absorption must be found, and substituted into (@r_normal_incidence).
+absorption must be found, and substituted into +@eq:r_normal_incidence.
 
 Assuming that the absorption coefficients denote normal-incidence absorption,
-then by rearranging (@alpha), the normal-incidence reflection coefficient $R_0$
+then by rearranging +@eq:alpha, the normal-incidence reflection coefficient $R_0$
 is given by
 
-(@r_mag) $$R_0=\sqrt{1-\alpha}$$
+$$R_0=\sqrt{1-\alpha}$$ {#eq:r_mag}
 
-$R_0$ can also be expressed by setting $\theta$ to 0 in (@r_normal_incidence):
+$R_0$ can also be expressed by setting $\theta$ to 0 in
++@eq:r_normal_incidence:
 
-(@r_0) $$R_0=\frac{\xi_0 -1}{\xi_0 +1}$$
+$$R_0=\frac{\xi_0 -1}{\xi_0 +1}$$ {#eq:r_0}
 
-To express $\xi_0$ in terms of $\alpha$, (@r_0) is rearranged in terms of the
+To express $\xi_0$ in terms of $\alpha$, +@eq:r_0 is rearranged in terms of the
 normal-incidence reflection coefficient:
 
-(@xi_0) $$\xi_0=\frac{1+R_0}{1-R_0}$$
+$$\xi_0=\frac{1+R_0}{1-R_0}$$ {#eq:xi_0}
 
-Then, (@r_mag) may be substituted into (@xi_0) to give $\xi_0$ in terms of
+Then, +@eq:r_mag may be substituted into +@eq:xi_0 to give $\xi_0$ in terms of
 $\alpha$.  This new definition of $\xi_0$ can then be used in conjunction with
-(@r_normal_incidence) to define the angle-dependent reflection factor of a
++@eq:r_normal_incidence to define the angle-dependent reflection factor of a
 locally reacting surface.
 
 In Wayverb, surfaces may have different absorptions in each frequency band.
@@ -204,16 +205,16 @@ receiver volume.  The absolute area covered by a spherical receiver
 $A_{\text{intersection}}$ is found using the equation for the surface area of a
 spherical cap.
  
-(@) $$A_{\text{intersection}} = 2\pi r^2(1-\cos\gamma)$$
+$$A_{\text{intersection}} = 2\pi r^2(1-\cos\gamma)$$ {#eq}
 
 Then, the detected scattered energy can be derived [@schroder_physically_2011, p. 64]:
 
-(@) $$ \begin{aligned}
+$$ \begin{aligned}
 E_{\text{scattered}} & = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\theta \cdot \left( \frac{A_{\text{intersection}}}{2\pi r^2} \right) \\
                      & = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\theta \cdot \left( \frac{2\pi r^2(1-\cos\gamma)}{2\pi r^2} \right) \\
                      & = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\theta \cdot (1-\cos\gamma)
 \end{aligned}
-$$
+$$ {#eq}
 
 Here, $\theta$ is the angle from secondary source to receiver relative against
 the surface normal, and $\gamma$ is the opening angle (shown in
@@ -308,20 +309,20 @@ model seems to be the most appropriate.
 See [@kowalczyk_modeling_2008] and [@kowalczyk_modelling_2008] for a more
 detailed explanation.
 
-The reflectance of a LRS has been defined above (@r_normal_incidence), in terms
+The reflectance of a LRS has been defined above +@eq:r_normal_incidence, in terms
 of the normal-incidence specific impedance $\xi_0$.  For the geometric
 implementation, $\xi_0$ was defined in terms of a single normal-incidence
-reflection coefficient $R_0$ (@xi_0). If $R_0$ is replaced by a digital filter
+reflection coefficient $R_0$ +@eq:xi_0. If $R_0$ is replaced by a digital filter
 $R_0(z)$, then the specific impedance may also be expressed as a filter
 $\xi_0(z)$:
 
-(@xi_filter) $$\xi_0(z)=\frac{1+R_0(z)}{1-R_0(z)}$$
+$$\xi_0(z)=\frac{1+R_0(z)}{1-R_0(z)}$$ {#eq:xi_filter}
 
 To create the filter $R_0$, per-band normal reflection magnitudes are found
 using the relationship $|R|=\sqrt{1-\alpha}$. Then, the Yule-Walker method is
 used to find *infinite impulse response* (IIR) coefficients for a filter with
 an approximately-matched frequency response. Then, this filter is substituted
-into (@xi_filter) to find IIR coefficients for the specific impedance filter.
+into +@eq:xi_filter to find IIR coefficients for the specific impedance filter.
 This impedance filter will eventually be "embedded" into the boundary nodes of
 the waveguide.
 
@@ -410,8 +411,8 @@ To find the accuracy of the boundary model, the numerical reflectance was
 compared to the theoretical reflection of the digital impedance filter being
 tested, which is defined as:
 
-(@) $$R_{\theta, \phi}(z) = \frac{\xi(z)\cos\theta\cos\phi -
-1}{\xi(z)\cos\theta\cos\phi + 1}$$
+$$R_{\theta, \phi}(z) = \frac{\xi(z)\cos\theta\cos\phi -
+1}{\xi(z)\cos\theta\cos\phi + 1}$$ {#eq}
 
 where $\theta$ and $\phi$ are the reflection azimuth and elevation
 respectively.

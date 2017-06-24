@@ -54,14 +54,14 @@ d'Alembert's solution of the wave equation in one dimension
 [@shelley_diffuse_2007, p. 86].  The displacement of a string $y$ at time $t$
 and position $x$ can be written as
 
-(@) $$y(t,x)=y_r\left(t-\frac{x}{c}\right) + y_l\left(t+\frac{x}{c}\right)$$
+$$y(t,x)=y_r\left(t-\frac{x}{c}\right) + y_l\left(t+\frac{x}{c}\right)$$ {#eq}
 
 where $y_r\left(t-\frac{x}{c}\right)$ and $y_l\left(t+\frac{x}{c}\right)$ are
 the right- and left-going travelling waves respectively, with speed $c$
 [@smith_physical_1992].  The discrete form of this equation is given in terms
 of constant time and space divisions, $T$ and $X$ respectively:
 
-(@) $$y(nT,mX) \buildrel \Delta \over = y^+(n-m) + y^-(n+m)$$
+$$y(nT,mX) \buildrel \Delta \over = y^+(n-m) + y^-(n+m)$$ {#eq}
 
 where superscript $+$ and $-$ denote propagation to the right and left
 respectively, and $n$ and $m$ are integers, used to index the
@@ -86,14 +86,13 @@ conservation laws [@shelley_diffuse_2007, p. 87].  The sound pressure $p_J$ at
 a lossless scattering junction $J$ with $N$ connected elements or "ports" is
 the summed incoming components of all connected elements:
 
-(@)
-$$p_J=\frac{2\sum_{i=1}^{N}\frac{p_i^+}{Z_i}}{\sum_{i=1}^{N}\frac{1}{Z_i}}$$
+$$p_J=\frac{2\sum_{i=1}^{N}\frac{p_i^+}{Z_i}}{\sum_{i=1}^{N}\frac{1}{Z_i}}$$ {#eq}
 
 where $p_i$ is the pressure in waveguide element $i$ and $Z_i$ is its
 associated impedance.  This simplifies, if all impedances are equal, which is
 true for homogeneous media:
 
-(@) $$p_J=\frac{2}{N}\sum_{i=1}^{N}p_i^+$$
+$$p_J=\frac{2}{N}\sum_{i=1}^{N}p_i^+$$ {#eq}
 
 A *digital waveguide mesh* is any configuration of regularly-arranged $N$-port
 scattering junctions which are separated by unit delay lines.  In some
@@ -105,7 +104,7 @@ junction at the previous time step.  This fact allows the waveguide mesh to
 alternatively be formulated directly in terms of the pressure at each junction
 (assuming all junction impedances are equal) [@beeson_roomweaver:_2004]:
 
-(@) $$p_J(n)=\frac{2}{N}\sum_{i=1}^{N}p_i(n-1)-p_J(n-2)$$
+$$p_J(n)=\frac{2}{N}\sum_{i=1}^{N}p_i(n-1)-p_J(n-2)$$ {#eq}
 
 That is, the next pressure at a given node depends on the previous pressure at
 that node, and the current pressure at surrounding nodes.  This alternative
@@ -131,13 +130,16 @@ temporal sampling periods are related by the Courant number $\lambda$.  The
 Courant criterion specifies the conditions required for numerical stability of
 the simulation:
 
-(@) $$\lambda=\frac{cT}{X} \leq \frac{1}{\sqrt{N}}$$
+$$\lambda=\frac{cT}{X} \leq \frac{1}{\sqrt{N}}$$ {#eq}
 
 The highest sampling rate and lowest error is achieved by setting the Courant
 to its maximum value [@sheaffer_fdtd/k-dwm_2010].  This is normally desirable,
 and so the inequality above can be simplified:
 
-(@) $$T=\frac{X}{c\sqrt{N}}$$
+$$T=\frac{X}{c\sqrt{N}}$$ {#eq}
+
+Here, $T$ is the temporal sampling period, $X$ is the spatial sampling period,
+$c$ is the speed of sound and $N$ is the number of spatial dimensions.
 
 A higher output sampling rate requires a smaller inter-nodal spacing and
 therefore more modelled points per-unit-volume, which in turn requires more
@@ -563,7 +565,7 @@ derived from a maximum cutoff frequency and an oversampling coefficient.
 The first step is to calculate the position of each node in the mesh.
 The inter-nodal spacing $X$ (that is, the spatial sampling period) is given by
 
-(@) $$X=\frac{c}{f_s\lambda} = \frac{c\sqrt{3}}{f_s}$$
+$$X=\frac{c}{f_s\lambda} = \frac{c\sqrt{3}}{f_s}$$ {#eq}
 
 where $\lambda$ is the Courant number, set to its maximum stable value.  Now,
 the axis-aligned bounding box of the scene is found, and padded to exact
@@ -724,7 +726,7 @@ node. This is shown in the following equation, where $i$, $j$, and $k$ are
 spatial indices on the $x$, $y$ and $z$ axes respectively, and $n$ is a time
 index.
 
-(@) $$p_{i,j,k}^{n+1} = \frac{1}{3}(p_{i-1,j,k}^n + p_{i+1,j,k}^n + p_{i,j-1,k}^n + p_{i,j+1,k}^n + p_{i,j,k-1}^n + p_{i,j,k+1}^n) - p_{i,j,k}^{n-1}$$
+$$p_{i,j,k}^{n+1} = \frac{1}{3}(p_{i-1,j,k}^n + p_{i+1,j,k}^n + p_{i,j-1,k}^n + p_{i,j+1,k}^n + p_{i,j,k-1}^n + p_{i,j,k+1}^n) - p_{i,j,k}^{n-1}$$ {#eq}
 
 If the node is a boundary node, then it is instead updated according to the
 boundary update equations found in [@kowalczyk_modeling_2008].
