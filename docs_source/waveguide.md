@@ -447,19 +447,19 @@ more conventional pulse and wavelet signals. PCS signals obey the
 differentiation constraint, have wide and flat passbands, and are short in
 time.  They use soft-source injection, so will not cause scattering artefacts,
 and as they have no DC component, they should not introduce solution-growth.  A
-PCS input signal seems like and obvious choice for this application.  
+PCS input signal seems like an obvious choice for this application.
 
 ![The time-domain and frequency-domain responses of some signals commonly used
 as FDTD excitations.  All signals are shown with an upper cutoff of $0.2f_s$.
 The pulse signals have their centre frequencies set to $0.1f_s$.  The PCS
-signal shown has a sampling rate of 10KHz, a mass of 25g, a low cutoff of
+signal shown has a sampling rate of 10kHz, a mass of 25g, a low cutoff of
 100Hz, and a Q of 0.7. It *includes* the injection filter, which means the
 signal shown could be injected like a soft source.
 \label{fig:input_signal_info}](images/kernel_properties)
 
 A test was devised to ensure that the source injection method did not cause
 solution-growth.  A standard rectilinear waveguide mesh with a sampling
-frequency of 10KHz was set up within a cuboid room, measuring $5.56 \times 3.97
+frequency of 10kHz was set up within a cuboid room, measuring $5.56 \times 3.97
 \times 2.81$ metres. A source was placed at (4.8, 2.18, 2.12), and a receiver
 at (4.7, 2.08, 2.02).  The walls of the room were set to have a uniform
 broadband absorption of 0.006 (see the [Boundary Modelling]({{ site.baseurl}}{%

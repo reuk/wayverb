@@ -44,11 +44,12 @@ When recording impulse responses of physical spaces, several techniques might
 be used to retain ITD and ILD information.
 
 One option is to record the impulse response using a matched pair of
-microphones.  An AB pair will capture interchannel time difference, but will
-only capture interchannel level difference if the source is positioned near to
-the microphones. Alternatively, an XY or Blumlein pair will capture level
-difference, but will be incapable of recording time difference because
-wave-fronts will always arrive at both capsules simultaneously.
+microphones.  A AB pair of spaced omnidirectional capsules will capture
+interchannel time difference, but will only capture interchannel level
+difference if the source is positioned near to the microphones. Alternatively,
+an XY or Blumlein pair will capture level difference, but will be incapable of
+recording time difference because wave-fronts will always arrive at both
+capsules simultaneously.
 
 Microphone pair methods are only suitable for recording stereo signals, as they
 only capture a two-dimensional "slice" through the modelled scene, where all
@@ -101,7 +102,7 @@ from direction $\hat{d}$ is given by
 where $\hat{p}$ and $\hat{d}$ are unit vectors, and $\cdot$ is the dot-product
 operator. When $s$ is set to 0, the $a(\hat{d})$ is equal to one for all values
 of $\hat{d}$, modelling an omnidirectional polar pattern. When $s$ is 1, the
-modelled polar pattern is bidirectional, with a gain of 1 in front the
+modelled polar pattern is bidirectional, with a gain of 1 in front of the
 microphone, 0 at either side, and -1 behind. When $s$ is 0.5, the pattern is
 cardioid. Sub- and supercardioid patterns are created by setting $s$ lower or
 higher than 0.5 respectively. This microphone model is flexible, allowing
@@ -162,7 +163,7 @@ convolving each direction separately, before a final mixdown. This would be
 extremely costly: for separation angles of fifteen degrees, this means
 recording signals for each of 288 incident directions, which might easily
 occupy more than a gigabyte of memory (288 3-second impulse responses at
-32-bits and 44.1KHz require 1160MB of memory), and then separately convolving
+32-bits and 44.1kHz require 1160MB of memory), and then separately convolving
 and mixing them. While this is definitely possible, it would be extremely time
 consuming to run. By restricting the HRTF data to 8 frequency bands, the
 application architecture can be simplified, while also improving memory usage
@@ -483,7 +484,7 @@ The testing procedure is similar to that described in
 measuring $1.5 \times 1.5 \times 1.5$ metres.  Sixteen equally-spaced source
 positions are generated in a circle with radius 1m around the receiver.  For
 each source, the room is simulated using a rectilinear waveguide mesh with a
-sampling rate of 50KHz, for 294 steps.  The step number is chosen so that the
+sampling rate of 50kHz, for 294 steps.  The step number is chosen so that the
 initial wave-front will reach the receiver, but reflections from the room walls
 will not.  After each simulation, the directionally-weighted signal recorded at
 the receiver is split into frequency bands, and the normalised energy per band
@@ -522,7 +523,7 @@ axial directions, the wave-fronts are slower, and the full energy does not
 reach the receiver within the simulation window.
 
 These results mirror those seen by Hacıhabiboglu, who also records similar
-large errors in diagonal directions in the highest (8KHz) band. These errors
+large errors in diagonal directions in the highest (8kHz) band. These errors
 are also attributed to directional dispersion.  Therefore, error in the results
 is likely due to the properties of the waveguide and the particular receiver
 technique used, rather than an error in the implementation.

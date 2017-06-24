@@ -29,7 +29,7 @@ one or more of an array of issues:
   especially at low frequencies.  Conversely, programs opting to use more
   accurate wave-modelling methods require long time periods, in the order of
   days, or significant computing power to run.
-- Licensing is also an problem.  Most room-acoustics packages are the product
+- Licensing is also a problem.  Most room-acoustics packages are the product
   of years of combined research by multiple contributors, which is only made
   viable by releasing the software commercially.  However, this inhibits 
   further research, as the code is not freely available.  This model also 

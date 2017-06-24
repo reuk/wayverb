@@ -1,34 +1,34 @@
--[ ] Add title “Abstract” to the abstract.
+-[x] Add title “Abstract” to the abstract.
 
--[ ] Page 7 line 13 “is also an problem” should be “is also a problem”
+-[x] Page 7 line 13 “is also an problem” should be “is also a problem”
 
 -[ ] Figure 2.1 is not referred to in the text
 
--[ ] Page 19 last sentence of first paragraph – sentence needs qualifying with “when…”
+-[x] Page 19 last sentence of first paragraph – sentence needs qualifying with “when…”
 
--[ ] Page 20 “number to checks” should be “number of checks”
+-[x] Page 20 “number to checks” should be “number of checks”
 
--[ ] Page 24 second paragraph line 5 – shouldn’t “statistical” be “stochastic”
+-[x] Page 24 second paragraph line 5 – shouldn’t “statistical” be “stochastic”
 
--[ ] Page 25 last paragraph – “25s” should be “25µs”. Also KHz should be kHz.
+-[x] Page 25 last paragraph – “25s” should be “25µs”. Also KHz should be kHz.
 
--[ ] Page 27 fifth paragraph – “which a common descriptor” should be “which is a common descriptor”
+-[x] Page 27 fifth paragraph – “which a common descriptor” should be “which is a common descriptor”
 
 -[ ] Page 27 can you give a reference for equation 9 (or are you implying this equation is obvious from your preceding description?) 
 
--[ ] Page 28 KHz should be kHz
+-[x] Page 28 KHz should be kHz
 
--[ ] Page 30 “be this same” should be “be the same”
+-[x] Page 30 “be this same” should be “be the same”
 
 -[ ] Page 34 following equation 23 please clarify what c, T and X are.
 
 -[ ] Figure 4.2 “Black lines” should be “Blue lines”. Is there any way you can redraw the tetrahedral one so it’s easier to see (maybe put it in twice for the two orientations? Or use different colours for the two orientations?)
 
--[ ] Page 40 “like and obvious” should be “like an obvious”. Also KHz should be kHz.
+-[x] Page 40 “like and obvious” should be “like an obvious”. Also KHz should be kHz.
 
 -[ ] Page 40 bottom paragraph says following figure but it is referring to the figure after the following one.
 
--[ ] Page 41 KHz should be kHz.
+-[x] Page 41 KHz should be kHz.
 
 -[ ] Page 42 Figure 4.4 on each graph a line goes from (0,0) to the top left corner and bottom right corner of the excitation signal – this appears to be a presentational error and needs correcting. Also it is unclear to me why the amplitudes on Dirac, Ricker and PCS are “filled in” – is this fluctuation in amplitude that is lost in the resolution or a presentational problem? If the former just clarify if the latter please fix.
 
@@ -36,35 +36,35 @@
 
 -[ ] Page 49 last line of first paragraph – “exceptional” is it possible to be a little more precise or use more restrained language…
 
--[ ] Page 49 3rd paragraph suggest delete word “maybe”
+-[x] Page 49 3rd paragraph suggest delete word “maybe”
 
--[ ] Page 50 “no concrete rule to place” should be something like “no concrete rule about where to place”
+-[x] Page 50 “no concrete rule to place” should be something like “no concrete rule about where to place”
 
 -[ ] Page 50 Last sentence – is it possible in any way to indicatively quantify “very large”, “reasonable” and “excessive” or reword to be more precise?
 
 -[ ] Page 51 first paragraph. Suggest adding a sentence to complete the paragraph saying what Wayverb does (you’ve said what it doesn’t do!)
 
--[ ] Page 53 “the to end” should be “the top end”
+-[x] Page 53 “the to end” should be “the top end”
 
--[ ] Page 55 KHz should be kHz
+-[x] Page 55 KHz should be kHz
 
 -[ ] Page 57 fifth paragraph – needs a little clarification – AB pair add “spaced” and I presume you are referring to “omnis”. Similarly for “XY” add “co-incident” and I presume cardiods or figure-of-8.
 
--[ ] Page 58 first line – “four coincident directional” should be 3 plus an
+-[ ] Page 58 first line – “four coincident directional” should be 3 plus an omnidirectional
 
--[ ] omnidirectional
-
--[ ] Page 58 “front the microphone” should be “front of the microphone”
+-[x] Page 58 “front the microphone” should be “front of the microphone”
 
 -[ ] Page 59 bottom sentence. Looks like you are taking advantage of left right symmetry in arriving at 288 – if so please claify this.
 
--[ ] Page 65 KHz should be kHz
+-[x] Page 65 KHz should be kHz
 
--[ ] Page 67 KHz should be kHz
+-[x] Page 67 KHz should be kHz
 
--[ ] Page 75 KHz should be kHz
+-[x] Page 75 KHz should be kHz
 
--[ ] Equations can’t be told from figures – don’t like style of referencing figures Page 84 and 87 have unlabelled tables. Please label and then refer to in text.
+-[ ] Equations can’t be told from figures – don’t like style of referencing figures
+
+-[ ] Page 84 and 87 have unlabelled tables. Please label and then refer to in text.
 
 -[ ] Page 85 Figure 8.2 title at top should say “T30” not “RT30”
 
@@ -72,7 +72,7 @@
 
 -[ ] Figure 8.4 and 8.5 are not referred to in the text – please correct
 
--[ ] Page 100 “acoustics arbitrary” should be “acoustics of arbitrary”
+-[x] Page 100 “acoustics arbitrary” should be “acoustics of arbitrary”
 
 -[ ] Conclusions should be a section in its own right
 
@@ -82,7 +82,7 @@
 
 --------------------------------------------------------------------------------
 
--[ ] p8: KHz is used throughout instead of kHz – please correct.
+-[x] p8: KHz is used throughout instead of kHz – please correct.
 
 -[ ] p12 - Project Aims: although I am not suggesting that these should be rewritten, their scope might be more focused to enable a more complete analysis and reflection in the conclusions. Also it states that this work should not required any specialist training in ‘acoustics or programming’ yet the thesis that follows is absolutely founded on both, and this assumption has not actually been properly tested as stated above.
 

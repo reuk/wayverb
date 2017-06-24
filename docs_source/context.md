@@ -31,7 +31,7 @@ little or no visible effect.
 
 The assumption that rays and waves are interchangeable falls down somewhat when
 modelling sound.  The wavelengths of sound in air range from 17m to 0.017m for
-the audible frequency range (20Hz to 20KHz), so while the simulation may be
+the audible frequency range (20Hz to 20kHz), so while the simulation may be
 accurate at high frequencies, at low frequencies the wavelength is of the same
 order as the wall surfaces in the scene.  Failure to take wave effects such as
 interference and diffraction into account at these frequencies therefore

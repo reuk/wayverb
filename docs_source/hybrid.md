@@ -35,9 +35,9 @@ level, and the transitions are seamless.
 The beginning of the image-source process relies on randomly ray tracing a
 certain number of reflections.  This ray tracing process is similar to that
 used for estimating late, diffuse reflections.  When the simulation is run in
-Wayverb, rays are actually traced to a depth of maybe 100 reflections or more.
-The first few reflections are routed to image-source processing, while the
-entire set of reflections is used for finding the reverb tail.
+Wayverb, rays are actually traced to a depth of 100 reflections or more.  The
+first few reflections are routed to image-source processing, while the entire
+set of reflections is used for finding the reverb tail.
 
 It is important to note that the stochastic ray tracing process will record
 both specular and diffuse reflections.  At the beginning of the impulse
@@ -83,18 +83,18 @@ simulation with stochastic ray-tracing methods [@kuttruff_room_2009, p. 126].
 In the interests of efficiency, the most accurate waveguide method is only used
 at low frequencies, where it is relatively cheap. The rest of the audible
 spectrum is modelled with geometric methods, which are most accurate at higher
-frequencies.  However, there is no concrete rule to place the crossover between
-"low" and "high" frequencies in this context.  It should be clear that, when
-the time and computing power is available, the cutoff should be placed as high
-as possible, so as to use accurate wave-based modelling for the majority of the
-output.  However, in practice, it might be useful to have an estimate for the
-frequencies where wave-modelling is strictly required, to guide the placement
-of the cutoff frequency.  The *Schroeder frequency* is such an estimate, and is
-based on the density of room resonances or "modes".  Below the Schroeder
-frequency, room modes are well separated and can be individually excited.
-Above, the room modes overlap much more, resulting in a more "even" and less
-distinctly resonant sound.  The Schroeder frequency is defined as follows (see
-[@kuttruff_room_2009, p. 84] for a detailed derivation):
+frequencies.  However, there is no concrete rule about where to place the
+crossover between "low" and "high" frequencies in this context.  It should be
+clear that, when the time and computing power is available, the cutoff should
+be placed as high as possible, so as to use accurate wave-based modelling for
+the majority of the output.  However, in practice, it might be useful to have
+an estimate for the frequencies where wave-modelling is strictly required, to
+guide the placement of the cutoff frequency.  The *Schroeder frequency* is such
+an estimate, and is based on the density of room resonances or "modes".  Below
+the Schroeder frequency, room modes are well separated and can be individually
+excited.  Above, the room modes overlap much more, resulting in a more "even"
+and less distinctly resonant sound.  The Schroeder frequency is defined as
+follows (see [@kuttruff_room_2009, p. 84] for a detailed derivation):
 
 (@) $$2000\sqrt{\frac{RT60}{V}}$$
 
@@ -232,7 +232,7 @@ output. The calibration coefficient is then equal to the ratio of these two
 magnitudes.  This approach is flawed, in that the same frequency band must be
 used for both signals. This frequency band will therefore be towards the lower
 end of the geometric output, which is known to be inaccurate (this is the
-entire reason for hybrid modelling), and at the to end of the waveguide output
+entire reason for hybrid modelling), and at the top end of the waveguide output
 (which may be inaccurate due to numerical dispersion).  It is impossible to
 compute an accurate calibration coefficient from inaccurate data.
 
@@ -317,7 +317,7 @@ responses should match.
 A room, measuring $5.56 \times 3.97 \times 2.81$ metres is simulated, using the
 accelerated image-source and waveguide methods. The source is placed at (1, 1,
 1), with a receiver at (2, 3, 1.5). Both methods are run at a sampling rate of
-16KHz.  The simulation is carried out three times, with surface absorptions of
+16kHz.  The simulation is carried out three times, with surface absorptions of
 0.2, 0.1, and 0.05, and in all cases the simulation is run up until the
 Sabine-estimated RT60, which is 0.52, 1.03 and 2.06 seconds respectively.  The
 resulting frequency responses are shown below\text{ (figure

@@ -109,7 +109,8 @@ relationship between the image-source order and the computation time is
 therefore exponential, with average-case complexity of $O(N^o)$ where $N$
 denotes the number of boundaries, and $o$ is the image-source order.  As a
 result, it is impossible to validate all possible image-source positions within
-a reasonable time.
+a reasonable time when the room geometry is complex or the image-source order
+is high.
 
 The majority of higher-order image sources found with the naive algorithm will
 be invalid.  That is, they will fail the audibility test.  For example, for
@@ -186,7 +187,7 @@ voxel.  The voxel mesh acts as an "acceleration structure", speeding up
 intersection tests between rays and triangles.  To check for an intersection
 between a ray and a number of triangles, the simplest method is to check the
 ray against each triangle individually, which is very time consuming.  The
-voxel mesh allows the number to checks to be greatly reduced, by checking only
+voxel mesh allows the number of checks to be greatly reduced, by checking only
 triangles that are within voxels that the ray intersects.  These voxels can be
 found very quickly, by "walking" the voxels along the ray, using an algorithm
 presented by Amanatides, Woo et al. [@amanatides_fast_1987].  For large scenes

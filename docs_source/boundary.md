@@ -387,7 +387,7 @@ extended to three dimensions.
 ### Method
 
 A mesh with dimensions $300 \times 300 \times 300$ nodes, and a sampling
-frequency of 8KHz, was set up.  A source and receiver were placed at a distance
+frequency of 8kHz, was set up.  A source and receiver were placed at a distance
 of 37 node-spacings from the centre of one wall. The source position was
 dictated by an azimuth and elevation relative to the centre of the wall, with
 the receiver placed directly in the specular reflection path.  The simulation

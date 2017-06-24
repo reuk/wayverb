@@ -764,7 +764,7 @@ fixes.
 ## Conclusion
 
 The goal of the Wayverb project was to create a program which was capable of
-simulating the acoustics arbitrary enclosed spaces. For the program to be
+simulating the acoustics of arbitrary enclosed spaces. For the program to be
 useful to its target audience of musicians and sound designers, it must be
 simultaneously accurate, efficient, and accessible.
 

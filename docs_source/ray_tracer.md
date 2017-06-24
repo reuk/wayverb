@@ -80,7 +80,7 @@ finds exact specular reflections, each of which contributes an impulsive signal
 with specific frequency content at a precise time.  This reflection data is
 precise and accurate, so it can be used to render an output signal at
 arbitrarily high sampling frequencies.  Ray tracing, on the other hand, is
-inexact because it is based on statistical methods.  The accuracy of the output
+inexact because it is based on stochastic methods.  The accuracy of the output
 increases with the average number of rays detected per unit time.  It is shown
 in [@vorlander_auralization:_2007, p. 191] that the mean number of
 intersections $k$ per time period $\Delta t$ is given by
@@ -91,9 +91,10 @@ where $N$ is the number of rays, $r$ is the radius of the receiver, $c$ is the
 speed of sound, and $V$ is the room volume.
 
 For an output which covers the human hearing range, the sampling rate must be
-at least 40KHz, which corresponds to a sampling period of 25μs.  Therefore, for
-a receiver radius of 0.1m (around the size of a human head), and assuming that
-one detection-per-sampling-period is adequate, the minimum number of rays is
+at least 40kHz, which corresponds to a sampling period of 25\text{\mu}s.
+Therefore, for a receiver radius of 0.1m (around the size of a human head), and
+assuming that one detection-per-sampling-period is adequate, the minimum number
+of rays is
 
 (@) $$N=\frac{kV}{\pi r^2c\Delta t} = \frac{V}{\pi \cdot 0.1^2 \cdot 340 \cdot
 0.000025 } \approx 3745V$$
@@ -192,12 +193,13 @@ required to reduce the energy of a ray by 60dB:
 $$n_\text{reflections}=\left\lceil-\frac{6}{\log_{10}(1-\alpha_\text{min})}\right\rceil$$
 
 The 60dB level decrease is somewhat arbitrary, but was chosen to correspond to
-the *RT60*, which a common descriptor of recorded impulse responses.  The RT60
-is a measure of reverb length, defined as the time taken for the sound level to
-decrease by 60dB. In a future version of the software, the level decrease might
-be set depending on the dynamic range of the output format. This would allow
-16-bit renders (with around 48dB of dynamic range) to use fewer reflections,
-while 32-bit outputs with lower noise floors would require more reflections.
+the *RT60*, which is a common descriptor of recorded impulse responses. The
+RT60 is a measure of reverb length, defined as the time taken for the sound
+level to decrease by 60dB. In a future version of the software, the level
+decrease might be set depending on the dynamic range of the output format. This
+would allow 16-bit renders (with around 48dB of dynamic range) to use fewer
+reflections, while 32-bit outputs with lower noise floors would require more
+reflections.
 
 ### Logging Energy
 
@@ -226,7 +228,7 @@ Modelling]({{ site.baseurl }}{% link boundary.md %}) page.
 When ray tracing has completed, the result is a set of histograms which
 describe the energy decay envelope of each frequency band.  These histograms
 will have the relatively low sampling rate, as explained above (Wayverb uses a
-sampling rate of 1KHz).  As a result, these histograms are not directly
+sampling rate of 1kHz).  As a result, these histograms are not directly
 suitable for auralisation.  To produce audio-rate impulse responses, the "fine
 structure" of the decay tail must be synthesised and then the gain adjusted
 using the histogram envelopes.  The process used in Wayverb to convert the
@@ -266,7 +268,7 @@ times $\Delta t_\text{event}$, and adding Dirac impulses to a buffer, until the
 final event time is greater or equal to the time of the final histogram
 interval.  Dirac deltas falling on the latter half of a sampling interval are
 taken to be negative-valued.  The number of Dirac deltas per sample is limited
-to one, and the value of $\mu$ is limited to a maximum of 10KHz, which has been
+to one, and the value of $\mu$ is limited to a maximum of 10kHz, which has been
 shown to produce results absent of obvious artefacts [@heinz_binaural_1993].
 
 #### Weighting Noise Sequences
@@ -298,8 +300,8 @@ The filter bank should have perfect reconstruction characteristics: a signal
 passed through all filters in parallel and then summed should have the same
 frequency response as the original signal. In the case where all the materials
 in a scene have the same coefficients in all bands, the input to each filter
-would be identical. Then, the expected output would be this same as the input
-to any band (though band-passed between the lower cutoff of the lowest band and
+would be identical. Then, the expected output would be the same as the input to
+any band (though band-passed between the lower cutoff of the lowest band and
 the upper cutoff of the highest band).  Perfect-reconstruction filters maintain
 the correct behaviour in this (unusual) case. It is especially important that
 the bandpass filters are zero-phase, so that Dirac events in all bands are
@@ -365,7 +367,7 @@ the maximum width factor $w$ is given by
 (@) $$w=\frac{x-1}{x+1},
 x=\frac{\omega_\text{highest}}{\omega_\text{lowest}}^\frac{1}{N_\text{bands}}$$
 
-For $\omega_\text{lowest}=20\text{Hz}$, $\omega_\text{highest}=20\text{KHz}$,
+For $\omega_\text{lowest}=20\text{Hz}$, $\omega_\text{highest}=20\text{kHz}$,
 and $N_\text{bands}=8$, $w \approx 0.4068$.  Then, the band edge width $P$ can
 be defined in terms of the overlap-amount $o$, the frequency of this band edge
 $\omega_\text{edge}$, and the maximum allowable width factor $w$:
