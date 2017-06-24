@@ -37,7 +37,7 @@ context.
 
 The reflection factor $R$ is a complex value given by 
 
-$$R=|R|\exp(i\chi)$$ {#eq}
+$$R=|R|\exp(i\chi)$$ {#eq:}
 
 which describes a modification to the amplitude and phase of a wave reflected
 in a boundary ($|R|$ is the magnitude term, $\chi$ is phase).
@@ -80,7 +80,7 @@ describes the proportion of outgoing energy which is scattered, and which may
 be dependent on frequency (see +@fig:scattering).  The total outgoing energy
 $E_\text{total}$ is related to the incoming energy $E_\text{incident}$ by
 
-$$E_{\text{total}}=E_{\text{incident}}(1-\alpha)$$ {#eq}
+$$E_{\text{total}}=E_{\text{incident}}(1-\alpha)$$ {#eq:}
 
 Then the scattering coefficient $s$ defines the proportion of this outgoing
 energy which is reflected specularly $E_\text{specular}$ or scattered
@@ -91,7 +91,7 @@ $$
 E_{\text{specular}} & =E_{\text{incident}}(1-\alpha)(1-s) \\
 E_{\text{scattered}} & =E_{\text{incident}}(1-\alpha)s
 \end{aligned}
-$$ {#eq}
+$$ {#eq:}
 
 ![Reflected components from a rough
 surface.](images/scattering){#fig:scattering}
@@ -120,7 +120,7 @@ The *specific acoustic impedance* $\xi$ for a given surface is defined as the
 impedance of that surface $Z$ divided by the acoustic impedance of the
 propagation medium (air) $Z_0$.
 
-$$\xi=\frac{Z}{Z_0}$$ {#eq}
+$$\xi=\frac{Z}{Z_0}$$ {#eq:}
 
 Inserting this equation into +@eq:r_in_terms_of_z gives:
 
@@ -205,7 +205,7 @@ receiver volume.  The absolute area covered by a spherical receiver
 $A_{\text{intersection}}$ is found using the equation for the surface area of a
 spherical cap.
  
-$$A_{\text{intersection}} = 2\pi r^2(1-\cos\gamma)$$ {#eq}
+$$A_{\text{intersection}} = 2\pi r^2(1-\cos\gamma)$$ {#eq:}
 
 Then, the detected scattered energy can be derived [@schroder_physically_2011, p. 64]:
 
@@ -214,7 +214,7 @@ E_{\text{scattered}} & = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\theta
                      & = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\theta \cdot \left( \frac{2\pi r^2(1-\cos\gamma)}{2\pi r^2} \right) \\
                      & = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\theta \cdot (1-\cos\gamma)
 \end{aligned}
-$$ {#eq}
+$$ {#eq:}
 
 Here, $\theta$ is the angle from secondary source to receiver relative against
 the surface normal, and $\gamma$ is the opening angle (shown in
@@ -412,7 +412,7 @@ compared to the theoretical reflection of the digital impedance filter being
 tested, which is defined as:
 
 $$R_{\theta, \phi}(z) = \frac{\xi(z)\cos\theta\cos\phi -
-1}{\xi(z)\cos\theta\cos\phi + 1}$$ {#eq}
+1}{\xi(z)\cos\theta\cos\phi + 1}$$ {#eq:}
 
 where $\theta$ and $\phi$ are the reflection azimuth and elevation
 respectively.

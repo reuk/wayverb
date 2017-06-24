@@ -134,7 +134,7 @@ estimate the RT60. These measurements are known as the T20 and T30.
 The estimated or predicted RT60, $T$, of a given space can be calculated using
 the Sabine formula [@kuttruff_room_2009, p. 131]:
 
-$$T=0.161\frac{V}{A}$$ {#eq}
+$$T=0.161\frac{V}{A}$$ {#eq:}
 
 where $V$ is the volume of the space in cubic metres, and $A$ is the
 *equivalent absorption area*.  The absorption area of a given surface is equal

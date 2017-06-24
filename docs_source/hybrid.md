@@ -96,7 +96,7 @@ excited.  Above, the room modes overlap much more, resulting in a more "even"
 and less distinctly resonant sound.  The Schroeder frequency is defined as
 follows (see [@kuttruff_room_2009, p. 84] for a detailed derivation):
 
-$$2000\sqrt{\frac{RT60}{V}}$$ {#eq}
+$$2000\sqrt{\frac{RT60}{V}}$$ {#eq:}
 
 Here, $RT60$ is the time taken for the reverb tail to decay by 60dB, and $V$ is
 the room volume in cubic metres.  Note that the Schroeder frequency is
@@ -163,7 +163,7 @@ First, equations for the intensity at the receiver must be created.  Given a
 source and receiver separated by distance $r$, the intensity of the direct
 image-source contribution is given by:
 
-$$E_{\text{image source}}=\frac{E_{\text{source}}}{4\pi r^2}$$ {#eq}
+$$E_{\text{image source}}=\frac{E_{\text{source}}}{4\pi r^2}$$ {#eq:}
 
 This is the standard equation for describing the power radiated from a point
 source.
@@ -179,7 +179,7 @@ rays are distributed. If the receiver is at a distance $r$ from the source,
 with an opening angle $\gamma$, then its area is that of a spherical cap (see
 +@fig:detected_energy):
 
-$$ A_{\text{intersection}} = 2\pi r^2(1-\cos\gamma) $$ {#eq}
+$$ A_{\text{intersection}} = 2\pi r^2(1-\cos\gamma) $$ {#eq:}
 
 Then, the total direct energy registered by the ray tracer can be expressed:
 
@@ -189,7 +189,7 @@ E_{\text{ray tracer}} & = NE_r \left( \frac{A_{\text{intersection}}}{4\pi r^2} \
                       & = NE_r \left( \frac{2\pi r^2(1-\cos\gamma)}{4\pi r^2} \right) \\
                       & = NE_r \left( \frac{1-\cos\gamma}{2} \right)
 \end{aligned}
-$$ {#eq}
+$$ {#eq:}
 
 ![The proportion of uniformly-distributed rays intersecting the receiver
 depends on the distance to the source, and opening angle formed by the
@@ -208,7 +208,7 @@ E_{\text{ray tracer}} &= E_{\text{image source}} \\
 NE_r \left( \frac{1-\cos\gamma}{2} \right) &= \frac{E_{\text{source}}}{4\pi r^2} \\
 E_r &= \frac{E_{\text{source}}}{2 \pi r^2 N (1 - \cos\gamma)}
 \end{aligned}
-$$ {#eq}
+$$ {#eq:}
 
 As long as the initial ray intensities are set according to this equation, both
 methods will produce outputs with the correct relative levels.  The outputs
@@ -266,7 +266,7 @@ below the noise floor).  Now, the change in pressure at a distance $X$ is
 known, where $X$ is the inter-nodal spacing of the waveguide mesh.  The
 geometric pressure level at the same distance is given by
 
-$$ p_g=\sqrt{\frac{PZ_0}{4\pi}} / X $$ {#eq}
+$$ p_g=\sqrt{\frac{PZ_0}{4\pi}} / X $$ {#eq:}
 
 where $P$ is the source strength and $Z_0$ is the acoustic impedance of air.
 The waveguide pressure level cannot be directly compared to the geometric
@@ -275,7 +275,7 @@ range is invalid. Instead, the DC levels are compared. The DC component of the
 waveguide output can be found simply by accumulating the signal at the
 receiver. Now, the calibration coefficient $\eta$ can be expressed like so:
 
-$$\eta = \frac{p_\text{init}R}{p_\text{DC}X}$$ {#eq}
+$$\eta = \frac{p_\text{init}R}{p_\text{DC}X}$$ {#eq:}
 
 where $p_\text{init}$ and $p_\text{DC}$ are the initial and DC pressure levels
 respectively, $X$ is the inter-nodal spacing, and $R$ is the distance at which

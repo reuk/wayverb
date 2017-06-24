@@ -245,17 +245,17 @@ value.
 The surface reflectances are found by converting per-band absorptions into
 per-band normal-incidence reflectance magnitudes using
 
-$$|R|=\sqrt{1-\alpha}$$ {#eq}
+$$|R|=\sqrt{1-\alpha}$$ {#eq:}
 
 where $R$ is the surface reflectance, and $\alpha$ is the absorption
 coefficient of that frequency band.  These are converted to per-band impedances
 $\xi$ by 
 
-$$\xi=\frac{1+|R|}{1-|R|}$$ {#eq}
+$$\xi=\frac{1+|R|}{1-|R|}$$ {#eq:}
 
 Finally, the impedances are converted back to *angle-dependent* reflectances by
 
-$$R(\theta)=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$ {#eq}
+$$R(\theta)=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$ {#eq:}
 
 where $\theta$ is the angle of incidence at the surface.  This is the same
 approach taken in [@southern_room_2013]. $\theta$ must be found for each
@@ -267,7 +267,7 @@ m_2 \dots m_n$ is given by
 
 $$g_{m_1 m_2 \dots m_n} = \frac{\sqrt{Z_0/4\pi}}{d_{m_1 m_2 \dots m_n}}
 \cdot R_{m_1} \ast R_{m_2} \ast \dots \ast R_{m_n} \ast \delta(\frac{d_{m_1 m_2
-\dots m_n}}{c})$$ {#eq}
+\dots m_n}}{c})$$ {#eq:}
 
 where $Z_0$ is the acoustic impedance of air, $c$ is the speed of sound,
 $d_{m_1 m_2 \dots m_n}$ is the distance from the receiver to the image source,
@@ -300,7 +300,7 @@ $$
 	\frac{1}{2}(1+\cos\frac{2\pi (n - \epsilon)}{N_w})\text{sinc}(n - \epsilon), & - \frac{N_w}{2} < n < \frac{N_w}{2} \\
 	0, & \text{otherwise}
 \end{cases} 
-$$ {#eq}
+$$ {#eq:}
 
 where $n$ is an index in the output buffer, $\epsilon$ is the centre of the
 impulse in samples ($\epsilon=\tau f_s$), and $N_w$ is the width of the window

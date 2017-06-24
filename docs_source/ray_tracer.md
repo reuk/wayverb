@@ -84,7 +84,7 @@ increases with the average number of rays detected per unit time.  It is shown
 in [@vorlander_auralization:_2007, p. 191] that the mean number of
 intersections $k$ per time period $\Delta t$ is given by
 
-$$k=\frac{N\pi r^2c\Delta t}{V}$$ {#eq}
+$$k=\frac{N\pi r^2c\Delta t}{V}$$ {#eq:}
 
 where $N$ is the number of rays, $r$ is the radius of the receiver, $c$ is the
 speed of sound, and $V$ is the room volume.
@@ -96,7 +96,7 @@ assuming that one detection-per-sampling-period is adequate, the minimum number
 of rays is
 
 $$N=\frac{kV}{\pi r^2c\Delta t} = \frac{V}{\pi \cdot 0.1^2 \cdot 340 \cdot
-0.000025 } \approx 3745V$$ {#eq}
+0.000025 } \approx 3745V$$ {#eq:}
 
 In actual simulations, especially of large and complex rooms, this number of
 rays is likely to produce results with large, inaccurate energy fluctuations.
@@ -144,7 +144,7 @@ same direction as the triangle normal.  The ideal specular direction is also
 calculated, and the two vectors are combined by
 
 $$\overrightarrow{R}_\text{outgoing}=s\overrightarrow{R}_\text{random} +
-(1-s)\overrightarrow{R}_\text{specular}$$ {#eq}
+(1-s)\overrightarrow{R}_\text{specular}$$ {#eq:}
 
 where $s$ is the scattering coefficient.  Normally, the scattering coefficient
 would be defined per-band, but this would require running the ray tracer once
@@ -192,7 +192,7 @@ absorptive surface required to reduce the energy of a ray by 60dB:
 
 $$(1-\alpha_\text{min})^{n_\text{reflections}} = 10^{-6}
 \therefore
-n_\text{reflections}=\left\lceil-\frac{6}{\log_{10}(1-\alpha_\text{min})}\right\rceil$$ {#eq}
+n_\text{reflections}=\left\lceil-\frac{6}{\log_{10}(1-\alpha_\text{min})}\right\rceil$$ {#eq:}
 
 The 60dB level decrease is somewhat arbitrary, but was chosen to correspond to
 the *RT60*, which is a common descriptor of recorded impulse responses. The
@@ -251,19 +251,19 @@ response of a certain volume.  Therefore it is modelled as a temporal Poisson
 process which starts sparse, and with increasing density of impulses over time.
 Specifically, the time between one impulse event and the next is given by
 
-$$\Delta t_\text{event}(z) = \frac{\ln\frac{1}{z}}{\mu}$$ {#eq}
+$$\Delta t_\text{event}(z) = \frac{\ln\frac{1}{z}}{\mu}$$ {#eq:}
 
 where $z$ is a uniformly distributed random number $0 < z \leq 1$.  $\mu$ here
 is the mean event occurrence, and is dependent upon the current simulation time
 $t$, the enclosure volume $V$ and the speed of sound $c$:
 
-$$\mu = \frac{4\pi c^3 t^2}{V}$$ {#eq}
+$$\mu = \frac{4\pi c^3 t^2}{V}$$ {#eq:}
 
 It can be seen that the mean occurrence is proportional to the square
 of the current time, producing an increase in event density over time.  The
 first event occurs at time $t_0$:
 
-$$t_0=\sqrt[3]{\frac{2V\ln 2}{4\pi c^3}}$$ {#eq}
+$$t_0=\sqrt[3]{\frac{2V\ln 2}{4\pi c^3}}$$ {#eq:}
 
 The full-length noise signal is produced by repeatedly generating inter-event
 times $\Delta t_\text{event}$, and adding Dirac impulses to a buffer, until the
@@ -337,7 +337,7 @@ describe the band-edge magnitudes:
 $$
 G_\text{lower}(\omega_\text{edge} + p) = \sin^2\left(\frac{\pi}{2}\phi_l(p)\right), \\
 G_\text{upper}(\omega_\text{edge} + p) = \cos^2\left(\frac{\pi}{2}\phi_l(p)\right)
-$$ {#eq}
+$$ {#eq:}
 
 Here, $G$ is a function of frequency, $\omega_\text{edge}$ is the band-edge
 frequency, and $p$ is the relative frequency of a nearby frequency bin.  The
@@ -350,7 +350,7 @@ $$
 	\frac{1}{2}(p / P + 1), & l = 0 \\
 	\sin(\frac{\pi}{2}\phi_{l-1}(p)), & \text{otherwise} 
 \end{cases}
-$$ {#eq}
+$$ {#eq:}
 
 The variable $l$ defines the steepness of the crossover, and is set to 0 in
 Wayverb, so that the transition between bands is as slow and smooth as
@@ -360,12 +360,12 @@ more useful to specify the crossover width in terms of overlap $0 \leq o \leq
 $\omega_\text{lowest}, \dots, \omega_\text{highest}$ where the edge frequency
 of band $i$ is defined as
 
-$$\omega_{\text{edge}_i}=\omega_\text{lowest}\left(\frac{\omega_\text{highest}}{\omega_\text{lowest}}^\frac{i}{N_\text{bands}}\right)$$ {#eq}
+$$\omega_{\text{edge}_i}=\omega_\text{lowest}\left(\frac{\omega_\text{highest}}{\omega_\text{lowest}}^\frac{i}{N_\text{bands}}\right)$$ {#eq:}
 
 the maximum width factor $w$ is given by
 
 $$w=\frac{x-1}{x+1},
-x=\frac{\omega_\text{highest}}{\omega_\text{lowest}}^\frac{1}{N_\text{bands}}$$ {#eq}
+x=\frac{\omega_\text{highest}}{\omega_\text{lowest}}^\frac{1}{N_\text{bands}}$$ {#eq:}
 
 For $\omega_\text{lowest}=20\text{Hz}$, $\omega_\text{highest}=20\text{kHz}$,
 and $N_\text{bands}=8$, $w \approx 0.4068$.  Then, the band edge width $P$ can

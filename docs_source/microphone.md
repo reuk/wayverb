@@ -97,7 +97,7 @@ virtual microphone is pointing in direction $\hat{p}$, and has a "shape"
 parameter $0 \leq s \leq 1$, the direction-dependent attenuation $a(\hat{d})$
 from direction $\hat{d}$ is given by
 
-$$a(\hat{d}) = (1 - s) + s(\hat{d} \cdot \hat{p})$$ {#eq}
+$$a(\hat{d}) = (1 - s) + s(\hat{d} \cdot \hat{p})$$ {#eq:}
 
 where $\hat{p}$ and $\hat{d}$ are unit vectors, and $\cdot$ is the dot-product
 operator. When $s$ is set to 0, the $a(\hat{d})$ is equal to one for all values
