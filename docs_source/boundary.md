@@ -142,8 +142,8 @@ the reflectance in terms of absorption, an equation for $\xi_0$ in terms of
 absorption must be found, and substituted into +@eq:r_normal_incidence.
 
 Assuming that the absorption coefficients denote normal-incidence absorption,
-then by rearranging +@eq:alpha, the normal-incidence reflection coefficient $R_0$
-is given by
+then by rearranging +@eq:alpha, the normal-incidence reflection coefficient
+$R_0$ is given by
 
 $$R_0=\sqrt{1-\alpha}$$ {#eq:r_mag}
 
@@ -309,12 +309,12 @@ model seems to be the most appropriate.
 See [@kowalczyk_modeling_2008] and [@kowalczyk_modelling_2008] for a more
 detailed explanation.
 
-The reflectance of a LRS has been defined above +@eq:r_normal_incidence, in terms
-of the normal-incidence specific impedance $\xi_0$.  For the geometric
-implementation, $\xi_0$ was defined in terms of a single normal-incidence
-reflection coefficient $R_0$ +@eq:xi_0. If $R_0$ is replaced by a digital filter
-$R_0(z)$, then the specific impedance may also be expressed as a filter
-$\xi_0(z)$:
+The reflectance of a LRS has been defined above, in terms of the
+normal-incidence specific impedance $\xi_0$ (+@eq:r_normal_incidence).  For the
+geometric implementation, $\xi_0$ was defined in terms of a single
+normal-incidence reflection coefficient $R_0$ (+@eq:xi_0). If $R_0$ is replaced
+by a digital filter $R_0(z)$, then the specific impedance may also be expressed
+as a filter $\xi_0(z)$:
 
 $$\xi_0(z)=\frac{1+R_0(z)}{1-R_0(z)}$$ {#eq:xi_filter}
 
