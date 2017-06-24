@@ -22,10 +22,13 @@ PANDOC_OPTIONS = \
 	--variable=geometry:margin=2cm \
 	--variable=geometry:a4paper \
 	--variable=documentclass:scrreprt \
+	--filter haskell/audioTable \
+	--filter pandoc-fignos \
+	--filter pandoc-eqnos \
+	--filter pandoc-tablenos \
 	--bibliography=wayverb.bib \
 	--csl=ieee-with-url.csl \
 	--default-image-extension=pdf \
-	--filter haskell/audioTable \
 	--metadata=link-citations:true \
 	--latex-engine=lualatex 
 
@@ -50,7 +53,9 @@ SOURCES := \
 	microphone.md \
 	boundary.md \
 	evaluation.md \
-	bibliography.md
+	conclusion.md \
+	bibliography.md \
+	#
 
 .PHONY: check
 check:

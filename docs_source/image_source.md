@@ -34,7 +34,7 @@ represented by a "higher-order" image-source, which has been mirrored in each
 of those boundaries in turn [@kuttruff_room_2009, p.  104].
 
 ![Image sources are found by reflecting the source position in a
-boundary.\label{fig:image_source_construction}](images/image_source_construction)
+boundary.](images/image_source_construction){#fig:image_source_construction}
 
 All sources, original and image, emit the same impulsive source signal at the
 same time.  The total impulse response (i.e. sound pressure against time) is
@@ -92,7 +92,7 @@ of tracing backwards from the receiver to each of the image sources is known as
 ![**Left:** The paths $S \rightarrow A \rightarrow R$ and $S \rightarrow A
 \rightarrow B \rightarrow R$ are both valid. **Right:** $S \rightarrow B
 \rightarrow A \rightarrow R$ is an invalid path because $R \rightarrow S_{BA}$
-does not intersect $A$.\label{fig:backtracking}](images/backtracking)
+does not intersect $A$.](images/backtracking){#fig:backtracking}
 
 ### Accelerating the Algorithm
 
@@ -158,12 +158,11 @@ smaller than would be required by a naive implementation.
 ## Implementation
 
 Here the concrete implementation of the image-source method is presented, as it
-is used in Wayverb.  The following figure
-\text{(\ref{fig:image_source_process})} gives an overview of the entire
+is used in Wayverb. *@fig:image_source_process gives an overview of the entire
 process.
 
 ![Creation of an impulse response using image
-sources.\label{fig:image_source_process}](images/image_source_process)
+sources.](images/image_source_process){#fig:image_source_process}
 
 <!--
 The simulation prerequisites are:

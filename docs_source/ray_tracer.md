@@ -53,12 +53,11 @@ spreading-out of the rays.  This can be illustrated very simply: Imagine a
 sphere placed very close to a point.  Assuming rays are fired with a uniform
 random distribution from that point, a certain proportion of those rays will
 intersect with the sphere.  If the sphere is moved further away, a smaller
-proportion of rays will hit it (see the following figure
-\text{(\ref{fig:receiver_proximity})}).
+proportion of rays will hit it (see +@fig:receiver_proximity).
 
 ![The proportion of randomly-distributed rays intersecting with a sphere
 depends on the distance between the ray source and the
-sphere.\label{fig:receiver_proximity}](images/receiver_proximity)
+sphere.](images/receiver_proximity){#fig:receiver_proximity}
 
 The exact proportion of intersecting rays is equal to $s/4r^2$
 [@schroder_physically_2011, p. 75], where $s$ is the constant area covered by
@@ -234,12 +233,12 @@ structure" of the decay tail must be synthesised and then the gain adjusted
 using the histogram envelopes.  The process used in Wayverb to convert the
 histogram into an audio-rate impulse response is described in
 [@heinz_binaural_1993], and in greater depth in [@schroder_physically_2011, p.
-70], though an overview will be given here.  The following figure
-\text{(\ref{fig:raytrace_process})} outlines the process of estimating an
-audio-rate representation of low-sample-rate multi-band histograms.
+70], though an overview will be given here.  *@fig:raytrace_process outlines
+the process of estimating an audio-rate representation of low-sample-rate
+multi-band histograms.
 
 ![Generating an audio-rate signal from multi-band ray tracing energy histograms
-at a low sampling rate.\label{fig:raytrace_process}](images/raytrace_process)
+at a low sampling rate.](images/raytrace_process){#fig:raytrace_process}
 
 #### Generating a Noise Signal
 

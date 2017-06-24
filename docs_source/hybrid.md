@@ -177,7 +177,7 @@ proportion of rays which intersect the receiver can be estimated as the ratio
 between the area covered by the receiver, and the total area over which the
 rays are distributed. If the receiver is at a distance $r$ from the source,
 with an opening angle $\gamma$, then its area is that of a spherical cap (see
-the following figure\text{ (\ref{fig:detected_energy})}):
++@fig:detected_energy):
 
 (@) $$ A_{\text{intersection}} = 2\pi r^2(1-\cos\gamma) $$
 
@@ -195,7 +195,7 @@ $$
 depends on the distance to the source, and opening angle formed by the
 receiver. The acoustic intensity registered by the ray tracer is given by the
 number of rays which intersect the receiver, and the energy carried by each
-ray.\label{fig:detected_energy}](images/detected_energy)
+ray.](images/detected_energy){#fig:detected_energy}
 
 The direct energy in both models should be equal, so the two equations can be
 set equal to one another, giving an equation for the initial intensity of each
@@ -320,13 +320,12 @@ accelerated image-source and waveguide methods. The source is placed at (1, 1,
 16kHz.  The simulation is carried out three times, with surface absorptions of
 0.2, 0.1, and 0.05, and in all cases the simulation is run up until the
 Sabine-estimated RT60, which is 0.52, 1.03 and 2.06 seconds respectively.  The
-resulting frequency responses are shown below\text{ (figure
-\ref{fig:calibration})}.
+resulting frequency responses are shown in +@fig:calibration.
 
 ![Frequency responses analysis of image-source and waveguide outputs. The
 initial waveguide level has been calibrated using the technique described
 above. Room mode frequencies are shown in
-grey.\label{fig:calibration}](images/calibration)
+grey.](images/calibration){#fig:calibration}
 
 In the graphs, room modes are shown. One of the properties of the waveguide is
 that it models wave effects which directly contribute to this low-frequency

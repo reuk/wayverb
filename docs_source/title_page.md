@@ -13,7 +13,7 @@ date: January 2017
 
 abstract: |
 
-  # Abstract
+  # Abstract {- .major}
 
   Acoustic simulation aims to predict the behaviour of sound in a particular
   space.  These simulations can be carried out on commodity computing hardware,

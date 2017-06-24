@@ -61,13 +61,12 @@ A short review of acoustic simulation methods will be given here.  For a more
 detailed survey of methods used in room acoustics, see
 [@savioja_overview_2015].
 
-The following figure \text{(\ref{fig:simulation_techniques})} shows the
-relationships between the most common simulation methods.  The advantages and
-disadvantages of each method will be discussed throughout the remainder of this
-section.
+*@fig:simulation_techniques shows the relationships between the most common
+simulation methods.  The advantages and disadvantages of each method will be
+discussed throughout the remainder of this section.
 
 ![An overview of different acoustic simulation methods, grouped by
-category.\label{fig:simulation_techniques}](images/simulation_techniques)
+category.](images/simulation_techniques){#fig:simulation_techniques}
 
 ### Geometric Methods
 
@@ -392,15 +391,13 @@ days.
 An in-depth description of the algorithms implemented is given in the
 [Image-Source]({{ site.baseurl }}{% link image_source.md %}), [Ray Tracer]({{
 site.baseurl }}{% link ray_tracer.md %}), and [Waveguide]({{ site.baseurl }}{%
-link waveguide.md %}) sections.  The following figure
-\text{(\ref{fig:regions})} shows how the outputs from the different methods
-work together to produce a broadband impulse response.  It shows that the lower
-portion of the spectrum is generated entirely with the waveguide, while the
-upper portion is simulated using the image-source method for early reflections,
-and the ray tracing method for the reverb tail.
+link waveguide.md %}) sections. *@fig:regions shows how the outputs from the
+different methods work together to produce a broadband impulse response.
+It shows that the lower portion of the spectrum is generated entirely with the
+waveguide, while the upper portion is simulated using the image-source method
+for early reflections, and the ray tracing method for the reverb tail.
 
-![The structure of a simulated impulse
-response.\label{fig:regions}](images/regions)
+![The structure of a simulated impulse response.](images/regions){#fig:regions}
 
 Deciding on the simulation techniques led to three questions:
 

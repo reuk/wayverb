@@ -70,10 +70,9 @@ The Wayverb program has the following features:
   Both waveguide modes allow the maximum waveguide frequency, and the oversampling
   factor, to be modified.
 
-The interface of the Wayverb program is explained in the following figure\text{
-(\ref{fig:wayverb_ui})}.
+The interface of the Wayverb program is explained in +@fig:wayverb_ui.
 
-![The interface of the Wayverb program.\label{fig:wayverb_ui}](images/wayverb_ui)
+![The interface of the Wayverb program.](images/wayverb_ui){#fig:wayverb_ui}
 
 ## Tests
 
@@ -181,18 +180,18 @@ time, although the measured T30 of the larger room has an error of 11%.
 Increasing the room volume has the effect of increasing the reverb time, as
 expected.
 
-Now, the results are plotted in octave bands\text{ (figure
-\ref{fig:room_size_rt30})}.  The results in lower bands, which are modelled by
-the waveguide, have a significantly shorter reverb time than the upper bands,
-which are generated geometrically. The higher bands have reverb times slightly
-higher than the Sabine prediction, while the waveguide-generated bands show
-much shorter reverb times tails than expected. The difference in reverb times
-between the waveguide and geometric methods also becomes evident when
-spectrograms are taken of the impulse responses\text{ (figure
-\ref{fig:room_size_spectrograms})}. In all tests, the initial level is constant
-across the spectrum, but dies away faster at lower frequencies. In the medium
-and large rooms, some resonance at 400Hz is seen towards the end of the reverb
-tail, which is probably caused by numerical dispersion in the waveguide mesh.
+Now, the results are plotted in octave bands (see +@fig:room_size_rt30).  The
+results in lower bands, which are modelled by the waveguide, have a
+significantly shorter reverb time than the upper bands, which are generated
+geometrically. The higher bands have reverb times slightly higher than the
+Sabine prediction, while the waveguide-generated bands show much shorter reverb
+times tails than expected. The difference in reverb times between the waveguide
+and geometric methods also becomes evident when spectrograms are taken of the
+impulse responses (see +@fig:room_size_spectrograms). In all tests, the initial
+level is constant across the spectrum, but dies away faster at lower
+frequencies. In the medium and large rooms, some resonance at 400Hz is seen
+towards the end of the reverb tail, which is probably caused by numerical
+dispersion in the waveguide mesh.
 
 In the medium and large tests, the spectrograms appear as though the
 low-frequency portion has a longer, rather than a shorter, reverb time.
@@ -205,10 +204,10 @@ at low amplitudes. In effect, the waveguide exhibits a high noise-floor under
 some conditions.
 
 ![T30 in octave bands, calculated from the measured impulse
-responses.\label{fig:room_size_rt30}](images/room_size_rt30)
+responses.](images/room_size_rt30){#fig:room_size_rt30}
 
 ![Spectrograms of impulse responses obtained from different room
-sizes.\label{fig:room_size_spectrograms}](images/room_size_spectrograms)
+sizes.](images/room_size_spectrograms){#fig:room_size_spectrograms}
 
 This result is difficult to explain. A shorter reverb time indicates that
 energy is removed from the model at a greater rate than expected. Energy in the
@@ -293,7 +292,7 @@ absorption coefficients.
 ![Spectrograms of impulse responses obtained from simulating the same room with
 different absorption coefficients. Note that the low-frequency content has a
 shorter decay time than the high-frequency
-content.\label{fig:room_material_spectrograms}](images/room_material_spectrograms)
+content.](images/room_material_spectrograms){#fig:room_material_spectrograms}
 
 <div id="audio_table">
 
@@ -344,7 +343,7 @@ contributions is lower for greater spacings, as expected.
 ![Larger distances between the source and receiver result in delayed initial
 contributions. This figure shows the first 0.05s of the outputs of two
 simulations in which the source and receiver are separated by 1m and
-11.8m.\label{fig:spacing_signals}](images/spacing_signals)
+11.8m.](images/spacing_signals){#fig:spacing_signals}
 
 <div id="audio_table">
 
@@ -390,17 +389,17 @@ excitation at around 0.0209s.
 
 ![The early part of the vault impulse response. Low frequency diffraction from
 the waveguide is detected before the first image-source
-contribution.\label{fig:vault_response}](images/vault_response)
+contribution.](images/vault_response){#fig:vault_response}
 
-The impulse response graph \text{(figure \ref{fig:vault_response})} shows that
-low frequency diffraction is in fact recorded. Though this behaviour is
-physically correct, it highlights the main shortcoming of the hybrid algorithm.
-The correct behaviour of the waveguide conflicts with the approximate nature of
-the geometric algorithms, causing an obvious divide or disconnect between the
-low and high frequency regions in the output. The low frequencies have a fast
-onset and immediate decay, whereas the higher frequencies have a delayed onset
-with extended decay. This result is physically implausible, and makes the
-impulse response unsuitable for realistic, high-quality reverb effects.
+The impulse response graph (+@fig:vault_response) shows that low frequency
+diffraction is in fact recorded. Though this behaviour is physically correct,
+it highlights the main shortcoming of the hybrid algorithm.  The correct
+behaviour of the waveguide conflicts with the approximate nature of the
+geometric algorithms, causing an obvious divide or disconnect between the low
+and high frequency regions in the output. The low frequencies have a fast onset
+and immediate decay, whereas the higher frequencies have a delayed onset with
+extended decay. This result is physically implausible, and makes the impulse
+response unsuitable for realistic, high-quality reverb effects.
 
 <div id="audio_table">
 
@@ -438,7 +437,7 @@ coefficients of 0 in all bands.
 levels.  Note that the first 3 echoes are clear in both responses, but the
 scattered response quickly becomes less distinct, while the response with no
 scattering has clear echoes which die away more
-slowly.\label{fig:tunnel_spectrograms}](images/tunnel_spectrograms)
+slowly.](images/tunnel_spectrograms){#fig:tunnel_spectrograms}
 
 The spectrograms show that there are clear increases in recorded energy,
 occurring approximately every 0.3 seconds after the initial onset. Each echo is
@@ -487,17 +486,17 @@ The first contributions that strike the receiver from the front have path
 lengths of 11m and 13m, which should correspond to strong impulses at 0.0324s
 and 0.0382s.
 
-These expectations are reflected in the results, shown in the following
-figure\text{ (\ref{fig:cardioid})}. The impulse response is silent at the time
-of the direct contribution, 0.00882s. The first significant level is recorded
-at 0.0147s, with the loudest contributions seen at 0.0324s and 0.0382s. These
-results are consistent across the spectrum, indicating that the microphone
-model is matched between both simulation methods.
+These expectations are reflected in the results, shown in +@fig:cardioid.  The
+impulse response is silent at the time of the direct contribution, 0.00882s.
+The first significant level is recorded at 0.0147s, with the loudest
+contributions seen at 0.0324s and 0.0382s. These results are consistent across
+the spectrum, indicating that the microphone model is matched between both
+simulation methods.
 
 ![The response measured at a cardioid microphone pointing away from the source.
 The times marked, from left to right, are the direct contribution time, the
 first reflection time, and the first and second *forward-incident* reflection
-times.\label{fig:cardioid}](images/cardioid)
+times.](images/cardioid){#fig:cardioid}
 
 <div id="audio_table">
 
@@ -760,63 +759,3 @@ A future release could fix these problems, but only with access to any
 problematic hardware and software configurations. As the program is open-source
 it would also be possible for third-parties experiencing bugs to contribute
 fixes.
-
-## Conclusion
-
-The goal of the Wayverb project was to create a program which was capable of
-simulating the acoustics of arbitrary enclosed spaces. For the program to be
-useful to its target audience of musicians and sound designers, it must be
-simultaneously accurate, efficient, and accessible.
-
-The aims of accuracy and efficiency would be met by combining wave-modelling
-and geometric simulation methods, benefiting from both the physical realism of
-wave-modelling, and the computational performance of geometric simulation.
-This technique is not used by any other publicly available simulation package,
-so it was thought that a program implementing both models would be both faster
-and more accurate than competing programs. To further improve performance, the
-simulation would be implemented to run in parallel on graphics hardware. The
-program would be free and open-source, with a graphical interface, to ensure
-accessibility and encourage adoption.
-
-Testing shows that the individual modelling methods are individually reasonably
-accurate. The ray-tracing and image-source methods respond appropriately to
-changes in room size, material, source/receiver spacing and receiver type.
-This is also true of the waveguide, which additionally is capable of modelling
-low-frequency modal responses, taking wave-effects such as diffraction into
-account. However, the accuracy of the waveguide is a drawback in some respects.
-When waveguide outputs are combined with geometric outputs, the relative
-inaccuracies of the geometric results are often highlighted by obvious
-discontinuities in the blended spectrum.  Although use of the waveguide
-increases accuracy at low frequencies, generated outputs may be less useful
-than if generated entirely with geometric techniques, simply because of these
-discontinuities. This indicates that the goals of the project were misguided:
-an additional, primary goal of "usefulness" or "fitness" should have been
-considered. Future work may seek to improve the match between the outputs of
-the different models, perhaps sacrificing some low-frequency accuracy in the
-interests of sound quality.
-
-In terms of efficiency, simulations generally complete within minutes, rather
-than hours or days, meeting the project's efficiency target. It is also
-possible to observe the progression of the simulation, and to retry it with
-less intensive parameters, if it is progressing too slowly.  Unfortunately, the
-time taken to generate outputs is not necessarily reflected in the quality of
-the results.  For example, it is disappointing to wait for ten minutes for an
-impulse response, only to find that the output has markedly different reverb
-times at the top and bottom of the spectrum. Good user experience relies on
-users being able to generate results with acceptable quality as quickly as
-possible. If the user has to tweak and re-render, waiting for several minutes
-each time, before eventually finding appropriate settings, this translates to a
-poor user experience. This may be solved in two ways: by improving the quality
-of the outputs; and/or by further optimisation of the simulation algorithms.
-
-The application has an accessible graphical interface. Although some desirable
-features (such as built-in convolution and 3D editing) are missing, the
-interface is focused and functional. It is possible to install and use without
-specialist training.  Additionally, all code is open-source, allowing
-collaboration and contribution from interested third-parties. While the
-accuracy and efficiency goals were not conclusively met, it is clear that the
-finished project is sufficiently accessible.
-
-Most importantly, the Wayverb project demonstrates that the hybrid modelling
-approach is viable in consumer software.
-

@@ -72,6 +72,7 @@ Vagrant.configure("2") do |config|
     apt-get install -y libcurl3 build-essential ruby-dev zlib1g-dev
     apt-get install -y haskell-platform
     cabal update && cabal install pandoc
+    pip install pandoc-fignos pandoc-eqnos pandoc-tablenos
     gem install jekyll jekyll-pandoc rake html-proofer
   SHELL
 

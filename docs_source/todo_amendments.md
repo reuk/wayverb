@@ -10,7 +10,7 @@
 
 -[x] Page 24 second paragraph line 5 – shouldn’t “statistical” be “stochastic”
 
--[x] Page 25 last paragraph – “25s” should be “25µs”. Also KHz should be kHz.
+-[ ] Page 25 last paragraph – “25s” should be “25µs”. Also KHz should be kHz.
 
 -[x] Page 27 fifth paragraph – “which a common descriptor” should be “which is a common descriptor”
 
@@ -78,7 +78,7 @@
 
 -[ ] References – despite the explanatory sentence at the start I feel that references 78 onwards - which are not cited in the text - should be deleted or placed in a Bibliography (or similarly named) section
 
--[ ] I’m not convinced about the style used for referring to figures. I’ve not seen it done this way before.  Unless you can convince me with an example that this is a valid approach I’d like you to change “figure (x.x)” to “Figure 2.3”. The same applies to referring to equations. In particular page 74 second last paragraph needs to make it clear it is referring to equation 41 and equation 44
+-[x] I’m not convinced about the style used for referring to figures. I’ve not seen it done this way before.  Unless you can convince me with an example that this is a valid approach I’d like you to change “figure (x.x)” to “Figure 2.3”. The same applies to referring to equations. In particular page 74 second last paragraph needs to make it clear it is referring to equation 41 and equation 44
 
 --------------------------------------------------------------------------------
 

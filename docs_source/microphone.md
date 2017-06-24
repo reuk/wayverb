@@ -44,7 +44,7 @@ When recording impulse responses of physical spaces, several techniques might
 be used to retain ITD and ILD information.
 
 One option is to record the impulse response using a matched pair of
-microphones.  A AB pair of spaced omnidirectional capsules will capture
+microphones.  An AB pair of spaced omnidirectional capsules will capture
 interchannel time difference, but will only capture interchannel level
 difference if the source is positioned near to the microphones. Alternatively,
 an XY or Blumlein pair will capture level difference, but will be incapable of
@@ -501,14 +501,17 @@ the response in the front direction.  If there is a close match, then the model
 is successful.
 
 Three different microphone polar patterns are simulated: omnidirectional,
-bidirectional, and cardioid.  The results are shown in the following
-figures\text{ (\ref{fig:omnidirectional} to \ref{fig:bidirectional})}. 
+bidirectional, and cardioid.  The results are shown in +@fig:omnidirectional to
+!@fig:bidirectional.
 
-![The directional response of an omnidirectional receiver in the waveguide mesh.\label{fig:omnidirectional}](images/Omnidirectional_response)
+![The directional response of an omnidirectional receiver in the waveguide
+mesh.](images/Omnidirectional_response){#fig:omnidirectional}
 
-![The directional response of a cardioid receiver in the waveguide mesh.\label{fig:cardioid}](images/Cardioid_response)
+![The directional response of a cardioid receiver in the waveguide
+mesh.](images/Cardioid_response){#fig:cardioid}
 
-![The directional response of a bidirectional receiver in the waveguide mesh.\label{fig:bidirectional}](images/Bidirectional_response)
+![The directional response of a bidirectional receiver in the waveguide
+mesh.](images/Bidirectional_response){#fig:bidirectional}
 
 Results are consistent across all polar patterns tested.  At low frequencies,
 the match is particularly good, with virtually no error in all directions.  As

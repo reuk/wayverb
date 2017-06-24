@@ -77,9 +77,8 @@ be *scattered* instead of specularly reflected.
 Describing the nature of the scattered sound is more complicated than specular
 reflections.  A common method is to use a *scattering coefficient*, which
 describes the proportion of outgoing energy which is scattered, and which may
-be dependent on frequency \text{(see figure \ref{fig:scattering})}.  The total
-outgoing energy $E_\text{total}$ is related to the incoming energy
-$E_\text{incident}$ by
+be dependent on frequency (see +@fig:scattering).  The total outgoing energy
+$E_\text{total}$ is related to the incoming energy $E_\text{incident}$ by
 
 (@) $$E_{\text{total}}=E_{\text{incident}}(1-\alpha)$$
 
@@ -95,20 +94,19 @@ E_{\text{scattered}} & =E_{\text{incident}}(1-\alpha)s
 $$
 
 ![Reflected components from a rough
-surface.\label{fig:scattering}](images/scattering)
+surface.](images/scattering){#fig:scattering}
 
 Alone, the scattering coefficient fails to describe the directional
 distribution of scattered energy.  In the case of an ideally-diffusing surface,
 the scattered energy is distributed according to Lambert's cosine law.  That
 is, the intensity depends only on the cosine of the outgoing scattering angle,
-and is independent of the angle of incidence \text{(see figure
-\ref{fig:lambert})}.  More complex scattering distributions, which also depend
-on the outgoing direction, are possible [@christensen_new_2005;
-@durany_analytical_2015], but there is no single definitive model to describe
-physically-accurate scattering.
+and is independent of the angle of incidence (see +@fig:lambert).  More complex
+scattering distributions, which also depend on the outgoing direction, are
+possible [@christensen_new_2005; @durany_analytical_2015], but there is no
+single definitive model to describe physically-accurate scattering.
 
 ![Lambert scattering. Scattered intensity is independent of incident
-angle.\label{fig:lambert}](images/lambert)
+angle.](images/lambert){#fig:lambert}
 
 ## Geometric Implementation
 
@@ -218,13 +216,13 @@ E_{\text{scattered}} & = E_{\text{incident}} \cdot s(1-\alpha) \cdot 2\cos\theta
 $$
 
 Here, $\theta$ is the angle from secondary source to receiver relative against
-the surface normal, and $\gamma$ is the opening angle \text{(shown in figure
-\ref{fig:diffuse_rain})}.  The magnitude of the scattered energy depends on the
+the surface normal, and $\gamma$ is the opening angle (shown in
++@fig:diffuse_rain).  The magnitude of the scattered energy depends on the
 direction from the secondary source to the receiver (by Lambert's cosine law),
 and also on the solid angle covered by the receiver.
 
 ![Angles used in the diffuse rain equation for a spherical
-receiver.\label{fig:diffuse_rain}](images/diffuse_rain)
+receiver.](images/diffuse_rain){#fig:diffuse_rain}
 
 ## DWM Implementation
 
@@ -359,8 +357,7 @@ perpendicular walls meet, the nodes along the edge will each be adjacent to two
 "1D" nodes, and a "2D" update equation is used for these nodes.  Where three
 walls meet, the corner node will be directly adjacent to three "2D" nodes, and
 a "3D" update equation is used for this node.  The three types of boundary
-nodes are shown in the following diagram
-\text{(\ref{fig:boundary_type_diagram})}.  Note that this method is only
+nodes are shown in +@fig:boundary_type_diagram.  Note that this method is only
 capable of modelling mesh-aligned surfaces.  Other sloping or curved surfaces
 must be approximated as a group of narrow mesh-aligned surfaces separated by
 "steps".  For example, a wall tilted at 45 degrees to the mesh axes will be
@@ -369,7 +366,7 @@ approximated as a staircase-like series of "2D" edge nodes.
 ![The three types of boundary nodes, used to model reflective planes, edges,
 and corners. 1D nodes are adjacent to inner nodes, 2D nodes are adjacent to two
 1D nodes, and 3D nodes are adjacent to three 2D
-nodes.\label{fig:boundary_type_diagram}](images/boundary_diagram)
+nodes.](images/boundary_diagram){#fig:boundary_type_diagram}
 
 ## Testing of the LRS Boundary for the DWM
 
@@ -396,11 +393,10 @@ reflected response.  Then, the room was doubled in size along the plane of the
 wall being tested.  The simulation was run again, recording just the direct
 response at the receiver ($r_d$).  Finally, the receiver position was reflected
 in the boundary under test, and the simulation was run once more, producing a
-free-field response ($r_i$).  The following diagram
-\text{(\ref{fig:boundary_test_setup})} shows the testing setup.
+free-field response ($r_i$). *@fig:boundary_test_setup shows the testing setup.
 
 ![The setup of the two room-sizes, and the positions of sources and receivers
-inside.\label{fig:boundary_test_setup}](images/boundary_testing_setup)
+inside.](images/boundary_testing_setup){#fig:boundary_test_setup}
 
 The reflected response was isolated by subtracting $r_d$ from $r_f$, cancelling
 out the direct response.  This isolated reflection is $r_r$.  To find the
@@ -447,15 +443,15 @@ used in the boundary update equations for the DWM.
 
 ### Results
 
-The results are shown in the following figure \text{(\ref{fig:reflectance})}.
-Although the waveguide mesh has a theoretical upper frequency limit of 0.25 of
-the mesh sampling rate, the 3D FDTD scheme has a cutoff frequency of 0.196 of
-the mesh sampling rate for axial directions.  This point has been marked as a
-vertical line on the result graphs.
+The results are shown in +@fig:reflectance.  Although the waveguide mesh has a
+theoretical upper frequency limit of 0.25 of the mesh sampling rate, the 3D
+FDTD scheme has a cutoff frequency of 0.196 of the mesh sampling rate for axial
+directions.  This point has been marked as a vertical line on the result
+graphs.
 
 ![Measured boundary reflectance is compared against the predicted reflectance,
 for three different materials and three different angles of
-incidence.\label{fig:reflectance}](images/reflectance)
+incidence.](images/reflectance){#fig:reflectance}
 
 ### Evaluation
 

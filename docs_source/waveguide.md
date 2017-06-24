@@ -69,15 +69,14 @@ spatial and temporal sampling intervals [@smith_iii_equivalence_2004].
 
 An implementation of these equations will take the form of two parallel delay
 lines, which propagate wave components in opposite directions.  This is shown
-in the following diagram\text{ (\ref{fig:one_d_waveguide})}.  The "output" of
-the simulation, that is, the physical displacement of the modelled string over
-time, is found by adding the wave components in both delay lines at a single
-point.
+in +@fig:one_d_waveguide.  The "output" of the simulation, that is, the
+physical displacement of the modelled string over time, is found by adding the
+wave components in both delay lines at a single point.
 
 ![Delay lines cause wave components to be propagated along the "string" over
 time. The total displacement of the string is found by adding together values
 from the same point on each delay
-line.\label{fig:one_d_waveguide}](images/one_d_waveguide)
+line.](images/one_d_waveguide){#fig:one_d_waveguide}
 
 Waveguides in higher dimensions can be created in a straightforward manner, by
 connecting digital waveguide elements at a *scattering junction*.  Wave
@@ -226,13 +225,12 @@ implement, as the nodes can be stored in memory in a three-dimensional array,
 in which the array extents define the mesh dimensions, and the array indices
 refer to the positions of individual nodes.  Other options for the topology
 include tetrahedral, octahedral, and dodecahedral, in which nodes have 4, 8,
-and 12 neighbours respectively, as shown in the following
-figure\text{ (\ref{fig:topology})}.
+and 12 neighbours respectively, as shown in +@fig:topology.
 
 ![Some of the most common mesh topologies. Black lines show connections to
 nodes that will be checked during update. Note that the tetrahedral topology is
 unique, in that nodes can have two different
-orientations.\label{fig:topology}](images/topology)
+orientations.](images/topology){#fig:topology}
 
 The accuracy may be increased by overlaying or "superposing" rectilinear,
 octahedral, and dodecahedral schemes together, as all nodes are oriented
@@ -439,15 +437,15 @@ Some particular possibilities for the input signal are the *sine-modulated
 Gaussian pulse* [jeong_source_2012], and the *differentiated Gaussian pulse*
 and *Ricker wavelet* [@sheaffer_physical_2014].  All of these signals satisfy
 the differentiation constraint and the length constraint.  However, they all
-have non-flat pass-bands, as shown in the following figure\text{
-(\ref{fig:input_signal_info})}.  A final option is the *physically constrained
-source* (PCS) model presented in [@sheaffer_physical_2014].  This method can be
-used to create input signals with pass-bands much flatter than those of the
-more conventional pulse and wavelet signals. PCS signals obey the
-differentiation constraint, have wide and flat passbands, and are short in
-time.  They use soft-source injection, so will not cause scattering artefacts,
-and as they have no DC component, they should not introduce solution-growth.  A
-PCS input signal seems like an obvious choice for this application.
+have non-flat pass-bands, as shown in +@fig:input_signal_info.  A final option
+is the *physically constrained source* (PCS) model presented in
+[@sheaffer_physical_2014].  This method can be used to create input signals
+with pass-bands much flatter than those of the more conventional pulse and
+wavelet signals. PCS signals obey the differentiation constraint, have wide and
+flat passbands, and are short in time.  They use soft-source injection, so will
+not cause scattering artefacts, and as they have no DC component, they should
+not introduce solution-growth.  A PCS input signal seems like an obvious choice
+for this application.
 
 ![The time-domain and frequency-domain responses of some signals commonly used
 as FDTD excitations.  All signals are shown with an upper cutoff of $0.2f_s$.
@@ -455,7 +453,7 @@ The pulse signals have their centre frequencies set to $0.1f_s$.  The PCS
 signal shown has a sampling rate of 10kHz, a mass of 25g, a low cutoff of
 100Hz, and a Q of 0.7. It *includes* the injection filter, which means the
 signal shown could be injected like a soft source.
-\label{fig:input_signal_info}](images/kernel_properties)
+](images/kernel_properties){#fig:input_signal_info}
 
 A test was devised to ensure that the source injection method did not cause
 solution-growth.  A standard rectilinear waveguide mesh with a sampling
@@ -481,23 +479,23 @@ Finally, the simulation was run for around 85000 steps (less than the expected
 Sabine RT60 of the room) with each of the four sources, and the response at the
 receiver was recorded.
 
-The results of the experiment are shown in the following figure\text{
-(\ref{fig:solution_growth_results})}.  The response of a transparent Dirac
-source (which has a strong DC component) is also shown.  Solution growth can be
-seen in all the outputs. However, the magnitude of growth is different
-depending on the input signal.  As expected, the Dirac signal exhibits the
-largest rate of growth, followed by the differentiated Gaussian, sine-modulated
-Gaussian, Ricker wavelet, and finally the PCS signal.  All the sources with no
-DC component show significantly less solution-growth than the transparent Dirac
-source.  The PCS has a much lower rate of growth than the alternatives.
-However, all inputs *do* show the effects of solution-growth.
+The results of the experiment are shown in +@fig:solution_growth_results.  The
+response of a transparent Dirac source (which has a strong DC component) is
+also shown.  Solution growth can be seen in all the outputs. However, the
+magnitude of growth is different depending on the input signal.  As expected,
+the Dirac signal exhibits the largest rate of growth, followed by the
+differentiated Gaussian, sine-modulated Gaussian, Ricker wavelet, and finally
+the PCS signal.  All the sources with no DC component show significantly less
+solution-growth than the transparent Dirac source.  The PCS has a much lower
+rate of growth than the alternatives.  However, all inputs *do* show the
+effects of solution-growth.
 
 ![Solution growth in the waveguide mesh with a selection of different inputs.
 Results are normalized so that the initial wave-fronts have the same magnitude.
 The overlays show the initial 500 samples of the response on the same scale,
 highlighting the different shapes of the excitation signals. The full signals
 are shown behind, with *different* amplitude scales.
-\label{fig:solution_growth_results}](images/solution_growth)
+](images/solution_growth){#fig:solution_growth_results}
 
 The solution-growth seen here only becomes prominent towards the end of the
 simulation, after around 60000 steps.  However, papers which propose
@@ -609,8 +607,7 @@ Now the inner nodes are known. However, the remaining nodes are not all
 Modelling]({{ site.baseurl }}{% link boundary.md %})). These boundary nodes
 must be found and classified.
 
-Boundary nodes fall into three main categories, shown in the following
-diagram\text{ (\ref{fig:boundary_types})}:
+Boundary nodes fall into three main categories, shown in +@fig:boundary_types:
 
 - **1D** nodes are situated directly adjacent to a single inner node in one of the six axial directions.
 - **2D** nodes are next to a single inner node in one of the twelve on-axis diagonal directions.
@@ -618,7 +615,7 @@ diagram\text{ (\ref{fig:boundary_types})}:
 
 ![A given node (represented by a large dot) is a boundary node if it is *not*
 an inner node, but there is an adjacent inner node at one of the locations
-shown by smaller dots.\label{fig:boundary_types}](images/boundary_types)
+shown by smaller dots.](images/boundary_types){#fig:boundary_types}
 
 There is also a fourth category, known as *re-entrant* nodes, which are
 adjacent to two or more inner nodes. These nodes are special, in that they fall
@@ -701,7 +698,7 @@ nodes are checked.
 
 ![Efficient memory usage is important in large-scale simulations such as those
 conducted by Wayverb. The waveguide storage scheme aims to minimise redundant
-duplication of data.\label{fig:memory_layout}](images/memory_layout)
+duplication of data.](images/memory_layout){#fig:memory_layout}
 
 ### Running the Simulation
 
