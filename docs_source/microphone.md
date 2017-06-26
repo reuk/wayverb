@@ -253,7 +253,7 @@ the direction quantisation intervals are on the order of ten to twenty degrees.
 To generate audio-rate results, the directional histograms must be combined
 into a single energy histogram, which can then be used to weight a noise
 sequence as discussed in the [Ray Tracer]({{ site.baseurl }}{% link
-ray_tracer.md %}}) section. This achieved by taking the centre direction of
+ray_tracer.md %}}) section. This is achieved by taking the centre direction of
 each directivity group, calculating or looking-up the correct attenuation for
 that direction, and then multiplying the entire histogram by that value. The
 final direction-weighted histogram is given by the elementwise sum of all
@@ -334,7 +334,7 @@ and configurations are required for a single simulation output).
 #### Intensity Calculation Technique
 
 The second method considered for implementation in Wayverb is described by
-Hacıhabiboglu in [@hacihabiboglu_simulation_2010].  This method is based around
+Hacıhabiboğlu in [@hacihabiboglu_simulation_2010].  This method is based around
 estimating the acoustic intensity at the output node of the DWM.
 
 The technique is much more straight-forward than the technique discussed above.
@@ -363,7 +363,7 @@ can adapt to arbitrary mesh topologies and spacings.
 
 The frequency range issues mentioned in [@southern_methods_2007] (where large
 mesh spacings reduce the output bandwidth, and low mesh spacings reduce low
-frequency sensitivity) are mentioned by Hacıhabiboglu in
+frequency sensitivity) are mentioned by Hacıhabiboğlu in
 [@hacihabiboglu_simulation_2010].  It is unclear whether the intensity
 calculation technique solves this problem, although the results presented in
 [@hacihabiboglu_simulation_2010] appear consistent across the spectrum.  Some
@@ -527,7 +527,7 @@ in these directions, all the acoustic energy reaches the receiver, while along
 axial directions, the wave-fronts are slower, and the full energy does not
 reach the receiver within the simulation window.
 
-These results mirror those seen by Hacıhabiboglu, who also records similar
+These results mirror those seen by Hacıhabiboğlu, who also records similar
 large errors in diagonal directions in the highest (8kHz) band. These errors
 are also attributed to directional dispersion.  Therefore, error in the results
 is likely due to the properties of the waveguide and the particular receiver

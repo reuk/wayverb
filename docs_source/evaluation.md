@@ -220,7 +220,7 @@ microphone model causes additional unexpected attenuation.
 
 Further tests (not shown) of the three rooms were carried out to check possible
 causes of error.  In one test, the Yule-Walker-generated boundary filters were
-placed with filters representing a constant real-valued impedance across the
+replaced with filters representing a constant real-valued impedance across the
 spectrum, to check whether the boundary filters had been generated incorrectly.
 In a second test, the modelled omnidirectional microphone at the receiver was
 removed, and the raw pressure value at the output node was used instead, to

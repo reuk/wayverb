@@ -48,7 +48,7 @@ def main():
     plt.xscale('log')
 
     plt.legend(loc='lower center', ncol=3, bbox_to_anchor=(0, -0.05, 1, 1), bbox_transform=plt.gcf().transFigure)
-    plt.title('Octave-band RT30 Measurements for Different Room Sizes')
+    plt.title('Octave-band T30 Measurements for Different Room Sizes')
 
     plt.xlabel('frequency / Hz')
     plt.ylabel('time / s')
@@ -66,7 +66,6 @@ if __name__ == '__main__':
         'font.family': 'serif',
         'font.serif': [],
         'font.sans-serif': ['Helvetica Neue'],
-        'font.monospace': ['Input Mono Condensed'],
         'legend.fontsize': 12,
     }
 

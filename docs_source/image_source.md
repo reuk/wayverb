@@ -32,7 +32,7 @@ the path from the *real* source to the receiver, reflected in the boundary. If
 the source is reflected in a single boundary, this represents a first-order
 reflection.  A ray which is reflected from several boundaries is represented by
 a "higher-order" image-source, which has been mirrored in each of those
-boundaries in turn [@kuttruff_room_2009, p.  104].
+boundaries in turn [@kuttruff_room_2009, p. 104].
 
 ![Image sources are found by reflecting the source position in a
 boundary.](images/image_source_construction){#fig:image_source_construction}
@@ -88,7 +88,7 @@ reflected in $A$ then $B$.  For the image-source to be valid:
 The validation of a third-order image-source will require three intersection
 checks, a fourth-order image will require four checks, and so on.  This method
 of tracing backwards from the receiver to each of the image sources is known as
-*backtracking*.
+*backtracking*. This process is shown in +@fig:backtracking.
 
 ![**Left:** The paths $S \rightarrow A \rightarrow R$ and $S \rightarrow A
 \rightarrow B \rightarrow R$ are both valid. **Right:** $S \rightarrow B

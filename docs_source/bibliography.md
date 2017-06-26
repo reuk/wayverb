@@ -5,19 +5,11 @@ navigation_weight: 100
 ---
 
 ---
-nocite: '@*'
 toc: null
 ...
 
 # References {- .major}
 
-This list contains all items cited in the text.
-It also contains some items not directly mentioned, but which nonetheless
-guided the development of the project, or might shape its future.
-
----
-
-\noindent
 \vspace{-2em}
 \setlength{\parindent}{-0.5in}
 \setlength{\leftskip}{0.5in}
@@ -27,5 +19,6 @@ guided the development of the project, or might shape its future.
 
 \renewcommand{\hypertarget}[2]{ \leavevmode \oldhypertarget{#1}{#2} }
 
+\noindent
 <div id="refs">
 </div>

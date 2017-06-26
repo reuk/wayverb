@@ -436,7 +436,7 @@ first time derivative of fluid emergence.  Fluid emergence should start and end
 at zero, which in turn enforces a null DC component.
 
 Some particular possibilities for the input signal are the *sine-modulated
-Gaussian pulse* [jeong_source_2012], and the *differentiated Gaussian pulse*
+Gaussian pulse* [@jeong_source_2012], and the *differentiated Gaussian pulse*
 and *Ricker wavelet* [@sheaffer_physical_2014].  All of these signals satisfy
 the differentiation constraint and the length constraint.  However, they all
 have non-flat pass-bands, as shown in +@fig:input_signal_info.  A final option
@@ -606,10 +606,10 @@ and the results are stored.
 
 ### Boundary Node Classification
 
-Now the inner nodes are known. However, the remaining nodes are not all
-"outside" the simulation: some are "boundary" nodes (see [Boundary
-Modelling]({{ site.baseurl }}{% link boundary.md %})). These boundary nodes
-must be found and classified.
+The previous section described how to classify the "inner" nodes of an
+enclosure.  However, the remaining nodes are not all "outside" the simulation:
+some are "boundary" nodes (see [Boundary Modelling]({{ site.baseurl }}{% link
+boundary.md %})). These boundary nodes must be found and classified.
 
 Boundary nodes fall into three main categories, shown in +@fig:boundary_types:
 

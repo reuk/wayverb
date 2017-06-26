@@ -19,6 +19,9 @@ pandoc:
     extensions:
         - smart
         - mathjax
+        - filter: pandoc-fignos
+        - filter: pandoc-eqnos
+        - filter: pandoc-tablenos
         - csl: ieee-with-url.csl
         - bibliography: wayverb.bib
         - metadata: "link-citations:true"

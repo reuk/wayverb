@@ -66,7 +66,7 @@
 
 -[x] Page 78, 84 and 87 have unlabelled tables. Please label and then refer to in text.
 
--[ ] Page 85 Figure 8.2 title at top should say “T30” not “RT30”
+-[x] Page 85 Figure 8.2 title at top should say “T30” not “RT30”
 
 -[x] Page 87 fifth paragraph first sentence change “several” to “three”
 
@@ -76,7 +76,7 @@
 
 -[x] Conclusions should be a section in its own right
 
--[ ] References – despite the explanatory sentence at the start I feel that references 78 onwards - which are not cited in the text - should be deleted or placed in a Bibliography (or similarly named) section
+-[x] References – despite the explanatory sentence at the start I feel that references 78 onwards - which are not cited in the text - should be deleted or placed in a Bibliography (or similarly named) section
 
 -[x] I’m not convinced about the style used for referring to figures. I’ve not seen it done this way before.  Unless you can convince me with an example that this is a valid approach I’d like you to change “figure (x.x)” to “Figure 2.3”. The same applies to referring to equations. In particular page 74 second last paragraph needs to make it clear it is referring to equation 41 and equation 44
 
@@ -86,15 +86,15 @@
 
 -[ ] p12 - Project Aims: although I am not suggesting that these should be rewritten, their scope might be more focused to enable a more complete analysis and reflection in the conclusions. Also it states that this work should not required any specialist training in ‘acoustics or programming’ yet the thesis that follows is absolutely founded on both, and this assumption has not actually been properly tested as stated above.
 
--[ ] p18: Audibility checking example above paragraph starting ‘The validation….’ should map to Figure 2.2 for clarity.
+-[x] p18: Audibility checking example above paragraph starting ‘The validation….’ should map to Figure 2.2 for clarity.
 
 -[ ] p19: what does the author mean by ‘reasonable time’? Refer back to project aims/research questions. In general, such loosely defined terms are used at quite a few points in the thesis and mean very little.
 
 -[ ] p23: How has this replacement of the Dirac function with the truncated IR of a low-pass filter been tested? In general, it would be expected to see some interim results here of the IS algorithm as presented. Summary also needed as suggested above.
 
--[ ] p25: ‘25s’ – units incorrect.
+-[x] p25: ‘25s’ – units incorrect.
 
--[ ] p26: Vorlander = Vorländer (please correct throughout)
+-[x] p26: Vorlander = Vorländer (please correct throughout)
 
 -[ ] p27: define the scattering coefficient ‘s’ (some of this detail comes later in the report, hence the need, in part, for a literature/theory chapter earlier).
 
@@ -102,7 +102,7 @@
 
 -[ ] p36: Please define ‘accuracy’ in the context of your discussion regarding mesh topologies. What constitutes an ‘accurate’ result?
 
--[ ] p40: [jeong_source_2012] please fix reference …like and obvious = like an Figure 4.3 – y-axis magnitudes of frequency domain plots should have dB scale?
+-[x] p40: [jeong_source_2012] please fix reference …like and obvious = like an Figure 4.3 – y-axis magnitudes of frequency domain plots should have dB scale?
 
 -[ ] p43: Regarding stability, this paper should be considered and cited:
 
@@ -110,19 +110,19 @@ J. Botts and L. Savioja, “Spectral and Pseudospectral Properties of Finite Dif
 in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol. 22, no. 9, pp.
 1403–1412, Sep. 2014.
 
--[ ] p44: “Now the inner….” Please rephrase the start of this section for readability.
+-[x] p44: “Now the inner….” Please rephrase the start of this section for readability.
 
--[ ] Figure 4.6: This should be discussed or referred to in the main body of the text.
+-[x] Figure 4.6: This should be discussed or referred to in the main body of the text.
 
 -[ ] p51: Discussion is given as to hybrid crossover frequency but never formally cited or justified.  Please do so.
 
--[ ] p53: ‘and at the to end’ - ?
+-[x] p53: ‘and at the to end’ - ?
 
 -[ ] p56: T20 and T30 used before definition in later chapter. See comments on a proper literature review.
 
--[ ] p61: This achieved by taking = This is achieved
+-[x] p61: This achieved by taking = This is achieved
 
--[ ] p62: Hacıhabiboglu = Hacıhabiboğlu
+-[x] p62: Hacıhabiboglu = Hacıhabiboğlu
 
 -[ ] p63: Does mesh oversampling always need to be used? Cannot interpolation be applied in some cases? Please Comment.
 
@@ -130,7 +130,7 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[ ] Chapter 7: Some repetition here of Image Source section. See comments made earlier.
 
--[ ] p68: Define ‘$’
+-[x] p68: Define ‘$’
 
 -[ ] p74: Define what you mean by ‘realism’ in the context of this section.
 
@@ -172,9 +172,9 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[ ] p101: ‘the finished project is sufficiently accessible’ – as determined by whom?
 
--[ ] p102: Valimaki = Välimäki 
+-[x] p102: Valimaki = Välimäki 
 
--[ ] p107: Complete reference for [72] needed – where was this work presented?
+-[x] p107: Complete reference for [72] needed – where was this work presented?
 
 --------------------------------------------------------------------------------
 

@@ -106,7 +106,7 @@ requires a vast number of independent calculations which will be prohibitively
 time-consuming, even on modern hardware.
 
 If, on the other hand, audio-rate results are not required, then the number of
-necessary rays is much lower.  Vorlander suggests a sampling period of the
+necessary rays is much lower.  Vorländer suggests a sampling period of the
 order of magnitude of milliseconds, which requires at least 40-times fewer rays
 [@vorlander_auralization:_2007, p. 186].
 

@@ -23,7 +23,8 @@ PANDOC_OPTIONS = \
 	--csl=ieee-with-url.csl \
 	--default-image-extension=pdf \
 	--metadata=link-citations:true \
-	--latex-engine=lualatex 
+	--latex-engine=lualatex \
+	#
 
 %.tex: %.md
 	pandoc $(PANDOC_OPTIONS) --standalone -o $@ $<

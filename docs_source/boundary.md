@@ -26,7 +26,7 @@ evaluated and compared, to ensure equivalence.
 
 ## Background
 
-The books by Vorlander [@vorlander_auralization:_2007, p. 35] and Kuttruff
+The books by Vorländer [@vorlander_auralization:_2007, p. 35] and Kuttruff
 [@kuttruff_room_2009, p. 35] both devote entire chapters to the topic of sound
 reflection and scattering.  Please refer to these books for a detailed and
 broad explanation of reflection effects.  To avoid unnecessary duplication,
@@ -43,7 +43,7 @@ which describes a modification to the amplitude and phase of a wave reflected
 in a boundary ($|R|$ is the magnitude term, $\chi$ is phase).
 
 This factor depends both on the frequency and direction of the incident wave.
-When $\chi = \pi$$, $R$ is negative, corresponding to a phase reversal.  This
+When $\chi = \pi$, $R$ is negative, corresponding to a phase reversal.  This
 is known as a "soft" wall, but is rarely seen in room acoustics.  It is
 reasonable to assume that reflections are in-phase in the majority of
 architectural acoustics problems [@kuttruff_room_2009, p. 36].
