@@ -227,12 +227,21 @@ implement, as the nodes can be stored in memory in a three-dimensional array,
 in which the array extents define the mesh dimensions, and the array indices
 refer to the positions of individual nodes.  Other options for the topology
 include tetrahedral, octahedral, and dodecahedral, in which nodes have 4, 8,
-and 12 neighbours respectively, as shown in +@fig:topology.
+and 12 neighbours respectively, as shown in +@fig:topology. In most of these
+meshes, the nodes align to a cubic grid in a straightforward manner.  However,
+in the case of the tetrahedral mesh, the tessellation scheme is less obvious.
+The method used to construct the tetrahedral mesh is shown in detail in
++@fig:tetrahedral_topology.
 
 ![Some of the most common mesh topologies. Black lines show connections to
 nodes that will be checked during update. Note that the tetrahedral topology is
 unique, in that nodes can have two different
 orientations.](images/topology){#fig:topology}
+
+![**Left:** A single "block" of a tetrahedral mesh.  **Right:**
+Individual blocks are combined in an alternating chessboard-like pattern to
+create a mesh with tetrahedral
+topology.](images/tetrahedral){#fig:tetrahedral_topology}
 
 The accuracy may be increased by overlaying or "superposing" rectilinear,
 octahedral, and dodecahedral schemes together, as all nodes are oriented

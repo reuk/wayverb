@@ -22,7 +22,7 @@
 
 -[x] Page 34 following equation 23 please clarify what c, T and X are.
 
--[ ] Figure 4.2 “Black lines” should be “Blue lines”. Is there any way you can redraw the tetrahedral one so it’s easier to see (maybe put it in twice for the two orientations? Or use different colours for the two orientations?)
+-[x] Figure 4.2 “Black lines” should be “Blue lines”. Is there any way you can redraw the tetrahedral one so it’s easier to see (maybe put it in twice for the two orientations? Or use different colours for the two orientations?)
 
 -[x] Page 40 “like and obvious” should be “like an obvious”. Also KHz should be kHz.
 
