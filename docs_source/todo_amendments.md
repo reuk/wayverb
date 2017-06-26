@@ -26,35 +26,35 @@
 
 -[x] Page 40 “like and obvious” should be “like an obvious”. Also KHz should be kHz.
 
--[ ] Page 40 bottom paragraph says following figure but it is referring to the figure after the following one.
+-[x] Page 40 bottom paragraph says following figure but it is referring to the figure after the following one.
 
 -[x] Page 41 KHz should be kHz.
+ 
+-[x] Page 42 Figure 4.4 on each graph a line goes from (0,0) to the top left corner and bottom right corner of the excitation signal – this appears to be a presentational error and needs correcting. Also it is unclear to me why the amplitudes on Dirac, Ricker and PCS are “filled in” – is this fluctuation in amplitude that is lost in the resolution or a presentational problem? If the former just clarify if the latter please fix.
 
--[ ] Page 42 Figure 4.4 on each graph a line goes from (0,0) to the top left corner and bottom right corner of the excitation signal – this appears to be a presentational error and needs correcting. Also it is unclear to me why the amplitudes on Dirac, Ricker and PCS are “filled in” – is this fluctuation in amplitude that is lost in the resolution or a presentational problem? If the former just clarify if the latter please fix.
+-[x] Figure 4.6 not referred to in text.
 
--[ ] Figure 4.6 not referred to in text.
-
--[ ] Page 49 last line of first paragraph – “exceptional” is it possible to be a little more precise or use more restrained language…
+-[x] Page 49 last line of first paragraph – “exceptional” is it possible to be a little more precise or use more restrained language…
 
 -[x] Page 49 3rd paragraph suggest delete word “maybe”
 
 -[x] Page 50 “no concrete rule to place” should be something like “no concrete rule about where to place”
 
--[ ] Page 50 Last sentence – is it possible in any way to indicatively quantify “very large”, “reasonable” and “excessive” or reword to be more precise?
+-[x] Page 50 Last sentence – is it possible in any way to indicatively quantify “very large”, “reasonable” and “excessive” or reword to be more precise?
 
--[ ] Page 51 first paragraph. Suggest adding a sentence to complete the paragraph saying what Wayverb does (you’ve said what it doesn’t do!)
+-[x] Page 51 first paragraph. Suggest adding a sentence to complete the paragraph saying what Wayverb does (you’ve said what it doesn’t do!)
 
 -[x] Page 53 “the to end” should be “the top end”
 
 -[x] Page 55 KHz should be kHz
 
--[ ] Page 57 fifth paragraph – needs a little clarification – AB pair add “spaced” and I presume you are referring to “omnis”. Similarly for “XY” add “co-incident” and I presume cardiods or figure-of-8.
+-[x] Page 57 fifth paragraph – needs a little clarification – AB pair add “spaced” and I presume you are referring to “omnis”. Similarly for “XY” add “co-incident” and I presume cardiods or figure-of-8.
 
--[ ] Page 58 first line – “four coincident directional” should be 3 plus an omnidirectional
+-[x] Page 58 first line – “four coincident directional” should be 3 plus an omnidirectional
 
 -[x] Page 58 “front the microphone” should be “front of the microphone”
 
--[ ] Page 59 bottom sentence. Looks like you are taking advantage of left right symmetry in arriving at 288 – if so please claify this.
+-[x] Page 59 bottom sentence. Looks like you are taking advantage of left right symmetry in arriving at 288 – if so please claify this.
 
 -[x] Page 65 KHz should be kHz
 
@@ -62,15 +62,15 @@
 
 -[x] Page 75 KHz should be kHz
 
--[ ] Equations can’t be told from figures – don’t like style of referencing figures
+-[x] Equations can’t be told from figures – don’t like style of referencing figures
 
--[ ] Page 84 and 87 have unlabelled tables. Please label and then refer to in text.
+-[x] Page 78, 84 and 87 have unlabelled tables. Please label and then refer to in text.
 
 -[ ] Page 85 Figure 8.2 title at top should say “T30” not “RT30”
 
--[ ] Page 87 fifth paragraph first sentence change “several” to “three”
+-[x] Page 87 fifth paragraph first sentence change “several” to “three”
 
--[ ] Figure 8.4 and 8.5 are not referred to in the text – please correct
+-[x] Figure 8.4 and 8.5 are not referred to in the text – please correct
 
 -[x] Page 100 “acoustics arbitrary” should be “acoustics of arbitrary”
 

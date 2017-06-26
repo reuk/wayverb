@@ -42,7 +42,7 @@ def main():
         axins.set_ylim(-1, 1)
         axins.plot(data)
 
-        mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="0.5")
+        #mark_inset(ax, axins, loc1=2, loc2=4, fc="none", ec="0.5")
 
     plt.tight_layout()
     plt.subplots_adjust(top=0.9)
@@ -61,7 +61,6 @@ if __name__ == '__main__':
         'font.family': 'serif',
         'font.serif': [],
         'font.sans-serif': ['Helvetica Neue'],
-        'font.monospace': ['Input Mono Condensed'],
         'legend.fontsize': 12,
     }
 

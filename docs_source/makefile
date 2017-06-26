@@ -1,19 +1,12 @@
 .PHONY: all
 all: wayverb.pdf
 
-wayverb.pdf: $(SOURCES) pdfs haskell/audioTable
+wayverb.pdf: $(SOURCES) imgs haskell/audioTable
 	pandoc $(PANDOC_OPTIONS) -o $@ $(SOURCES)
 
-.PHONY: pdfs
-pdfs: sketches $(patsubst %.svg,%.pdf,$(wildcard images/*))
-
-.PHONY: sketches
-sketches:
-	$(MAKE) -C images/sketch
-	cp images/sketch/*.svg images
-
-%.pdf: %.svg
-	inkscape --export-pdf=$@ --without-gui $<
+.PHONY: imgs
+imgs:
+	make -C images
 
 PANDOC_OPTIONS = \
 	--smart \

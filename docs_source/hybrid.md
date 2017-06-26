@@ -14,12 +14,13 @@ reference-section-title: References
 
 The previous sections have looked at the theory and implementation of three
 different acoustic simulation techniques.  The image-source method is accurate
-for early reflections, but slow for longer responses.  The ray tracing method
-is inaccurate, but produces acceptable responses for "diffuse" reverb tails.
-The waveguide method models physical phenomena better than the geometric
-methods, but is expensive at high frequencies.  By combining all three models
-together, accurate broadband impulse responses can be created, without
-requiring exceptional computing power.
+for early reflections, but slow for longer responses.
+The ray tracing method is inaccurate, but produces acceptable responses for
+"diffuse" reverb tails.  The waveguide method models physical phenomena better
+than the geometric methods, but is expensive at high frequencies.  By combining
+all three models, accurate broadband impulse responses can be created, but for
+a much lower computational cost than would be possible with any individual
+method.
 
 This section will focus on the two most important factors governing the
 combination of modelling techniques. The first is positioning transitions: in
@@ -96,7 +97,7 @@ excited.  Above, the room modes overlap much more, resulting in a more "even"
 and less distinctly resonant sound.  The Schroeder frequency is defined as
 follows (see [@kuttruff_room_2009, p. 84] for a detailed derivation):
 
-$$2000\sqrt{\frac{RT60}{V}}$$ {#eq:}
+$$2000\sqrt{\frac{RT60}{V}}$$ {#eq:schroeder}
 
 Here, $RT60$ is the time taken for the reverb tail to decay by 60dB, and $V$ is
 the room volume in cubic metres.  Note that the Schroeder frequency is
@@ -106,17 +107,26 @@ therefore wave-based methods will be required to compute a smaller portion of
 the spectrum.  In turn, this helps to keep the computational cost of the
 waveguide simulations within reasonable bounds.  Although the cost of
 wave-based methods increases with output frequency and simulation size, larger
-simulations require a lower maximum output frequency.  As a result, a hybrid
-acoustic simulator should be able to simulate even very large enclosures with
-reasonable perceived accuracy, without incurring excessive costs.
+simulations require a lower maximum output frequency.
+
+In the [Waveguide]({{ site.baseurl }}{% link waveguide.md %}) section the
+complexity of a waveguide simulation was given as $O(V f_s^3)$ for a space with
+volume $V$, at sampling frequency $f_s$.  Given that $f_s$ is proportional to
+the waveguide cutoff frequency, which in turn may be set proportional to
+$V^{-\frac{1}{2}}$ by +@eq:schroeder, the waveguide simulation complexity
+becomes $O(V \cdot V^{-\frac{3}{2}})$ or $O(V^{-\frac{1}{2}})$. This implies
+that, for a waveguide simulation capped at the Schroeder frequency, a larger
+room will be cheaper to simulate than a smaller one.
 
 The Schroeder frequency is only an estimate. The actual frequency dividing
 "resonant" and "even" behaviours will vary depending on the surface area,
 absorption coefficients, and shape of the modelled space. The optimum crossover
 frequency should also be guided by the accuracy and time constraints imposed by
 the user. For this reason, the Schroeder frequency is not displayed in the
-Wayverb interface. It does, however, illustrate that in the general case it is
-justified to use a lower crossover frequency for larger simulated volumes.
+Wayverb interface. Instead, the user may select the maximum frequency modelled
+by the waveguide, along with an oversampling ratio. The Schroeder frequency
+does, however, illustrate that in the general case it is justified to use a
+lower crossover frequency for larger simulated volumes.
 
 ### Combining Outputs
 

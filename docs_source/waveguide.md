@@ -496,7 +496,9 @@ effects of solution-growth.
 Results are normalized so that the initial wave-fronts have the same magnitude.
 The overlays show the initial 500 samples of the response on the same scale,
 highlighting the different shapes of the excitation signals. The full signals
-are shown behind, with *different* amplitude scales.
+are shown behind, with *different* amplitude scales. In the Dirac, Ricker, and
+PCS examples, high-frequency oscillations with increasing magnitude over time
+are observed, causing the graph to appear "filled-in".
 ](images/solution_growth){#fig:solution_growth_results}
 
 The solution-growth seen here only becomes prominent towards the end of the
@@ -697,6 +699,12 @@ closest triangle's material index.  For 2D boundaries, adjacent 1D boundary
 nodes are checked, and their filter coefficient indices are used, which saves
 running further closest-triangle tests. For 3D boundaries, adjacent 1D *and* 2D
 nodes are checked.
+
+At this point, all information required to run the simulation has been
+computed.  Simulations may contain many millions of nodes, each with
+associated metadata, so this information must be stored in a way which
+minimises redundancy whilst still allowing for efficient queries. Wayverb's
+memory layout scheme is shown in +@fig:memory_layout.
 
 ![Efficient memory usage is important in large-scale simulations such as those
 conducted by Wayverb. The waveguide storage scheme aims to minimise redundant

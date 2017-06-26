@@ -47,7 +47,8 @@ One option is to record the impulse response using a matched pair of
 microphones.  An AB pair of spaced omnidirectional capsules will capture
 interchannel time difference, but will only capture interchannel level
 difference if the source is positioned near to the microphones. Alternatively,
-an XY or Blumlein pair will capture level difference, but will be incapable of
+an XY or Blumlein pair (which consist of coincident cardioid or bidirectional
+capsules respectively) will capture level difference, but will be incapable of
 recording time difference because wave-fronts will always arrive at both
 capsules simultaneously.
 
@@ -56,14 +57,15 @@ only capture a two-dimensional "slice" through the modelled scene, where all
 directional information is restricted to the same plane as the microphone
 capsules. The technique can be extended to higher dimensions by using more
 microphone capsules. This is the basis of the ambisonic approach, which for
-B-format recordings uses four coincident directional microphone capsules to
-capture the three-dimensional directional pressure gradient and overall
-pressure level.  Instead of being used directly, the recorded signals are
-post-processed depending on the configuration of the output speakers. For
-playback on headphones, the signals can be filtered with *head related transfer
-functions* (HRTFs), which modify the frequency content of the sound depending
-on its originating direction, mimicking the absorptive characteristics of the
-human head and torso [@noisternig_3d_2003].
+B-format recordings uses four coincident microphone capsules, three
+bidirectional and one omnidirectional, to capture the three-dimensional
+directional pressure gradient and overall pressure level.  Instead of being
+used directly, the recorded signals are post-processed depending on the
+configuration of the output speakers. For playback on headphones, the signals
+can be filtered with *head related transfer functions* (HRTFs), which modify
+the frequency content of the sound depending on its originating direction,
+mimicking the absorptive characteristics of the human head and torso
+[@noisternig_3d_2003].
 
 If it is known that the recording will only be reproduced on headphones, the
 preferred method for capturing impulse responses which retain appropriate ILD
@@ -161,13 +163,13 @@ signal. If this approach were to be taken in Wayverb, it would require creating
 a separate output signal for each of the incident directions, and then
 convolving each direction separately, before a final mixdown. This would be
 extremely costly: for separation angles of fifteen degrees, this means
-recording signals for each of 288 incident directions, which might easily
-occupy more than a gigabyte of memory (288 3-second impulse responses at
-32-bits and 44.1kHz require 1160MB of memory), and then separately convolving
-and mixing them. While this is definitely possible, it would be extremely time
-consuming to run. By restricting the HRTF data to 8 frequency bands, the
-application architecture can be simplified, while also improving memory usage
-and runtime performance.
+recording signals for each of 288 incident directions (24 azimuth angles, each
+with 12 elevation angles), which might easily occupy more than a gigabyte of
+memory (288 3-second impulse responses at 32-bits and 44.1kHz require 1160MB of
+memory), and then separately convolving and mixing them. While this is
+definitely possible, it would be extremely time consuming to run. By
+restricting the HRTF data to 8 frequency bands, the application architecture
+can be simplified, while also improving memory usage and runtime performance.
 
 ## Image Source Implementation
 
