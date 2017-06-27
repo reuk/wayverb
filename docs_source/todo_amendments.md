@@ -84,7 +84,7 @@
 
 -[x] p8: KHz is used throughout instead of kHz – please correct.
 
--[ ] p12 - Project Aims: although I am not suggesting that these should be rewritten, their scope might be more focused to enable a more complete analysis and reflection in the conclusions. Also it states that this work should not required any specialist training in ‘acoustics or programming’ yet the thesis that follows is absolutely founded on both, and this assumption has not actually been properly tested as stated above.
+-[x] p12 - Project Aims: although I am not suggesting that these should be rewritten, their scope might be more focused to enable a more complete analysis and reflection in the conclusions. Also it states that this work should not required any specialist training in ‘acoustics or programming’ yet the thesis that follows is absolutely founded on both, and this assumption has not actually been properly tested as stated above.
 
 -[x] p18: Audibility checking example above paragraph starting ‘The validation….’ should map to Figure 2.2 for clarity.
 

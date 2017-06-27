@@ -247,8 +247,8 @@ well-known in the literature [@southern_hybrid_2013; @aretz_combined_2009;
 
 The fundamental goals of the project are:
 
-* **Accuracy**: Provide a way of generating accurate, physically-plausible
-  impulse responses of arbitrary enclosed spaces.
+* **Plausibility**: Provide a way of generating physically plausible impulse
+  responses of arbitrary enclosed spaces.
 * **Efficiency**: Ensure that the simulation is fast. Simulations times should
   be minutes, rather than hours or days.
 * **Accessibility**: It should be possible for someone with no programming
@@ -262,19 +262,33 @@ so that the "right" sound can be created quickly. The solution must run on
 commodity hardware, as musicians are not expected to have access to dedicated
 compute clusters or server farms.
 
-Accuracy and efficiency are competing goals, which must be balanced.  Extreme
-performance, allowing real-time usage,  has already been implemented in several
-of the commercial programs listed above, and generally relies on simplified
-acoustic models, which in turn reduce accuracy. This runs counter to the aims
-of the project.  Similarly, extreme accuracy generally requires long compute
-times and specialised hardware, both of which are inaccessible to the target
-user.  Therefore, the focus of the project cannot be solely on accuracy.
-Software which balances these two aims does not exist, at time of writing, and
-there is a clear need for a solution which is both reasonably fast and
-accurate.  Ideally, this software would allow the user control over the
-trade-off between accuracy and efficiency, enabling a workflow in which fast,
-lower-quality simulations are used when auditioning, after which a single slow,
-high-quality render is produced.
+The ideal simulation program would be capable of replicating, with perfect
+accuracy, any acoustic scenario.  However, for the purposes of sound-design,
+this level of accuracy is not necessary. When creating a reverb, a sound
+designer's focus is on experimenting and developing the desired atmosphere,
+rather than on perfectly reconstructing a physical location.  Therefore,
+simulation results should be believable first; for example, large, reflective
+rooms should have long reverb times, while small, damped rooms should have
+shorter reverb times.  Another aspect of plausibility is overall quality: if a
+generated impulse response contains obvious artefacts, it is by definition
+physically implausible, and of limited use to a sound designer.  Finally, it is
+of utmost importance that parameters of the simulation behave intuitively, so
+that the designer can "dial-in" the correct settings. That is, the results of
+parameter changes must be plausible.
+
+Plausibility and efficiency are competing goals, which must be balanced.
+Extreme performance, allowing real-time usage,  has already been implemented in
+several of the commercial programs listed above, and generally relies on
+simplified acoustic models, which in turn reduce accuracy. This runs counter to
+the aims of the project.  Similarly, high-quality simulations generally require
+long compute times and specialised hardware, both of which are inaccessible to
+the target user.  Therefore, the focus of the project cannot be solely on
+plausibility.  Software which balances these two aims does not exist, at time
+of writing, and there is a clear need for a solution which is both reasonably
+fast and produces believable results.  Ideally, this software would allow the
+user control over the trade-off between accuracy and efficiency, enabling a
+workflow in which fast, lower-quality simulations are used when auditioning,
+after which a single slow, high-quality render is produced.
 
 Accessibility is extremely important, and the final product must be accessible
 to two main groups.  Firstly, it must be useful to the target users. It must be
@@ -286,11 +300,11 @@ research and modification.
 ### Proposed Solution
 
 It appears that an approach combining geometric and wave-based methods will be
-most flexible in achieving both accuracy and efficiency: wave-based methods are
-accurate but slow; and geometric methods are faster but less accurate. Accuracy
-and efficiency can be balanced by adjusting the proportion of the output
-generated with each method. The Wayverb project puts forward an acoustic
-simulator based on this hybrid method.
+most flexible in achieving both plausibility and efficiency: wave-based methods
+are accurate but slow; and geometric methods are faster but more approximate.
+Efficiency can be balanced against output quality by adjusting the proportion
+of the output generated with each method. The Wayverb project puts forward an
+acoustic simulator based on this hybrid method.
 
 To achieve the goal of accessibility, the Wayverb program runs on consumer
 hardware, and is accessed through a graphical interface which allows
@@ -312,12 +326,12 @@ arbitrary enclosures.
 The project acts as a survey of room acoustics techniques, and related issues
 regarding practical implementation.  Rather than designing completely new
 simulation methods, existing techniques were investigated, compared, and
-evaluated in terms of their accuracy and performance. Then, optimum techniques
-were chosen and further developed for use in the final program. An especially
-important consideration is the matching of parameters between models. For
-example, all models should produce the same sound energy at a given distance,
-and should exhibit the same reverb time for a given scene. Therefore, the
-acoustics techniques were chosen so that they produce consistent results.
+evaluated in terms of their plausibility and performance. Then, optimum
+techniques were chosen and further developed for use in the final program. An
+especially important consideration is the matching of parameters between
+models. For example, all models should produce the same sound energy at a given
+distance, and should exhibit the same reverb time for a given scene. Therefore,
+the acoustics techniques were chosen so that they produce consistent results.
 
 Sometimes the models required development beyond the methods presented in the
 literature in order to become useful. An example of this is the waveguide
