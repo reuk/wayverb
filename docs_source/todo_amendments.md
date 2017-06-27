@@ -88,7 +88,7 @@
 
 -[x] p18: Audibility checking example above paragraph starting ‘The validation….’ should map to Figure 2.2 for clarity.
 
--[ ] p19: what does the author mean by ‘reasonable time’? Refer back to project aims/research questions. In general, such loosely defined terms are used at quite a few points in the thesis and mean very little.
+-[x] p19: what does the author mean by ‘reasonable time’? Refer back to project aims/research questions. In general, such loosely defined terms are used at quite a few points in the thesis and mean very little.
 
 -[ ] p23: How has this replacement of the Dirac function with the truncated IR of a low-pass filter been tested? In general, it would be expected to see some interim results here of the IS algorithm as presented. Summary also needed as suggested above.
 
@@ -100,7 +100,7 @@
 
 -[ ] p28: Reflections are considered here – but no consideration is given regarding octave band considerations. Should they be? Please see comments about a ‘new’ literature review/background chapter.
 
--[ ] p36: Please define ‘accuracy’ in the context of your discussion regarding mesh topologies. What constitutes an ‘accurate’ result?
+-[x] p36: Please define ‘accuracy’ in the context of your discussion regarding mesh topologies. What constitutes an ‘accurate’ result?
 
 -[x] p40: [jeong_source_2012] please fix reference …like and obvious = like an Figure 4.3 – y-axis magnitudes of frequency domain plots should have dB scale?
 
@@ -114,7 +114,7 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] Figure 4.6: This should be discussed or referred to in the main body of the text.
 
--[ ] p51: Discussion is given as to hybrid crossover frequency but never formally cited or justified.  Please do so.
+-[x] p51: Discussion is given as to hybrid crossover frequency but never formally cited or justified.  Please do so.
 
 -[x] p53: ‘and at the to end’ - ?
 
@@ -124,7 +124,7 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p62: Hacıhabiboglu = Hacıhabiboğlu
 
--[ ] p63: Does mesh oversampling always need to be used? Cannot interpolation be applied in some cases? Please Comment.
+-[x] p63: Does mesh oversampling always need to be used? Cannot interpolation be applied in some cases? Please Comment.
 
 -[ ] p67: ‘At low frequencies’ – define what you mean by ‘low’. Nothing is presented for below 500Hz, which is where your DWM approach will be applied? Hence these results are invalid in the context of your work? What do the colours in Figs 6.1 – 6.3 refer to? This is not explained. If the black/darker colour is a reference, from where has it been obtained?
 

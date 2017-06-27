@@ -313,7 +313,12 @@ in [@southern_2nd_2007] uses a sensor spacing of 0.04 metres, giving a maximum
 valid sampling frequency of 4.25kHz.  However, to allow accurate placement of
 these sensors, a grid with a spacing of 0.0027m is required.  This increase in
 mesh density necessitates more than 3000 times the original number of nodes,
-which is only practical for very small modelled spaces.
+which is only practical for very small modelled spaces.  An alternative to
+oversampling is interpolation, which may be used to obtain signal values for
+positions that do not coincide with grid nodes, as in [@southern_spatial_2012].
+However, the interpolated approach given in this paper is only applicable in
+the 2D case, so it cannot be applied in Wayverb, which requires a general
+solution in three dimensions.
 
 Finally, this method places an additional constraint on the portion of the
 spectrum of the output signal which may be considered valid. The maximum valid
@@ -321,9 +326,9 @@ frequency of the output spectrum is determined by the ratio between the
 receiver spacing and the wavelength at that frequency. To raise the upper
 frequency limit, the receiver spacings must be made as small as possible, which
 requires costly mesh oversampling. Small receiver spacings reduce the
-sensitivity at the lower end of the spectrum, so ideally the simulation will
-use several sets of receiver nodes with different spacings, in order to
-maintain a flat frequency response.
+sensitivity at the lower end of the spectrum (even when interpolation is used),
+so ideally the simulation must use several sets of receiver nodes with
+different spacings, in order to maintain a flat frequency response.
 
 This technique seems suitable for calculating lower-order ambisonic signals in
 small modelled spaces.  For higher order outputs, with consistent frequency
@@ -355,11 +360,11 @@ technique. Both techniques calculate the instantaneous pressure gradient at the
 output node by subtracting the pressures of the surrounding nodes. The main
 difference is that the Blumlein method requires that the mesh pressure is found
 at exact locations relative to the output node, which often requires mesh
-oversampling. The intensity calculation technique instead uses a more general
-matrix-based method, which incorporates the relative node positions into the
-calculation. In short, the Blumlein method requires that the mesh is designed
-to suit the receiver configuration, whereas the intensity calculation method
-can adapt to arbitrary mesh topologies and spacings.
+oversampling or interpolation. The intensity calculation technique instead uses
+a more general matrix-based method, which incorporates the relative node
+positions into the calculation. In short, the Blumlein method requires that the
+mesh is designed to suit the receiver configuration, whereas the intensity
+calculation method can adapt to arbitrary mesh topologies and spacings.
 
 The frequency range issues mentioned in [@southern_methods_2007] (where large
 mesh spacings reduce the output bandwidth, and low mesh spacings reduce low
