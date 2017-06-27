@@ -243,16 +243,21 @@ Individual blocks are combined in an alternating chessboard-like pattern to
 create a mesh with tetrahedral
 topology.](images/tetrahedral){#fig:tetrahedral_topology}
 
-The accuracy may be increased by overlaying or "superposing" rectilinear,
-octahedral, and dodecahedral schemes together, as all nodes are oriented
-uniformly, and have cubic tessellation.  Such schemes are known as
-*interpolated*, and in these schemes each node has 26 neighbours.  The
-rectilinear, octahedral, dodecahedral, and interpolated schemes may
-additionally all be represented by a single "unified" update equation,
-described in [@kowalczyk_room_2011].  In this respect the tetrahedral scheme is
-unique, requiring a dedicated update method.  This is because the node
-connection in a tetrahedral mesh may be oriented in either of two directions,
-effectively requiring two update equations instead of one.
+In their evaluation of different mesh topologies, Kowalczyk and Walstijn
+[@kowalczyk_room_2011] define an accuracy criterion which can be used to
+compare topologies.  This criterion is defined as the frequency band within
+which the maximum relative numerical error does not exceed 2%.  They also
+describe how this "acceptably-accurate bandwidth" may be increased by
+overlaying or "superposing" rectilinear, octahedral, and dodecahedral schemes
+together. This is possible because all nodes are oriented uniformly, and have
+cubic tessellation.  Such schemes are known as *interpolated*, and in these
+schemes each node has 26 neighbours.  The rectilinear, octahedral,
+dodecahedral, and interpolated schemes may additionally all be represented by a
+single "unified" update equation, which is presented in [@kowalczyk_room_2011].
+In this respect the tetrahedral scheme is unique, requiring a dedicated update
+method.  This is because the node connections in a tetrahedral mesh may be
+oriented in either of two directions, effectively requiring two update
+equations instead of one.
 
 If the primary concern is speed rather than accuracy, a scheme with fewer
 neighbour nodes should be used, as the number of calculations per node is
