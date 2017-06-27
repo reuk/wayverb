@@ -459,13 +459,12 @@ incidence.](images/reflectance){#fig:reflectance}
 
 ### Evaluation
 
-The initial impression of the results is that the measured response is
-reasonably accurate, to within 6dB of the predicted response, but only below
-0.15 of the mesh sampling rate.  Above this point, the responses become very
-erratic, with very large peaks and troughs.  This is especially true for the
-on-axis (0-degree) tests, where some erratic behaviour is seen as low as 0.12
-of the mesh sampling rate.  This may be due to numerical dispersion in the
-waveguide mesh, which is greatest along axial directions
+The measured response is accurate to within 6dB of the predicted response, but
+only below 0.15 of the mesh sampling rate.  Above this point, the responses
+become very erratic, with very large peaks and troughs.  This is especially
+true for the on-axis (0-degree) tests, where some erratic behaviour is seen as
+low as 0.12 of the mesh sampling rate.  This may be due to numerical dispersion
+in the waveguide mesh, which is greatest along axial directions
 [@kowalczyk_modeling_2008].  At the low end of the spectrum, the results look
 acceptable, adhering closely to the predicted response.
 
