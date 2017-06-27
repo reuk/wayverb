@@ -247,8 +247,8 @@ well-known in the literature [@southern_hybrid_2013; @aretz_combined_2009;
 
 The fundamental goals of the project are:
 
-* **Accuracy**: Provide a way of generating accurate impulse responses of 
-  arbitrary enclosed spaces.
+* **Accuracy**: Provide a way of generating accurate, physically-plausible
+  impulse responses of arbitrary enclosed spaces.
 * **Efficiency**: Ensure that the simulation is fast. Simulations times should
   be minutes, rather than hours or days.
 * **Accessibility**: It should be possible for someone with no programming
@@ -271,13 +271,17 @@ times and specialised hardware, both of which are inaccessible to the target
 user.  Therefore, the focus of the project cannot be solely on accuracy.
 Software which balances these two aims does not exist, at time of writing, and
 there is a clear need for a solution which is both reasonably fast and
-accurate.
+accurate.  Ideally, this software would allow the user control over the
+trade-off between accuracy and efficiency, enabling a workflow in which fast,
+lower-quality simulations are used when auditioning, after which a single slow,
+high-quality render is produced.
 
 Accessibility is extremely important, and the final product must be accessible
 to two main groups.  Firstly, it must be useful to the target users. It must be
-simple to install and run, and should not require specialist training in
-acoustics or programming. Secondly, the code and supporting materials must be
-made free to researchers, to encourage further research and modification.
+simple to install and run, and users should not require specialist training in
+programming in order to be productive with the software.  Secondly, the code
+and supporting materials must be made free to researchers, to encourage further
+research and modification.
 
 ### Proposed Solution
 
