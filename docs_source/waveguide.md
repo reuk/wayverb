@@ -516,13 +516,13 @@ are observed, causing the graph to appear "filled-in".
 ](images/solution_growth){#fig:solution_growth_results}
 
 The solution-growth seen here only becomes prominent towards the end of the
-simulation, after around 60000 steps.  However, papers which propose
+simulation, after around 60,000 steps.  However, papers which propose
 countermeasures to the solution-growth problem generally only test their
-solutions up to 15000 steps or so [@sheaffer_physical_2014;
+solutions up to 15,000 steps or so [@sheaffer_physical_2014;
 @sheaffer_physically-constrained_2012; @jeong_source_2012].  The results of
 testing the solution in [@dimitrijevic_optimization_2015] are not even
-presented.  It is entirely possible that these input methods have not been
-tested in such a long simulation before.
+presented. However, the experiments in [@botts_spectral_2014] are run for
+100,000 steps, exhibiting similar DC instability to the results presented here.
 
 The reason for the solution-growth is not clear. In general, the problem is
 caused by repeated superposition of the DC level, which is reflected from
@@ -535,6 +535,13 @@ which is necessary because using double-precision would double the memory usage
 and halve the computational throughput.  It is possible that error in these
 single-precision calculations manifests as a tiny DC component, which then
 multiplies as the simulation progresses.
+
+The numerical-precision theory is reinforced by [@botts_spectral_2014], which
+shows that numerical error can perturb otherwise-stable simulations, causing
+gradual amplification.  The solution proposed there is to conduct the entire
+simulation using double-precision floating-point, which would effectively delay
+rather than remove the effects of DC instability. As explained above, this
+approach is not practical in Wayverb.
 
 Whatever the reason, it is clear that using a soft source generally causes a DC
 offset to accumulate, even when the input signal has no DC component.  Soft

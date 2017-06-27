@@ -104,7 +104,7 @@
 
 -[x] p40: [jeong_source_2012] please fix reference …like and obvious = like an Figure 4.3 – y-axis magnitudes of frequency domain plots should have dB scale?
 
--[ ] p43: Regarding stability, this paper should be considered and cited:
+-[x] p43: Regarding stability, this paper should be considered and cited:
 
 J. Botts and L. Savioja, “Spectral and Pseudospectral Properties of Finite Difference Models Used
 in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol. 22, no. 9, pp.
