@@ -111,7 +111,8 @@ proportional to the waveguide cutoff frequency, which in turn may be set
 proportional to $V^{-\frac{1}{2}}$ by +@eq:schroeder, the waveguide simulation
 complexity becomes $O(V \cdot V^{-\frac{3}{2}})$ or $O(V^{-\frac{1}{2}})$. This
 implies that, for a waveguide simulation capped at the Schroeder frequency, a
-larger room will be cheaper to simulate than a smaller one.
+larger room will be cheaper to simulate than a smaller one when the reverb
+times of both rooms are equal.
 
 The Schroeder frequency is only an estimate. The actual frequency dividing
 "resonant" and "even" behaviours will vary depending on the surface area,
