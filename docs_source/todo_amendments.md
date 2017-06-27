@@ -126,13 +126,13 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p63: Does mesh oversampling always need to be used? Cannot interpolation be applied in some cases? Please Comment.
 
--[ ] p67: ‘At low frequencies’ – define what you mean by ‘low’. Nothing is presented for below 500Hz, which is where your DWM approach will be applied? Hence these results are invalid in the context of your work? What do the colours in Figs 6.1 – 6.3 refer to? This is not explained. If the black/darker colour is a reference, from where has it been obtained?
+-[x] p67: ‘At low frequencies’ – define what you mean by ‘low’. Nothing is presented for below 500Hz, which is where your DWM approach will be applied? Hence these results are invalid in the context of your work? What do the colours in Figs 6.1 – 6.3 refer to? This is not explained. If the black/darker colour is a reference, from where has it been obtained?
 
 -[ ] Chapter 7: Some repetition here of Image Source section. See comments made earlier.
 
 -[x] p68: Define ‘$’
 
--[ ] p74: Define what you mean by ‘realism’ in the context of this section.
+-[x] p74: Define what you mean by ‘realism’ in the context of this section.
 
 -[ ] p78: Define what you mean by ‘reasonably accurate’ in the context of this section.
 

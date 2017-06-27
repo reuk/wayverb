@@ -297,12 +297,12 @@ by arbitrary IIR filters).
 ### Choice of Boundary Technique for the DWM
 
 The LRS technique was chosen, as it represented the best compromise between
-memory efficiency, customization and tuning, and realism.  The particular
-strengths of this model are its performance and tunability, though as mentioned
-previously it is not physically accurate in many cases.  That being said,
-neither of the boundary models considered are particularly realistic, so even
-for applications where realism is the most important consideration, the LRS
-model seems to be the most appropriate.
+memory efficiency, customization and tuning, and physically-based behaviour.
+The particular strengths of this model are its performance and tunability,
+though as mentioned previously it is not physically accurate in many cases.
+That being said, neither of the boundary models considered are particularly
+realistic, so even for applications where physical modelling is the most
+important consideration, the LRS model seems to be the most appropriate.
 
 ### LRS Implementation
 

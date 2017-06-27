@@ -509,7 +509,10 @@ is successful.
 
 Three different microphone polar patterns are simulated: omnidirectional,
 bidirectional, and cardioid.  The results are shown in +@fig:omnidirectional to
-!@fig:bidirectional.
+!@fig:bidirectional. In these figures, the red lines show the measured energy
+in each direction, while the blue lines show the expected polar pattern,
+normalized so that the 0-degree level matches the experimentally-obtained level
+in that direction.
 
 ![The directional response of an omnidirectional receiver in the waveguide
 mesh.](images/Omnidirectional_response){#fig:omnidirectional}
@@ -520,17 +523,18 @@ mesh.](images/Cardioid_response){#fig:cardioid}
 ![The directional response of a bidirectional receiver in the waveguide
 mesh.](images/Bidirectional_response){#fig:bidirectional}
 
-Results are consistent across all polar patterns tested.  At low frequencies,
-the match is particularly good, with virtually no error in all directions.  As
-frequency increases, the error increases greatly. This happens as a result of
-frequency-dependent dispersion. At higher frequencies, the speed of wave-fronts
-changes depending on their direction. In the rectilinear mesh, there is no
-dispersion along diagonal directions [@kowalczyk_room_2011]. Along axial
-directions, however, high-frequency wave-fronts move more slowly. This is
-likely the cause of the predominant "spikes" seen in the diagonal directions:
-in these directions, all the acoustic energy reaches the receiver, while along
-axial directions, the wave-fronts are slower, and the full energy does not
-reach the receiver within the simulation window.
+Results are consistent across all polar patterns tested.  At the lower
+frequencies shown, the match is particularly good, with virtually no error in
+all directions.  As frequency increases, the error increases greatly. This
+happens as a result of frequency-dependent dispersion. At higher frequencies,
+the speed of wave-fronts changes depending on their direction. In the
+rectilinear mesh, there is no dispersion along diagonal directions
+[@kowalczyk_room_2011]. Along axial directions, however, high-frequency
+wave-fronts move more slowly. This is likely the cause of the predominant
+"spikes" seen in the diagonal directions: in these directions, all the acoustic
+energy reaches the receiver, while along axial directions, the wave-fronts are
+slower, and the full energy does not reach the receiver within the simulation
+window.
 
 These results mirror those seen by Hacıhabiboğlu, who also records similar
 large errors in diagonal directions in the highest (8kHz) band. These errors
