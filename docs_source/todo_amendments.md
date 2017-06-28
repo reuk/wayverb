@@ -148,11 +148,11 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p85: ‘In effect the waveguide exhibits a high noise-floor under some conditions.’ Where have you shown this? How or why is this? More explanation needed.
 
--[ ] Fig 8.2 – What are Octave band RT30 measurements? Be clear about what you are plotting. If you are plotting octave band results we need to see the actual data points you have, not just a connected line that joins them up. Please also mark what aspect of you model has contributed to each plot point (e.g. DWM, ISM, etc) ‘were placed’ = were replaced?  You should also check octave band results vs broadband results if possible.
+-[x] Fig 8.2 – What are Octave band RT30 measurements? Be clear about what you are plotting. If you are plotting octave band results we need to see the actual data points you have, not just a connected line that joins them up. Please also mark what aspect of you model has contributed to each plot point (e.g. DWM, ISM, etc) ‘were placed’ = were replaced?  You should also check octave band results vs broadband results if possible.
 
--[ ] p87: ‘show that wall impedances are accurately modelled’ = define accurately, and are they actually ‘accurate’?
+-[x] p87: ‘show that wall impedances are accurately modelled’ = define accurately, and are they actually ‘accurate’?
 
--[ ] General point - A better approach to testing a study of this nature is presented in reference [26].  Your comment on the ‘issue with shorter low-frequency decay times’ needs more detail – we have no data to go on in relation to what these decay times are. Give the data (octave bands) and discuss, or more speculative comments should be removed.
+-[x] General point - A better approach to testing a study of this nature is presented in reference [26].  Your comment on the ‘issue with shorter low-frequency decay times’ needs more detail – we have no data to go on in relation to what these decay times are. Give the data (octave bands) and discuss, or more speculative comments should be removed.
 
 -[ ] p89: ‘Therefore it is obvious’ – I’m not sure the results presented here mean that the conclusions you draw are in fact obvious. Energy metrics such as C50/C80 or event EDT could have been used instead.
 

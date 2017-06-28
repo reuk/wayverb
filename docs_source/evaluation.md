@@ -223,8 +223,8 @@ the fact that the *initial* reverb decay is faster at low frequencies. The
 spectrograms show that the waveguide sometimes resonates for an extended period
 at low amplitudes.
 
-![T30 in octave bands, calculated from the measured impulse
-responses.](images/room_size_rt30){#fig:room_size_rt30}
+![T30 in octave bands, for simulated rooms of different sizes, calculated from
+the measured impulse responses.](images/room_size_rt30){#fig:room_size_rt30}
 
 ![Spectrograms of impulse responses obtained from different room
 sizes.](images/room_size_spectrograms){#fig:room_size_spectrograms}
@@ -252,8 +252,9 @@ times of the exact image-source model, which will be close to the analytical
 solution in a cuboid room. The close match to the almost-exact image-source
 model suggests that the waveguide and boundary model have been implemented
 correctly. Additionally, the tests in the [Boundary Modelling]({{ site.baseurl
-}}{% link boundary.md %}) section show that wall impedances are accurately
-modelled.
+}}{% link boundary.md %}) section show that wall impedances closely
+match predicted values for three material types and angles of incidence, at
+least in the band below 0.15 of the mesh sampling rate.
 
 Given that in all previous tests the waveguide behaves as expected, it is
 likely that the Sabine equation is simply a poor predictor of low-frequency
@@ -313,8 +314,9 @@ The "medium" room from the above test is simulated, again with the source and
 receiver placed 1 metre apart in the centre of the room.  Scattering is set to
 0.1 in all bands. The absorption coefficients are set to 0.02, 0.04, and 0.08,
 corresponding to Sabine predictions of 4.43, 2.22, and 1.11 seconds. The
-results are summarised in +@tbl:room_absorption, and spectrograms of the
-outputs are shown in +@fig:room_material_spectrograms.
+results are summarised in +@tbl:room_absorption, with octave-band T30 values
+shown in +@fig:room_absorption_rt30, and spectrograms of the outputs are shown
+in +@fig:room_material_spectrograms.
 
 Table: Comparison of Sabine reverb time against measured reverb time for an
 enclosure with varying boundary absorptions. {#tbl:room_absorption}
@@ -329,14 +331,21 @@ absorption          Sabine RT / s   measured T20 / s      measured T30 / s
 0.08                1.108           1.126 (1.625% error)  1.156 (4.322% error)
 ----------------------------------------------------------------------------------
 
-The issue with shorter low-frequency decay times persists in this test.
-However, the broadband reverb time responds correctly to the change in
-absorption coefficients. All results are within the 5% JND for reverb time.
+In this test, low-frequency bands have shorter reverb times than high-frequency
+bands, as in the previous test.  However, the broadband reverb time responds
+correctly to the change in absorption coefficients. All results are within the
+5% JND for reverb time.
 
 The spectrograms in +@fig:room_material_spectrograms do not show the same
-resonance at 400Hz as the previous test results. This evidence supports the
-theory that the resonance was introduced as an artefact of the boundary
-model, although clearly further tests are required in order to be certain.
+resonance at 400Hz as the previous test results. Given that models of different
+sizes exhibited resonance at the same frequency, but that changing the surface
+absorption causes the resonant frequency to move, it seems very likely that the
+resonant artefact is caused by the boundary model.  Clearly, further tests are
+required in order to be certain.
+
+![T30 in octave bands, for simulated rooms with different surface absorption
+coefficients, calculated from the measured impulse
+responses.](images/room_absorption_rt30){#fig:room_absorption_rt30}
 
 ![Spectrograms of impulse responses obtained from simulating the same room with
 different absorption coefficients. Note that the low-frequency content has a
