@@ -393,8 +393,24 @@ was run for 420 steps. The first output, $r_f$, contained a direct and a
 reflected response.  Then, the room was doubled in size along the plane of the
 wall being tested.  The simulation was run again, recording just the direct
 response at the receiver ($r_d$).  Finally, the receiver position was reflected
-in the boundary under test, and the simulation was run once more, producing a
-free-field response ($r_i$). *@fig:boundary_test_setup shows the testing setup.
+in the boundary under test, creating a *receiver image*, and the simulation was
+run once more, producing a free-field response at the image position ($r_i$).
+*@fig:boundary_test_setup shows the testing setup.
+
+When testing on-axis reflections (where azimuth and elevation are both 0), the
+position of the receiver will exactly coincide with the position of the source.
+If a hard source is used, the recorded pressures at the receiver ($r_f$ and
+$r_d$) will always exactly match the input signal, and will be unaffected by
+reflections from the boundary under test. It is imperative that the receiver
+records the reflected response, which means that the hard source is not viable
+for this test.
+Instead, a transparent dirac source is used, which allows the receiver node to
+respond to the reflected pressure wave, even if its position coincides with the
+source position.  The main drawback of the transparent source, solution growth,
+is not a concern here as the simulations are only run for 420 steps. The tests
+in the [Digital Waveguide Mesh]({{ site.baseurl }}{% link waveguide.md %})
+section showed that solution growth generally only becomes evident after
+several thousand steps.
 
 ![The setup of the two room-sizes, and the positions of sources and receivers
 inside.](images/boundary_testing_setup){#fig:boundary_test_setup}
@@ -412,7 +428,7 @@ compared to the theoretical reflection of the digital impedance filter being
 tested, which is defined as:
 
 $$R_{\theta, \phi}(z) = \frac{\xi(z)\cos\theta\cos\phi -
-1}{\xi(z)\cos\theta\cos\phi + 1}$$ {#eq:}
+1}{\xi(z)\cos\theta\cos\phi + 1}$$ {#eq:theoretical_reflection}
 
 where $\theta$ and $\phi$ are the reflection azimuth and elevation
 respectively.
@@ -447,11 +463,14 @@ used in the boundary update equations for the DWM.
 
 ### Results
 
-The results are shown in +@fig:reflectance.  Although the waveguide mesh has a
-theoretical upper frequency limit of 0.25 of the mesh sampling rate, the 3D
-FDTD scheme has a cutoff frequency of 0.196 of the mesh sampling rate for axial
-directions.  This point has been marked as a vertical line on the result
-graphs.
+The results are shown in +@fig:reflectance.  The lines labelled "measured" show
+the measured boundary reflectance, and the lines labelled "predicted" show the
+theoretical reflectance, obtained by substituting the impedance filter
+coefficients and angles of incidence into +@eq:theoretical_reflection.
+Although the waveguide mesh has a theoretical upper frequency limit of 0.25 of
+the mesh sampling rate, the 3D FDTD scheme has a cutoff frequency of 0.196 of
+the mesh sampling rate for axial directions.  This point has been marked as a
+vertical line on the result graphs.
 
 ![Measured boundary reflectance is compared against the predicted reflectance,
 for three different materials and three different angles of
@@ -459,43 +478,45 @@ incidence.](images/reflectance){#fig:reflectance}
 
 ### Evaluation
 
-The measured response is accurate to within 6dB of the predicted response, but
-only below 0.15 of the mesh sampling rate.  Above this point, the responses
-become very erratic, with very large peaks and troughs.  This is especially
-true for the on-axis (0-degree) tests, where some erratic behaviour is seen as
-low as 0.12 of the mesh sampling rate.  This may be due to numerical dispersion
-in the waveguide mesh, which is greatest along axial directions
-[@kowalczyk_modeling_2008].  At the low end of the spectrum, the results look
-acceptable, adhering closely to the predicted response.
+The most concerning aspect of the results is the erratic high-frequency
+behaviour. Even though the cutoff of the 3D FDTD scheme is at 0.196 of the mesh
+sampling rate, deviations from the predictions are seen below this cutoff in
+all the presented results. The cause of this error is unclear. One possibility
+is numerical dispersion, which is known to become more pronounced as frequency
+increases.  However, the rapid onset of error around the cutoff suggests that
+the cause is not dispersion alone.  Another possible explanation might be extra
+unwanted reflections in the outputs, although this seems unlikely. The use of a
+transparent source means that the source node does not act as a reflector, as
+would be the case with a hard source. In addition, the dimensions of the test
+domain were chosen to ensure that only reflections from the surface under test
+are present in the output. The recordings are truncated before reflections from
+other surfaces or edges are able to reach the receivers. Finally, it seems
+likely that such interference would affect the entire spectrum, rather than
+just the area around the cutoff.  A final, more likely, explanation for the
+volatile high-frequency behaviour is that the filters used in this test are of
+much higher order than those tested in [@kowalczyk_modeling_2008], leading to
+accumulated numerical error.
 
-The poor performance at the top of the spectrum is not particularly concerning,
-as the waveguide mesh is designed to generate low-frequency content.  If
-wideband results are required, then the mesh can simply be oversampled.  To
-prevent boundary modelling error affecting the results of impulse response
-synthesis in the Wayverb app, the mesh cutoff frequency is locked to a maximum
-of 0.15 of the mesh sampling rate.
+Whatever the cause of the poor performance at the top of the spectrum, the
+implications for Wayverb are minor, as as the waveguide mesh is designed to
+generate low-frequency content.  If wideband results are required, then the
+mesh can simply be oversampled.  To prevent boundary modelling error affecting
+the results of impulse response synthesis in the Wayverb app, the mesh cutoff
+frequency is locked to a maximum of 0.15 of the mesh sampling rate.
 
-Ideally, these tests would be carried out using flat wave-fronts.  Kowalczyk
-and Van Walstijn note that some of their results display low-frequency
-artefacts because the simulated wave-front is not perfectly flat. However, flat
-wave-fronts are not easily accomplished.  The experiments in
-[@kowalczyk_modeling_2008] use large meshes (around 3000 by 3000 nodes, nine
-million in total) and place the sources a great distance away from the boundary
-being studied in order to maintain a mostly-flat wave-front.  This is only
-practical because the experiments are run in two dimensions.  For the 3D case,
-no experimental results are given.  This is probably because running a 3D
-simulation on a similar scale would require a mesh of twenty-seven billion
-nodes, which in turn would require gigabytes of memory and hours of simulation
-time. 
-
-There is little low-frequency error in the experimental results above, despite
-the fact that the source is placed very close to the boundary, and the
-wave-front is therefore very rounded.  This rounded wave-front may, however, be
-the cause of the relatively small broadband fluctuations between 0 and 0.15 of
-the mesh sampling rate.  The filters used in this test are also of much higher
-order than those tested in [@kowalczyk_modeling_2008], giving a greater chance
-of accumulated numerical error.  This may be the cause of the volatile
-high-frequency behaviour.
+Some of the results (especially concrete and wood at 60 degrees) show minor
+artefacts at the lowest frequencies, where the measured responses diverge from
+the predictions.  Kowalczyk and Van Walstijn note that some of their results
+display similar low-frequency artefacts, and suggest that the cause is that the
+simulated wave-front is not perfectly flat.  However, flat wave-fronts are not
+easily accomplished.  The experiments in [@kowalczyk_modeling_2008] use large
+meshes (around 3000 by 3000 nodes, nine million in total) and place the sources
+a great distance away from the boundary being studied in order to maintain a
+mostly-flat wave-front.  This is only practical because the experiments are run
+in two dimensions.  For the 3D case, no experimental results are given.  This
+is probably because running a 3D simulation on a similar scale would require a
+mesh of twenty-seven billion nodes, which in turn would require gigabytes of
+memory and hours of simulation time.
 
 In conclusion, for the most part, the results presented adhere closely to the
 expected results, with the caveat that the surface reflectance is only accurate

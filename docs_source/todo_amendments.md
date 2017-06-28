@@ -134,11 +134,11 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p74: Define what you mean by ‘realism’ in the context of this section.
 
--[ ] p78: Define what you mean by ‘reasonably accurate’ in the context of this section.
+-[x] p78: Define what you mean by ‘reasonably accurate’ in the context of this section.
 
--[ ] p79: Fig 7.6. I am not convinced that the higher frequency deviations from the norm are down to dispersion error. This needs to be considered more carefully, and I would inspect your raw IRs to see what is contributing to this. Could be edge reflection effects from your surface, hard source reflections, incorrect windowing? Does not look like dispersion error. Where are the predicted results sourced from? The plots need to be improved – the scales hide some of the detail. Would a difference/error plot be a better metric?
+-[x] p79: Fig 7.6. I am not convinced that the higher frequency deviations from the norm are down to dispersion error. This needs to be considered more carefully, and I would inspect your raw IRs to see what is contributing to this. Could be edge reflection effects from your surface, hard source reflections, incorrect windowing? Does not look like dispersion error. Where are the predicted results sourced from? The plots need to be improved – the scales hide some of the detail. Would a difference/error plot be a better metric?
 
--[ ] p80: ‘Little low frequency error’ – again, please define what you mean here. More investigation should be carried out into the source of the error or limitations of this approach clearly discussed and the consequence for subsequent results.
+-[x] p80: ‘Little low frequency error’ – again, please define what you mean here. More investigation should be carried out into the source of the error or limitations of this approach clearly discussed and the consequence for subsequent results.
 
 -[ ] p81: This is the first time that the nature of the 3D geometry files used to define your rooms has been discussed at all. There is further discussion later, in relation to the limitations of the software, but stating up front that you will use a file importer from existing 3D CAD would be much better.
 
