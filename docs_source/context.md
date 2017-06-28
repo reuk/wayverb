@@ -462,6 +462,12 @@ target Nvidia hardware.  OpenCL was chosen as it would allow the final program
 to be run on a wider variety of systems, with fewer limitations on their
 graphics hardware.
 
+Wayverb uses the Assimp library [@_assimp_2017] to import 3D CAD models in a
+variety of formats. The number of formats supported by Assimp means that users will
+generally be able to construct geometry in the editor of their choice, and then
+export that geometry to Wayverb.  This has the benefit that time was
+not spent developing a custom geometry editor.
+
 The only deployment target was Mac OS.  This was mainly to ease development, as
 maintaining software across multiple platforms is often time-consuming.  Mac OS
 also tends to have support for newer C++ language features than Windows, which

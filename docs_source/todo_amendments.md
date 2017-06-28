@@ -140,7 +140,7 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p80: ‘Little low frequency error’ – again, please define what you mean here. More investigation should be carried out into the source of the error or limitations of this approach clearly discussed and the consequence for subsequent results.
 
--[ ] p81: This is the first time that the nature of the 3D geometry files used to define your rooms has been discussed at all. There is further discussion later, in relation to the limitations of the software, but stating up front that you will use a file importer from existing 3D CAD would be much better.
+-[x] p81: This is the first time that the nature of the 3D geometry files used to define your rooms has been discussed at all. There is further discussion later, in relation to the limitations of the software, but stating up front that you will use a file importer from existing 3D CAD would be much better.
 
 -[ ] p82: Define RT60 in relation to T20 and T30. Your assumption that RT60 = 2xT30 = 2xT20 is incorrect. Please refer to ISO3382 and related versions of this standard for a proper definition of how T20 and T30 are determined from a RIR.
 
