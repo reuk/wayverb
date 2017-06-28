@@ -32,9 +32,9 @@ def read_rt30(fname):
 
 def main():
     files = [
-            ("small", "small.txt"),
-            ("medium", "medium.txt"),
-            ("large", "large.txt"),
+            ("0.02", "0.02.txt"),
+            ("0.04", "0.04.txt"),
+            ("0.08", "0.08.txt"),
             ]
 
     for label, fname in files:
@@ -52,7 +52,7 @@ def main():
     plt.annotate(xy=(520, 1.4), s='waveguide cutoff')
 
     plt.legend(loc='lower center', ncol=3, bbox_to_anchor=(0, -0.05, 1, 1), bbox_transform=plt.gcf().transFigure)
-    plt.title('Octave-band T30 Measurements for Different Room Sizes')
+    plt.title('Octave-band T30 Measurements for Different Surface Absorption Coefficients')
 
     plt.xlabel('frequency / Hz')
     plt.ylabel('time / s')
@@ -62,7 +62,7 @@ def main():
 
     plt.show()
     if render:
-        plt.savefig('room_size_rt30.svg', bbox_inches='tight', dpi=96, format='svg')
+        plt.savefig('room_absorption_rt30.svg', bbox_inches='tight', dpi=96, format='svg')
 
 
 if __name__ == '__main__':
