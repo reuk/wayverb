@@ -167,7 +167,6 @@ if __name__ == '__main__':
         'font.family': 'serif',
         'font.serif': [],
         'font.sans-serif': ['Helvetica Neue'],
-        'font.monospace': ['Input Mono Condensed'],
         'legend.fontsize': 12,
     }
 
