@@ -142,6 +142,16 @@ to the area of the surface multiplied by its absorption coefficient. The
 equivalent absorption area for an entire room is found by summing the
 absorption areas of all surfaces in the scene.
 
+The Sabine equation has some important limitations. Firstly, it fails at high
+absorptions. With the absorption coefficient set to 1, it estimates a finite
+reverb time, even though a completely absorptive enclosure cannot reverberate.
+Secondly, the Sabine equation assumes that the sound field in the enclosure is
+perfectly diffuse, which is untrue in practice.  At low frequencies (that is,
+below the Schroeder frequency) rooms behave modally, concentrating sound
+energy at specific points in the room.  Under such circumstances, the sound
+field is clearly not diffuse, and so the Sabine equation is a poor predictor of
+reverb time at low frequencies.
+
 ### Reverb Times for Varying Room Volumes
 
 This test aims to check that rooms with different volumes produce the expected
@@ -164,37 +174,45 @@ with a sampling rate of 3330Hz.  The image-source model generates reflections
 up to the fourth order.
 
 The results for the entire (broadband) output are shown in +@tbl:room_volume.
+As mentioned above, all reverb times have been found by importing the generated
+impulse response into the Room EQ Wizard [@_room_2017], and using the reverb
+time export function. This feature derives reverb times (EDT, T20, and T30) in
+accordance with the ISO 3382 specification [@iso_3382].
 
 Table: Comparison of Sabine reverb time against measured reverb time for
 enclosures of three different sizes. {#tbl:room_volume}
 
---------------------------------------------------------------------------------
-room                Sabine RT / s   measured T20 / s    measured T30 / s
-------------------- --------------- ------------------- ------------------------
-small               0.653           0.663               0.658
+-------------------------------------------------------------------------------
+room                Sabine RT / s   measured T20 / s      measured T30 / s
+------------------- --------------- --------------------- ---------------------
+small               0.653           0.663 (1.53% error)   0.658 (0.766% error)
 
-medium              0.887           0.897               0.903
+medium              0.887           0.897 (1.13% error)   0.903 (1.80% error)
 
-large               1.76            1.86                1.96
---------------------------------------------------------------------------------
+large               1.76            1.86 (5.68% error)    1.96 (11.4% error)
+-------------------------------------------------------------------------------
 
 The results for small and medium rooms are within 5% of the expected reverb
-time, although the measured T30 of the larger room has an error of 11%.
-Increasing the room volume has the effect of increasing the reverb time, as
-expected.
+time, although the measured T30 of the larger room has an error of 11%.  To be
+considered accurate, the error in the measurement should be below the *just
+noticeable difference* (JND) for that characteristic.  JNDs for different
+characteristics, such as clarity, reverberance, and level, are defined in the
+ISO standard 3382-1 [@iso_3382].  The JND for reverb time is 5%, therefore the
+simulated reverb time is accurate for the small and medium rooms, although it
+is inaccurate for the largest room.  Increasing the room volume has the effect
+of increasing the reverb time, as expected.
 
 Now, the results are plotted in octave bands (see +@fig:room_size_rt30).  The
 results in lower bands, which are modelled by the waveguide, have a
 significantly shorter reverb time than the upper bands, which are generated
 geometrically. The higher bands have reverb times slightly higher than the
 Sabine prediction, while the waveguide-generated bands show much shorter reverb
-times tails than expected. The difference in reverb times between the waveguide
+tails than expected. The difference in reverb times between the waveguide
 and geometric methods also becomes evident when spectrograms are taken of the
 impulse responses (see +@fig:room_size_spectrograms). In all tests, the initial
 level is constant across the spectrum, but dies away faster at lower
 frequencies. In the medium and large rooms, some resonance at 400Hz is seen
-towards the end of the reverb tail, which is probably caused by numerical
-dispersion in the waveguide mesh.
+towards the end of the reverb tail.
 
 In the medium and large tests, the spectrograms appear as though the
 low-frequency portion has a longer, rather than a shorter, reverb time.
@@ -203,8 +221,7 @@ around -100dB, which is 40dB below the level of the initial contribution. The
 measured T20 and T30 values do not take this into account, and instead reflect
 the fact that the *initial* reverb decay is faster at low frequencies. The
 spectrograms show that the waveguide sometimes resonates for an extended period
-at low amplitudes. In effect, the waveguide exhibits a high noise-floor under
-some conditions.
+at low amplitudes.
 
 ![T30 in octave bands, calculated from the measured impulse
 responses.](images/room_size_rt30){#fig:room_size_rt30}
@@ -238,22 +255,42 @@ correctly. Additionally, the tests in the [Boundary Modelling]({{ site.baseurl
 }}{% link boundary.md %}) section show that wall impedances are accurately
 modelled.
 
-Given that in all previous tests the waveguide behaves as expected, one
-possibility is that the Sabine equation is simply a poor predictor of
-low-frequency reverb times, or reverb times in regularly-shaped rooms with
-well-defined reflection patterns (such as cuboids). If this were the case, this
-might justify the waveguide results. This is a reasonable suggestion: the
-Sabine equation assumes that the sound field is diffuse, which in turn requires
-that at any position within the room, reverberant sound has equal intensity in
-all directions, and random phase relations [@hodgson_when_1994]. This is
-obviously untrue in a cuboid at low frequencies, where the non-random phase of
-reflected waves causes strong modal behaviour due to waves resonating between
-the parallel walls of the enclosure.
+Given that in all previous tests the waveguide behaves as expected, it is
+likely that the Sabine equation is simply a poor predictor of low-frequency
+reverb times in these tests.  This is a reasonable suggestion: the Sabine
+equation assumes that the sound field is diffuse, which in turn requires that
+at any position within the room, reverberant sound has equal intensity in all
+directions, and random phase relations [@hodgson_when_1994]. This is obviously
+untrue in a cuboid at low frequencies, where the non-random phase of reflected
+waves causes strong modal behaviour due to waves resonating between the
+parallel walls of the enclosure.
 
-Further testing is required to locate the exact cause of the differences in
-reverb times. In the present implementation, the mismatch is an obvious
-artefact in the output, which affects the impulse response's suitability for
-musical applications.
+If multiple simulations were run with randomised source and receiver locations,
+the low-frequency diffuse-field reverb time could be approximated by averaging
+the results.  It may be that the low reverb time in the test above is entirely
+due to the particular placement of the source and receiver, and that the
+*average-case* waveguide output would match the Sabine estimate more closely.
+Testing this would help to narrow-down the cause of the discontinuity between
+the low- and high-frequency components of the output.  If the waveguide *does*
+match the predicted reverb times in the average case, then this would mean that
+further research should focus on reducing the impact of the mismatch between
+the outputs of different models, rather than on improving the waveguide model
+itself. However, there was not time to run such a test in the course of this
+project.
+
+Further testing is also required to locate the exact cause of the low-amplitude
+resonance in the waveguide.  Although low-frequency resonant behaviour is to be
+expected in the tests presented here, it is surprising that all room-sizes
+tested displayed some localised resonance at around 400Hz (see
++@room_size_spectrograms). The fact that the resonant frequency is the same
+across all rooms suggests that this is not caused by constructive interference
+of room modes, but rather some implementation deficiency in the waveguide.
+Perhaps the first component to check would be the waveguide boundaries: the
+results in +@fig:reflectance showed that the boundary implementation can
+introduce unpredictable artefacts at the top end of the valid bandwidth.
+Therefore, it may be that the artefacts present in these results can be removed
+simply by increasing the waveguide sampling rate relative to the crossover
+frequency.
 
 <div id="audio_table">
 
@@ -282,19 +319,24 @@ outputs are shown in +@fig:room_material_spectrograms.
 Table: Comparison of Sabine reverb time against measured reverb time for an
 enclosure with varying boundary absorptions. {#tbl:room_absorption}
 
---------------------------------------------------------------------------------
-absorption          Sabine RT / s   measured T20 / s    measured T30 / s
-------------------- --------------- ------------------- ------------------------
-0.02                4.433           4.295               4.283
+----------------------------------------------------------------------------------
+absorption          Sabine RT / s   measured T20 / s      measured T30 / s
+------------------- --------------- --------------------- ------------------------
+0.02                4.433           4.295 (3.113% error)  4.283 (3.384% error)
 
-0.04                2.217           2.210               2.219
+0.04                2.217           2.210 (0.3157% error) 2.219 (0.09021% error)
 
-0.08                1.108           1.126               1.156
---------------------------------------------------------------------------------
+0.08                1.108           1.126 (1.625% error)  1.156 (4.322% error)
+----------------------------------------------------------------------------------
 
 The issue with shorter low-frequency decay times persists in this test.
 However, the broadband reverb time responds correctly to the change in
-absorption coefficients.
+absorption coefficients. All results are within the 5% JND for reverb time.
+
+The spectrograms in +@fig:room_material_spectrograms do not show the same
+resonance at 400Hz as the previous test results. This evidence supports the
+theory that the resonance was introduced as an artefact of the boundary
+model, although clearly further tests are required in order to be certain.
 
 ![Spectrograms of impulse responses obtained from simulating the same room with
 different absorption coefficients. Note that the low-frequency content has a
