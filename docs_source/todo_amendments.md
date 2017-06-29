@@ -154,7 +154,7 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] General point - A better approach to testing a study of this nature is presented in reference [26].  Your comment on the ‘issue with shorter low-frequency decay times’ needs more detail – we have no data to go on in relation to what these decay times are. Give the data (octave bands) and discuss, or more speculative comments should be removed.
 
--[ ] p89: ‘Therefore it is obvious’ – I’m not sure the results presented here mean that the conclusions you draw are in fact obvious. Energy metrics such as C50/C80 or event EDT could have been used instead.
+-[x] p89: ‘Therefore it is obvious’ – I’m not sure the results presented here mean that the conclusions you draw are in fact obvious. Energy metrics such as C50/C80 or event EDT could have been used instead.
 
 -[ ] p92: Please make clear where diffraction is indicated in Fig. 8.7 ‘The low frequencies have a fast onset… extended decay’ I am not sure what you mean by this, or that the conclusions you draw follow on as a consequence. It is more likely that there are limitations with your implementation that have not as yet been explored and tested fully.
 
@@ -215,3 +215,5 @@ an MA thesis.
 
 -[ ] Revisit the point about p84 - redo tests if there's time, try isolating
 parts of the output to localise the 400Hz resonance.
+
+-[ ] Remember to discuss EDT in the literature section
