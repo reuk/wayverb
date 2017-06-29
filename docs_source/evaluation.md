@@ -479,14 +479,19 @@ the waveguide is detected before the first image-source
 contribution.](images/vault_response){#fig:vault_response}
 
 The impulse response graph (+@fig:vault_response) shows that low frequency
-diffraction is in fact recorded. Though this behaviour is physically correct,
-it highlights the main shortcoming of the hybrid algorithm.  The correct
-behaviour of the waveguide conflicts with the approximate nature of the
-geometric algorithms, causing an obvious divide or disconnect between the low
-and high frequency regions in the output. The low frequencies have a fast onset
-and immediate decay, whereas the higher frequencies have a delayed onset with
-extended decay. This result is physically implausible, and makes the impulse
-response unsuitable for realistic, high-quality reverb effects.
+diffraction is in fact recorded.  The waveform shows a low-frequency ripple
+caused by diffraction in the waveguide, starting at around 0.02 seconds, which
+occurs before the first impulsive contribution from the geometric models. This
+is mirrored in the spectrogram, which shows that the low-frequency waveguide
+contribution (up to 500Hz) has more energy than the geometric contribution at
+the very beginning of the impulse response.  Though the behaviour of the
+waveguide is physically correct, it highlights the main shortcoming of the
+hybrid algorithm.  For simulations such as this, which rely on the effects of
+wave phenomena, the physical modelling of the waveguide conflicts with the
+approximate nature of the geometric algorithms, causing an obvious divide or
+disconnect between the low and high frequency regions in the output. The
+impulse response shown here is physically implausible, making it unsuitable for
+realistic, high-quality reverb effects.
 
 <div id="audio_table">
 
