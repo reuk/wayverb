@@ -158,9 +158,9 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p92: Please make clear where diffraction is indicated in Fig. 8.7 ‘The low frequencies have a fast onset… extended decay’ I am not sure what you mean by this, or that the conclusions you draw follow on as a consequence. It is more likely that there are limitations with your implementation that have not as yet been explored and tested fully.
 
--[ ] p94, Fig 8.9 – I would suggest adding the plot for the cardioid microphone pointing to the source here in another colour. Would make the case very clearly.
+-[x] p94, Fig 8.9 – I would suggest adding the plot for the cardioid microphone pointing to the source here in another colour. Would make the case very clearly.
 
--[ ] p95: ‘A concert hall is simulated…’ – where and what are the details of this model? Please give the details of this test. I would improve Fig 8.10, to make the differences clearer, used a scale that enables ITD values to be highlighted.
+-[x] p95: ‘A concert hall is simulated…’ – where and what are the details of this model? Please give the details of this test. I would improve Fig 8.10, to make the differences clearer, used a scale that enables ITD values to be highlighted.
 
 -[ ] Analysis – move this and what follows to a proper Conclusion Chapter as discussed above.
 

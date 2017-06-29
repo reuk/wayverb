@@ -36,7 +36,7 @@ def main():
 
     plt.legend(loc='lower center', ncol=2)
 
-    plt.xlim([0.04, 0.1])
+    plt.xlim([0.04, 0.07])
 
     plt.xlabel('time / s')
     plt.ylabel('amplitude')

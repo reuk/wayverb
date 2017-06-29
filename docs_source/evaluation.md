@@ -602,11 +602,16 @@ cardioid mic facing away        <audio controls><source src="demos/out_cardioid_
 
 ### Binaural Modelling
 
-Finally, the binaural model is tested. A concert hall is simulated, with a
-source placed in the centre of the stage area. A receiver is placed 10m away
-along both the x- and z-axes. The receiver is oriented so that it is facing
+Finally, the binaural model is tested. A concert hall measuring approximately
+$33 \times 15 \times 50$ metres is simulated (shown in +@fig:concert_hall),
+with wall absorptions increasing from 0.25 in the lowest band to 0.67 in the
+highest band, and scattering at 0.1 in all bands.  The source is placed in the
+centre of the stage area, and receiver is placed 10m along both the x- and
+z-axes relative to the source. The receiver is oriented so that it is facing
 directly down the z axis, meaning that the source is 14.1m away, on the left of
 the receiver.
+
+![The concert hall model.](images/concert_hall){#fig:concert_hall)
 
 The simulation produces output impulse responses for both the left and right
 ears. All of Wayverb's simulation methods (image-source, ray-tracing and
@@ -623,18 +628,19 @@ contribution should be at 0.0414s in the left channel, and 0.0418s in the
 right. The right ear is obstructed by the listener's head, and should therefore
 have a reduced level relative to the left ear.
 
+The expected behaviour is observed in the outputs, which are shown in
++@fig:binaural_signals. The earliest contribution in the left channel occurs at
+0.0414s, and has a greater level than the right channel's contribution at
+0.148s. The left-channel early reflections have an overall higher level than
+the early reflections in the right channel.  However, as the impulse response
+progresses and becomes more diffuse, the energy levels equalise between
+channels.
+
 ![Comparison of left- and right-ear responses, when the source is placed to the
 left of the receiver. Note the amplitude and time differences between the early
 reflections. The first contribution, in particular, is quieter in the right ear
 because it is occluded by the listener's virtual
-head.](images/binaural_signals)
-
-The expected behaviour is observed in the outputs. The earliest contribution in
-the left channel occurs at 0.0414s, and has a greater level than the right
-channel's contribution at 0.148s. The left-channel early reflections have an
-overall higher level than the early reflections in the right channel.  However,
-as the impulse response progresses and becomes more diffuse, the energy levels
-equalise between channels.
+head.](images/binaural_signals){#fig:binaural_signals}
 
 <div id="audio_table">
 
