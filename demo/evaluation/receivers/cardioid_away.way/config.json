@@ -60,7 +60,72 @@
                             }
                         ]
                     },
-                    "value1": "new receiver",
+                    "value1": "away",
+                    "value2": [
+                        6.0,
+                        2.0,
+                        -4.0
+                    ],
+                    "value3": {
+                        "pointing": [
+                            0.0,
+                            0.0,
+                            -1.0
+                        ],
+                        "up": [
+                            0.0,
+                            1.0,
+                            0.0
+                        ]
+                    }
+                },
+                {
+                    "value0": {
+                        "value0": [
+                            {
+                                "value0": {
+                                    "value0": {
+                                        "value0": {
+                                            "orientation": {
+                                                "pointing": [
+                                                    0.0,
+                                                    0.0,
+                                                    -1.0
+                                                ],
+                                                "up": [
+                                                    0.0,
+                                                    1.0,
+                                                    0.0
+                                                ]
+                                            },
+                                            "shape": 0.5
+                                        }
+                                    },
+                                    "value1": {
+                                        "value0": {
+                                            "orientation": {
+                                                "pointing": [
+                                                    0.0,
+                                                    0.0,
+                                                    -1.0
+                                                ],
+                                                "up": [
+                                                    0.0,
+                                                    1.0,
+                                                    0.0
+                                                ]
+                                            },
+                                            "channel": 0,
+                                            "radius": 0.10000000149011612
+                                        }
+                                    }
+                                },
+                                "value1": "new capsule",
+                                "value2": 1
+                            }
+                        ]
+                    },
+                    "value1": "toward",
                     "value2": [
                         6.0,
                         2.0,

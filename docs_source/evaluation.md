@@ -585,10 +585,10 @@ contributions seen at 0.0324s and 0.0382s. These results are consistent across
 the spectrum, indicating that the microphone model is matched between both
 simulation methods.
 
-![The response measured at a cardioid microphone pointing away from the source.
-The times marked, from left to right, are the direct contribution time, the
-first reflection time, and the first and second *forward-incident* reflection
-times.](images/cardioid){#fig:cardioid}
+![The response measured at cardioid microphones pointing toward and away from
+the source.  The times marked with dotted lines, from left to right, are the
+direct contribution time, the first reflection time, and the first and second
+*forward-incident* reflection times.](images/cardioid){#fig:cardioid}
 
 <div id="audio_table">
 

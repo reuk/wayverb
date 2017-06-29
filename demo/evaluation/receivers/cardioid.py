@@ -17,45 +17,45 @@ import json
 
 
 def main():
-
-    fig, axes = plt.subplots(nrows=1, sharex=True)
+    fig, (ax0, ax1) = plt.subplots(nrows=2, sharex=True, sharey=True)
 
     cmap = plt.get_cmap('viridis')
 
-    sndfile = pysndfile.PySndfile('cardioid_away.wav', 'r')
-    if sndfile.channels() != 1:
-        raise RuntimeError('please only load mono files')
-    Fs = sndfile.samplerate()
-    signal = sndfile.read_frames()
+    def plt_file(ax, file_name, name):
+        sndfile = pysndfile.PySndfile(file_name, 'r')
+        if sndfile.channels() != 1:
+            raise RuntimeError('please only load mono files')
+        Fs = sndfile.samplerate()
+        signal = sndfile.read_frames()
 
-    time = np.arange(len(signal)) / float(Fs)
-    axes.plot(time, signal)
+        time = np.arange(len(signal)) / float(Fs)
+        ax.plot(time, signal)
+        ax.text(0.001, 0.75, name)
 
-    axes.set_xlim([0, 0.05])
+    ax1.set_xlabel('time / s')
+    ax1.set_xlim([0, 0.05])
+    fig.subplots_adjust(hspace=0)
+    plt.setp([a.get_xticklabels() for a in fig.axes[:-1]], visible=False)
 
-    axes.set_xlabel('time / s')
-    axes.set_ylabel('amplitude')
+    times = [
+        3.0 / 340.0,
+        5.0 / 340.0,
+        11.0 / 340.0,
+        13.0 / 340.0]
 
-    time = 3.0 / 340.0
-    axes.axvline(time, linestyle='dotted', color='red')
-    axes.text(time + 0.0005, -0.2, str.format('{0:.3g} s', time))
+    for ax in fig.axes:
+        ax.set_ylabel('amplitude')
 
-    time = 5.0 / 340.0
-    axes.axvline(time, linestyle='dotted', color='red')
-    axes.text(time + 0.0005, -0.3, str.format('{0:.3g} s', time))
+        for t in times:
+            ax.axvline(t, linestyle='dotted', color='red')
 
-    time = 11.0 / 340.0
-    axes.axvline(time, linestyle='dotted', color='red')
-    axes.text(time + 0.0005, -0.2, str.format('{0:.3g} s', time))
+    plt_file(ax0, 'away.wav', 'away')
+    plt_file(ax1, 'toward.wav', 'toward')
 
-    time = 13.0 / 340.0
-    axes.axvline(time, linestyle='dotted', color='red')
-    axes.text(time + 0.0005, -0.3, str.format('{0:.3g} s', time))
+    plt.suptitle('Early Response for Cardoid Receivers Pointing Toward and Away from Source')
 
-    plt.suptitle('Early Response for Cardoid Receiver Pointing Away From Source')
-
-    plt.tight_layout()
-    plt.subplots_adjust(top=0.9)
+    #plt.tight_layout()
+    #plt.subplots_adjust(top=0.9)
 
     plt.show()
     if render:
@@ -66,7 +66,6 @@ if __name__ == '__main__':
         'font.family': 'serif',
         'font.serif': [],
         'font.sans-serif': ['Helvetica Neue'],
-        'font.monospace': ['Input Mono Condensed'],
         'legend.fontsize': 12,
     }
 

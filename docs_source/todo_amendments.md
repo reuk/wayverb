@@ -156,7 +156,7 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p89: ‘Therefore it is obvious’ – I’m not sure the results presented here mean that the conclusions you draw are in fact obvious. Energy metrics such as C50/C80 or event EDT could have been used instead.
 
--[ ] p92: Please make clear where diffraction is indicated in Fig. 8.7 ‘The low frequencies have a fast onset… extended decay’ I am not sure what you mean by this, or that the conclusions you draw follow on as a consequence. It is more likely that there are limitations with your implementation that have not as yet been explored and tested fully.
+-[x] p92: Please make clear where diffraction is indicated in Fig. 8.7 ‘The low frequencies have a fast onset… extended decay’ I am not sure what you mean by this, or that the conclusions you draw follow on as a consequence. It is more likely that there are limitations with your implementation that have not as yet been explored and tested fully.
 
 -[ ] p94, Fig 8.9 – I would suggest adding the plot for the cardioid microphone pointing to the source here in another colour. Would make the case very clearly.
 
