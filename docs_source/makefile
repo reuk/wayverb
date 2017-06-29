@@ -4,6 +4,9 @@ all: wayverb.pdf
 wayverb.pdf: $(SOURCES) imgs haskell/audioTable
 	pandoc $(PANDOC_OPTIONS) -o $@ $(SOURCES)
 
+wayverb.tex: $(SOURCES) imgs haskell/audioTable
+	pandoc $(PANDOC_OPTIONS) -o $@ $(SOURCES) --standalone
+
 .PHONY: imgs
 imgs:
 	make -C images
