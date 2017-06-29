@@ -7,6 +7,17 @@ wayverb.pdf: $(SOURCES) imgs haskell/audioTable
 wayverb.tex: $(SOURCES) imgs haskell/audioTable
 	pandoc $(PANDOC_OPTIONS) -o $@ $(SOURCES) --standalone
 
+diff.tex: wayverb.tex wayverb.old.tex
+	latexdiff \
+		--config "PICTUREENV=(?:picture|equation|DIFnomarkup|enumerate)[\w\d*@]*" \
+		wayverb.old.tex wayverb.tex > diff.tex \
+		#
+
+diff.pdf: diff.tex
+	./fix_latexdiff_output.py -i diff.tex
+	lualatex diff.tex
+	lualatex diff.tex
+
 .PHONY: imgs
 imgs:
 	make -C images

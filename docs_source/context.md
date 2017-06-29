@@ -190,31 +190,19 @@ selection which, whilst not exhaustive, is representative.
 
 Table: Some of the most prominent tools for acoustic simulation. {#tbl:software}
 
----------------------------------------------------------------------------------------
-Name                                    Type                          Availability
--------------------------------------- ----------------------------- ------------------
-Odeon [@_odeon_2016]                    Geometric                     Commercial
-
-CATT-Acoustic [@_catt-acoustic_2016]    Geometric                     Commercial
-
-Olive Tree Lab [@_otl_2016]             Geometric                     Commercial
-
-EASE [@_ease_2016]                      Geometric                     Commercial
-
-Auratorium [@_audioborn_2016]           Geometric                     Commercial
-
-RAVEN [@schroder_raven:_2011]           Geometric                     None
-
-RoomWeaver [@beeson_roomweaver:_2004]   Waveguide                     None
-
-EAR [@_ear_2016]                        Geometric                     Free
-
-PachydermAcoustic [@_pachyderm_2016]    Geometric                     Free
-
-Parallel FDTD [@_parallelfdtd_2016]     Waveguide                     Free
-
-i-Simpa [@_i-simpa_2016]                Geometric, extensible         Free
----------------------------------------------------------------------------------------
+Name                                  |Type                  |Availability
+--------------------------------------|----------------------|--------------
+Odeon [@_odeon_2016]                  |Geometric             |Commercial
+CATT-Acoustic [@_catt-acoustic_2016]  |Geometric             |Commercial
+Olive Tree Lab [@_otl_2016]           |Geometric             |Commercial
+EASE [@_ease_2016]                    |Geometric             |Commercial
+Auratorium [@_audioborn_2016]         |Geometric             |Commercial
+RAVEN [@schroder_raven:_2011]         |Geometric             |None
+RoomWeaver [@beeson_roomweaver:_2004] |Waveguide             |None
+EAR [@_ear_2016]                      |Geometric             |Free
+PachydermAcoustic [@_pachyderm_2016]  |Geometric             |Free
+Parallel FDTD [@_parallelfdtd_2016]   |Waveguide             |Free
+i-Simpa [@_i-simpa_2016]              |Geometric, extensible |Free
 
 All commercial acoustics programs found use geometric techniques, probably
 because they are fast to run, and can often be implemented to run
