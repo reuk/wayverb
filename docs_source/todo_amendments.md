@@ -168,9 +168,9 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[ ] p98: The candidate starts off in the early chapters by making a case for an efficient model, and that the time is right for this – but by this point in the report, goes back to established arguments that two more years computing advancements will help to solve the computational limits of the current implementation!
 
--[ ] ‘than may be expected’ – but what is expected of the user interface and how has this been tested?
+-[x] ‘than may be expected’ – but what is expected of the user interface and how has this been tested?
 
--[ ] p101: ‘the finished project is sufficiently accessible’ – as determined by whom?
+-[x] p101: ‘the finished project is sufficiently accessible’ – as determined by whom?
 
 -[x] p102: Valimaki = Välimäki 
 

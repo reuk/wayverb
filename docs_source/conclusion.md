@@ -152,12 +152,16 @@ rather than optimisation.
 
 #### User Interface
 
-The user interface is less fully-featured than may be expected of a
-professional simulation program.  The reason for this is simple: the entire
-application was developed by a single developer, over sixteen months. To ensure
-that the application would reach a usable state, its scope had to be limited.
-In its first release, the application is only capable of loading, saving,
-configuring, and running simulations.
+The user interface is less fully-featured than the interfaces of similar
+simulation programs (as listed in the [Context]({{ site.baseurl }}{% link
+context.md %}) section, +@tbl:software).  The reason for this is simple: the
+entire application was developed by a single developer, over sixteen months,
+whereas all the software in +@tbl:software was either developed by several
+collaborators, or was constructed over several years. To ensure that the
+Wayverb would reach a usable state, its scope had to be limited.  In its first
+release, the application is only capable of loading, saving, configuring, and
+running simulations. Examples of features generally found in acoustic
+simulation apps but missing in Wayverb follow.
 
 Originally, the app was designed to include built-in convolution support, so
 that generated impulse responses could be previewed without leaving the
@@ -231,32 +235,34 @@ simulating the acoustics of arbitrary enclosed spaces. For the program to be
 useful to its target audience of musicians and sound designers, it must be
 simultaneously accurate, efficient, and accessible.
 
-The aims of accuracy and efficiency would be met by combining wave-modelling
-and geometric simulation methods, benefiting from both the physical realism of
-wave-modelling, and the computational performance of geometric simulation.
-This technique is not used by any other publicly available simulation package,
-so it was thought that a program implementing both models would be both faster
-and more accurate than competing programs. To further improve performance, the
-simulation would be implemented to run in parallel on graphics hardware. The
-program would be free and open-source, with a graphical interface, to ensure
-accessibility and encourage adoption.
+The aims of plausibility and efficiency would be met by combining
+wave-modelling and geometric simulation methods, benefiting from both the
+physical realism of wave-modelling, and the computational performance of
+geometric simulation.  This technique is not used by any other publicly
+available simulation package, so it was thought that a program implementing
+both models would be both faster, and produce higher-quality results than
+competing programs. To further improve performance, the simulation would be
+implemented to run in parallel on graphics hardware. The program would be free
+and open-source, with a graphical interface, to ensure accessibility and
+encourage adoption.
 
 Testing shows that the individual modelling methods are individually reasonably
-accurate. The ray-tracing and image-source methods respond appropriately to
+plausible. The ray-tracing and image-source methods respond appropriately to
 changes in room size, material, source/receiver spacing and receiver type.
 This is also true of the waveguide, which additionally is capable of modelling
 low-frequency modal responses, taking wave-effects such as diffraction into
-account. However, the accuracy of the waveguide is a drawback in some respects.
-When waveguide outputs are combined with geometric outputs, the relative
-inaccuracies of the geometric results are often highlighted by obvious
-discontinuities in the blended spectrum.  Although use of the waveguide
-increases accuracy at low frequencies, generated outputs may be less useful
-than if generated entirely with geometric techniques, simply because of these
-discontinuities. This indicates that the goals of the project were misguided:
-an additional, primary goal of "usefulness" or "fitness" should have been
-considered. Future work may seek to improve the match between the outputs of
-the different models, perhaps sacrificing some low-frequency accuracy in the
-interests of sound quality.
+account. However, when waveguide outputs are combined with geometric outputs,
+the blended spectrum shows obvious discontinuities.  Although individual
+aspects of the waveguide model (such as the boundary and receiver
+implementations) perform as expected, the waveguide model as a whole does not.
+The audible artefacts produced by combining the models mean that generated
+results are not fit for the purposes of high-quality music production or sound
+design. This indicates that the goals of the project were misguided: an
+additional, primary goal of "usefulness" or "fitness" should have been
+considered. Future work may seek to locate errors in the implementation of the
+waveguide, and to improve the match between the outputs of the different
+models, perhaps sacrificing some low-frequency accuracy in the interests of
+sound quality.
 
 In terms of efficiency, simulations generally complete within minutes, rather
 than hours or days, meeting the project's efficiency target. It is also
@@ -278,7 +284,7 @@ interface is focused and functional. It is possible to install and use without
 specialist training.  Additionally, all code is open-source, allowing
 collaboration and contribution from interested third-parties. While the
 accuracy and efficiency goals were not conclusively met, it is clear that the
-finished project is sufficiently accessible.
+finished project meets the accessibility goal specified in the project aims.
 
 Most importantly, the Wayverb project demonstrates that the hybrid modelling
 approach is viable in consumer software.
