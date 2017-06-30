@@ -162,9 +162,9 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p95: ‘A concert hall is simulated…’ – where and what are the details of this model? Please give the details of this test. I would improve Fig 8.10, to make the differences clearer, used a scale that enables ITD values to be highlighted.
 
--[ ] Analysis – move this and what follows to a proper Conclusion Chapter as discussed above.
+-[x] Analysis – move this and what follows to a proper Conclusion Chapter as discussed above.
 
--[ ] ‘precise stereo effects’ – strictly, you have not demonstrated this. Listening tests would be needed.  Points about no diffraction in the ray tracer are fair, but the mis-match between modelling approaches and reverb times is probably down to errors or assumptions that could be fixed or improved?
+-[x] ‘precise stereo effects’ – strictly, you have not demonstrated this. Listening tests would be needed.  Points about no diffraction in the ray tracer are fair, but the mis-match between modelling approaches and reverb times is probably down to errors or assumptions that could be fixed or improved?
 
 -[ ] p98: The candidate starts off in the early chapters by making a case for an efficient model, and that the time is right for this – but by this point in the report, goes back to established arguments that two more years computing advancements will help to solve the computational limits of the current implementation!
 
