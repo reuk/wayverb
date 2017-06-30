@@ -133,8 +133,8 @@ the simulation:
 $$\lambda=\frac{cT}{X} \leq \frac{1}{\sqrt{N}}$$ {#eq:}
 
 The highest sampling rate and lowest error is achieved by setting the Courant
-to its maximum value [@sheaffer_fdtd/k-dwm_2010].  This is normally desirable,
-and so the inequality above can be simplified:
+number to its maximum value [@sheaffer_fdtd/k-dwm_2010].  This is normally
+desirable, and so the inequality above can be simplified:
 
 $$T=\frac{X}{c\sqrt{N}}$$ {#eq:}
 

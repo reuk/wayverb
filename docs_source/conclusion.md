@@ -38,8 +38,8 @@ outputs (evident in +@fig:room_size_rt30) suggests that there are errors or
 false assumptions in the implementation.  Even though the different components
 of the waveguide (such as the boundary model, the source injection method, and
 the microphone model) appear to work in isolation, the interactions between
-these components are complex. Further testing is required of the waveguide as a
-whole in order to find the cause of its lower-than-expected reverb times.
+these components are complex. Further testing of the waveguide as a whole is
+required in order to find the cause of its lower-than-expected reverb times.
 
 Even if further testing were to reveal that the implementation is correct, the
 current simulation results are useless if there is an obvious disconnect
@@ -157,11 +157,11 @@ simulation programs (as listed in the [Context]({{ site.baseurl }}{% link
 context.md %}) section, +@tbl:software).  The reason for this is simple: the
 entire application was developed by a single developer, over sixteen months,
 whereas all the software in +@tbl:software was either developed by several
-collaborators, or was constructed over several years. To ensure that the
-Wayverb would reach a usable state, its scope had to be limited.  In its first
-release, the application is only capable of loading, saving, configuring, and
-running simulations. Examples of features generally found in acoustic
-simulation apps but missing in Wayverb follow.
+collaborators, or was constructed over several years. To ensure that Wayverb
+would reach a usable state, its scope had to be limited.  In its first release,
+the application is only capable of loading, saving, configuring, and running
+simulations. Examples of features generally found in acoustic simulation apps
+but missing in Wayverb follow.
 
 Originally, the app was designed to include built-in convolution support, so
 that generated impulse responses could be previewed without leaving the
@@ -240,7 +240,7 @@ wave-modelling and geometric simulation methods, benefiting from both the
 physical realism of wave-modelling, and the computational performance of
 geometric simulation.  This technique is not used by any other publicly
 available simulation package, so it was thought that a program implementing
-both models would be both faster, and produce higher-quality results than
+both models would be both faster, and produce higher-quality results, than
 competing programs. To further improve performance, the simulation would be
 implemented to run in parallel on graphics hardware. The program would be free
 and open-source, with a graphical interface, to ensure accessibility and

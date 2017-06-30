@@ -6,6 +6,7 @@ render = True
 if render:
     matplotlib.use('pgf')
 import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator # added 
 import matplotlib.mlab as mlab
 from string import split
 import scipy.signal as signal
@@ -40,8 +41,7 @@ def main():
     times = [
         3.0 / 340.0,
         5.0 / 340.0,
-        11.0 / 340.0,
-        13.0 / 340.0]
+        11.0 / 340.0]
 
     for ax in fig.axes:
         ax.set_ylabel('amplitude')
@@ -51,6 +51,8 @@ def main():
 
     plt_file(ax0, 'away.wav', 'away')
     plt_file(ax1, 'toward.wav', 'toward')
+
+    ax1.yaxis.set_major_locator(MaxNLocator(prune='upper')) # added 
 
     plt.suptitle('Early Response for Cardoid Receivers Pointing Toward and Away from Source')
 

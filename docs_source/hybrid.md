@@ -84,7 +84,7 @@ simulation with stochastic ray-tracing methods [@kuttruff_room_2009, p. 126].
 In the interests of efficiency, the most accurate waveguide method is only used
 at low frequencies, where it is relatively cheap. The rest of the audible
 spectrum is modelled with geometric methods, which are most accurate at higher
-frequencies.  However, there is no concrete rule about where to place the
+frequencies.  However, there is no concrete rule governing where to place the
 crossover between "low" and "high" frequencies in this context.  It should be
 clear that, when the time and computing power is available, the cutoff should
 be placed as high as possible, so as to use accurate wave-based modelling for
@@ -100,19 +100,15 @@ follows (see [@kuttruff_room_2009, p. 84] for a detailed derivation):
 $$2000\sqrt{\frac{RT60}{V}}$$ {#eq:schroeder}
 
 Here, $RT60$ is the time taken for the reverb tail to decay by 60dB, and $V$ is
-the room volume in cubic metres.  Note that the Schroeder frequency is
-inversely proportional to the square root of the room volume.  This implies
-that in larger rooms, the shift from modal to non-modal behaviour is lower, and
-therefore wave-based methods will be required to compute a smaller portion of
-the spectrum.  In the [Waveguide]({{ site.baseurl }}{% link waveguide.md %})
-section the complexity of a waveguide simulation was given as $O(V f_s^3)$ for
-a space with volume $V$, at sampling frequency $f_s$.  Given that $f_s$ is
-proportional to the waveguide cutoff frequency, which in turn may be set
-proportional to $V^{-\frac{1}{2}}$ by +@eq:schroeder, the waveguide simulation
-complexity becomes $O(V \cdot V^{-\frac{3}{2}})$ or $O(V^{-\frac{1}{2}})$. This
-implies that, for a waveguide simulation capped at the Schroeder frequency, a
-larger room will be cheaper to simulate than a smaller one when the reverb
-times of both rooms are equal.
+the room volume in cubic metres.  In the [Waveguide]({{ site.baseurl }}{% link
+waveguide.md %}) section the complexity of a waveguide simulation was given as
+$O(V f_s^3)$ for a space with volume $V$, at sampling frequency $f_s$.  Given
+that $f_s$ is proportional to the waveguide cutoff frequency, which in turn may
+be set proportional to $V^{-\frac{1}{2}}$ by +@eq:schroeder, the waveguide
+simulation complexity becomes $O(V \cdot V^{-\frac{3}{2}})$ or
+$O(V^{-\frac{1}{2}})$. This implies that, for a waveguide simulation capped at
+the Schroeder frequency, a larger room will be cheaper to simulate than a
+smaller one when the reverb times of both rooms are equal.
 
 The Schroeder frequency is only an estimate. The actual frequency dividing
 "resonant" and "even" behaviours will vary depending on the surface area,
@@ -122,13 +118,13 @@ the user. For this reason, the Schroeder frequency is not used to guide the
 placement of the crossover frequency in Wayverb. Instead, the user may select
 the maximum frequency modelled by the waveguide, along with an oversampling
 ratio.  In this way, the user can use the waveguide to model as wide a
-bandwidth as their time constraints allow.  The literature suggests that this
+bandwidth as their time constraints allow.  The literature indicates that this
 is a valid approach: [@southern_room_2013] suggests that "under ideal
 conditions the FDTD method would compute the entire RIR in all bands to ensure
 physical accuracy", and [@southern_spatial_2011] notes that further research is
-required in order to find a more objective method for placing the crossover.
+required in order to find an objective method for placing the crossover.
 Finally, the systems described in [@southern_hybrid_2013] and
-[@murphy_hybrid_2008] allow the crossover frequency to be placed arbitrarily.
+[@murphy_hybrid_2008] allow arbitrary placement of the crossover frequency.
 
 ### Combining Outputs
 

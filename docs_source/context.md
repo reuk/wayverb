@@ -253,16 +253,16 @@ compute clusters or server farms.
 The ideal simulation program would be capable of replicating, with perfect
 accuracy, any acoustic scenario.  However, for the purposes of sound-design,
 this level of accuracy is not necessary. When creating a reverb, a sound
-designer's focus is on experimenting and developing the desired atmosphere,
-rather than on perfectly reconstructing a physical location.  Therefore,
-simulation results should be believable first; for example, large, reflective
-rooms should have long reverb times, while small, damped rooms should have
-shorter reverb times.  Another aspect of plausibility is overall quality: if a
-generated impulse response contains obvious artefacts, it is by definition
-physically implausible, and of limited use to a sound designer.  Finally, it is
-of utmost importance that parameters of the simulation behave intuitively, so
-that the designer can "dial-in" the correct settings. That is, the results of
-parameter changes must be plausible.
+designer's focus is generally on experimenting and developing the desired
+atmosphere, rather than on perfectly reconstructing a physical location.
+Therefore, simulation results should be believable first; for example, large,
+reflective rooms should have long reverb times, while small, damped rooms
+should have shorter reverb times.  Another aspect of plausibility is overall
+quality: if a generated impulse response contains obvious artefacts, it is by
+definition physically implausible, and of limited use to a sound designer.
+Finally, it is of utmost importance that parameters of the simulation behave
+intuitively, so that the designer can "dial-in" the correct settings. That is,
+the results of parameter changes must be plausible.
 
 Plausibility and efficiency are competing goals, which must be balanced.
 Extreme performance, allowing real-time usage,  has already been implemented in
@@ -276,7 +276,8 @@ of writing, and there is a clear need for a solution which is both reasonably
 fast and produces believable results.  Ideally, this software would allow the
 user control over the trade-off between accuracy and efficiency, enabling a
 workflow in which fast, lower-quality simulations are used when auditioning,
-after which a single slow, high-quality render is produced.
+and a slower, higher-quality render is produced once the user is happy with
+all the simulation settings.
 
 Accessibility is extremely important, and the final product must be accessible
 to two main groups.  Firstly, it must be useful to the target users. It must be
@@ -450,12 +451,6 @@ target Nvidia hardware.  OpenCL was chosen as it would allow the final program
 to be run on a wider variety of systems, with fewer limitations on their
 graphics hardware.
 
-Wayverb uses the Assimp library [@_assimp_2017] to import 3D CAD models in a
-variety of formats. The number of formats supported by Assimp means that users will
-generally be able to construct geometry in the editor of their choice, and then
-export that geometry to Wayverb.  This has the benefit that time was
-not spent developing a custom geometry editor.
-
 The only deployment target was Mac OS.  This was mainly to ease development, as
 maintaining software across multiple platforms is often time-consuming.  Mac OS
 also tends to have support for newer C++ language features than Windows, which
@@ -478,7 +473,10 @@ for use in 3D graphics software, but useful for any program that will deal with
 
 Assimp 
 :   Used for loading and saving 3D model files in a wide array of formats, with
-a consistent interface for querying loaded files. 
+a consistent interface for querying loaded files. Using a 3D mesh importer
+means that users can load and simulate models created in practically any mesh
+editor, providing the mesh is manifold and represents a single watertight
+enclosure.
 
 FFTW3 
 :   Provides Fast Fourier Transform routines.  Used mainly for filtering and

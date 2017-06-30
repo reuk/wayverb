@@ -111,13 +111,13 @@ therefore exponential, with average-case complexity of $O(N^o)$ where $N$
 denotes the number of boundaries, and $o$ is the image-source order.  As a
 result, it is practically impossible to validate all possible image-source
 positions when the room geometry is complex or the image-source order is high.
-As an example, imagine that it might take a minute to simulate a scene with 100
-surfaces to an image-source depth of two. If the image source depth is
-increased to facilitate a longer reverb tail, third-order image sources will
-take 100 minutes to compute, and fourth-order sources will take 100 times as
-long again, which is almost a week. Fifth-order sources would take two years.
-Clearly it is not possible to achieve Wayverb's efficiency goals of "minutes,
-rather than hours" using this naive image source technique.
+As an example, imagine that a particular (fictional) simulator might take a
+second to simulate a scene with 100 surfaces to an image-source depth of 2.  If
+the image source depth is increased to facilitate a longer reverb tail,
+third-order image sources will take 100 seconds to compute, and fourth-order
+sources will take 3 hours. Fifth-order sources will take 12 days.  Clearly, it
+is not possible to achieve Wayverb's efficiency goal of "minutes, rather than
+hours" using this naive image source technique.
 
 The majority of higher-order image sources found with the naive algorithm will
 be invalid.  That is, they will fail the audibility test.  For example, for

@@ -401,16 +401,15 @@ When testing on-axis reflections (where azimuth and elevation are both 0), the
 position of the receiver will exactly coincide with the position of the source.
 If a hard source is used, the recorded pressures at the receiver ($r_f$ and
 $r_d$) will always exactly match the input signal, and will be unaffected by
-reflections from the boundary under test. It is imperative that the receiver
-records the reflected response, which means that the hard source is not viable
-for this test.
-Instead, a transparent dirac source is used, which allows the receiver node to
-respond to the reflected pressure wave, even if its position coincides with the
-source position.  The main drawback of the transparent source, solution growth,
-is not a concern here as the simulations are only run for 420 steps. The tests
-in the [Digital Waveguide Mesh]({{ site.baseurl }}{% link waveguide.md %})
-section showed that solution growth generally only becomes evident after
-several thousand steps.
+reflections from the boundary under test. It is imperative that the signal at
+the receiver contains the reflected response, so a hard source is not viable
+for this test. Instead, a transparent dirac source is used, which allows the
+receiver node to respond to the reflected pressure wave, even when the source
+and receiver positions match.  The main drawback of the transparent source,
+solution growth, is not a concern here as the simulations are only run for
+420 steps. The tests in the [Digital Waveguide Mesh]({{ site.baseurl }}{%
+link waveguide.md %}) section showed that solution growth generally only
+becomes evident after several thousand steps.
 
 ![The setup of the two room-sizes, and the positions of sources and receivers
 inside.](images/boundary_testing_setup){#fig:boundary_test_setup}
@@ -505,18 +504,19 @@ the results of impulse response synthesis in the Wayverb app, the mesh cutoff
 frequency is locked to a maximum of 0.15 of the mesh sampling rate.
 
 Some of the results (especially concrete and wood at 60 degrees) show minor
-artefacts at the lowest frequencies, where the measured responses diverge from
-the predictions.  Kowalczyk and Van Walstijn note that some of their results
-display similar low-frequency artefacts, and suggest that the cause is that the
-simulated wave-front is not perfectly flat.  However, flat wave-fronts are not
-easily accomplished.  The experiments in [@kowalczyk_modeling_2008] use large
-meshes (around 3000 by 3000 nodes, nine million in total) and place the sources
-a great distance away from the boundary being studied in order to maintain a
-mostly-flat wave-front.  This is only practical because the experiments are run
-in two dimensions.  For the 3D case, no experimental results are given.  This
-is probably because running a 3D simulation on a similar scale would require a
-mesh of twenty-seven billion nodes, which in turn would require gigabytes of
-memory and hours of simulation time.
+artefacts below 0.01 of the mesh sampling rate, where the measured responses
+diverge from the predictions.  Kowalczyk and Van Walstijn note that some of
+their results display similar low-frequency artefacts, and suggest that the
+cause is that the simulated wave-front is not perfectly flat.  However, flat
+wave-fronts are not easily accomplished.  The experiments in
+[@kowalczyk_modeling_2008] use large meshes (around 3000 by 3000 nodes, nine
+million in total) and place the sources a great distance away from the boundary
+being studied in order to maintain a mostly-flat wave-front.  This is only
+practical because the experiments are run in two dimensions.  For the 3D case,
+no experimental results are given.  This is probably because running a 3D
+simulation on a similar scale would require a mesh of twenty-seven billion
+nodes, which in turn would require gigabytes of memory and hours of simulation
+time.
 
 In conclusion, for the most part, the results presented adhere closely to the
 expected results, with the caveat that the surface reflectance is only accurate

@@ -213,6 +213,8 @@ the candidate should consider them more carefully, and what â€“ if appropriate â
 might be more appropriate questions for this work, and again in the context of
 an MA thesis.
 
+-[ ] Revisit boundary tests, plot percentage error
+
 -[ ] Revisit the point about p84 - redo tests if there's time, try isolating
 parts of the output to localise the 400Hz resonance.
 

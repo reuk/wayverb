@@ -271,19 +271,17 @@ the low-frequency diffuse-field reverb time could be approximated by averaging
 the results.  It may be that the low reverb time in the test above is entirely
 due to the particular placement of the source and receiver, and that the
 *average-case* waveguide output would match the Sabine estimate more closely.
-Testing this would help to narrow-down the cause of the discontinuity between
-the low- and high-frequency components of the output.  If the waveguide *does*
-match the predicted reverb times in the average case, then this would mean that
-further research should focus on reducing the impact of the mismatch between
-the outputs of different models, rather than on improving the waveguide model
-itself. However, there was not time to run such a test in the course of this
-project.
+If the waveguide *does* match the predicted reverb times in the average case,
+then this would mean that further research should focus on reducing the impact
+of the mismatch between the outputs of different models, rather than on
+improving the waveguide model itself. However, there was not time to run such a
+test in the course of this project.
 
 Further testing is also required to locate the exact cause of the low-amplitude
 resonance in the waveguide.  Although low-frequency resonant behaviour is to be
 expected in the tests presented here, it is surprising that all room-sizes
 tested displayed some localised resonance at around 400Hz (see
-+@room_size_spectrograms). The fact that the resonant frequency is the same
++@fig:room_size_spectrograms). The fact that the resonant frequency is the same
 across all rooms suggests that this is not caused by constructive interference
 of room modes, but rather some implementation deficiency in the waveguide.
 Perhaps the first component to check would be the waveguide boundaries: the
@@ -340,7 +338,7 @@ The spectrograms in +@fig:room_material_spectrograms do not show the same
 resonance at 400Hz as the previous test results. Given that models of different
 sizes exhibited resonance at the same frequency, but that changing the surface
 absorption causes the resonant frequency to move, it seems very likely that the
-resonant artefact is caused by the boundary model.  Clearly, further tests are
+resonant artefact is caused by the boundary model.  However, further tests are
 required in order to be certain.
 
 ![T30 in octave bands, for simulated rooms with different surface absorption
@@ -378,15 +376,15 @@ with the Room EQ Wizard, and displayed in +@tbl:room_spacing.
 Table: Comparison of measured T20, T30, and EDT for a large room with near and
 far microphone spacings. {#tbl:room_spacing}
 
-------------------------------------------------
-test                  T20 / s  T30 / s  EDT / s
---------------------- -------- -------- --------
-near (1.00m spacing)  1.907    1.963    1.593
+----------------------------------------------------------
+test                      T20 / s   T30 / s     EDT / s
+------------------------- --------- ----------- ----------
+near (1.00m spacing)      1.907     1.963       1.593
 
-far (11.8m spacing)   1.887    1.962    1.763
---------------------- -------- -------- --------
-Percentage difference 1.054    0.05100  10.13
-------------------------------------------------
+far (11.8m spacing)       1.887     1.962       1.763
+
+**percentage difference** **1.054** **0.05100** **10.13**
+----------------------------------------------------------
 
 According to Kuttruff [@kuttruff_room_2009, p. 237], early decay time will be
 strongly influenced by early reflections, and so will depend on the measurement
@@ -424,7 +422,7 @@ direct contribution has the greatest magnitude, and the early contributions
 occur at a lower rate (have greater temporal spacing) than when the
 source-receiver spacing is larger.  Intuitively, it appears that increasing
 the distance between source and receiver has the effect of lowering the ratio
-of energy desnsities between direct and reverberant contributions.
+of energy densities between direct and reverberant contributions.
 
 ![Larger distances between the source and receiver result in delayed initial
 contributions. This figure shows the first 0.05s of the outputs of two
@@ -480,18 +478,18 @@ contribution.](images/vault_response){#fig:vault_response}
 
 The impulse response graph (+@fig:vault_response) shows that low frequency
 diffraction is in fact recorded.  The waveform shows a low-frequency ripple
-caused by diffraction in the waveguide, starting at around 0.02 seconds, which
-occurs before the first impulsive contribution from the geometric models. This
-is mirrored in the spectrogram, which shows that the low-frequency waveguide
-contribution (up to 500Hz) has more energy than the geometric contribution at
-the very beginning of the impulse response.  Though the behaviour of the
-waveguide is physically correct, it highlights the main shortcoming of the
-hybrid algorithm.  For simulations such as this, which rely on the effects of
-wave phenomena, the physical modelling of the waveguide conflicts with the
-approximate nature of the geometric algorithms, causing an obvious divide or
-disconnect between the low and high frequency regions in the output. The
-impulse response shown here is physically implausible, making it unsuitable for
-realistic, high-quality reverb effects.
+starting at around 0.02 seconds, which occurs before the first impulsive
+contribution from the geometric models. This is mirrored in the spectrogram,
+which shows that the low-frequency waveguide contribution (up to 500Hz) has
+more energy than the geometric contribution at the very beginning of the
+impulse response.  Though the behaviour of the waveguide is physically correct,
+it highlights the main shortcoming of the hybrid algorithm.  For simulations
+such as this, which rely on the effects of wave phenomena, the physical
+modelling of the waveguide conflicts with the approximate nature of the
+geometric algorithms, causing an obvious divide or disconnect between the low
+and high frequency regions in the output. The impulse response shown here is
+physically implausible, making it unsuitable for realistic, high-quality reverb
+effects.
 
 <div id="audio_table">
 
@@ -561,29 +559,30 @@ tunnel without scattering       <audio controls><source src="demos/out_tunnel_no
 
 ### Directional Contributions
 
-To test that microphone modelling behaves as expected, a cardioid microphone is
-placed in the exact centre of the "large" cuboid room, facing away from the
-source, which is positioned at a distance of 3m along the z-axis.
+To test that microphone modelling behaves as expected, two cardioid microphones
+are placed in the exact centre of the "large" cuboid room, facing toward and
+away from the source, which is positioned at a distance of 3m along the z-axis.
 
 An ideal cardioid microphone has unity gain in its forward direction, and
 completely rejects waves incident from behind. In this test, the direct
-contribution from the source originates directly behind the receiver, so it
-should not be present in the output. The first contribution detected by the
-receiver is caused by reflections from the floor and ceiling. Both of these
-reflection paths have lengths of exactly 5m, corresponding to 0.0147s. These
-contributions will be incident from behind the microphone (but not directly
-behind) so they should have a relatively reduced magnitude.
-
-The first contributions that strike the receiver from the front have path
-lengths of 11m and 13m, which should correspond to strong impulses at 0.0324s
-and 0.0382s.
+contribution from the source originates directly in front of one receiver and
+behind the other, so it should be present only in the signal measured at the
+capsule facing the source.  The next-shortest path from the source to the
+receivers is caused by reflections from the floor and ceiling, both with path
+lengths of 5m, corresponding to 0.0147s.  These paths should cause a strong
+contribution in the capsule facing the source, and a quieter contribution in
+the capsule facing away.  There is a path with a length of 11m
+which should strike the receivers from the opposite direction to the source. At
+this time, there should be a large contribution in the away-facing capsule,
+and a small contribution in the toward-facing capsule.
 
 These expectations are reflected in the results, shown in +@fig:cardioid.  The
-impulse response is silent at the time of the direct contribution, 0.00882s.
-The first significant level is recorded at 0.0147s, with the loudest
-contributions seen at 0.0324s and 0.0382s. These results are consistent across
-the spectrum, indicating that the microphone model is matched between both
-simulation methods.
+impulse response is silent in the away-facing capsule at the time of the direct
+contribution, 0.00882s.  The first significant level is recorded at 0.0147s,
+with a loud contribution seen at 0.0324s.  In the capsule facing toward the
+source, the first two contributions are loud, with no contribution at 0.0324s.
+These results are consistent across the spectrum, indicating that the
+microphone model is matched between both simulation methods.
 
 ![The response measured at cardioid microphones pointing toward and away from
 the source.  The times marked with dotted lines, from left to right, are the
@@ -611,7 +610,7 @@ z-axes relative to the source. The receiver is oriented so that it is facing
 directly down the z axis, meaning that the source is 14.1m away, on the left of
 the receiver.
 
-![The concert hall model.](images/concert_hall){#fig:concert_hall)
+![The concert hall model.](images/concert_hall){#fig:concert_hall}
 
 The simulation produces output impulse responses for both the left and right
 ears. All of Wayverb's simulation methods (image-source, ray-tracing and
