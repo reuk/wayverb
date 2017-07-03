@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Image-source Model
-navigation_weight: 2
+navigation_weight: 3
 ---
 
 ---

@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Hybrid Model
-navigation_weight: 5
+navigation_weight: 6
 ---
 
 ---

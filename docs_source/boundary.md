@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Boundary modelling
-navigation_weight: 7
+navigation_weight: 8
 ---
 
 ---
@@ -18,149 +18,14 @@ reasonably straightforward to implement in geometric models, it is far from a
 solved problem for the digital waveguide mesh (DWM).  Several possible
 implementations are discussed in the literature, each with unique drawbacks.
 
-This section will begin by discussing the ideal behaviour of modelled acoustic
-boundaries.  Then, the implementation for geometric models will be discussed.
-Possibilities for DWM boundary models will be investigated, and the final
-choice of method explained.  The geometric and DWM implementations will be
+This chapter relies on terms defined in the [Theory]({{ site.baseurl }}{% link
+theory.md %}) section.  It begins by discussing the ideal behaviour of modelled
+acoustic boundaries.  Then, the implementation for geometric models is
+discussed.  Possibilities for DWM boundary models are investigated, and the
+final choice of method explained.  The geometric and DWM implementations are
 evaluated and compared, to ensure equivalence.
 
-## Background
-
-The books by Vorländer [@vorlander_auralization:_2007, p. 35] and Kuttruff
-[@kuttruff_room_2009, p. 35] both devote entire chapters to the topic of sound
-reflection and scattering.  Please refer to these books for a detailed and
-broad explanation of reflection effects.  To avoid unnecessary duplication,
-this background will be brief, aiming only to put terminology and decisions in
-context.
-
-### Magnitude and Phase
-
-The reflection factor $R$ is a complex value given by 
-
-$$R=|R|\exp(i\chi)$$ {#eq:}
-
-which describes a modification to the amplitude and phase of a wave reflected
-in a boundary ($|R|$ is the magnitude term, $\chi$ is phase).
-
-This factor depends both on the frequency and direction of the incident wave.
-When $\chi = \pi$, $R$ is negative, corresponding to a phase reversal.  This
-is known as a "soft" wall, but is rarely seen in room acoustics.  It is
-reasonable to assume that reflections are in-phase in the majority of
-architectural acoustics problems [@kuttruff_room_2009, p. 36].
-
-The wall impedance $Z$ is defined as the ratio of sound pressure to the normal
-component of particle velocity at the wall surface.  It is related to the
-reflection factor by
-
-$$R=\frac{Z\cos\theta-Z_0}{Z\cos\theta+Z_0}$$ {#eq:r_in_terms_of_z}
-
-where $\theta$ is the angle of incidence, and $Z_0$ is the characteristic
-impedance of the propagation medium, normally air.  In the case that the wall
-impedance is independent of the wave angle-of-incidence, the surface is known
-as *locally reacting*.  A locally reacting surface does not transmit waves
-tangentially along the wall surface. In Wayverb, all surfaces are modelled as
-locally reacting.
-
-The absorption coefficient $\alpha$ of a wall describes the proportion of
-incident energy which is lost during reflection. It is defined as
-
- $$\alpha =1-|R|^2$$ {#eq:alpha}
-
-### Scattering
-
-The reflection factor, absorption coefficient, and wall impedance describe the
-behaviour of perfectly-reflected (specular) waves.  If the reflecting surface
-has imperfections or details of the same order as the wavelength, as many
-surfaces in the real world do, then some components of the reflected wave will
-be *scattered* instead of specularly reflected.
-
-Describing the nature of the scattered sound is more complicated than specular
-reflections.  A common method is to use a *scattering coefficient*, which
-describes the proportion of outgoing energy which is scattered, and which may
-be dependent on frequency (see +@fig:scattering).  The total outgoing energy
-$E_\text{total}$ is related to the incoming energy $E_\text{incident}$ by
-
-$$E_{\text{total}}=E_{\text{incident}}(1-\alpha)$$ {#eq:}
-
-Then the scattering coefficient $s$ defines the proportion of this outgoing
-energy which is reflected specularly $E_\text{specular}$ or scattered
-$E_\text{scattered}$:
-
-$$
-\begin{aligned}
-E_{\text{specular}} & =E_{\text{incident}}(1-\alpha)(1-s) \\
-E_{\text{scattered}} & =E_{\text{incident}}(1-\alpha)s
-\end{aligned}
-$$ {#eq:}
-
-![Reflected components from a rough
-surface.](images/scattering){#fig:scattering}
-
-Alone, the scattering coefficient fails to describe the directional
-distribution of scattered energy.  In the case of an ideally-diffusing surface,
-the scattered energy is distributed according to Lambert's cosine law.  That
-is, the intensity depends only on the cosine of the outgoing scattering angle,
-and is independent of the angle of incidence (see +@fig:lambert).  More complex
-scattering distributions, which also depend on the outgoing direction, are
-possible [@christensen_new_2005; @durany_analytical_2015], but there is no
-single definitive model to describe physically-accurate scattering.
-
-![Lambert scattering. Scattered intensity is independent of incident
-angle.](images/lambert){#fig:lambert}
-
 ## Geometric Implementation
-
-In both image-source and ray tracing methods, each ray starts with a certain
-intensity or pressure. During a specular reflection, the ray pressure must be
-multiplied by the wall reflection coefficient, to find the outgoing pressure.
-All surfaces in Wayverb are locally reacting, so the reflectance coefficient
-of a locally reacting surface must be defined.
-
-The *specific acoustic impedance* $\xi$ for a given surface is defined as the
-impedance of that surface $Z$ divided by the acoustic impedance of the
-propagation medium (air) $Z_0$.
-
-$$\xi=\frac{Z}{Z_0}$$ {#eq:}
-
-Inserting this equation into +@eq:r_in_terms_of_z gives:
-
-$$R=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$ {#eq:r_in_terms_of_xi}
-
-where $\theta$ is the angle of incidence [@southern_room_2013].
-
-For a general surface, $\xi$ will be a function of the incident angle.
-However, in the case of a locally reacting surface, the impedance is
-independent of the angle of incidence. The $\xi$ term in +@eq:r_in_terms_of_xi
-can then be replaced by $\xi_0$ which represents the normal-incidence specific
-impedance (which will be constant for all angles). Thus, the reflection factor
-of a locally reacting surface is
-
-$$R=\frac{\xi_0\cos\theta-1}{\xi_0\cos\theta+1}$$ {#eq:r_normal_incidence}
-
-Surfaces in Wayverb are defined in terms of absorption coefficients. To express
-the reflectance in terms of absorption, an equation for $\xi_0$ in terms of
-absorption must be found, and substituted into +@eq:r_normal_incidence.
-
-Assuming that the absorption coefficients denote normal-incidence absorption,
-then by rearranging +@eq:alpha, the normal-incidence reflection coefficient
-$R_0$ is given by
-
-$$R_0=\sqrt{1-\alpha}$$ {#eq:r_mag}
-
-$R_0$ can also be expressed by setting $\theta$ to 0 in
-+@eq:r_normal_incidence:
-
-$$R_0=\frac{\xi_0 -1}{\xi_0 +1}$$ {#eq:r_0}
-
-To express $\xi_0$ in terms of $\alpha$, +@eq:r_0 is rearranged in terms of the
-normal-incidence reflection coefficient:
-
-$$\xi_0=\frac{1+R_0}{1-R_0}$$ {#eq:xi_0}
-
-Then, +@eq:r_mag may be substituted into +@eq:xi_0 to give $\xi_0$ in terms of
-$\alpha$.  This new definition of $\xi_0$ can then be used in conjunction with
-+@eq:r_normal_incidence to define the angle-dependent reflection factor of a
-locally reacting surface.
 
 In Wayverb, surfaces may have different absorptions in each frequency band.
 Each ray starts with the same pressure in each band. During a specular
@@ -309,7 +174,7 @@ important consideration, the LRS model seems to be the most appropriate.
 See [@kowalczyk_modeling_2008] and [@kowalczyk_modelling_2008] for a more
 detailed explanation.
 
-The reflectance of a LRS has been defined above, in terms of the
+The reflectance of a LRS has been defined earlier, in terms of the
 normal-incidence specific impedance $\xi_0$ (+@eq:r_normal_incidence).  For the
 geometric implementation, $\xi_0$ was defined in terms of a single
 normal-incidence reflection coefficient $R_0$ (+@eq:xi_0). If $R_0$ is replaced

@@ -54,6 +54,7 @@ SOURCES := \
 	acknowledgements.md \
 	introduction.md \
 	context.md \
+	theory.md \
 	image_source.md \
 	ray_tracer.md \
 	waveguide.md \
