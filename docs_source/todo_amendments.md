@@ -96,7 +96,7 @@
 
 -[x] p26: Vorlander = Vorländer (please correct throughout)
 
--[ ] p27: define the scattering coefficient ‘s’ (some of this detail comes later in the report, hence the need, in part, for a literature/theory chapter earlier).
+-[x] p27: define the scattering coefficient ‘s’ (some of this detail comes later in the report, hence the need, in part, for a literature/theory chapter earlier).
 
 -[ ] p28: Reflections are considered here – but no consideration is given regarding octave band considerations. Should they be? Please see comments about a ‘new’ literature review/background chapter.
 
@@ -118,7 +118,7 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p53: ‘and at the to end’ - ?
 
--[ ] p56: T20 and T30 used before definition in later chapter. See comments on a proper literature review.
+-[x] p56: T20 and T30 used before definition in later chapter. See comments on a proper literature review.
 
 -[x] p61: This achieved by taking = This is achieved
 
@@ -142,7 +142,7 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p81: This is the first time that the nature of the 3D geometry files used to define your rooms has been discussed at all. There is further discussion later, in relation to the limitations of the software, but stating up front that you will use a file importer from existing 3D CAD would be much better.
 
--[ ] p82: Define RT60 in relation to T20 and T30. Your assumption that RT60 = 2xT30 = 2xT20 is incorrect. Please refer to ISO3382 and related versions of this standard for a proper definition of how T20 and T30 are determined from a RIR.
+-[x] p82: Define RT60 in relation to T20 and T30. Your assumption that RT60 = 2xT30 = 2xT20 is incorrect. Please refer to ISO3382 and related versions of this standard for a proper definition of how T20 and T30 are determined from a RIR.
 
 -[x] p84: What are the limitations of the Sabine equation? You should discuss this and it may help with the interpretation of your results later? Is the cuboid room you test a valid example for a Sabine estimation? In this test you should also consider and average over more source/receiver positions to arrive at a better estimation of RT60 for the room, which is what a Sabine estimation gives (rather that something specific to a given source/receiver pair).  How have you arrived at the results in the table? Please discuss. %-error might be a better metric to include, and also reference to JND for RT60. Octave band results should also be included, rather than overall RT60, as this will hide some possibly important detail.  If you are not able to re-do results, discuss the limitations of the test instead.  This is where your results start to reveal that what has seemed ‘easy and obvious’ based on the choices made in earlier chapters, do not give the best results, giving rise to more questions – the number of choices and decisions you have made are all highly complex and interact with each other when producing the final result. Why should your room resonate at 400Hz? What physical reason is there for this? It could be down to the crossover of the filters used in the hybrid model and how you have implemented them. Again, some better discussion needed.
 
@@ -217,5 +217,3 @@ an MA thesis.
 
 -[ ] Revisit the point about p84 - redo tests if there's time, try isolating
 parts of the output to localise the 400Hz resonance.
-
--[ ] Remember to discuss EDT in the literature section

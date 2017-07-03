@@ -14,12 +14,12 @@ reference-section-title: References
 
 - Room acoustic theory
 - Metrics for success
-- Consideration of creative contexts
 
 -[x] p27 scattering coefficient
 -[x] boundary modelling background stuff (remove from image source section)
--[ ] T20, T30, RT60, EDT
--[ ] sabine reverb time
+-[x] T20, T30, RT60, EDT
+-[x] sabine reverb time
+-[ ] Consideration of creative contexts
 
 -->
 
@@ -32,11 +32,11 @@ discussed in later chapters.
 ## Waves and Media
 
 Sound waves can be described completely by specifying the instantaneous
-velocity of particle in the propagation medium. Not all particles will have the
-same velocity, which causes fluctuations in density, pressure, and temperature,
-which are dependent upon time, and position. *Sound pressure*, $p$, is the
-difference between the "at rest" pressure $p_0$, and the pressure measured in
-the medium at a particular position and time $p_\text{tot}$
+velocity of each particle in the propagation medium. Not all particles will
+have the same velocity, which causes fluctuations in density, pressure, and
+temperature, which are dependent upon time, and position. *Sound pressure*,
+$p$, is the difference between the "at rest" pressure $p_0$, and the pressure
+measured in the medium at a particular position and time $p_\text{tot}$
 [@vorlander_auralization:_2007 p. 9]:
 
 $$p = p_\text{tot} - p_0$$ {#eq:sound_pressure}
@@ -77,7 +77,7 @@ more manageable, sound pressure is usually given in terms of the *sound
 pressure level* (SPL), which is measured on a logarithmic scale in decibels
 (dB) [@kuttruff_room_2009 p. 23]:
 
-$$\text{SPL} = 20\log_{10}\frac{p_\text{rms}}{p_0} \text{dB}$$ {#eq:}
+$$\text{SPL} = 20\log_{10}\frac{p_\text{rms}}{p_0} \text{dB}$$ {#eq:spl}
 
 Here, $p_\text{rms}$ is the *root mean square* sound pressure, and $p_0$ is
 a reference pressure of $2 \times 10^{-5}$ Pa.
@@ -85,11 +85,11 @@ a reference pressure of $2 \times 10^{-5}$ Pa.
 Wave propagation in a medium causes energy to be transported through that
 medium.  This energy flow can be measured in terms of the energy transported
 per second through an area of 1m² (W/m²), and is called *sound intensity*, $I$
-[vorlander_auralization:_2007 p. 19]:
+[@vorlander_auralization:_2007 p. 19]:
 
 $$\vec{I} = \overline{p \vec{v}}$$ {#eq:}
 
-Note that the overbar notation signifies time-averaging. The sound intensity
+Note that the overline notation signifies time-averaging. The sound intensity
 can also be given in terms of the *intensity level*, $L_I$
 [@vorlander_auralization:_2007 p. 20]:
 
@@ -263,6 +263,103 @@ single definitive model to describe physically-accurate scattering.
 angle.](images/lambert){#fig:lambert}
 
 ## Impulse Response Metrics
+
+### Sabine's Equation
+
+If an air-filled enclosure is excited impulsively, the sound field in the
+enclosure will not die away immediately, unless the boundaries are perfectly
+anechoic. Usually, the boundaries will reflect sound pressure waves back and
+forth inside the enclosure, and at each reflection some energy will be lost to
+the boundary. In this way the sound energy in the simulation will decrease
+gradually over time.
+
+Assuming that the sound field is diffuse (that is, isotropic; having the same
+intensity in all directions [@kuttruff_room_2009 p. 52]), there will be a
+constant number of reflections per unit time.  Under the additional assumption
+that the boundary absorption, $\alpha$, has a homogeneous distribution, each
+reflection will cause that wave front to lose a proportion of its ingoing
+energy equal to $\alpha$.
+
+The *energy density*, $w$ of a sound field is defined as the amount of energy
+contained in one unit volume [@kuttruff_room_2009 p. 14]. In a diffuse sound
+field, the energy density at time $t$ can be given by
+
+$$w(t) \approx w_0 (1 - \alpha)^{\overline{n} t}$$ {#eq:}
+
+where $w_0$ is the initial energy density when $t=0$, and $\overline{n}$ is the
+average number of reflections per unit time. Using the definition of sound
+pressure level, the energy density decay can be rewritten as a linear level
+decay [@vorlander_auralization:_2007 p. 61]:
+
+$$L(t) = L_0 + 10\log_{10} \frac{w(t)}{w_0} = L_0 + 4.34 \overline{n} t \ln (1 - \alpha)$$ {#eq:level}
+
+A common measure of reverberation time is the *RT60*, the time taken for the
+level to decrease by 60dB.  By rearranging +@eq:level, the RT60 can be
+expressed [@vorlander_auralization:_2007 p. 61]:
+
+$$\text{RT60} = -\frac{60}{4.34\overline{n}\ln(1-\alpha)}$$ {#eq:general_rt}
+
+The average number of reflections per second, $\overline{n}$ can be
+approximated by 
+
+$$\overline{n} = \frac{cS}{4V}$$ {#eq:reflections_per_second}
+
+where $S$ is the total surface area of the enclosure boundaries, and $V$ is the
+enclosure volume [@kuttruff_room_2009 p. 112].
+
+By substituting +@eq:reflections_per_second into +@eq:general_rt and
+simplifying (assuming $\alpha$ is very small), and assuming $c = 343 m/s$,
+*Sabine's equation* is found [@vorlander_auralization:_2007 p. 61]:
+
+$$\text{RT60} = 0.161\frac{V}{S\alpha} = 0.161\frac{V}{A}$$ {#eq:sabine}
+
+This equation can be used to estimate the reverberation time of an enclosure,
+given the volume, surface area, and homogeneous absorption of that enclosure,
+and assuming that the sound field is diffuse.
+
+The Sabine equation has some important limitations. Firstly, it fails at high
+absorptions. With the absorption coefficient set to 1, it estimates a finite
+reverb time, even though a completely absorptive enclosure cannot reverberate.
+Secondly, the assumption that the sound field in the enclosure is perfectly
+diffuse is untrue in practice.  At low frequencies (that is, below the
+Schroeder frequency) rooms behave modally, concentrating sound energy at
+specific points in the room.  Under such circumstances, the sound field is
+clearly not diffuse, and so the Sabine equation is a poor predictor of reverb
+time at low frequencies.
+
+### Computing Reverb Times from Measurements
+
+It is possible to compute the RT60 of a measured impulse response (IR).  This
+is useful for comparing the reverb times of different IRs, or for evaluating an
+IR against a predicted reverb time.
+
+Methods for evaluating the RT60 from measurements are given in the ISO 3382
+standard [@iso_3382].  Normally, the decay time is measured over a shorter
+range than 60dB, and then extrapolated. For example, the *T20* measurement is
+an estimate of the RT60 based on a 20dB level drop, and the *T30* is based on a
+30dB drop.
+
+The analysis itself proceeds as follows: the IR is reversed, each sample value
+is squared, then the squared sample values are integrated/accumulated. The
+backward-integrated IR can then be reversed once more to produce a decay curve.
+For a T20 measurement, the -5dB and -25dB points on the curve (relative to the
+maximum level) are found, and a regression line is fitted to the region between
+these points using the least-squares method. The gradient of this line, $d$, is
+a value measured in dB/s. The T20, in seconds, is given by $60/d$. The T30 is
+found in the same way, but the regression line is fitted to the region between
+-5dB and -35dB instead. To find the reverb time in a particular frequency band,
+the IR may be band-pass filtered before computing the decay curve.
+
+A final measurement, known as the *early decay time* (EDT) is also based on
+fitting a regression line to the region between 0dB and -10dB, and then
+extrapolating to 60dB as usual. This measurement is useful as a descriptor of
+the ratio of direct to reverberant sound: an IR with a louder direct
+contribution and quieter reverberation will have a steep early gradient, and
+therefore a relatively short EDT.  EDT is also useful as a measure of
+"perceived reverberance": the transients in music and speech normally have a
+much shorter period than the time taken for the level to drop 60dB, so the
+early part of the IR has greater perceptual significance than the late
+[@vorlander_auralization:_2007 p. 94].
 
 ## Summary
 

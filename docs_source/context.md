@@ -121,7 +121,7 @@ while geometric methods do not.  This means that these wave-based methods are
 capable of accurately simulating the low-frequency component of a room
 impulse-response, where constructive and destructive wave interference form
 *room modes*.  Room modes have the effect of amplifying and attenuating
-specific frequencies in the room impulse response, and produce much of the
+specific frequencies in the room impulse response (IR), and produce much of the
 subjective sonic "colour" or "character" of a room.  Reproducing these room
 modes is therefore vital for evaluating the acoustics of rooms such as concert
 halls and recording studios, or when producing musically pleasing reverbs.
@@ -181,7 +181,7 @@ post-processing both introduce additional complexity.
 Despite its drawbacks, the FDTD method is generally preferred for room
 acoustics simulation [@valimaki_fifty_2012], due to its straightforward
 implementation, inherent parallelism, intuitive behaviour, and its ability to
-directly produce time-domain impulse responses.
+directly produce time-domain IRs.
 
 ## Existing Software
 
@@ -240,8 +240,8 @@ The fundamental goals of the project are:
 * **Efficiency**: Ensure that the simulation is fast. Simulations times should
   be minutes, rather than hours or days.
 * **Accessibility**: It should be possible for someone with no programming
-  experience to generate impulse responses. It should also be possible for
-  other programmers to extend and modify the project's code.
+  experience to generate IRs. It should also be possible for other programmers
+  to extend and modify the project's code.
 
 The project is primarily designed to help musicians and sound designers, who
 require high-quality reverberation effects. These users also need fast
@@ -258,11 +258,11 @@ atmosphere, rather than on perfectly reconstructing a physical location.
 Therefore, simulation results should be believable first; for example, large,
 reflective rooms should have long reverb times, while small, damped rooms
 should have shorter reverb times.  Another aspect of plausibility is overall
-quality: if a generated impulse response contains obvious artefacts, it is by
-definition physically implausible, and of limited use to a sound designer.
-Finally, it is of utmost importance that parameters of the simulation behave
-intuitively, so that the designer can "dial-in" the correct settings. That is,
-the results of parameter changes must be plausible.
+quality: if a generated IR contains obvious artefacts, it is by definition
+physically implausible, and of limited use to a sound designer.  Finally, it is
+of utmost importance that parameters of the simulation behave intuitively, so
+that the designer can "dial-in" the correct settings. That is, the results of
+parameter changes must be plausible.
 
 Plausibility and efficiency are competing goals, which must be balanced.
 Extreme performance, allowing real-time usage,  has already been implemented in
@@ -409,12 +409,12 @@ An in-depth description of the algorithms implemented is given in the
 [Image-Source]({{ site.baseurl }}{% link image_source.md %}), [Ray Tracer]({{
 site.baseurl }}{% link ray_tracer.md %}), and [Waveguide]({{ site.baseurl }}{%
 link waveguide.md %}) sections. *@fig:regions shows how the outputs from the
-different methods work together to produce a broadband impulse response.
+different methods work together to produce a broadband IR.
 It shows that the lower portion of the spectrum is generated entirely with the
 waveguide, while the upper portion is simulated using the image-source method
 for early reflections, and the ray tracing method for the reverb tail.
 
-![The structure of a simulated impulse response.](images/regions){#fig:regions}
+![The structure of a simulated IR.](images/regions){#fig:regions}
 
 Deciding on the simulation techniques led to three questions:
 

@@ -120,38 +120,6 @@ carrier signal                  <audio controls><source src="demos/out_cardioid_
 
 </div>
 
-### Terms and Measurements
-
-Here, reverb times are described using the *RT60*, which is a parameter
-denoting the time taken for the sound level in a space to fall by sixty
-decibels [@_reverberation_2017]. Commonly, impulse response recordings do not
-have the necessary dynamic range of 75dB or more which is necessary to directly
-calculate the RT60. Instead, a smaller level decrease is timed, and this time
-is extrapolated to give an estimate of the RT60. The time taken for a twenty or
-thirty decibel decrease is used, and multiplied by two or three respectively to
-estimate the RT60. These measurements are known as the T20 and T30. 
-
-The estimated or predicted RT60, $T$, of a given space can be calculated using
-the Sabine formula [@kuttruff_room_2009, p. 131]:
-
-$$T=0.161\frac{V}{A}$$ {#eq:}
-
-where $V$ is the volume of the space in cubic metres, and $A$ is the
-*equivalent absorption area*.  The absorption area of a given surface is equal
-to the area of the surface multiplied by its absorption coefficient. The
-equivalent absorption area for an entire room is found by summing the
-absorption areas of all surfaces in the scene.
-
-The Sabine equation has some important limitations. Firstly, it fails at high
-absorptions. With the absorption coefficient set to 1, it estimates a finite
-reverb time, even though a completely absorptive enclosure cannot reverberate.
-Secondly, the Sabine equation assumes that the sound field in the enclosure is
-perfectly diffuse, which is untrue in practice.  At low frequencies (that is,
-below the Schroeder frequency) rooms behave modally, concentrating sound
-energy at specific points in the room.  Under such circumstances, the sound
-field is clearly not diffuse, and so the Sabine equation is a poor predictor of
-reverb time at low frequencies.
-
 ### Reverb Times for Varying Room Volumes
 
 This test aims to check that rooms with different volumes produce the expected
