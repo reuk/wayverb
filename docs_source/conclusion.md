@@ -13,21 +13,93 @@ toc: null
 
 ## Analysis
 
+### Testing Procedure
+
+Due to time constraints, the tests presented in the
+[Evaluation]({{site.baseurl}}{% link evaluation.md %}) are not exhaustive.
+Ideally a more thorough testing procedure, such as that used in
+[@southern_room_2013], would have been followed.  That paper presents test
+results for the boundary performance, modal content, diffraction, and reverb
+times of acoustic models including FDTD, FEM, image-source model and *beam-tree
+acoustic radiance transfer*. A wide range of results for each test is shown:
+the modal response of the FDTD model is compared to that of the image source
+model for six different reflection coefficient values, and the reverb time
+predicted by each model is shown for a range of ten different reflection
+coefficient values.  This level of detail gives a clear view of the models'
+performance. Due to the narrow range of parameters tested with Wayverb, it is
+possible that the implementation may exhibit issues for some combination of
+parameters not presented here. It would be desirable to test a wider range of
+parameters to find out whether Wayverb performs appropriately under all
+circumstances.
+
+All tests presented throughout this paper use approximations to find the
+desired or target results.  For instance, the test of the waveguide modal
+response uses the image-source method as a target, and the reverb time tests in
+the [Evaluation]({{site.baseurl}}{% link evaluation.md %}) compare the
+simulation results against the Sabine reverb time. These approximations have
+shortcomings, as discussed in the relevant sections. It would be more useful to
+compare obtained results directly against experimentally-obtained IRs of real
+locations, which would have no such shortcomings. If the simulated results were
+shown to be within a "just noticeable difference" of the real results, this
+would be strong evidence of the simulation's suitability for prediction of
+architectural acoustics. These tests would be time consuming, not just because
+impulse responses would have to be recorded in a physical location, but also
+because that same location would need to be reconstructed virtually, using the
+same dimensions and surface characteristics. In particular, measuring the
+absorption and scattering coefficients for each material in the room would
+require access to a specialised reverberation chamber, or these coefficients
+would have to be approximated using published values.
+
+As an extension to modelling physical locations, it may be instructive to
+conduct listening tests. Such tests might aim to test whether listeners can
+tell apart simulation results and experimentally-obtained IRs. If the
+simulation results were shown to be indistinguishable from real IRs, this might
+indicate that Wayverb is suitable for realistic sound-design applications.  It
+might also be useful to conduct listening tests to gauge the (subjective)
+perceived sound quality of simulation outputs. A simulation program that sounds
+realistic but "bad" is not useful when producing music that is designed to be
+enjoyed. If it could be shown that listeners perceived the sound quality to be
+at least as good as real IRs, this would make a good case for Wayverb's utility
+in a sound designer's toolbox.
+
+Finally, Wayverb's results could be compared (both through acoustic parameters
+like T30, and using listening tests) to the outputs of other similar modelling
+programs.  As noted in the [Context]({{site.baseurl}}{% link context.md %})
+chapter, Wayverb is, at time of writing, the only generally-available
+acoustics-modelling tool that uses both geometric and waveguide models. Without
+comparing against other tools, it is difficult to say whether this hybrid
+approach yields tangible efficiency or accuracy gains over a more traditional
+single-model approach.
+
+As it stands, the tests presented in the [Evaluation]({{site.baseurl}}{% link
+evaluation.md %}) do not have sufficient scope in order to make claims about
+Wayverb's overall "usefulness" as a software tool.  A sensible starting point
+for future work on this project would be to conduct detailed tests into
+Wayverb's real-world accuracy, subjective quality, and relative efficiency.
+
 ### Simulation Method
 
-All models perform as expected with regards to changes in room size and shape,
+All models presented in the [Evaluation]({{site.baseurl}}{% link evaluation.md
+%}) perform as expected with regards to changes in room size and shape,
 material coefficients, source and receiver positions, and receiver microphone
 type. Reverb features such as distinct late echoes can be generated, and stereo
-effects, relying on both interaural time- and level-difference, can be created. 
+effects, relying on both interaural time- and level-difference, can be created.
+The simulation responds appropriately to changes in parameters. For example,
+increasing the absorption coefficients of surfaces leads to a decrease in
+overall reverb time, and increasing the volume of the simulated room increases
+the reverb time. In these respects, the Wayverb program achieves the goal of
+physical plausibility.
 
-The main drawback, evident in several of the tests, is that the geometric and
-wave-based models have distinct behaviours. In the room-size and material
-tests, there are markedly different reverb times between the ray-tracer and
-waveguide outputs; and in the obstruction test, the waveguide exhibits
-diffraction behaviour which is not mirrored in the geometric output. These
-differences lead to obvious discontinuities in the frequency response, which
-persist despite calibrating the models to produce the same sound level at the
-same distance, and implementing matching boundary models in all models.
+Although parameter changes have the expected effects, the simulation is not
+entirely successful.  The main drawback of the presented implementation,
+evident in several of the tests, is that the geometric and wave-based models
+have distinct behaviours. In the room-size and material tests, there are
+markedly different reverb times between the ray-tracer and waveguide outputs;
+and in the obstruction test, the waveguide exhibits diffraction behaviour which
+is not mirrored in the geometric output. These differences lead to obvious
+discontinuities in the frequency response, which persist despite calibrating
+the models to produce the same sound level at the same distance, and
+implementing matching boundary models in all models.
 
 Some differences are to be expected. The primary reason for implementing
 multiple simulation methods is the relative accuracy of the different methods.
@@ -38,15 +110,18 @@ outputs (evident in +@fig:room_size_rt30) suggests that there are errors or
 false assumptions in the implementation.  Even though the different components
 of the waveguide (such as the boundary model, the source injection method, and
 the microphone model) appear to work in isolation, the interactions between
-these components are complex. Further testing of the waveguide as a whole is
-required in order to find the cause of its lower-than-expected reverb times.
+these components are complex. Further testing of the waveguide as a whole, with
+all these components enabled, is required in order to find the cause of its
+lower-than-expected reverb times.
 
-Even if further testing were to reveal that the implementation is correct, the
-current simulation results are useless if there is an obvious disconnect
-between high- and low-frequency outputs. For music and sound design
-applications, responses will sound *more* artificial if there is a rapid change
-in the frequency response, even if the low-frequency response taken alone is an
-accurate representation of the modelled space. Here, it is preferable that the
+Even if further testing were somehow to reveal that the implementation is
+correct, the current simulation results are useless if there is an obvious
+disconnect between high- and low-frequency outputs. For applications like music
+and sound design, where it is important that the generated responses are
+believable, the current algorithm is unusable. Even if the low-frequency
+response by itself accurately represents the modelled space, responses will
+sound *more* artificial if there is a rapid change in the frequency response
+when combined with the geometric output.  Indeed, it is preferable that the
 frequency response not contain obvious discontinuities, even if this
 necessitates a reduction in overall accuracy.
 
@@ -118,13 +193,20 @@ model [@hacihabiboglu_simulation_2010]. Ambisonic output would therefore
 require further research into waveguide microphone modelling, in order to find
 a model which better supports coincident capsules.
 
-The speed of the algorithm is lacking. The app was developed and tested on a
-recent laptop with a 2.5GHz processor, 16GB of RAM, and an MD Radeon R9 M370X
-graphics card with 2GB of dedicated VRAM. On this machine, several of the tests
-above took five or even ten minutes to run, which is a little too slow to be
-useful. When producing music, it is important to be able to audition and tweak
-reverbs in order to produce the most appropriate effect. With long rendering
-times, this auditioning process becomes protracted, which impacts the
+The efficiency goal put forward in the project aims stated that simulations
+should, in general, take less than ten minutes to run. This held true for the
+test cases presented in the [Evaluation]({{site.baseurl}}{% link evaluation.md
+%}). However, the render time is still long enough to be distracting, and the
+user experience could be greatly improved by decreasing its duration.  The
+reason for the long render times is simple: the majority of the development
+time on Wayverb was spent trying to ensure that each model component functioned
+correctly. By the time the components were "complete" there was little time
+left for optimising.
+
+The length of the render time may be especially problematic in creative
+contexts.  When producing music, it is important to be able to audition and
+tweak reverbs in order to produce the most appropriate effect.  With long
+rendering times, this auditioning process becomes protracted, which impacts the
 productivity of the musician. In addition, if the program uses the majority of
 the machine's resources while it is running, then this prevents the user from
 running it in the background and continuing with other tasks in the meantime.
@@ -145,10 +227,16 @@ improvements may only be gained by improving the per-ray or per-node processing
 speed. This is certainly possible, but would yield relatively small
 improvements to the simulation speed. It may be equally valid to simply wait
 for hardware with increased parallelism support: a machine with twice as many
-graphics cores will run the program twice as fast. Such machines are likely to
-be commonplace in two or three years. Therefore, a better use of time would be
-to spend those two years focusing on the algorithm's functional problems
-rather than optimisation.
+graphics cores will run the program twice as fast. Such machines are likely
+to be commonplace in two or three years. Therefore, a better use of time
+would be to spend those two years focusing on the algorithm's functional
+problems rather than optimisation. Although it is disappointing to fall back
+on the argument that hardware improvements will obviate the need for software
+efficiency improvements, note that Wayverb is uniquely well-placed to benefit
+from hardware improvements going forward.  Newer computing platforms are
+generally more powerful due to an increase in the number of processor cores
+rather than an increase in overall clock speed, and Wayverb by design can
+scale across all available GPU cores.
 
 #### User Interface
 

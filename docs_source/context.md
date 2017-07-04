@@ -238,7 +238,7 @@ The fundamental goals of the project are:
 * **Plausibility**: Provide a way of generating physically plausible impulse
   responses of arbitrary enclosed spaces.
 * **Efficiency**: Ensure that the simulation is fast. Simulations times should
-  be minutes, rather than hours or days.
+  be less than ten minutes in general, an certainly never more than an hour.
 * **Accessibility**: It should be possible for someone with no programming
   experience to generate IRs. It should also be possible for other programmers
   to extend and modify the project's code.

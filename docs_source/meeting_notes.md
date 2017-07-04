@@ -5,6 +5,13 @@ For each point, say what I've done
 In terms of tone: don't be definite if I'm not 100% sure of something
 Be realistic - don't make something into something it's not
 
+-[ ] SHOW MODAL RESPONSE OF DIFFERENT ROOM SIZES
+  - refer to this in the evaluation
+
+-[ ] Boundary modelling - say that it's worth extra investigation
+
+--------------------------------------------------------------------------------
+
 - A proper consideration of this research as it is applied in more creative contexts
   - Make sure that what I do at the end and beginning line up
   - What he's picked up on is a bit of a mismatch
@@ -79,10 +86,3 @@ Be realistic - don't make something into something it's not
   Reflections are considered here - but no consideration is given regarding octave band considerations. Should they be?
   - Talk about reflections, but not in terms of frequency repsonse
   - Is it worth talking about this here
-
---------------------------------------------------------------------------------
-
--[ ] Boundary modelling - say that it's worth extra investigation
-
--[ ] If I haven't done listening tests, acknowledge that those might have made
-     a difference
