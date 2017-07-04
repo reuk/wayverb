@@ -152,7 +152,9 @@ in Audio and Room Acoustics,” IEEE/ACM Trans. Audio Speech Lang. Process., vol
 
 -[x] p87: ‘show that wall impedances are accurately modelled’ = define accurately, and are they actually ‘accurate’?
 
--[x] General point - A better approach to testing a study of this nature is presented in reference [26].  Your comment on the ‘issue with shorter low-frequency decay times’ needs more detail – we have no data to go on in relation to what these decay times are. Give the data (octave bands) and discuss, or more speculative comments should be removed.
+-[ ] General point - A better approach to testing a study of this nature is presented in reference [26].
+
+-[x] Your comment on the ‘issue with shorter low-frequency decay times’ needs more detail – we have no data to go on in relation to what these decay times are. Give the data (octave bands) and discuss, or more speculative comments should be removed.
 
 -[x] p89: ‘Therefore it is obvious’ – I’m not sure the results presented here mean that the conclusions you draw are in fact obvious. Energy metrics such as C50/C80 or event EDT could have been used instead.
 
@@ -217,3 +219,5 @@ an MA thesis.
 
 -[ ] Revisit the point about p84 - redo tests if there's time, try isolating
 parts of the output to localise the 400Hz resonance.
+
+-[ ] p28 Don't refer forwards to the boundary modelling section

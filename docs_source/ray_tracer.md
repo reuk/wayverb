@@ -130,12 +130,13 @@ acceleration structure is created, to speed up ray intersection tests.
 
 Rays are fired in uniformly-distributed random directions from the source
 point.  Each ray carries an equal quantity of energy (the method for
-determining the starting energy is described in the [Hybrid]({{ site.baseurl
-}}{% link hybrid.md %}) section).  If a ray intersects with the scene geometry,
-data is stored about that intersection: its position, the unique ID of the
-triangle which was intersected, and whether or not the receiver point is
-visible from this position.  This data will be used later on, when calculating
-energy loss, and the directional distribution of received energy.
+determining the starting energy is described in the
+[Hybrid]({{ site.baseurl }}{% link hybrid.md %}) section).  If a ray intersects
+with the scene geometry, data is stored about that intersection: its position,
+the unique ID of the triangle which was intersected, and whether or not the
+receiver point is visible from this position.  This data will be used later on,
+when calculating energy loss, and the directional distribution of received
+energy.
 
 Next, a new ray direction is calculated using the *vector-based scattering*
 method, described by Christensen and Rindel [@christensen_new_2005].  A
@@ -146,18 +147,19 @@ calculated, and the two vectors are combined by
 $$\overrightarrow{R}_\text{outgoing}=s\overrightarrow{R}_\text{random} +
 (1-s)\overrightarrow{R}_\text{specular}$$ {#eq:}
 
-where $s$ is the scattering coefficient.  Normally, the scattering coefficient
-would be defined per-band, but this would require running the ray tracer once
-per band, so that each frequency component can be scattered differently.
-Instead, the mean scattering coefficient is used, so that all bands can be
-traced in one pass. For eight frequency bands, this provides an eight-times
-speed-up, at the cost of inaccurate interpretation of the scattering
-coefficients. This is a reasonable trade-off, as scattering will also be
-modelled using the *diffuse rain* technique described in the [Boundary
-Modelling]({{ site.baseurl }}{% link boundary.md %}) section, which *is* able
-to account for different per-band scattering coefficients. The final output
-will therefore retain per-band scattering characteristics, but with much
-improved performance.
+where $s$ is the scattering coefficient, as described in the
+[Theory]({{ site.baseurl }}{% link theory.md %}) chapter.  Normally, the scattering
+coefficient would be defined per-band, but this would require running the ray
+tracer once per band, so that each frequency component can be scattered
+differently.  Instead, the mean scattering coefficient is used, so that all
+bands can be traced in one pass. For eight frequency bands, this provides an
+eight-times speed-up, at the cost of inaccurate interpretation of the
+scattering coefficients. This is a reasonable trade-off, as scattering will
+also be modelled using the *diffuse rain* technique described in the [Boundary
+Modelling]({{ site.baseurl }}{% link boundary.md %}) section, which *is* able to
+account for different per-band scattering coefficients. The final output will
+therefore retain per-band scattering characteristics, but with much improved
+performance.
 
 Having calculated a new ray direction, the energy carried in the ray is
 decreased, depending on the absorption coefficients of the intersected
@@ -195,35 +197,37 @@ $$(1-\alpha_\text{min})^{n_\text{reflections}} = 10^{-6}
 n_\text{reflections}=\left\lceil-\frac{6}{\log_{10}(1-\alpha_\text{min})}\right\rceil$$ {#eq:}
 
 The 60dB level decrease is somewhat arbitrary, but was chosen to correspond to
-the *RT60*, which is a common descriptor of recorded impulse responses. The
-RT60 is a measure of reverb length, defined as the time taken for the sound
-level to decrease by 60dB. In a future version of the software, the level
-decrease might be set depending on the dynamic range of the output format. This
-would allow 16-bit renders (with around 48dB of dynamic range) to use fewer
-reflections, while 32-bit outputs with lower noise floors would require more
-reflections.
+the *RT60*, which is a common descriptor of recorded impulse responses.  In a
+future version of the software, the level decrease might be set depending on
+the dynamic range of the output format. This would allow 16-bit renders (with
+around 48dB of dynamic range) to use fewer reflections, while 32-bit outputs
+with lower noise floors would require more reflections.
 
 ### Logging Energy
 
-The output of the ray tracing process is a histogram, plotting recorded energy
-per time step.  This recorded energy may come from two different sources.
+The output of the ray tracing process is a set of histograms, one per frequency
+band, plotting recorded energy per time step.  This recorded energy may come
+from two different sources.
 
-Firstly, if a ray intersects with the receiver volume, then the current energy
-of that ray, which may have been attenuated by previous reflections, is added
-to the histogram at the appropriate time step.  The time of the energy
-contribution is given by the total distance travelled by the ray, divided by
-the speed of sound.  This is the approach taken in typical acoustic ray
-tracers.
+Firstly, if a ray intersects with the receiver volume, then the current
+per-band energy of that ray, which may have been attenuated by previous
+reflections, is added to the result histograms at the appropriate time step.
+The time of the energy contribution is given by the total distance travelled by
+the ray, divided by the speed of sound.  This is the approach taken in typical
+acoustic ray tracers.
 
 Secondly, each reflection point is considered to spawn a "secondary source"
 which emits scattered sound energy, depending on the scattering coefficients of
-the surface.  If the receiver is visible from the reflection point, then a
-small energy contribution is logged, at a time proportional to the distance
-travelled by the ray.  This mimics the real world behaviour of rough surfaces,
-which cause some energy to be randomly diffused in non-specular directions
-during reflection of the wave-front. The exact level of this contribution is
-explained in the Geometric Implementation subsection of the [Boundary
-Modelling]({{ site.baseurl }}{% link boundary.md %}) page.
+the surface.  If the receiver is visible from the reflection point, then an
+energy contribution is logged, at a time proportional to the distance travelled
+by the ray.  Similarly to absorption coefficients, scattering coefficients are
+defined per frequency band, and these coefficients are used to weight the
+contributions logged in each band of the output histograms.  This mimics the
+real world behaviour of rough surfaces, which cause some energy to be randomly
+diffused in non-specular directions during reflection of the wave-front. The
+exact level of this contribution is explained in the Geometric Implementation
+subsection of the [Boundary Modelling]({{ site.baseurl }}{% link boundary.md %})
+page. 
 
 ### Producing Audio-rate Results
 
