@@ -231,38 +231,105 @@ well-known in the literature [@southern_hybrid_2013; @aretz_combined_2009;
 @murphy_hybrid_2008; @southern_room_2013; @vorlander_simulation_2009;
 @southern_spatial_2011].
 
+## Creative Arts Context
+
+The first commercial convolution reverb was released in 1999
+[@sterne_space_2015]. The convolution operation multiplies the spectra of two
+recorded sounds. If an anechoic or "dry" recording is convolved with the IR of
+a real location, the resulting convolved signal will sound as though the
+carrier signal was recorded directly in the IR's location.
+
+Convolution reverbs are extremely useful to musicians and sound designers due
+to their flexibility and sound quality. As long as an IR of a particular space
+with sufficient quality is available, *any* other signal can be made to sound
+as though it was recorded in that space. A music producer might use this
+technique to create a recording of an "orchestra" in which each instrument is
+recorded separately and convolved with the IR of a concert hall. Similarly, a
+foley artist could use convolution reverb to make studio-recorded effects sound
+more believable in the context of the environment on-screen.
+
+The main drawback of convolution reverbs is their dependency upon high-quality
+IR recordings. Although most tools come with a library of IRs, this library
+will not be comprehensive. In some circumstances (for example, when attempting
+to seamlessly combine foley effects with location recordings) a suitable
+pre-recorded IR will not be available. In these situations, the user has a few
+options. Firstly, a custom IR could be recorded. This will require specialist
+equipment, and access to the particular location. Secondly, the desired reverb
+could be approximated using an algorithmic reverb tool. Thirdly, the IR could
+be recreated using an acoustic simulator. The third approach seems like a
+sensible middle ground between the first two options. It should be faster than
+recording a custom IR, and will not require access to the modelled location
+(although a 3D virtual model would be necessary). Additionally, the simulated
+IR should match real-world behaviour more closely than an algorithmic reverb.
+
+Despite the obvious application of virtual acoustics to music and sound
+production, all of the software in +@tbl:software appears to be targeted at
+technical users with specialist knowledge in acoustics. For example, the
+i-Simpa homepage [@_i-simpa_2016] says:
+
+> It is a perfect tool for experts (i.e. acousticians), for teachers and
+> students, as well as for researchers, in their projects (room acoustics,
+> urban acoustics, industrial spaces, acoustic courses...)
+
+The Olive Tree Lab "philosophy" page [@philosophy_otl_2016] describes a similar
+focus on technical users:
+
+> ...we hope to assist acousticians and engineers in predicting sound and noise
+> propagation more accurately, especially in the field of Noise Control.
+
+In the case of the "EASE" software, its name is an acronym standing for
+"Enhanced Acoustic Simulator for Engineers".
+
+A simulation tool for creative users should have different goals to a
+technical/engineering focused tool. A tool for acousticians is likely to
+prioritise accuracy, and the ability to produce and export statistics about the
+acoustics of the modelled space. However, a tool targeted at creative users
+should instead prioritise:
+
+- sound quality: Generated IRs should be suitable for use without any
+  additional cleanup/editing.
+- intuitive controls: The interface should make it obvious how each parameter
+  will affect the output.
+- simulation speed: Part of the creative process is experimentation, and users
+  need to hear the effects of their experiments quickly in order to iterate to
+  the desired sound.
+
+It seems that there is a clear need for an acoustic simulation tool which is
+targeted at musicians and sound designers. These users only require a very
+specific subset of the functionality provided by other simulators. That is,
+they only require the final IR result. Other features, such as the creation and
+export of statistics and visualisations, are not required. Therefore, such a
+tool could be reasonably streamlined, presenting a simple "import, configure,
+render" workflow and omitting additional analysis features.
+
 ## Project Aims
 
-The fundamental goals of the project are:
+The goal of the project is to build an acoustic simulation tool suitable for
+creative users. The development of this tool should prioritise the following
+goals:
 
 * **Plausibility**: Provide a way of generating physically plausible impulse
   responses of arbitrary enclosed spaces.
 * **Efficiency**: Ensure that the simulation is fast. Simulations times should
-  be less than ten minutes in general, an certainly never more than an hour.
-* **Accessibility**: It should be possible for someone with no programming
-  experience to generate IRs. It should also be possible for other programmers
-  to extend and modify the project's code.
-
-The project is primarily designed to help musicians and sound designers, who
-require high-quality reverberation effects. These users also need fast
-iteration times between making parameter adjustments and hearing the results,
-so that the "right" sound can be created quickly. The solution must run on
-commodity hardware, as musicians are not expected to have access to dedicated
-compute clusters or server farms.
+  be less than ten minutes in general, and certainly never more than an hour.
+* **Accessibility**: The program's controls should be intuitive, and it should
+  be possible for someone with no programming or acoustics experience to
+  generate IRs.
 
 The ideal simulation program would be capable of replicating, with perfect
-accuracy, any acoustic scenario.  However, for the purposes of sound-design,
-this level of accuracy is not necessary. When creating a reverb, a sound
-designer's focus is generally on experimenting and developing the desired
-atmosphere, rather than on perfectly reconstructing a physical location.
-Therefore, simulation results should be believable first; for example, large,
-reflective rooms should have long reverb times, while small, damped rooms
-should have shorter reverb times.  Another aspect of plausibility is overall
-quality: if a generated IR contains obvious artefacts, it is by definition
-physically implausible, and of limited use to a sound designer.  Finally, it is
-of utmost importance that parameters of the simulation behave intuitively, so
-that the designer can "dial-in" the correct settings. That is, the results of
-parameter changes must be plausible.
+accuracy, the real-world behaviour of any acoustic scenario.  However, for the
+purposes of sound-design, this level of accuracy is not necessary. When
+creating a reverb, a sound designer's focus is generally on experimenting and
+developing the desired atmosphere, rather than on perfectly reconstructing a
+physical location.  Therefore, simulation results should be believable first;
+for example, large, reflective rooms should have long reverb times, while
+small, damped rooms should have shorter reverb times. Long, tunnel-like rooms
+should have distinct echoes in the reverb tail, and cuboid-shaped rooms
+should exhibit resonant room modes at low frequencies.  Another aspect of
+plausibility is overall quality: if a generated IR contains obvious
+artefacts, it is by definition physically implausible, and of limited use to
+a sound designer. For these reasons, plausibility is the primary goal of the
+project.
 
 Plausibility and efficiency are competing goals, which must be balanced.
 Extreme performance, allowing real-time usage,  has already been implemented in
@@ -272,19 +339,24 @@ the aims of the project.  Similarly, high-quality simulations generally require
 long compute times and specialised hardware, both of which are inaccessible to
 the target user.  Therefore, the focus of the project cannot be solely on
 plausibility.  Software which balances these two aims does not exist, at time
-of writing, and there is a clear need for a solution which is both reasonably
-fast and produces believable results.  Ideally, this software would allow the
-user control over the trade-off between accuracy and efficiency, enabling a
-workflow in which fast, lower-quality simulations are used when auditioning,
-and a slower, higher-quality render is produced once the user is happy with
-all the simulation settings.
+of writing, and there is a clear need for a solution which runs on commodity
+hardware, and is both reasonably fast and produces believable results.
+Ideally, this software would allow the user control over the trade-off between
+accuracy and efficiency, enabling fast, lower-quality simulations to be used
+when auditioning, and a slower, higher-quality render to be produced once the
+user is happy with all the simulation settings.
 
-Accessibility is extremely important, and the final product must be accessible
-to two main groups.  Firstly, it must be useful to the target users. It must be
-simple to install and run, and users should not require specialist training in
-programming in order to be productive with the software.  Secondly, the code
-and supporting materials must be made free to researchers, to encourage further
-research and modification.
+In terms of accessibility, the program must be simple to install and run, and
+users should not require specialist training in programming in order to become
+productive.  Controls must be intuitive, and it should be obvious how each
+parameter will affect the final IR. The project as a whole should be accessible
+too: the code and supporting materials must be made freely available to
+researchers, to encourage further research and modification. Note that
+accessibility is a lesser goal than plausibility and efficiency: if the program
+is fast and produces high quality, usable results, users will be prepared to
+invest time to learn the program. Meanwhile, if the program is easy to use but
+is too slow or produces poor results, users will have no motive to learn the
+software in the first place.
 
 ### Proposed Solution
 
@@ -295,10 +367,10 @@ Efficiency can be balanced against output quality by adjusting the proportion
 of the output generated with each method. The Wayverb project puts forward an
 acoustic simulator based on this hybrid method.
 
-To achieve the goal of accessibility, the Wayverb program runs on consumer
-hardware, and is accessed through a graphical interface which allows
-simulations to be configured, stored, and run. Code for the project is public
-and permissively licensed.
+To achieve the goal of accessibility, Wayverb runs on consumer hardware, and is
+accessed through a graphical interface which allows simulations to be
+configured, stored, and run. Code for the project is public and permissively
+licensed.
 
 ## Original Contributions
 
@@ -514,3 +586,7 @@ tests and generating graphs.
 
 This documentation is written in Markdown, and compiled to html and to pdf
 using Pandoc.  The project website is generated with Jekyll.
+
+## Summary
+
+TODO

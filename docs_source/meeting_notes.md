@@ -12,26 +12,19 @@ Be realistic - don't make something into something it's not
 
 --------------------------------------------------------------------------------
 
-- A proper consideration of this research as it is applied in more creative contexts
-  - Make sure that what I do at the end and beginning line up
-  - What he's picked up on is a bit of a mismatch
-    - Talked about accessibility, but not discussed it
-  - Define the arts and humanities context in a way I can justify it
-  - A more general discussion of why people want control of certain things in
-    certain contexts - film sound design of certain spaces
-  - Evaluate in a realistic manner
-    - This was the aim, but there are certain issues
-    - Talk about some of the GUI decisions made for accessibility
+# Research aims
 
-- p98: The candidate starts out by making a case for an efficient model - the actual model is not efficient enough.
-  How can I address this without going back to established arguments that hardware improvements will help?
-  - Maybe by making the case that the parallel nature of the software is uniquely placed to take advantage
-    of hardware improvements going forward?
-  - Take an aim - I haven't got where I wanted to go, but here's my reflection
-  - Why did this happen?
-  - What issues did I face?
-  - How might I fix this in the future?
-  - See it as an ongoing project - where is it now, how do my aims line up with the result?
+-[ ] Distinguish between key aims and secondary aims
+-[ ] Discuss particular aspects of the simulation which should definitely work
+
+# Musical context
+
+- Film
+- Virtual reality
+
+# Conclusion
+
+--------------------------------------------------------------------------------
 
 - Research aims should be focused:
   - I kept them basically the same, but changed 'accuracy' to 'plausibility'
@@ -46,6 +39,17 @@ Be realistic - don't make something into something it's not
         - Room modes
         - Echoes
       - Think about the tests I've done, and match them
+
+- A proper consideration of this research as it is applied in more creative contexts
+  - Make sure that what I do at the end and beginning line up
+  - What he's picked up on is a bit of a mismatch
+    - Talked about accessibility, but not discussed it
+  - Define the arts and humanities context in a way I can justify it
+  - A more general discussion of why people want control of certain things in
+    certain contexts - film sound design of certain spaces
+  - Evaluate in a realistic manner
+    - This was the aim, but there are certain issues
+    - Talk about some of the GUI decisions made for accessibility
 
 - Conclusion:
   Need to more completely address the research questions.
@@ -86,3 +90,14 @@ Be realistic - don't make something into something it's not
   Reflections are considered here - but no consideration is given regarding octave band considerations. Should they be?
   - Talk about reflections, but not in terms of frequency repsonse
   - Is it worth talking about this here
+
+- p98: The candidate starts out by making a case for an efficient model - the actual model is not efficient enough.
+  How can I address this without going back to established arguments that hardware improvements will help?
+  - Maybe by making the case that the parallel nature of the software is uniquely placed to take advantage
+    of hardware improvements going forward?
+  - Take an aim - I haven't got where I wanted to go, but here's my reflection
+  - Why did this happen?
+  - What issues did I face?
+  - How might I fix this in the future?
+  - See it as an ongoing project - where is it now, how do my aims line up with the result?
+
