@@ -233,34 +233,32 @@ well-known in the literature [@southern_hybrid_2013; @aretz_combined_2009;
 
 ## Creative Arts Context
 
-The first commercial convolution reverb was released in 1999
-[@sterne_space_2015]. The convolution operation multiplies the spectra of two
-recorded sounds. If an anechoic or "dry" recording is convolved with the IR of
-a real location, the resulting convolved signal will sound as though the
-carrier signal was recorded directly in the IR's location.
-
 Convolution reverbs are extremely useful to musicians and sound designers due
-to their flexibility and sound quality. As long as an IR of a particular space
-with sufficient quality is available, *any* other signal can be made to sound
-as though it was recorded in that space. A music producer might use this
-technique to create a recording of an "orchestra" in which each instrument is
-recorded separately and convolved with the IR of a concert hall. Similarly, a
-foley artist could use convolution reverb to make studio-recorded effects sound
-more believable in the context of the environment on-screen.
+to their flexibility. By convolving an IR with some other signal, that signal
+can be made to sound as though it was recorded in the same location as the IR.
+A music producer might use this technique to create a recording of an
+"orchestra" in which each instrument is recorded separately, composited, and
+convolved with the IR of a concert hall. Similarly, a foley artist could use
+convolution reverb to make studio-recorded effects sound more believable in the
+context of the environment on-screen.
 
 The main drawback of convolution reverbs is their dependency upon high-quality
 IR recordings. Although most tools come with a library of IRs, this library
 will not be comprehensive. In some circumstances (for example, when attempting
 to seamlessly combine foley effects with location recordings) a suitable
-pre-recorded IR will not be available. In these situations, the user has a few
-options. Firstly, a custom IR could be recorded. This will require specialist
-equipment, and access to the particular location. Secondly, the desired reverb
-could be approximated using an algorithmic reverb tool. Thirdly, the IR could
-be recreated using an acoustic simulator. The third approach seems like a
-sensible middle ground between the first two options. It should be faster than
-recording a custom IR, and will not require access to the modelled location
-(although a 3D virtual model would be necessary). Additionally, the simulated
-IR should match real-world behaviour more closely than an algorithmic reverb.
+pre-recorded IR will not be directly available. In other circumstances, it may
+not even be possible to create a suitable IR using traditional methods, because
+the reverb is designed to evoke an environment that does not (or cannot) exist.
+
+In these situations, the user has a few options. Firstly, a custom IR could be
+recorded. This will require specialist equipment, and access to the particular
+location. Secondly, the desired reverb could be approximated using an
+algorithmic reverb tool. Thirdly, the IR could be predicted using an acoustic
+simulator. The third approach seems like a sensible middle ground between the
+first two options. It should be less time-consuming than recording a custom IR,
+and will not require access to the modelled location (although a 3D virtual
+model would be necessary). Additionally, the simulated IR should match
+real-world behaviour more closely than an algorithmic reverb.
 
 Despite the obvious application of virtual acoustics to music and sound
 production, all of the software in +@tbl:software appears to be targeted at
@@ -281,36 +279,36 @@ In the case of the "EASE" software, its name is an acronym standing for
 "Enhanced Acoustic Simulator for Engineers".
 
 A simulation tool for creative users should have different goals to a
-technical/engineering focused tool. A tool for acousticians is likely to
+technical/engineering focused tool. Specialised acoustics software will
 prioritise accuracy, and the ability to produce and export statistics about the
-acoustics of the modelled space. However, a tool targeted at creative users
-should instead prioritise:
+acoustics of the modelled space. It may also assume a certain level of prior
+knowledge in the user. However, a program targeted at creative users should
+instead prioritise:
 
 - sound quality: Generated IRs should be suitable for use without any
-  additional cleanup/editing.
+  additional cleanup or editing.
 - intuitive controls: The interface should make it obvious how each parameter
   will affect the output.
 - simulation speed: Part of the creative process is experimentation, and users
   need to hear the effects of their experiments quickly in order to iterate to
   the desired sound.
 
-It seems that there is a clear need for an acoustic simulation tool which is
-targeted at musicians and sound designers. These users only require a very
-specific subset of the functionality provided by other simulators. That is,
-they only require the final IR result. Other features, such as the creation and
-export of statistics and visualisations, are not required. Therefore, such a
-tool could be reasonably streamlined, presenting a simple "import, configure,
-render" workflow and omitting additional analysis features.
+Creative users only require a very specific subset of the functionality
+provided by other simulators. That is, they only require the final IR result.
+Other features, such as the creation and export of statistics and
+visualisations, are not required. Therefore, such a tool could be reasonably
+streamlined, presenting a simple "import, configure, render" workflow and
+omitting additional analysis features.
 
 ## Project Aims
 
-The goal of the project is to build an acoustic simulation tool suitable for
-creative users. The development of this tool should prioritise the following
-goals:
+It seems that there is a clear need for an acoustic simulation tool which is
+targeted at creative users. The goal of the Wayverb project is build such a
+tool.  The development of this program should prioritise the following goals:
 
 * **Plausibility**: Provide a way of generating physically plausible impulse
   responses of arbitrary enclosed spaces.
-* **Efficiency**: Ensure that the simulation is fast. Simulations times should
+* **Efficiency**: Ensure that the simulation is fast. Simulation times should
   be less than ten minutes in general, and certainly never more than an hour.
 * **Accessibility**: The program's controls should be intuitive, and it should
   be possible for someone with no programming or acoustics experience to
@@ -355,7 +353,7 @@ researchers, to encourage further research and modification. Note that
 accessibility is a lesser goal than plausibility and efficiency: if the program
 is fast and produces high quality, usable results, users will be prepared to
 invest time to learn the program. Meanwhile, if the program is easy to use but
-is too slow or produces poor results, users will have no motive to learn the
+is too slow or produces poor results, users will have no reason to learn the
 software in the first place.
 
 ### Proposed Solution
