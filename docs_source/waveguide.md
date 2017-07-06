@@ -185,7 +185,7 @@ The greatest limitation of the DWM is *dispersion error*.  Unlike waves in
 homogeneous physical media, the velocity of wave propagation in the DWM depends
 on the direction of propagation, and also on the frequency of the wave
 component.  This leads to errors in the frequency response of recorded signals,
-especially toward the upper limit of the output bandwidth.  The exact pattern
+especially towards the upper limit of the output bandwidth.  The exact pattern
 of dispersion error is dependent upon the topology of the mesh (topology is
 explained in [Mesh Topology] subsection), and can be examined using *Von
 Neumann* analysis [@van_duyne_3d_1996].  One solution to the dispersion problem

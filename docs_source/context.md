@@ -108,7 +108,7 @@ itself reflected against all surfaces.  For high orders of reflection, the
 required number of calculations quickly becomes impractical.  For these
 reasons, the image source method is only suitable for early reflections, and is
 generally combined with a stochastic method to find the late part of an impulse
-response.
+response (IR).
 
 For a detailed reference on geometric acoustic methods, see
 [@savioja_overview_2015].
@@ -118,13 +118,13 @@ For a detailed reference on geometric acoustic methods, see
 The main advantage of wave-based methods is that they inherently account for
 wave effects such as diffraction and interference [@shelley_diffuse_2007],
 while geometric methods do not.  This means that these wave-based methods are
-capable of accurately simulating the low-frequency component of a room
-impulse-response, where constructive and destructive wave interference form
-*room modes*.  Room modes have the effect of amplifying and attenuating
-specific frequencies in the room impulse response (IR), and produce much of the
-subjective sonic "colour" or "character" of a room.  Reproducing these room
-modes is therefore vital for evaluating the acoustics of rooms such as concert
-halls and recording studios, or when producing musically pleasing reverbs.
+capable of accurately simulating the low-frequency component of a room IR,
+where constructive and destructive wave interference form *room modes*.  Room
+modes have the effect of amplifying and attenuating specific frequencies in
+the room IR, and produce much of the subjective sonic "colour" or "character"
+of a room.  Reproducing these room modes is therefore vital for evaluating
+the acoustics of rooms such as concert halls and recording studios, or when
+producing musically pleasing reverbs.
 
 Wave-based methods may be derived from the *Finite Element Method* (FEM),
 *Boundary Element Method* (BEM) or *Finite-Difference Time-Domain* (FDTD)
@@ -285,31 +285,33 @@ acoustics of the modelled space. It may also assume a certain level of prior
 knowledge in the user. However, a program targeted at creative users should
 instead prioritise:
 
-- sound quality: Generated IRs should be suitable for use without any
+- **Sound quality**: Generated IRs should be suitable for use without any
   additional cleanup or editing.
-- intuitive controls: The interface should make it obvious how each parameter
-  will affect the output.
-- simulation speed: Part of the creative process is experimentation, and users
-  need to hear the effects of their experiments quickly in order to iterate to
-  the desired sound.
+- **Intuitive controls**: The interface should make it obvious how each
+  parameter will affect the output.
+- **Simulation speed**: Part of the creative process is experimentation, and
+  users need to hear the effects of their experiments quickly in order to
+  iterate towards the desired sound.
 
-Creative users only require a very specific subset of the functionality
-provided by other simulators. That is, they only require the final IR result.
-Other features, such as the creation and export of statistics and
-visualisations, are not required. Therefore, such a tool could be reasonably
-streamlined, presenting a simple "import, configure, render" workflow and
-omitting additional analysis features.
+Creative users only require a subset of the functionality provided by other
+simulators. That is, they only require the final IR result.  Other features,
+such as the creation and export of statistics and visualisations, are not
+required. Therefore, such a tool could be reasonably streamlined, presenting a
+simple "import, configure, render" workflow and omitting additional analysis
+features.
 
 ## Project Aims
 
-It seems that there is a clear need for an acoustic simulation tool which is
-targeted at creative users. The goal of the Wayverb project is build such a
-tool.  The development of this program should prioritise the following goals:
+Based on the evidence presented, it seems that there is a clear need for an
+acoustic simulation tool which uses wave-modelling to predict low-frequency
+behaviour, and which is targeted at creative users. The goal of the Wayverb
+project is build such a tool.  The development of this program should
+prioritise the following goals:
 
 * **Plausibility**: Provide a way of generating physically plausible impulse
   responses of arbitrary enclosed spaces.
-* **Efficiency**: Ensure that the simulation is fast. Simulation times should
-  be less than ten minutes in general, and certainly never more than an hour.
+* **Efficiency**: Ensure that the simulation is fast. Simulations should take
+  less than ten minutes in general, and certainly never more than an hour.
 * **Accessibility**: The program's controls should be intuitive, and it should
   be possible for someone with no programming or acoustics experience to
   generate IRs.
@@ -344,17 +346,17 @@ accuracy and efficiency, enabling fast, lower-quality simulations to be used
 when auditioning, and a slower, higher-quality render to be produced once the
 user is happy with all the simulation settings.
 
-In terms of accessibility, the program must be simple to install and run, and
-users should not require specialist training in programming in order to become
-productive.  Controls must be intuitive, and it should be obvious how each
-parameter will affect the final IR. The project as a whole should be accessible
-too: the code and supporting materials must be made freely available to
-researchers, to encourage further research and modification. Note that
-accessibility is a lesser goal than plausibility and efficiency: if the program
-is fast and produces high quality, usable results, users will be prepared to
-invest time to learn the program. Meanwhile, if the program is easy to use but
-is too slow or produces poor results, users will have no reason to learn the
-software in the first place.
+Regarding accessibility, the program must be simple to install and run, and
+users should not require specialist training in acoustics or programming in
+order to become productive.  Controls must be intuitive, and it should be
+obvious how each parameter will affect the final IR. The project as a whole
+should be accessible too: the code and supporting materials must be made freely
+available to researchers, to encourage further research and modification. Note
+that accessibility is a lesser goal than plausibility and efficiency: if the
+program is fast and produces high quality, usable results, users will be
+prepared to invest time to learn the program. Meanwhile, if the program is easy
+to use but is too slow or produces poor results, users will have no reason to
+learn the software in the first place.
 
 ### Proposed Solution
 
@@ -365,10 +367,10 @@ Efficiency can be balanced against output quality by adjusting the proportion
 of the output generated with each method. The Wayverb project puts forward an
 acoustic simulator based on this hybrid method.
 
-To achieve the goal of accessibility, Wayverb runs on consumer hardware, and is
-accessed through a graphical interface which allows simulations to be
-configured, stored, and run. Code for the project is public and permissively
-licensed.
+To achieve the goal of accessibility, the Wayverb program runs on consumer
+hardware, and is accessed through a graphical interface which allows
+simulations to be configured, stored, and run. Code for the project is public
+and permissively licensed.
 
 ## Original Contributions
 
@@ -582,9 +584,20 @@ The project uses CMake to configure its build, and to automatically download
 project dependencies.  Python and Octave were used for running and automating
 tests and generating graphs.
 
-This documentation is written in Markdown, and compiled to html and to pdf
+This documentation is written in Markdown, and compiled to HTML and to PDF
 using Pandoc.  The project website is generated with Jekyll.
 
 ## Summary
 
-TODO
+An account of techniques commonly used for room acoustics simulation is
+provided. The strengths and weaknesses of these techniques is discussed,
+leading to the observation that geometric and wave-based models have
+complementary characteristics. It is suggested that the weaknesses of the
+individual models could be minimised by creating a combined "hybrid" model. It
+is then shown that this hybrid approach has not been used in publicly-available
+software. Additionally, such software that is available is consistently
+targeted at technical users.  This evidence suggests the need for a program
+focused on the requirements of creative users, which uses a hybrid modelling
+approach, and which is made publicly available. Specific goals for the program
+are suggested and explained, and the original contributions of such a program
+are examined. Finally, a plan to build the program is put forward.

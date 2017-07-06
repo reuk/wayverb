@@ -528,7 +528,7 @@ tunnel without scattering       <audio controls><source src="demos/out_tunnel_no
 ### Directional Contributions
 
 To test that microphone modelling behaves as expected, two cardioid microphones
-are placed in the exact centre of the "large" cuboid room, facing toward and
+are placed in the exact centre of the "large" cuboid room, facing towards and
 away from the source, which is positioned at a distance of 3m along the z-axis.
 
 An ideal cardioid microphone has unity gain in its forward direction, and
@@ -542,17 +542,17 @@ contribution in the capsule facing the source, and a quieter contribution in
 the capsule facing away.  There is a path with a length of 11m
 which should strike the receivers from the opposite direction to the source. At
 this time, there should be a large contribution in the away-facing capsule,
-and a small contribution in the toward-facing capsule.
+and a small contribution in the towards-facing capsule.
 
 These expectations are reflected in the results, shown in +@fig:cardioid.  The
 impulse response is silent in the away-facing capsule at the time of the direct
 contribution, 0.00882s.  The first significant level is recorded at 0.0147s,
-with a loud contribution seen at 0.0324s.  In the capsule facing toward the
+with a loud contribution seen at 0.0324s.  In the capsule facing towards the
 source, the first two contributions are loud, with no contribution at 0.0324s.
 These results are consistent across the spectrum, indicating that the
 microphone model is matched between both simulation methods.
 
-![The response measured at cardioid microphones pointing toward and away from
+![The response measured at cardioid microphones pointing towards and away from
 the source.  The times marked with dotted lines, from left to right, are the
 direct contribution time, the first reflection time, and the first and second
 *forward-incident* reflection times.](images/cardioid){#fig:cardioid}
