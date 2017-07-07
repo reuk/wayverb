@@ -551,3 +551,27 @@ if accurate directional responses are required at higher frequencies, the mesh
 can be oversampled to reduce directional dispersion. Although costly, it is at
 least potentially possible to produce very accurate responses using this
 method.
+
+## Summary
+
+The need for a virtual microphone model has been explained. Real-world
+microphone techniques rely on capsules with direction- and frequency-dependent
+responses, therefore a virtual model is put forward which is capable of
+simulating these same characteristics.
+
+In the geometric techniques, directional information is inherent in the model:
+each ray has a direction, which can be logged and used to attenuate the
+contribution according to the receiver polar pattern. These models already
+operate in multiple frequency bands, so to model frequency-dependent responses,
+the receiver can simply use a different response per band. A novel "offsetting"
+method has been put as an extension to the image-source model, which can
+reconstruct ITD information.
+
+The waveguide does not model directional information natively. Instead, the
+pressure gradient at the output must be approximated using the pressures at
+surrounding nodes.  The intensity calculation technique is used for this
+purpose in Wayverb, as it is simpler, faster, and more flexible than the
+alternative (the Blumlein difference technique). It has been shown that
+Wayverb's implementation is capable of reproducing three different polar
+patterns with reasonable accuracy across the spectrum, although numerical
+dispersion causes accuracy to worsen as frequency increases.
