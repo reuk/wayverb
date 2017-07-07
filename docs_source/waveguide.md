@@ -187,7 +187,7 @@ on the direction of propagation, and also on the frequency of the wave
 component.  This leads to errors in the frequency response of recorded signals,
 especially towards the upper limit of the output bandwidth.  The exact pattern
 of dispersion error is dependent upon the topology of the mesh (topology is
-explained in [Mesh Topology] subsection), and can be examined using *Von
+explained in the [Mesh Topology] subsection), and can be examined using *Von
 Neumann* analysis [@van_duyne_3d_1996].  One solution to the dispersion problem
 is to increase the sampling rate of the mesh, moving the high-error area out of
 the region of interest.  Of course, this can quickly become very expensive, as
@@ -285,7 +285,7 @@ interpolated schemes cannot be tuned to produce less accurate results quickly -
 they will always be accurate but inefficient.  For these reasons, the
 tetrahedral mesh was initially chosen for use in Wayverb.
 
-The tetrahedral mesh was implemented during within the first two months of the
+The tetrahedral mesh was implemented during the first two months of the
 project, with support for microphone modelling.  When it came to implementing
 frequency dependent boundary conditions, no prior research could be found
 discussing boundary implementations in a tetrahedral topology.  As noted in the
@@ -491,7 +491,7 @@ infinite-impulse-response *injection filter*, and used as a soft source.
 but a full discussion of their meaning is beyond the scope of this paper. The
 interested reader is directed to [@sheaffer_physical_2014] or to the
 implementation of the physically-constrained source in the Wayverb repository.)
-Finally, the simulation was run for around 85000 steps (less than the expected
+Finally, the simulation was run for around 85,000 steps (less than the expected
 Sabine RT60 of the room) with each of the four sources, and the response at the
 receiver was recorded.
 
@@ -785,3 +785,40 @@ of a single node to an array, which can be retrieved at the end of the
 simulation.  Again, the architecture is flexible, in that it allows for
 different receiver types, such as those discussed in [Microphone Modelling]({{
 site.baseurl }}{% link microphone.md %}).
+
+## Summary
+
+A derivation for the waveguide mesh update formulae has been presented, along
+with the equations which relate the spatial sampling frequency, temporal
+sampling frequency, speed of sound, and number of dimensions. The K-DWM has
+been shown to be faster and more memory-efficient than the W-DWM, although both
+formulations exhibit dispersion error which limits the usable bandwidth of
+simulation results.
+
+Different mesh topologies have been compared. The tetrahedral topology has the
+lowest density and fewest inter-node connections, so it the optimal choice in
+terms of speed. Interpolated meshes are the most accurate and isotropic, but
+are more complicated to implement. For Wayverb, the rectilinear mesh was
+chosen, due to its relative simplicity, and because it was the only topology
+for which boundary formulations already existed.
+
+Mesh input methods have been explored, and it has been shown that solution
+growth places a major design constraint upon mesh inputs. The literature
+suggests that the PCS is the optimal input signal. However, tests of five
+different non-hard inputs (including a PCS) showed that they all lead to
+solution growth, likely because of accumulated numerical error. The presence of
+solution growth means that pressure values may eventually overflow,
+invalidating results.  To avoid this eventuality, Wayverb must use a hard
+source.
+
+A simple procedure for building space-filling waveguide meshes with classified
+boundaries in arbitrary watertight manifold meshes has been presented. This is
+a novel contribution. Details relating to the efficient implementation of a DWM
+on graphics hardware have also been provided.
+
+As shown, the DWM in Wayverb is obviously sub-optimal. Its topology is neither
+the fastest nor the most accurate, and its hard source causes scattering
+artefacts. Solutions to these problems would be time-consuming, and the current
+implementation was chosen as a compromise, so that a functional program could
+be completed within the time constraints of the project. Either of these
+problems might serve as starting points for future research projects.
