@@ -391,3 +391,32 @@ which are additionally accurate at multiple angles of incidence.  Whilst a more
 accurate method would be preferable, this model is both fast and tunable,
 making it a good candidate for boundary modelling in room acoustics
 simulations.
+
+## Summary
+
+In the image source model, outgoing pressure from a boundary can be found as a
+function of incident angle and surface attenuation; scattering cannot be
+modelled.  The ray tracer, however, is able to model scattering in two ways.
+Firstly, the average scattering coefficient across all frequency bands is used
+to govern the magnitude of random offset of the outgoing ray direction.
+Secondly, the diffuse rain technique is used to model frequency-dependent
+scattering.
+
+Boundary models in the waveguide are more involved. Wayverb uses the LRS
+technique, as it is a better model of physical behaviour than the alternative
+KW-pipe technique. The LRS model uses special update equations, which contain
+embedded IIR filters, to calculate pressure values at designated boundary
+nodes. This is effective for boundaries which are aligned to the mesh, but for
+curved or angled surfaces the boundary will be quantised into steps. The effect
+of this quantisation has not been investigated.
+
+The waveguide boundary implementation has been tested to see whether the
+measured reflectance matches the theoretical surface reflectance. In all tests,
+the match is reasonably close around the middle of the spectrum, between 0.01
+and 0.1 of the mesh sampling rate. Outside this range, the results tend to
+deviate somewhat. As a result, the model crossover frequency in Wayverb has a
+maximum of 0.15 of the waveguide sampling frequency, and it is recommended to
+oversample the mesh if highly accurate boundary results are required. It is
+hoped that the low frequency artefacts will always occur below the audible
+range, although it is unclear whether this is really the case as tests have
+only be conducted at a single sampling frequency.
