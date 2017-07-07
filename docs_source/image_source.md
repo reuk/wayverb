@@ -116,8 +116,8 @@ second to simulate a scene with 100 surfaces to an image-source depth of 2.  If
 the image source depth is increased to facilitate a longer reverb tail,
 third-order image sources will take 100 seconds to compute, and fourth-order
 sources will take 3 hours. Fifth-order sources will take 12 days.  Clearly, it
-is not possible to achieve Wayverb's efficiency goal of "minutes, rather than
-hours" using this naive image source technique.
+is not possible to achieve Wayverb's efficiency goal of "ten minutes or fewer"
+under all circumstances using this naive image source technique.
 
 The majority of higher-order image sources found with the naive algorithm will
 be invalid.  That is, they will fail the audibility test.  For example, for
@@ -254,19 +254,14 @@ per-band normal-incidence reflectance magnitudes using
 $$|R|=\sqrt{1-\alpha}$$ {#eq:}
 
 where $R$ is the surface reflectance, and $\alpha$ is the absorption
-coefficient of that frequency band.  These are converted to per-band impedances
-$\xi$ by 
-
-$$\xi=\frac{1+|R|}{1-|R|}$$ {#eq:}
-
-Finally, the impedances are converted back to *angle-dependent* reflectances by
-
-$$R(\theta)=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$ {#eq:}
-
-where $\theta$ is the angle of incidence at the surface.  This is the same
-approach taken in [@southern_room_2013]. $\theta$ must be found for each
-individual reflection, by taking the inverse cosine of the dot product between
-the incident ray direction and the surface normal, when both are unit vectors.
+coefficient of that frequency band.  This equation is simply a rearrangement of
++@eq:alpha. These per-band reflectances are converted to per-band
+normal-incidence impedances using +@eq:xi_0.  Finally, the impedances are
+converted back to *angle-dependent* reflectances by +@eq:r_normal_incidence.
+This is the same approach taken in [@southern_room_2013]. The angle of
+incidence must be found for each individual reflection, by taking the inverse
+cosine of the dot product between the incident ray direction and the surface
+normal, when both are unit vectors.
 
 The contribution $g$ of a single image source with intermediate surfaces $m_1
 m_2 \dots m_n$ is given by
@@ -321,10 +316,19 @@ simulation is created by band-passing and then mixing down the buffers (item
 more details are given in the [Ray Tracer]({{ site.baseurl }}{% link
 ray_tracer.md %}) section.
 
-<!--
+## Summary
 
-## Testing
-
-TODO compare "exact" method to new method in shoebox model
-
--->
+The image source model can be used to find the path lengths and pressures of
+purely specular reflections. It cannot model diffuse reflections, and late
+reflections are generally diffuse. Therefore, the image source model is only
+suitable for predicting early reflections.  The naive implementation of the
+image source model has exponential complexity, and a great deal of the
+computations are redundant. For this reason, a ray-tracing-based implementation
+with greatly improved complexity has been developed. This implementation is
+more efficient than the naive implementation (i.e. it does less redundant work)
+although it may fail to find some valid image sources if the number of rays is
+too low. This has been deemed a reasonable trade-off. The implementation is
+also designed to re-use ray paths found by the ray-tracer model, minimising
+duplicated work between the two models.  Finally, implementation details such
+as a method for frequency-dependent boundary modelling, and sub-sample-accurate
+impulse placement, have been described.

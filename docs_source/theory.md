@@ -8,60 +8,49 @@ navigation_weight: 1
 reference-section-title: References
 ...
 
-<!--
-
-# Notes
-
-- Room acoustic theory
-- Metrics for success
-
--[x] p27 scattering coefficient
--[x] boundary modelling background stuff (remove from image source section)
--[x] T20, T30, RT60, EDT
--[x] sabine reverb time
--[ ] Consideration of creative contexts
-
--->
-
 # Theory {.major}
 
 This chapter explains some aspects of room acoustics theory, which will help to
 clarify the implementation decisions governing the simulation techniques
-discussed in later chapters.
+discussed in later chapters. The account given here deals only with topics
+which are directly applied in Wayverb. For more detailed derivations of
+equations, along with information about more advanced acoustic phenomena such
+as diffraction, refraction, and the Doppler effect, the books by Vorländer
+[@vorlander_auralization:_2007] and Kuttruff [@kuttruff_room_2009] are
+recommended.
 
 ## Waves and Media
 
 Sound waves can be described completely by specifying the instantaneous
-velocity of each particle in the propagation medium. Not all particles will
-have the same velocity, which causes fluctuations in density, pressure, and
-temperature, which are dependent upon time, and position. *Sound pressure*,
-$p$, is the difference between the "at rest" pressure $p_0$, and the pressure
-measured in the medium at a particular position and time $p_\text{tot}$
-[@vorlander_auralization:_2007 p. 9]:
+velocity, $\vec{v}$, of each particle in the propagation medium. Not all
+particles will have the same velocity, which causes fluctuations in density,
+pressure, and temperature, which are dependent upon time, and position. *Sound
+pressure*, $p$, is the difference between the "at rest" pressure $p_0$, and the
+pressure measured in the medium at a particular position and time
+$p_\text{tot}$ [@vorlander_auralization:_2007 p. 9]:
 
 $$p = p_\text{tot} - p_0$$ {#eq:sound_pressure}
 
 Sound pressure is measured in pascals (1 Pa = 1 N/m²)
 [@vorlander_auralization:_2007 p. 16].  The goal of room acoustic simulation is
-to predict the change in sound pressure over time at a particular point in a
+to predict the change in sound pressure over time at particular points in a
 sound field.  A similar equation to +@eq:sound_pressure can be written for
 change in density due to sound $\rho$, where $\rho_0$ is the static density of
 the medium, and $\rho_\text{tot}$ is the instantaneous density:
 
-$$\rho = \rho_\text{tot} - \rho$$ {#eq:}
+$$\rho = \rho_\text{tot} - \rho_0$$ {#eq:}
 
 For the purposes of room acoustics, it may be assumed that the propagation
-medium is air. Sound propagation through liquids and sold structures will be
+medium is air. Sound propagation through liquids and solid structures will be
 ignored.  The speed of sound in air, $c$, is approximately
 
 $$c=(331.4 + 0.6\theta) \text{m/s}$$ {#eq:}
 
 where $\theta$ is the temperature in degrees centigrade [@kuttruff_room_2009 p.
 7]. In most real-world acoustics problems, variations in temperature will be
-very small, and can be ignored. That is, the propagation medium (which is
-generally air) is assumed to be homogeneous.  A propagation medium can be
-specified by its *characteristic impedance* or *wave impedance* $Z_0$
-[@vorlander_auralization:_2007 p. 14]:
+very small, and can be ignored. That is, the propagation medium is assumed to
+be homogeneous.  A propagation medium can be specified by its *characteristic
+impedance* or *wave impedance* $Z_0$ [@vorlander_auralization:_2007 p. 14]:
 
 $$Z_0 = \rho_0 c$$ {#eq:}
 
@@ -72,10 +61,10 @@ particles. For air, the characteristic impedance is generally around 400 kg/m²s
 temperature) [@vorlander_auralization:_2007 p. 15].
 
 The difference in sound pressure between the quietest audible sound and the
-threshold of pain is around 13 orders of magnitude. To make the values involved
-more manageable, sound pressure is usually given in terms of the *sound
-pressure level* (SPL), which is measured on a logarithmic scale in decibels
-(dB) [@kuttruff_room_2009 p. 23]:
+threshold of pain is around 13 orders of magnitude. To make working with the
+values involved more manageable, sound pressure is usually given in terms of
+the *sound pressure level* (SPL), which is measured on a logarithmic scale in
+decibels (dB) [@kuttruff_room_2009 p. 23]:
 
 $$\text{SPL} = 20\log_{10}\frac{p_\text{rms}}{p_0} \text{dB}$$ {#eq:spl}
 
@@ -125,10 +114,10 @@ $$P = 4 \pi r^2 I$$ {#eq:}
 
 Room acoustics is not just concerned with the behaviour of pressure waves in
 air. Additionally, room acoustics problems normally bound the air volume with a
-set of surfaces (walls, floors, baffles etc.), and a pressure wave incident
-upon such a surface may be reflected and/or absorbed. The reflected pressure
-waves generally lead to complex sound fields, which in turn form the particular
-sonic "character" or *acoustic* of an enclosure.
+set of surfaces (walls, floors, baffles etc.), from which an incident pressure
+wave may be reflected and/or absorbed. The reflected pressure waves generally
+lead to complex sound fields, which in turn contribute to the particular sonic
+"character" or *acoustic* of an enclosure.
 
 Several assumptions are made to simplify the equations governing wave behaviour
 at a boundary.  First, incident waves are assumed to be plane waves. This is
@@ -259,7 +248,8 @@ scattering distributions, which also depend on the outgoing direction, are
 possible [@christensen_new_2005; @durany_analytical_2015], but there is no
 single definitive model to describe physically-accurate scattering.
 
-![Lambert scattering. Scattered intensity is independent of incident
+![Lambert scattering is used to model ideally-diffusing surfaces, for which
+scattered intensity is independent of incident
 angle.](images/lambert){#fig:lambert}
 
 ## Impulse Response Metrics
@@ -278,7 +268,7 @@ intensity in all directions [@kuttruff_room_2009 p. 52]), there will be a
 constant number of reflections per unit time.  Under the additional assumption
 that the boundary absorption, $\alpha$, has a homogeneous distribution, each
 reflection will cause that wave front to lose a proportion of its ingoing
-energy equal to $\alpha$.
+energy equal to the absorption coefficient $\alpha$.
 
 The *energy density*, $w$ of a sound field is defined as the amount of energy
 contained in one unit volume [@kuttruff_room_2009 p. 14]. In a diffuse sound
@@ -286,10 +276,10 @@ field, the energy density at time $t$ can be given by
 
 $$w(t) \approx w_0 (1 - \alpha)^{\overline{n} t}$$ {#eq:}
 
-where $w_0$ is the initial energy density when $t=0$, and $\overline{n}$ is the
-average number of reflections per unit time. Using the definition of sound
-pressure level, the energy density decay can be rewritten as a linear level
-decay [@vorlander_auralization:_2007 p. 61]:
+where $w_0$ is the initial energy density when $t=0$ (the time of the impulsive
+excitation), and $\overline{n}$ is the average number of reflections per unit
+time. Using the definition of sound pressure level, the energy density decay
+can be rewritten as a linear level decay [@vorlander_auralization:_2007 p. 61]:
 
 $$L(t) = L_0 + 10\log_{10} \frac{w(t)}{w_0} = L_0 + 4.34 \overline{n} t \ln (1 - \alpha)$$ {#eq:level}
 
@@ -363,4 +353,10 @@ early part of the IR has greater perceptual significance than the late
 
 ## Summary
 
-TODO
+An overview of the properties governing the behaviour of a sound field in an
+enclosed space has been given. The relationships between different physical
+properties have been shown. Sound behaviour at boundaries has been explained,
+along with methods for deriving boundary characteristics from absorption and
+scattering coefficients. Finally, Sabine's equation for estimating reverb time
+has been derived, and methods for computing statistics from recorded impulse
+responses have been given.

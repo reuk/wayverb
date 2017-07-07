@@ -587,17 +587,19 @@ tests and generating graphs.
 This documentation is written in Markdown, and compiled to HTML and to PDF
 using Pandoc.  The project website is generated with Jekyll.
 
+\pagebreak
+
 ## Summary
 
-An account of techniques commonly used for room acoustics simulation is
-provided. The strengths and weaknesses of these techniques is discussed,
+An account of techniques commonly used for room acoustics simulation has been
+provided. The strengths and weaknesses of these techniques have been discussed,
 leading to the observation that geometric and wave-based models have
-complementary characteristics. It is suggested that the weaknesses of the
-individual models could be minimised by creating a combined "hybrid" model. It
-is then shown that this hybrid approach has not been used in publicly-available
-software. Additionally, such software that is available is consistently
-targeted at technical users.  This evidence suggests the need for a program
-focused on the requirements of creative users, which uses a hybrid modelling
-approach, and which is made publicly available. Specific goals for the program
-are suggested and explained, and the original contributions of such a program
-are examined. Finally, a plan to build the program is put forward.
+complementary characteristics. The weaknesses of the individual models could be
+minimised by creating a combined "hybrid" model.  This hybrid approach has not
+previously been used in publicly-available software, and such acoustic
+simulation software that is available is consistently targeted at technical
+users. This evidence suggests the need for a program focused on the
+requirements of creative users, which uses a hybrid modelling approach, and
+which is made publicly available. Specific goals for such a program have been
+suggested and explained, and the original contributions of the program have
+been examined. Finally, a plan to build the program has been put forward.
