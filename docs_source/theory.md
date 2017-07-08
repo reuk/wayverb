@@ -351,6 +351,14 @@ much shorter period than the time taken for the level to drop 60dB, so the
 early part of the IR has greater perceptual significance than the late
 [@vorlander_auralization:_2007 p. 94].
 
+ISO 3382 also defines *just noticeable differences* (JND), which is the
+smallest perceivable difference between two acoustic measurements
+[@vorlander_auralization:_2007 pp. 99-100].  That is, in order for simulation
+results to be indistinguishable from predictions or real-world measurements,
+the difference in each characteristic should be within the JND for that
+characteristic.  For example, the JND for reverb time measurements (EDT, T20,
+T30) is 5%, and the JND for level is 1dB. 
+
 ## Summary
 
 An overview of the properties governing the behaviour of a sound field in an

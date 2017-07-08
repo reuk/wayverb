@@ -22,6 +22,12 @@ Be realistic - don't make something into something it's not
 - Film
 - Virtual reality
 
+- Sound design and music don't require the same level of real-world accuracy
+  as architectural prediction. Instead, the constraints are
+  - Perceived sound quality
+  - Speed (important for fast iteration, auditioning)
+  - Ease of use (presets, intuitive parameters)
+
 # Conclusion
 
 --------------------------------------------------------------------------------

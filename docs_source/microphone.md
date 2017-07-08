@@ -559,19 +559,34 @@ microphone techniques rely on capsules with direction- and frequency-dependent
 responses, therefore a virtual model is put forward which is capable of
 simulating these same characteristics.
 
-In the geometric techniques, directional information is inherent in the model:
-each ray has a direction, which can be logged and used to attenuate the
+In the geometric models, directional information is directly available: each
+ray has a direction, which can be logged and used to attenuate each
 contribution according to the receiver polar pattern. These models already
 operate in multiple frequency bands, so to model frequency-dependent responses,
-the receiver can simply use a different response per band. A novel "offsetting"
-method has been put as an extension to the image-source model, which can
-reconstruct ITD information.
+the receiver can simply use a different directional response per band. A novel
+"offsetting" method has been put as an extension to the image-source model,
+which can reconstruct ITD information.
 
 The waveguide does not model directional information natively. Instead, the
 pressure gradient at the output must be approximated using the pressures at
 surrounding nodes.  The intensity calculation technique is used for this
-purpose in Wayverb, as it is simpler, faster, and more flexible than the
+purpose in Wayverb, as it is simpler, faster, and more flexible than the main
 alternative (the Blumlein difference technique). It has been shown that
 Wayverb's implementation is capable of reproducing three different polar
 patterns with reasonable accuracy across the spectrum, although numerical
-dispersion causes accuracy to worsen as frequency increases.
+dispersion causes accuracy to worsen as frequency increases. If receiver
+accuracy is a major concern, the mesh can be oversampled, reducing dispersion
+in the output bandwidth.
+
+The test results presented are encouraging but superficial. The test procedure
+is modelled on that presented in [@hacihabiboglu_simulation_2010], which has
+the shortcoming that it doesn't consider interactions with other aspects of the
+waveguide simulation. In particular, it has not been shown how the microphone
+model responds to source gain and distance, or whether it affects the measured
+frequency response at the receiver. These are important considerations which
+have important implications for the validity of the waveguide model as a whole.
+Due to the number of components in Wayverb, and the time spent on
+implementation alone, there was not time to test all aspects of the program.
+However, the [Evaluation]({{ site.baseurl }}{% link evaluation.md %}) contains
+a number of tests, all of which use this microphone model. In the future, more
+detailed tests should be conducted which focus solely on the microphone model.

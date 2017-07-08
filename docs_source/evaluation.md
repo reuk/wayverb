@@ -163,24 +163,39 @@ large               1.76            1.89 (7.39% error)    1.96 (11.4% error)
 The results for small and medium rooms are within 5% of the expected reverb
 time, although the measured T30 of the larger room has an error of 11%.  To be
 considered accurate, the error in the measurement should be below the *just
-noticeable difference* (JND) for that characteristic.  JNDs for different
-characteristics, such as clarity, reverberance, and level, are defined in the
-ISO standard 3382-1 [@iso_3382].  The JND for reverb time is 5%, therefore the
-simulated reverb time is accurate for the small and medium rooms, although it
-is inaccurate for the largest room.  Increasing the room volume has the effect
-of increasing the reverb time, as expected.
+noticeable difference* (JND) for that characteristic.  The JND for reverb time
+is 5%, therefore the simulated reverb time is accurate for the small and medium
+rooms, although it is inaccurate for the largest room.  Increasing the room
+volume has the effect of increasing the reverb time, as expected.
 
 Now, the results are plotted in octave bands (see +@fig:room_size_rt30).  The
 results in lower bands, which are modelled by the waveguide, have a
 significantly shorter reverb time than the upper bands, which are generated
 geometrically. The higher bands have reverb times slightly higher than the
 Sabine prediction, while the waveguide-generated bands show much shorter reverb
-tails than expected. The difference in reverb times between the waveguide
-and geometric methods also becomes evident when spectrograms are taken of the
-impulse responses (see +@fig:room_size_spectrograms). In all tests, the initial
-level is constant across the spectrum, but dies away faster at lower
-frequencies. In the medium and large rooms, some resonance at 400Hz is seen
-towards the end of the reverb tail.
+tails than expected. The minimum and maximum reverb times across all octave
+bands are shown, along with percentage differences, in
++@tbl:room_size_differences.  For all room sizes, the maximum difference in
+reverb time between the waveguide and geometric models is over 8 times the 5%
+JND.  The difference in reverb times between the waveguide and geometric
+methods also becomes evident when spectrograms are taken of the impulse
+responses (see +@fig:room_size_spectrograms). In all tests, the initial level
+is constant across the spectrum, but dies away faster at lower frequencies. In
+the medium and large rooms, some resonance at 400Hz is seen towards the end of
+the reverb tail.
+
+Table: Minimum and maximum reverb times taken from the octave-band results in
++@fig:room_size_rt30. {#tbl:room_size_differences}
+
+----------------------------------------------------------------------------------
+room                min T30 / s     max T30 / s     percentage difference
+------------------- --------------- --------------- ------------------------------
+small               0.4460          0.6750          40.84
+
+medium              0.6200          0.9337          40.41
+
+large               0.9145          1.978           73.52
+----------------------------------------------------------------------------------
 
 In the medium and large tests, the spectrograms appear as though the
 low-frequency portion has a longer, rather than a shorter, reverb time.
@@ -297,10 +312,27 @@ absorption          Sabine RT / s   measured T20 / s      measured T30 / s
 0.08                1.108           1.126 (1.625% error)  1.156 (4.322% error)
 ----------------------------------------------------------------------------------
 
-In this test, low-frequency bands have shorter reverb times than high-frequency
-bands, as in the previous test.  However, the broadband reverb time responds
-correctly to the change in absorption coefficients. All results are within the
-5% JND for reverb time.
+It can be seen in +@fig:room_absorption_rt30 that low-frequency bands have
+shorter reverb times than high-frequency bands, as in the previous test.  The
+minimum and maximum reverb times from each test are shown in
++@tbl:room_absorption_differences, alongside percentage differences. In all
+cases, the difference in reverb time between the bands with longest and
+shortest decay is more than 9 times the JND. However, the broadband reverb time
+responds correctly to the change in absorption coefficients. All broadband
+results are within the 5% JND for reverb time.
+
+Table: Minimum and maximum reverb times taken from the octave-band results in
++@fig:room_absorption_rt30. {#tbl:room_absorption_differences}
+
+----------------------------------------------------------------------------------
+absorption          min T30 / s     max T30 / s     percentage difference
+------------------- --------------- --------------- ------------------------------
+0.02                2.604           4.338           49.98
+
+0.04                1.395           2.255           47.16
+
+0.08                0.7093          1.179           49.72
+----------------------------------------------------------------------------------
 
 The spectrograms in +@fig:room_material_spectrograms do not show the same
 resonance at 400Hz as the previous test results. Given that models of different
@@ -573,7 +605,7 @@ Finally, the binaural model is tested. A concert hall measuring approximately
 $33 \times 15 \times 50$ metres is simulated (shown in +@fig:concert_hall),
 with wall absorptions increasing from 0.25 in the lowest band to 0.67 in the
 highest band, and scattering at 0.1 in all bands.  The source is placed in the
-centre of the stage area, and receiver is placed 10m along both the x- and
+centre of the stage area, and the receiver is placed 10m along both the x- and
 z-axes relative to the source. The receiver is oriented so that it is facing
 directly down the z axis, meaning that the source is 14.1m away, on the left of
 the receiver.
@@ -621,3 +653,30 @@ binaural receiver, source left  <audio controls><source src="demos/out_binaural.
 
 ## Summary
 
+A simulation program, Wayverb, has been implemented and its feature set
+described. Tests have been run to gauge how closely Wayverb's simulation
+matches predicted behaviour. These tests have been designed in accordance with
+the primary research goal, which was physical plausibility. The results show
+that changes in parameters cause appropriate changes in the outputs:
+
+- Larger rooms have longer reverb times than smaller rooms.
+- Rooms with high absorption produce shorter reverb times than more reflective
+  rooms.
+- When the source and receiver are moved apart, the ratio of direct to
+  reverberant sound decreases.
+- Obstructions in the room cause diffraction.
+- Long reflective rooms produce distinct echoes.
+- Receiver modelling produces appropriate direction-dependent attenuation.
+
+The main downfall of Wayverb's simulation method is an obvious mismatch between
+the low- and high-frequency regions of the output. The room-size and absorption
+tests showed that reverb times above and below the model crossover frequency
+differ by significantly more than the JND.  Also, the simulation as a whole is
+not accurate: in the largest room, the broadband reverb time differed from the
+Sabine prediction by more than the JND. Although the effects of *changing*
+parameters are plausible, the overall simulation results are not.
+
+Tests have not been presented regarding the two lesser research goals of
+efficiency and accessibility. Ideally, benchmarks and usability tests would
+have been conducted. The shortcomings of the test procedure, and the
+implications thereof, are analysed in the following chapter.

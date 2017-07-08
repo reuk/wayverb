@@ -20,7 +20,7 @@ sys.path.append('python')
 
 def get_frequency_rt30_tuple(line):
     split = line.split()
-    return (split[0], split[6])
+    return (float(split[0]), float(split[6]))
 
 
 def read_rt30(fname):
@@ -42,6 +42,14 @@ def main():
 
         x = [freq for freq, _ in tuples]
         y = [time for _, time in tuples]
+
+        min_time = min(y)
+        max_time = max(y)
+
+        average = (max_time - min_time) * 100.0 / ((max_time + min_time) * 0.5)
+
+        print('file: {}, min: {}, max: {}, average: {}'.format(
+            fname, min_time, max_time, average))
 
         plt.plot(x, y, label=label, marker='o', linestyle='--')
 

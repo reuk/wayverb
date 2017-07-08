@@ -428,11 +428,26 @@ suggests that the waveguide bandwidth can be reduced in larger rooms, which
 means that the overall simulation complexity is effectively below linear in the
 volume of the modelled enclosure.
 
-Techniques for matching levels in geometric and waveguide models have been
-reviewed.  The calibrated waveguide output has been compared to the output of
-an ideal image-source model, showing close agreement in level between 30 and
-200Hz. Below 30Hz, the waveguide level is higher than the image-source level,
+A technique for matching levels in the geometric models has been derived from
+the equation for power radiated from a monopole source. This results in a
+formula for the initial energy carried by each ray, expressed in terms of the
+energy at the source, the distance between the source and receiver, the
+receiver radius, and the number of rays. When this formula is used to set
+initial ray energies, the ray tracer and image source models will register the
+same energy level at the receiver by definition, and therefore this particular
+calibration has not been tested.
+
+The process for calibrating the waveguide is also reasonably straightforward,
+but depends on a constant derived from experimental data put forward in
+[@siltanen_finite-difference_2013].  This method is not provably correct, and
+therefore has been verified through independent experimentation.  The
+calibrated waveguide output has been compared to the output of an ideal
+image-source model, showing close agreement in level between 30 and 200Hz.
+Below 30Hz, the waveguide level is higher than the image-source level,
 suggesting that some component of the waveguide (likely the injection method or
-boundary model) behaves incorrectly at low frequencies. Further testing and
-analysis is necessary to show how this error is related to the simulation
-paramters, and whether it is likely to be problematic in practice.
+boundary model) behaves incorrectly at low frequencies. The calibration method
+adjusts the broadband gain of the waveguide, so this error is definitely not
+due to an error in calibration. Further testing and analysis is necessary to
+show how the low-frequency error is related to the simulation parameters, and
+whether it is likely to be problematic in practice. The waveguide calibration
+method itself appears to function correctly.

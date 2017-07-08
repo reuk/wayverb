@@ -412,11 +412,27 @@ of this quantisation has not been investigated.
 
 The waveguide boundary implementation has been tested to see whether the
 measured reflectance matches the theoretical surface reflectance. In all tests,
-the match is reasonably close around the middle of the spectrum, between 0.01
-and 0.1 of the mesh sampling rate. Outside this range, the results tend to
+the match is reasonably close around the middle of the valid spectrum, between
+0.01 and 0.1 of the mesh sampling rate. Outside this range, the results tend to
 deviate somewhat. As a result, the model crossover frequency in Wayverb has a
 maximum of 0.15 of the waveguide sampling frequency, and it is recommended to
 oversample the mesh if highly accurate boundary results are required. It is
 hoped that the low frequency artefacts will always occur below the audible
 range, although it is unclear whether this is really the case as tests have
-only be conducted at a single sampling frequency.
+only been conducted at a single sampling frequency. Only 1D boundaries have
+been tested, as it is unclear how to test 2D and 3D boundaries in isolation.
+Given that all boundary types (1D, 2D and 3D) have the same derivation, it may
+be enough to assume that if the 1D boundaries function correctly, then the 2D
+and 3D boundaries will work too. However, this does not rule out the
+possibility of implementation mistakes in the higher-order boundaries.
+
+Finally, the boundary model has not been tested in the context of an extended
+waveguide simulation. It would be expected that the absorption of surfaces in a
+room would have an effect on the overall reverb time in that room. This
+relationship has not been shown to be true of Wayverb's waveguide. A
+particularly interesting test would be to set different absorption coefficients
+in each of the waveguide frequency bands, to estimate Sabine reverb times in
+each of those bands, and to see whether the measured reverb time in each band
+matches the predictions. Such a test was not possible due to time constraints,
+but would help to clarify some of the results shown in the [Evaluation]({{
+  site.baseurl }}{% link evaluation.md %}).
