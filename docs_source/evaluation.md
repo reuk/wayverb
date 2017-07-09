@@ -112,11 +112,9 @@ the applied reverbs. Additionally, they cover a wide frequency range, and
 contain both sustained and transient material, presenting the reverbs under a
 range of conditions.
 
---------------------------------------------------------------------------------
 name                            audio file
 ------------------------------- ------------------------------------------------
 carrier signal                  <audio controls><source src="demos/out_cardioid_away.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
---------------------------------------------------------------------------------
 
 </div>
 
@@ -150,15 +148,11 @@ accordance with the ISO 3382 specification [@iso_3382].
 Table: Comparison of Sabine reverb time against measured reverb time for
 enclosures of three different sizes. {#tbl:room_volume}
 
--------------------------------------------------------------------------------
 room                Sabine RT / s   measured T20 / s      measured T30 / s
 ------------------- --------------- --------------------- ---------------------
 small               0.653           0.663 (1.53% error)   0.658 (0.766% error)
-
 medium              0.887           0.897 (1.13% error)   0.903 (1.80% error)
-
 large               1.76            1.89 (7.39% error)    1.96 (11.4% error)
--------------------------------------------------------------------------------
 
 The results for small and medium rooms are within 5% of the expected reverb
 time, although the measured T30 of the larger room has an error of 11%.  To be
@@ -187,15 +181,11 @@ the reverb tail.
 Table: Minimum and maximum reverb times taken from the octave-band results in
 +@fig:room_size_rt30. {#tbl:room_size_differences}
 
-----------------------------------------------------------------------------------
 room                min T30 / s     max T30 / s     percentage difference
 ------------------- --------------- --------------- ------------------------------
 small               0.4460          0.6750          40.84
-
 medium              0.6200          0.9337          40.41
-
 large               0.9145          1.978           73.52
-----------------------------------------------------------------------------------
 
 In the medium and large tests, the spectrograms appear as though the
 low-frequency portion has a longer, rather than a shorter, reverb time.
@@ -276,15 +266,11 @@ frequency.
 
 <div id="audio_table">
 
---------------------------------------------------------------------------------
 test                    audio file
 ----------------------- --------------------------------------------------------
 small                   <audio controls><source src="demos/out_small.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
-
 medium                  <audio controls><source src="demos/out_medium.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
-
 large                   <audio controls><source src="demos/out_large.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
---------------------------------------------------------------------------------
 
 </div>
 
@@ -302,15 +288,11 @@ in +@fig:room_material_spectrograms.
 Table: Comparison of Sabine reverb time against measured reverb time for an
 enclosure with varying boundary absorptions. {#tbl:room_absorption}
 
-----------------------------------------------------------------------------------
-absorption          Sabine RT / s   measured T20 / s      measured T30 / s
-------------------- --------------- --------------------- ------------------------
-0.02                4.433           4.295 (3.113% error)  4.283 (3.384% error)
-
-0.04                2.217           2.210 (0.3157% error) 2.219 (0.09021% error)
-
-0.08                1.108           1.126 (1.625% error)  1.156 (4.322% error)
-----------------------------------------------------------------------------------
+absorption          Sabine RT / s   measured T20 / s       measured T30 / s
+------------------- --------------- ---------------------- -----------------------
+0.02                4.433           4.295 (3.113% error)   4.283 (3.384% error)
+0.04                2.217           2.210 (0.3157% error)  2.219 (0.09021% error)
+0.08                1.108           1.126 (1.625% error)   1.156 (4.322% error)
 
 It can be seen in +@fig:room_absorption_rt30 that low-frequency bands have
 shorter reverb times than high-frequency bands, as in the previous test.  The
@@ -324,15 +306,11 @@ results are within the 5% JND for reverb time.
 Table: Minimum and maximum reverb times taken from the octave-band results in
 +@fig:room_absorption_rt30. {#tbl:room_absorption_differences}
 
-----------------------------------------------------------------------------------
 absorption          min T30 / s     max T30 / s     percentage difference
 ------------------- --------------- --------------- ------------------------------
 0.02                2.604           4.338           49.98
-
 0.04                1.395           2.255           47.16
-
 0.08                0.7093          1.179           49.72
-----------------------------------------------------------------------------------
 
 The spectrograms in +@fig:room_material_spectrograms do not show the same
 resonance at 400Hz as the previous test results. Given that models of different
@@ -352,15 +330,11 @@ content.](images/room_material_spectrograms){#fig:room_material_spectrograms}
 
 <div id="audio_table">
 
---------------------------------------------------------------------------------
 test                    audio file
 ----------------------- --------------------------------------------------------
 absorption: 0.02        <audio controls><source src="demos/out_0.02.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
-
 absorption: 0.04        <audio controls><source src="demos/out_0.04.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
-
 absorption: 0.08        <audio controls><source src="demos/out_0.08.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
---------------------------------------------------------------------------------
 
 </div>
 
@@ -376,15 +350,11 @@ with the Room EQ Wizard, and displayed in +@tbl:room_spacing.
 Table: Comparison of measured T20, T30, and EDT for a large room with near and
 far microphone spacings. {#tbl:room_spacing}
 
-----------------------------------------------------------
 test                      T20 / s   T30 / s     EDT / s
 ------------------------- --------- ----------- ----------
 near (1.00m spacing)      1.907     1.963       1.593
-
 far (11.8m spacing)       1.887     1.962       1.763
-
 **percentage difference** **1.054** **0.05100** **10.13**
-----------------------------------------------------------
 
 According to Kuttruff [@kuttruff_room_2009, p. 237], early decay time will be
 strongly influenced by early reflections, and so will depend on the measurement
@@ -432,13 +402,10 @@ response.](images/spacing_signals){#fig:spacing_signals}
 
 <div id="audio_table">
 
---------------------------------------------------------------------------------
 test                    audio file
 ----------------------- --------------------------------------------------------
 near                    <audio controls><source src="demos/out_large.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
-
 far                     <audio controls><source src="demos/out_large_spaced.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
---------------------------------------------------------------------------------
 
 </div>
 
@@ -493,11 +460,9 @@ effects.
 
 <div id="audio_table">
 
---------------------------------------------------------------------------------
 test                    audio file
 ----------------------- --------------------------------------------------------
 vault                   <audio controls><source src="demos/out_vault.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
---------------------------------------------------------------------------------
 
 </div>
 
@@ -547,13 +512,10 @@ over time.
 
 <div id="audio_table">
 
---------------------------------------------------------------------------------
 test                            audio file
 ------------------------------- ------------------------------------------------
 tunnel with scattering          <audio controls><source src="demos/out_tunnel.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
-
 tunnel without scattering       <audio controls><source src="demos/out_tunnel_no_scatter.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
---------------------------------------------------------------------------------
 
 </div>
 
@@ -591,11 +553,9 @@ direct contribution time, the first reflection time, and the first and second
 
 <div id="audio_table">
 
---------------------------------------------------------------------------------
 test                            audio file
 ------------------------------- ------------------------------------------------
 cardioid mic facing away        <audio controls><source src="demos/out_cardioid_away.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
---------------------------------------------------------------------------------
 
 </div>
 
@@ -643,11 +603,9 @@ head.](images/binaural_signals){#fig:binaural_signals}
 
 <div id="audio_table">
 
---------------------------------------------------------------------------------
 test                            audio file
 ------------------------------- ------------------------------------------------
 binaural receiver, source left  <audio controls><source src="demos/out_binaural.mp3" type="audio/mpeg">This browser does not support html5 audio.</audio>
---------------------------------------------------------------------------------
 
 </div>
 

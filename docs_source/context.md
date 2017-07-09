@@ -231,7 +231,7 @@ well-known in the literature [@southern_hybrid_2013; @aretz_combined_2009;
 @murphy_hybrid_2008; @southern_room_2013; @vorlander_simulation_2009;
 @southern_spatial_2011].
 
-## Creative Arts Context
+## Acoustic Simulation and the Creative Arts
 
 Convolution reverbs are extremely useful to musicians and sound designers due
 to their flexibility. By convolving an IR with some other signal, that signal
@@ -253,12 +253,13 @@ the reverb is designed to evoke an environment that does not (or cannot) exist.
 In these situations, the user has a few options. Firstly, a custom IR could be
 recorded. This will require specialist equipment, and access to the particular
 location. Secondly, the desired reverb could be approximated using an
-algorithmic reverb tool. Thirdly, the IR could be predicted using an acoustic
-simulator. The third approach seems like a sensible middle ground between the
-first two options. It should be less time-consuming than recording a custom IR,
-and will not require access to the modelled location (although a 3D virtual
-model would be necessary). Additionally, the simulated IR should match
-real-world behaviour more closely than an algorithmic reverb.
+algorithmic (i.e. not convolution-based) reverb tool. Thirdly, the IR could be
+predicted using an acoustic simulator. The third approach seems like a sensible
+middle ground between the first two options. It should be less time-consuming
+than recording a custom IR, and will not require access to the modelled
+location (although a 3D virtual model would be necessary). Additionally, the
+simulated IR should match real-world behaviour more closely than an algorithmic
+reverb.
 
 Despite the obvious application of virtual acoustics to music and sound
 production, all of the software in +@tbl:software appears to be targeted at
@@ -278,12 +279,11 @@ focus on technical users:
 In the case of the "EASE" software, its name is an acronym standing for
 "Enhanced Acoustic Simulator for Engineers".
 
-A simulation tool for creative users should have different goals to a
-technical/engineering focused tool. Specialised acoustics software will
-prioritise accuracy, and the ability to produce and export statistics about the
-acoustics of the modelled space. It may also assume a certain level of prior
-knowledge in the user. However, a program targeted at creative users should
-instead prioritise:
+This targeting of technical users has an effect on the program design. The
+programs prioritise physical accuracy, and the ability to export visualisations
+and statistics about the modelled acoustics. These tools may also have steep
+learning curve, assuming that users are already familiar with acoustics theory.
+A simulation tool for creative users should have different goals:
 
 - **Sound quality**: Generated IRs should be suitable for use without any
   additional cleanup or editing.
@@ -586,8 +586,6 @@ tests and generating graphs.
 
 This documentation is written in Markdown, and compiled to HTML and to PDF
 using Pandoc.  The project website is generated with Jekyll.
-
-\pagebreak
 
 ## Summary
 

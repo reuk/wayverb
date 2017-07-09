@@ -221,3 +221,5 @@ an MA thesis.
 parts of the output to localise the 400Hz resonance.
 
 -[ ] p28 Don't refer forwards to the boundary modelling section
+
+-[ ] ******* Sort out weird table breaking! *******

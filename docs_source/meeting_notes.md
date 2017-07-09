@@ -30,6 +30,13 @@ Be realistic - don't make something into something it's not
 
 # Conclusion
 
+- discussion and reflection on research aims
+- future work
+
+- plausibility
+- efficiency
+- usability
+
 --------------------------------------------------------------------------------
 
 - Research aims should be focused:

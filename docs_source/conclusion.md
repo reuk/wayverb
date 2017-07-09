@@ -17,20 +17,28 @@ toc: null
 
 Due to time constraints, the tests presented in the
 [Evaluation]({{site.baseurl}}{% link evaluation.md %}) are not exhaustive.
-Ideally a more thorough testing procedure, such as that used in
-[@southern_room_2013], would have been followed.  That paper presents test
-results for the boundary performance, modal content, diffraction, and reverb
-times of acoustic models including FDTD, FEM, image-source model and *beam-tree
-acoustic radiance transfer*. A wide range of results for each test is shown:
-the modal response of the FDTD model is compared to that of the image source
-model for six different reflection coefficient values, and the reverb time
-predicted by each model is shown for a range of ten different reflection
-coefficient values.  This level of detail gives a clear view of the models'
-performance. Due to the narrow range of parameters tested with Wayverb, it is
-possible that the implementation may exhibit issues for some combination of
-parameters not presented here. It would be desirable to test a wider range of
-parameters to find out whether Wayverb performs appropriately under all
-circumstances.
+Only one of the research goals is considered, namely plausibility, and the
+testing procedure does not even consider all aspects of this goal.  Ideally a
+more thorough testing procedure, such as that used in [@southern_room_2013],
+would have been followed.  That paper presents test results for the boundary
+performance, modal content, diffraction, and reverb times of acoustic models
+including FDTD, FEM, image-source model and *beam-tree acoustic radiance
+transfer*. A wide range of results for each test is shown: the modal response
+of the FDTD model is compared to that of the image source model for six
+different reflection coefficient values, and the reverb time predicted by each
+model is shown for a range of ten different reflection coefficient values.
+This level of detail gives a clear view of the models' performance. Due to the
+narrow range of parameters tested with Wayverb, it is possible that the
+implementation may exhibit issues for some combination of parameters not
+presented here. It would be desirable to test a wider range of parameters to
+find out whether Wayverb performs appropriately under all circumstances.
+
+The summaries of the chapters concerning microphone and boundary models both
+describe how the components in question work in isolation. However, the models
+have not been tested in the context of a long-running simulation.  In
+particular, it has not been shown how either model affects the overall
+frequency response and reverb time in the waveguide. The lack of tests in these
+areas may hide latent issues in Wayverb's implementation.
 
 All tests presented throughout this paper use approximations to find the
 desired or target results.  For instance, the test of the waveguide modal
@@ -62,22 +70,33 @@ enjoyed. If it could be shown that listeners perceived the sound quality to be
 at least as good as real IRs, this would make a good case for Wayverb's utility
 in a sound designer's toolbox.
 
-Finally, Wayverb's results could be compared (both through acoustic parameters
-like T30, and using listening tests) to the outputs of other similar modelling
-programs.  As noted in the [Context]({{site.baseurl}}{% link context.md %})
-chapter, Wayverb is, at time of writing, the only generally-available
+Wayverb's results could be compared (both through acoustic parameters like T30,
+and using listening tests) to the outputs of other similar modelling programs.
+As noted in the [Context]({{site.baseurl}}{% link context.md %}) chapter,
+Wayverb is, at time of writing, the only generally-available
 acoustics-modelling tool that uses both geometric and waveguide models. Without
 comparing against other tools, it is difficult to say whether this hybrid
-approach yields tangible efficiency or accuracy gains over a more traditional
+approach yields tangible sound quality gains over a more traditional
 single-model approach.
+
+The goals of efficiency and usability were not tested at all. In terms of
+efficiency, it would be useful to show how simulation time varies with
+parameters such as room size, average surface absorption, and model crossover
+frequency. The simulation speed could also be compared to competing software
+packages. Usability is more difficult to test, but a sensible starting point
+would be to simply observe some creative professionals using the software (in
+order to find common points of confusion or frustration) and to ask for
+feedback.
 
 As it stands, the tests presented in the [Evaluation]({{site.baseurl}}{% link
 evaluation.md %}) do not have sufficient scope in order to make claims about
-Wayverb's overall "usefulness" as a software tool.  A sensible starting point
-for future work on this project would be to conduct detailed tests into
-Wayverb's real-world accuracy, subjective quality, and relative efficiency.
+Wayverb's overall "usefulness" as a software tool.  Further tests which
+would help to gauge Wayverb subjectively, and in the context of competing
+packages, have been suggested.
 
-### Simulation Method
+### Evaluation of Project Goals
+
+#### Plausibility
 
 All models presented in the [Evaluation]({{site.baseurl}}{% link evaluation.md
 %}) perform as expected with regards to changes in room size and shape,
@@ -131,20 +150,91 @@ smallest simulations. Another option is to reduce the audible impact of the
 crossover between the waveguide and geometric outputs, simply by increasing its
 width.  This has the dual drawbacks of decreasing the low-frequency accuracy,
 while also requiring a higher waveguide sample-rate, which is computationally
-expensive.  Alternatively, the geometric algorithms may be altered, to account
-for effects such as diffraction, with the goal of minimising the differences
-between the wave and ray-based methods. This solution would maintain (or even
-improve) the accuracy of the simulation, but would again increase its cost.
-Finally, the goal of low-frequency accuracy could be abandoned, and the entire
-spectrum modelled using geometric methods. However, this would prevent
-important characteristics such as modal behaviour from being recorded.
+expensive.  Alternatively, the geometric algorithms may be extended, to
+account for effects such as diffraction, with the goal of minimising the
+differences between the wave and ray-based methods. This solution would
+maintain (or even improve) the accuracy of the simulation, but would again
+increase its cost.  Finally, the goal of low-frequency accuracy could be
+abandoned, and the entire spectrum modelled using geometric methods. However,
+this would prevent important characteristics such as modal behaviour from
+being recorded.
 
-### General Implementation
+#### Efficiency
 
-The implementation has several known issues, other than those shown in the
-tests above.  These issues can broadly be separated into two categories:
-firstly, problems with the simulation algorithm which were not highlighted in
-the above tests; and secondly, usability issues with the program interface.
+The efficiency goal put forward in the project aims stated that simulations
+should, in general, take less than ten minutes to run. This held true for the
+test cases presented in the [Evaluation]({{site.baseurl}}{% link evaluation.md
+%}). However, the render time is still long enough to be distracting, and the
+user experience could be greatly improved by decreasing its duration.  The
+reason for the long render times is simple: the majority of the development
+time on Wayverb was spent trying to ensure that each model component functioned
+correctly. By the time the components were "complete" there was little time
+left for optimising.
+
+The length of the render time may be especially problematic in creative
+contexts.  When producing music, it is important to be able to audition and
+tweak reverbs in order to produce the most appropriate effect.  With long
+rendering times, this auditioning process becomes protracted, which impacts the
+productivity of the musician. In addition, if the program uses the majority of
+the machine's resources while it is running, then this prevents the user from
+running it in the background and continuing with other tasks in the meantime.
+Usability tests would be required to find how problematic the render times are
+in practice.
+
+The simulation methods have been implemented to minimise average-case
+computational complexity wherever possible, but both the ray-tracing and
+waveguide processes are limited to a complexity of $O(n)$ where n refers to the
+number of rays or nodes required in the simulation.  Any further performance
+improvements may only be gained by improving the per-ray or per-node processing
+speed. This is certainly possible, but would yield relatively small
+improvements to the simulation speed. It may be equally valid to simply wait
+for hardware with increased parallelism support: a machine with twice as many
+graphics cores will run the program twice as fast. Such machines are likely
+to be commonplace in two or three years. Therefore, a better use of time
+would be to spend those two years focusing on the algorithm's functional
+problems rather than optimisation. Although it is disappointing to fall back
+on the argument that hardware improvements will obviate the need for software
+efficiency improvements, note that Wayverb is uniquely well-placed to benefit
+from hardware improvements going forward.  Newer computing platforms are
+generally more powerful due to an increase in the number of processor cores
+rather than an increase in overall clock speed, and Wayverb by design can
+scale across all available GPU cores.
+
+#### Accessibility
+
+The accessibility of the program was limited to the design of the graphical
+interface. The target demographic of creative users was considered in several
+ways.
+
+The workflow is designed to be intuitive. When the app is opened, it asks for a
+CAD file to load. Once a file has been selected, a list of settings will open
+on the left side of the window, along with a graphical view of the 3D space.
+The user can simply work down the list of settings, starting with the most
+important parameters: source and receiver placement, and surface settings.  At
+the bottom of the list is a large "render" button, which will open an exporter
+dialog box when clicked. There are no unlabelled icons or options hidden in
+menus; the entire simulation is controlled from a single window. This makes it
+simple to get started with the app.
+
+The controls themselves are simple and self-explanatory. The number of rays is
+controlled by a single "quality" parameter, as opposed to allowing the user to
+specify an exact number of rays. The allows the user to think in terms of the
+output quality directly. If the ray number was directly exposed as a control,
+it may not be clear how this parameter would affect the output. Similarly, the
+surface settings dialog box is set out like a multiband EQ (with which users
+will be familiar), which provides hints as to the effect of the absorption in
+each band. Presets are also provided to give users a starting point when
+designing their own materials.
+
+### Future Work
+
+Shortcomings of the testing procedure have already been discussed, and it
+should go without saying that future work on the project should begin by
+testing existing features, rather than implementing new ones.  However, there
+are many possibilities for features which might be considered for inclusion in
+a future version of Wayverb.  These features can broadly be separated into two
+categories: extensions to the simulation algorithm, and usability improvements
+to the program interface.
 
 #### Algorithm
 
@@ -174,6 +264,13 @@ introduces low-frequency oscillations and reflection artefacts. An important
 area for future research is the development of an input signal which can be
 used in conjunction with a soft source, which does not cause any DC offset.
 
+Wayverb's waveguide topology is currently rectilinear, which is suboptimal both
+in terms of efficiency and accuracy. This topology was chosen because it was
+the only one which supported the LRS boundary model. The tetrahedral topology
+is faster and requires less memory. Therefore, future work may seek to
+formulate the LRS boundary equations such that they can be used with a
+tetrahedral mesh.
+
 An important feature which is not implemented in Wayverb is the modelling of
 directional sources.  Currently, all modelled sources emit a single spherical
 wave-front, which has equal energy in all directions. Real-world sources such
@@ -192,51 +289,6 @@ is not strictly justified in combination with the current waveguide microphone
 model [@hacihabiboglu_simulation_2010]. Ambisonic output would therefore
 require further research into waveguide microphone modelling, in order to find
 a model which better supports coincident capsules.
-
-The efficiency goal put forward in the project aims stated that simulations
-should, in general, take less than ten minutes to run. This held true for the
-test cases presented in the [Evaluation]({{site.baseurl}}{% link evaluation.md
-%}). However, the render time is still long enough to be distracting, and the
-user experience could be greatly improved by decreasing its duration.  The
-reason for the long render times is simple: the majority of the development
-time on Wayverb was spent trying to ensure that each model component functioned
-correctly. By the time the components were "complete" there was little time
-left for optimising.
-
-The length of the render time may be especially problematic in creative
-contexts.  When producing music, it is important to be able to audition and
-tweak reverbs in order to produce the most appropriate effect.  With long
-rendering times, this auditioning process becomes protracted, which impacts the
-productivity of the musician. In addition, if the program uses the majority of
-the machine's resources while it is running, then this prevents the user from
-running it in the background and continuing with other tasks in the meantime.
-
-Alternatively, the speed may be acceptable for architectural applications,
-where absolute accuracy is most important. In this scenario, the focus is upon
-checking the acoustics of a previously-specified enclosure, rather than
-experimenting to find the most pleasing output. This means that longer times
-between renders can be justified if the results are highly accurate.
-Additionally, users may have access to more powerful server or specialised
-compute hardware which could lead to speed-ups.
-
-The simulation methods have been implemented to minimise average-case
-computational complexity wherever possible, but both the ray-tracing and
-waveguide processes are limited to a complexity of $O(n)$ where n refers to the
-number of rays or nodes required in the simulation.  Any further performance
-improvements may only be gained by improving the per-ray or per-node processing
-speed. This is certainly possible, but would yield relatively small
-improvements to the simulation speed. It may be equally valid to simply wait
-for hardware with increased parallelism support: a machine with twice as many
-graphics cores will run the program twice as fast. Such machines are likely
-to be commonplace in two or three years. Therefore, a better use of time
-would be to spend those two years focusing on the algorithm's functional
-problems rather than optimisation. Although it is disappointing to fall back
-on the argument that hardware improvements will obviate the need for software
-efficiency improvements, note that Wayverb is uniquely well-placed to benefit
-from hardware improvements going forward.  Newer computing platforms are
-generally more powerful due to an increase in the number of processor cores
-rather than an increase in overall clock speed, and Wayverb by design can
-scale across all available GPU cores.
 
 #### User Interface
 
@@ -321,7 +373,7 @@ fixes.
 The goal of the Wayverb project was to create a program which was capable of
 simulating the acoustics of arbitrary enclosed spaces. For the program to be
 useful to its target audience of musicians and sound designers, it must be
-simultaneously accurate, efficient, and accessible.
+simultaneously plausible, efficient, and accessible.
 
 The aims of plausibility and efficiency would be met by combining
 wave-modelling and geometric simulation methods, benefiting from both the
@@ -345,12 +397,10 @@ aspects of the waveguide model (such as the boundary and receiver
 implementations) perform as expected, the waveguide model as a whole does not.
 The audible artefacts produced by combining the models mean that generated
 results are not fit for the purposes of high-quality music production or sound
-design. This indicates that the goals of the project were misguided: an
-additional, primary goal of "usefulness" or "fitness" should have been
-considered. Future work may seek to locate errors in the implementation of the
-waveguide, and to improve the match between the outputs of the different
-models, perhaps sacrificing some low-frequency accuracy in the interests of
-sound quality.
+design.  That is, the project fails to achieve its principal design goal.
+Future work may seek to locate errors in the implementation of the waveguide,
+and to improve the match between the outputs of the different models, perhaps
+sacrificing some low-frequency accuracy in the interests of sound quality.
 
 In terms of efficiency, simulations generally complete within minutes, rather
 than hours or days, meeting the project's efficiency target. It is also
@@ -370,9 +420,19 @@ The application has an accessible graphical interface. Although some desirable
 features (such as built-in convolution and 3D editing) are missing, the
 interface is focused and functional. It is possible to install and use without
 specialist training.  Additionally, all code is open-source, allowing
-collaboration and contribution from interested third-parties. While the
-accuracy and efficiency goals were not conclusively met, it is clear that the
-finished project meets the accessibility goal specified in the project aims.
+collaboration and contribution from interested third-parties.
 
-Most importantly, the Wayverb project demonstrates that the hybrid modelling
-approach is viable in consumer software.
+On reflection, it appears that the scope of the project was too large, which in
+turn meant that none of the research goals were achieved. The majority of the
+project's duration was spent implementing the program, which meant that
+when functional issues (like the reverb time mismatch) were discovered during
+testing, there was no time to attempt a fix. Additionally, much more testing
+would be necessary in order for a comprehensive view of the program to be
+given, but again this was not possible.
+
+In its current state, Wayverb is unsuitable for use in creative contexts.
+However, it provides open-source implementations of three different acoustic
+models, along with an intuitive graphical interface. As such, Wayverb may serve
+as a solid starting point for further research in this field. It is conceivable
+that a future version of Wayverb, with more comprehensive testing and
+subsequent adjustment, could be a genuinely helpful tool for creative users.
