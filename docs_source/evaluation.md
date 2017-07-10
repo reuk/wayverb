@@ -617,14 +617,12 @@ matches predicted behaviour. These tests have been designed in accordance with
 the primary research goal, which was physical plausibility. The results show
 that changes in parameters cause appropriate changes in the outputs:
 
-- Larger rooms have longer reverb times than smaller rooms.
-- Rooms with high absorption produce shorter reverb times than more reflective
-  rooms.
-- When the source and receiver are moved apart, the ratio of direct to
-  reverberant sound decreases.
-- Obstructions in the room cause diffraction.
-- Long reflective rooms produce distinct echoes.
-- Receiver modelling produces appropriate direction-dependent attenuation.
+* Larger rooms have longer reverb times than smaller rooms.
+* Rooms with high absorption produce shorter reverb times than more reflective rooms.
+* When the source and receiver are moved apart, the ratio of direct to reverberant sound decreases.
+* Obstructions in the room cause diffraction.
+* Long reflective rooms produce distinct echoes.
+* Receiver modelling produces appropriate direction-dependent attenuation.
 
 The main downfall of Wayverb's simulation method is an obvious mismatch between
 the low- and high-frequency regions of the output. The room-size and absorption

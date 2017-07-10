@@ -33,6 +33,7 @@ PANDOC_OPTIONS = \
 	--filter pandoc-fignos \
 	--filter pandoc-eqnos \
 	--filter pandoc-tablenos \
+	--filter table_filter.py \
 	--bibliography=wayverb.bib \
 	--csl=ieee-with-url.csl \
 	--default-image-extension=pdf \

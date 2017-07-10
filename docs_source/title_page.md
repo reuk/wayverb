@@ -66,6 +66,8 @@ header-includes:
 
     - \usepackage{setspace}
     - \onehalfspacing
+
+    - \usepackage{booktabs}
 ...
 
 <!--
