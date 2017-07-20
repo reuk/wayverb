@@ -95,6 +95,19 @@ of tracing backwards from the receiver to each of the image sources is known as
 \rightarrow A \rightarrow R$ is an invalid path because $R \rightarrow S_{BA}$
 does not intersect $A$.](images/backtracking){#fig:backtracking}
 
+In Wayverb, all surfaces are represented by triangles. For a point $p$, its
+reflection $p'$ in a triangle with unit normal vector $n$ and a vertex at $t$
+can be found by
+
+$$p' = p - 2n (n \cdot (p - t))$$ {#eq:reflection}
+
+In +@eq:reflection, $\cdot$ is the vector dot operator. The triangle normal
+vector is found by taking the cross-product of two of the triangle edge
+vectors. An edge vector is the difference between two triangle vertices. A
+description of the ray-triangle intersection method used in Wayverb is more
+complicated, and is omitted here in the interests of brevity. A detailed
+explanation can be found in [@moller2005fast].
+
 ### Accelerating the Algorithm
 
 The naive method to find all the image sources for a scene is very expensive:

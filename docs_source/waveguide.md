@@ -818,7 +818,14 @@ on graphics hardware have also been provided.
 
 As shown, the DWM in Wayverb is obviously sub-optimal. Its topology is neither
 the fastest nor the most accurate, and its hard source causes scattering
-artefacts. Solutions to these problems would be time-consuming, and the current
-implementation was chosen as a compromise, so that a functional program could
-be completed within the time constraints of the project. Either of these
-problems might serve as starting points for future research projects.
+artefacts. Using a more efficient mesh topology would have required formulating
+an entirely new boundary modelling scheme, and using a soft source would have
+required development of a novel injection method. Such research, though useful,
+would have run counter to the specific research aims of this project.  As noted
+in the [Context]({{ site.baseurl}}{% link context.md %}) chapter, the purpose
+of Wayverb is primarily to create a useful tool for musicians, and to survey
+existing techniques for room simulation. Further research into these issues,
+though important, would have precluded the completion of a usable simulation
+program.  Of course, Wayverb's waveguide may be improved over time, as future
+research uncovers solutions to the problems identified in the course of this
+project.

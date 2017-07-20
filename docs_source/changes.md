@@ -751,3 +751,5 @@ whom?*
 --------------------------------------------------------------------------------
 
 *p107: complete reference for [72] needed – where was this work presented?*
+
+## Other Changes
