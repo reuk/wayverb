@@ -71,7 +71,6 @@
 \newcommand{\AlertTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
 \newcommand{\ErrorTok}[1]{\textcolor[rgb]{1.00,0.00,0.00}{\textbf{{#1}}}}
 \newcommand{\NormalTok}[1]{{#1}}
-\usepackage{longtable,booktabs}
 \usepackage{graphicx,grffile}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
@@ -103,6 +102,7 @@
 \usepackage[all, defaultlines=4]{nowidow}
 \usepackage{setspace}
 \onehalfspacing
+\usepackage{booktabs}
 
 \title{Wayverb: A Graphical Tool for Hybrid Room Acoustics Simulation}
 \providecommand{\subtitle}[1]{}
@@ -441,44 +441,45 @@ A handful of programs exist for acoustic simulation. The following table
 \text{(\ref{tab:software})} shows a selection which, whilst not
 exhaustive, is representative.
 
-\begin{longtable}[c]{@{}lll@{}}
+\begin{table}[ht]
+\centering
+
 \caption{Some of the most prominent tools for acoustic
-simulation.\label{tab:software}}\tabularnewline
+simulation.\label{tab:software}}
+
+\begin{tabular}{@{}lll@{}}
 \toprule
-Name & Type & Availability\tabularnewline
-\midrule
-\endfirsthead
-\toprule
-Name & Type & Availability\tabularnewline
-\midrule
-\endhead
-Odeon {[}\protect\hyperlink{ref-ux5fodeonux5f2016}{12}{]} & Geometric &
-Commercial\tabularnewline
+
+Name & Type & Availability \\\midrule
+
+Odeon
+{[}\protect\hyperlink{ref-ux5fodeonux5f2016}{12}{]} & Geometric & Commercial \\
 CATT-Acoustic
-{[}\protect\hyperlink{ref-ux5fcatt-acousticux5f2016}{13}{]} & Geometric
-& Commercial\tabularnewline
-Olive Tree Lab {[}\protect\hyperlink{ref-ux5fotlux5f2016}{14}{]} &
-Geometric & Commercial\tabularnewline
-EASE {[}\protect\hyperlink{ref-ux5feaseux5f2016}{15}{]} & Geometric &
-Commercial\tabularnewline
-Auratorium {[}\protect\hyperlink{ref-ux5faudiobornux5f2016}{16}{]} &
-Geometric & Commercial\tabularnewline
-RAVEN {[}\protect\hyperlink{ref-schroderux5fraven:ux5f2011}{17}{]} &
-Geometric & None\tabularnewline
+{[}\protect\hyperlink{ref-ux5fcatt-acousticux5f2016}{13}{]} & Geometric & Commercial \\
+Olive Tree Lab
+{[}\protect\hyperlink{ref-ux5fotlux5f2016}{14}{]} & Geometric & Commercial \\
+EASE
+{[}\protect\hyperlink{ref-ux5feaseux5f2016}{15}{]} & Geometric & Commercial \\
+Auratorium
+{[}\protect\hyperlink{ref-ux5faudiobornux5f2016}{16}{]} & Geometric & Commercial \\
+RAVEN
+{[}\protect\hyperlink{ref-schroderux5fraven:ux5f2011}{17}{]} & Geometric & None \\
 RoomWeaver
-{[}\protect\hyperlink{ref-beesonux5froomweaver:ux5f2004}{18}{]} &
-Waveguide & None\tabularnewline
-EAR {[}\protect\hyperlink{ref-ux5fearux5f2016}{19}{]} & Geometric &
-Free\tabularnewline
+{[}\protect\hyperlink{ref-beesonux5froomweaver:ux5f2004}{18}{]} & Waveguide & None \\
+EAR
+{[}\protect\hyperlink{ref-ux5fearux5f2016}{19}{]} & Geometric & Free \\
 PachydermAcoustic
-{[}\protect\hyperlink{ref-ux5fpachydermux5f2016}{20}{]} & Geometric &
-Free\tabularnewline
-Parallel FDTD {[}\protect\hyperlink{ref-ux5fparallelfdtdux5f2016}{21}{]}
-& Waveguide & Free\tabularnewline
-i-Simpa {[}\protect\hyperlink{ref-ux5fi-simpaux5f2016}{22}{]} &
-Geometric, extensible & Free\tabularnewline
+{[}\protect\hyperlink{ref-ux5fpachydermux5f2016}{20}{]} & Geometric & Free \\
+Parallel FDTD
+{[}\protect\hyperlink{ref-ux5fparallelfdtdux5f2016}{21}{]} & Waveguide & Free \\
+i-Simpa
+{[}\protect\hyperlink{ref-ux5fi-simpaux5f2016}{22}{]} & Geometric,
+extensible & Free \\
+
 \bottomrule
-\end{longtable}
+\end{tabular}
+
+\end{table}
 
 All commercial acoustics programs found use geometric techniques,
 probably because they are fast to run, and can often be implemented to
@@ -3094,96 +3095,27 @@ correct.
 The reverb times of the outputs are also compared and shown in the
 following table.
 
-\begin{longtable}[c]{@{}llll@{}}
+\begin{table}[ht]
+\centering
+
+\caption{}
+
+\begin{tabular}{@{}llll@{}}
 \toprule
-\begin{minipage}[b]{0.22\columnwidth}\raggedright\strut
-absorption
-\strut\end{minipage} &
-\begin{minipage}[b]{0.22\columnwidth}\raggedright\strut
-method
-\strut\end{minipage} &
-\begin{minipage}[b]{0.22\columnwidth}\raggedright\strut
-T20 / s
-\strut\end{minipage} &
-\begin{minipage}[b]{0.22\columnwidth}\raggedright\strut
-T30 / s
-\strut\end{minipage}\tabularnewline
-\midrule
-\endhead
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.05
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-exact image source
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-1.044
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-1.065
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.05
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-waveguide
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-1.165
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-1.180
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.10
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-exact image source
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.5401
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.5633
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.10
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-waveguide
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.5689
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.5905
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.20
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-exact image source
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.2768
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.2990
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.20
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-waveguide
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.2674
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.2880
-\strut\end{minipage}\tabularnewline
+
+absorption & method & T20 / s & T30 / s \\\midrule
+
+0.05 & exact image source & 1.044 & 1.065 \\
+0.05 & waveguide & 1.165 & 1.180 \\
+0.10 & exact image source & 0.5401 & 0.5633 \\
+0.10 & waveguide & 0.5689 & 0.5905 \\
+0.20 & exact image source & 0.2768 & 0.2990 \\
+0.20 & waveguide & 0.2674 & 0.2880 \\
+
 \bottomrule
-\end{longtable}
+\end{tabular}
+
+\end{table}
 
 There is a difference of 11\% for the lowest absorption, which falls to
 6\% for an absorption of 0.10, and to 4\% for an absorption of 0.20.
@@ -4380,84 +4312,24 @@ in
 {[}\protect\hyperlink{ref-oxnardux5ffrequency-dependentux5f2015}{72}{]},
 shown in the following table:
 
-\begin{longtable}[c]{@{}llllll@{}}
+\begin{table}[ht]
+\centering
+
+\caption{}
+
+\begin{tabular}{@{}llllll@{}}
 \toprule
-\begin{minipage}[b]{0.30\columnwidth}\raggedright\strut
-band centre frequency / Hz
-\strut\end{minipage} &
-\begin{minipage}[b]{0.08\columnwidth}\raggedright\strut
-31
-\strut\end{minipage} &
-\begin{minipage}[b]{0.08\columnwidth}\raggedright\strut
-73
-\strut\end{minipage} &
-\begin{minipage}[b]{0.08\columnwidth}\raggedright\strut
-173
-\strut\end{minipage} &
-\begin{minipage}[b]{0.08\columnwidth}\raggedright\strut
-411
-\strut\end{minipage} &
-\begin{minipage}[b]{0.20\columnwidth}\raggedright\strut
-974
-\strut\end{minipage}\tabularnewline
-\midrule
-\endhead
-\begin{minipage}[t]{0.30\columnwidth}\raggedright\strut
-plaster
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.08
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.08
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.2
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.5
-\strut\end{minipage} &
-\begin{minipage}[t]{0.20\columnwidth}\raggedright\strut
-0.4
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.30\columnwidth}\raggedright\strut
-wood
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.15
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.15
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.11
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.1
-\strut\end{minipage} &
-\begin{minipage}[t]{0.20\columnwidth}\raggedright\strut
-0.07
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.30\columnwidth}\raggedright\strut
-concrete
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.02
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.02
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.03
-\strut\end{minipage} &
-\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
-0.03
-\strut\end{minipage} &
-\begin{minipage}[t]{0.20\columnwidth}\raggedright\strut
-0.03
-\strut\end{minipage}\tabularnewline
+
+band centre frequency / Hz & 31 & 73 & 173 & 411 & 974 \\\midrule
+
+plaster & 0.08 & 0.08 & 0.2 & 0.5 & 0.4 \\
+wood & 0.15 & 0.15 & 0.11 & 0.1 & 0.07 \\
+concrete & 0.02 & 0.02 & 0.03 & 0.03 & 0.03 \\
+
 \bottomrule
-\end{longtable}
+\end{tabular}
+
+\end{table}
 
 The boundary filter for each material was generated by converting the
 absorption coefficients to per-band reflectance coefficients using the
@@ -4724,60 +4596,24 @@ model generates reflections up to the fourth order.
 
 The following results are found, for the entire (broadband) output:
 
-\begin{longtable}[c]{@{}llll@{}}
+\begin{table}[ht]
+\centering
+
+\caption{}
+
+\begin{tabular}{@{}llll@{}}
 \toprule
-\begin{minipage}[b]{0.22\columnwidth}\raggedright\strut
-room
-\strut\end{minipage} &
-\begin{minipage}[b]{0.18\columnwidth}\raggedright\strut
-Sabine RT / s
-\strut\end{minipage} &
-\begin{minipage}[b]{0.22\columnwidth}\raggedright\strut
-measured T20 / s
-\strut\end{minipage} &
-\begin{minipage}[b]{0.27\columnwidth}\raggedright\strut
-measured T30 / s
-\strut\end{minipage}\tabularnewline
-\midrule
-\endhead
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-small
-\strut\end{minipage} &
-\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
-0.653
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.663
-\strut\end{minipage} &
-\begin{minipage}[t]{0.27\columnwidth}\raggedright\strut
-0.658
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-medium
-\strut\end{minipage} &
-\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
-0.887
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.897
-\strut\end{minipage} &
-\begin{minipage}[t]{0.27\columnwidth}\raggedright\strut
-0.903
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-large
-\strut\end{minipage} &
-\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
-1.76
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-1.86
-\strut\end{minipage} &
-\begin{minipage}[t]{0.27\columnwidth}\raggedright\strut
-1.96
-\strut\end{minipage}\tabularnewline
+
+room & Sabine RT / s & measured T20 / s & measured T30 / s \\\midrule
+
+small & 0.653 & 0.663 & 0.658 \\
+medium & 0.887 & 0.897 & 0.903 \\
+large & 1.76 & 1.86 & 1.96 \\
+
 \bottomrule
-\end{longtable}
+\end{tabular}
+
+\end{table}
 
 The results for small and medium rooms are within 5\% of the expected
 reverb time, although the measured T30 of the larger room has an error
@@ -4881,60 +4717,25 @@ the room. Scattering is set to 0.1 in all bands. The absorption
 coefficients are set to 0.02, 0.04, and 0.08, corresponding to Sabine
 predictions of 4.43, 2.22, and 1.11 seconds.
 
-\begin{longtable}[c]{@{}llll@{}}
+\begin{table}[ht]
+\centering
+
+\caption{}
+
+\begin{tabular}{@{}llll@{}}
 \toprule
-\begin{minipage}[b]{0.22\columnwidth}\raggedright\strut
-absorption
-\strut\end{minipage} &
-\begin{minipage}[b]{0.18\columnwidth}\raggedright\strut
-Sabine RT / s
-\strut\end{minipage} &
-\begin{minipage}[b]{0.22\columnwidth}\raggedright\strut
-measured T20 / s
-\strut\end{minipage} &
-\begin{minipage}[b]{0.27\columnwidth}\raggedright\strut
-measured T30 / s
-\strut\end{minipage}\tabularnewline
-\midrule
-\endhead
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.02
-\strut\end{minipage} &
-\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
-4.433
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-4.295
-\strut\end{minipage} &
-\begin{minipage}[t]{0.27\columnwidth}\raggedright\strut
-4.283
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.04
-\strut\end{minipage} &
-\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
-2.217
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-2.210
-\strut\end{minipage} &
-\begin{minipage}[t]{0.27\columnwidth}\raggedright\strut
-2.219
-\strut\end{minipage}\tabularnewline
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-0.08
-\strut\end{minipage} &
-\begin{minipage}[t]{0.18\columnwidth}\raggedright\strut
-1.108
-\strut\end{minipage} &
-\begin{minipage}[t]{0.22\columnwidth}\raggedright\strut
-1.126
-\strut\end{minipage} &
-\begin{minipage}[t]{0.27\columnwidth}\raggedright\strut
-1.156
-\strut\end{minipage}\tabularnewline
+
+absorption & Sabine RT / s & measured T20 / s & measured T30 /
+s \\\midrule
+
+0.02 & 4.433 & 4.295 & 4.283 \\
+0.04 & 2.217 & 2.210 & 2.219 \\
+0.08 & 1.108 & 1.126 & 1.156 \\
+
 \bottomrule
-\end{longtable}
+\end{tabular}
+
+\end{table}
 
 The issue with shorter low-frequency decay times persists in this test.
 However, the broadband reverb time responds correctly to the change in
