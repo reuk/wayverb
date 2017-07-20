@@ -68,6 +68,7 @@ header-includes:
     - \onehalfspacing
 
     - \usepackage{booktabs}
+    - \setcounter{secnumdepth}{5}
 ...
 
 <!--
