@@ -564,8 +564,8 @@ ray has a direction, which can be logged and used to attenuate each
 contribution according to the receiver polar pattern. These models already
 operate in multiple frequency bands, so to model frequency-dependent responses,
 the receiver can simply use a different directional response per band. A novel
-"offsetting" method has been put as an extension to the image-source model,
-which can reconstruct ITD information.
+"offsetting" method has been put forward as an extension to the image-source
+model, which can reconstruct ITD information.
 
 The waveguide does not model directional information natively. Instead, the
 pressure gradient at the output must be approximated using the pressures at

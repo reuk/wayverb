@@ -233,22 +233,25 @@ well-known in the literature [@southern_hybrid_2013; @aretz_combined_2009;
 
 ## Acoustic Simulation and the Creative Arts
 
-Convolution reverbs are extremely useful to musicians and sound designers due
-to their flexibility. By convolving an IR with some other signal, that signal
-can be made to sound as though it was recorded in the same location as the IR.
-A music producer might use this technique to create a recording of an
-"orchestra" in which each instrument is recorded separately, composited, and
-convolved with the IR of a concert hall. Similarly, a foley artist could use
-convolution reverb to make studio-recorded effects sound more believable in the
-context of the environment on-screen.
+Musicians and sound designers can choose from an abundance of convolution
+reverb plugins, such as Waves' *IR1 Convolution Reverb* [@waves_ir1], Audio
+Ease's *Altiverb* [@altiverb], and Liquid Sonics' *Reverberate 2*
+[@reverberate2]. These tools are extremely flexible: by convolving an IR with
+some other signal, that signal can be made to sound as though it was recorded
+in the same location as the IR.  A music producer might use this technique to
+create a recording of an "orchestra" in which each instrument is recorded
+separately, composited, and convolved with the IR of a concert hall. Similarly,
+a foley artist could use convolution reverb to make studio-recorded effects
+sound more believable in the context of the environment on-screen.
 
 The main drawback of convolution reverbs is their dependency upon high-quality
 IR recordings. Although most tools come with a library of IRs, this library
 will not be comprehensive. In some circumstances (for example, when attempting
 to seamlessly combine foley effects with location recordings) a suitable
 pre-recorded IR will not be directly available. In other circumstances, it may
-not even be possible to create a suitable IR using traditional methods, because
-the reverb is designed to evoke an environment that does not (or cannot) exist.
+not even be possible to record a suitable IR using traditional methods, because
+the desired reverb is designed to evoke an environment that does not (or
+cannot) exist.
 
 In these situations, the user has a few options. Firstly, a custom IR could be
 recorded. This will require specialist equipment, and access to the particular
@@ -308,11 +311,11 @@ behaviour, and which is targeted at creative users. The goal of the Wayverb
 project is build such a tool.  The development of this program should
 prioritise the following goals:
 
-* **Plausibility**: Provide a way of generating physically plausible impulse
+- **Plausibility**: Provide a way of generating physically plausible impulse
   responses of arbitrary enclosed spaces.
-* **Efficiency**: Ensure that the simulation is fast. Simulations should take
+- **Efficiency**: Ensure that the simulation is fast. Simulations should take
   less than ten minutes in general, and certainly never more than an hour.
-* **Accessibility**: The program's controls should be intuitive, and it should
+- **Accessibility**: The program's controls should be intuitive, and it should
   be possible for someone with no programming or acoustics experience to
   generate IRs.
 
@@ -321,15 +324,32 @@ accuracy, the real-world behaviour of any acoustic scenario.  However, for the
 purposes of sound-design, this level of accuracy is not necessary. When
 creating a reverb, a sound designer's focus is generally on experimenting and
 developing the desired atmosphere, rather than on perfectly reconstructing a
-physical location.  Therefore, simulation results should be believable first;
-for example, large, reflective rooms should have long reverb times, while
-small, damped rooms should have shorter reverb times. Long, tunnel-like rooms
-should have distinct echoes in the reverb tail, and cuboid-shaped rooms
-should exhibit resonant room modes at low frequencies.  Another aspect of
-plausibility is overall quality: if a generated IR contains obvious
-artefacts, it is by definition physically implausible, and of limited use to
-a sound designer. For these reasons, plausibility is the primary goal of the
-project.
+physical location.  Therefore, simulation results should be believable first:
+
+- The room size should directly affect the reverb duration, with smaller rooms
+  exhibiting lower reverb times than larger spaces.
+- The absorptions of the surfaces in the room should also affect reverb times.
+  Absorptive surfaces should produce lower reverb times than more reflective
+  surfaces. This effect should also be frequency-dependent, so that a room
+  which is largely reflective at low frequencies and absorptive at high
+  frequencies will exhibit appropriate relative reverb times in each frequency
+  band.
+- Rooms with parallel surfaces should show modal resonances at the correct
+  frequencies.
+- Adjusting the separating distance between a source and receiver should lead
+  to corresponding changes in the balance between early and late reflections.
+  For larger separations, the direct contribution should become less
+  pronounced.
+- If the source is not directly visible from the receiver, there should be no
+  direct contribution.
+- Reflective tunnel-like rooms should produce distinct echoes in the reverb
+  tail.
+- Modelled microphones should attenuate directional contributions
+  appropriately, according to the polar pattern of the capsule.
+
+Another aspect of plausibility is overall quality: if a generated IR contains
+obvious artefacts, it is by definition physically implausible, and of limited
+use to a sound designer.
 
 Plausibility and efficiency are competing goals, which must be balanced.
 Extreme performance, allowing real-time usage,  has already been implemented in

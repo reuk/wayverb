@@ -219,12 +219,61 @@ simple to get started with the app.
 The controls themselves are simple and self-explanatory. The number of rays is
 controlled by a single "quality" parameter, as opposed to allowing the user to
 specify an exact number of rays. The allows the user to think in terms of the
-output quality directly. If the ray number was directly exposed as a control,
-it may not be clear how this parameter would affect the output. Similarly, the
-surface settings dialog box is set out like a multiband EQ (with which users
-will be familiar), which provides hints as to the effect of the absorption in
-each band. Presets are also provided to give users a starting point when
-designing their own materials.
+output quality. If the ray number was directly exposed as a control, it may not
+be clear how this parameter would affect the output. Similarly, the surface
+settings dialog box is set out like a multiband EQ (with which users will be
+familiar), which provides hints as to the effect of the absorption in each
+band. Presets are also provided to give users a starting point when designing
+their own materials.
+
+The UI of the program was not only developed with users in mind. In the early
+stages of the project, the 3D display of the room was used for debugging
+aspects of the simulation algorithms, such as ray scattering, boundary node
+placement, and waveguide node pressures over time. It was later extended to
+allow positioning the sources and receivers through mouse interaction, and all
+of the debugging options were removed.  Now, other than displaying source and
+receiver positions, and the different surface regions, this display is of
+limited use. The focus on debugging meant that too little time was spent
+polishing the end-user experience in this part of the interface. In particular,
+the material and source/receiver controls might be considerably more intuitive
+if they could be accessed from the 3D view. For example, specific surfaces
+could be modified by right-clicking them on the 3D model. Also, a receiver's
+direction and polar pattern could be adjusted from controls which appeared
+upon hovering. This would provide a more unified experience than the current
+"menus and dialogs"-based approach.
+
+As mentioned above, user tests would be required in order to evaluate the
+accessibility of the current interface. Although the simulation behaves
+plausibly in many respects, this may not translate into an intuitive control
+scheme.  It is unknown whether a user with limited acoustics experience would
+be able to create a reverb with the characteristics they desire. A potential
+issue for such users is that familiar controls from parametric reverbs, such as
+reverb time and EQ, are not directly available in Wayverb. This is not only
+disorienting, it also necessitates a time-consuming workflow for some common
+tasks. If the user desires a longer reverb time, they cannot simply move a
+slider: they must open the 3D model in a CAD program, adjust its scale, and
+then export it and reconfigure it in Wayverb.  Similarly, if a particular "EQ"
+is desired, there is no way to adjust the frequency-dependent absorption of all
+surfaces simultaneously. If the user is trying to simulate the sound of a
+particular space this is not a problem.  However, if the user is trying to work
+backwards, tweaking a space to produce a particular sound, Wayverb's controls
+are unquestionably awkward.
+
+A final usability issue is the dependency upon 3D models. Wayverb requires that
+3D model files are solid and watertight, which in practice means that models
+must be specially constructed, or validated before use. It is unreasonable to
+expect musicians and sound designers to be proficient with professional CAD
+software, so in order to be useful, a library of suitable 3D models should be
+supplied alongside an installation of Wayverb.  In the [Context]({{
+site.baseurl }}{% link context.md %}) chapter, the dependency upon libraries
+of IRs was described as a drawback of convolution reverb tools, as it is
+impossible for a library to cover all possible usage scenarios. However, it
+appears that Wayverb relies upon libraries of 3D models. A possible solution
+to this problem would be to integrate a custom 3D modelling tool into
+Wayverb. This tool would only allow the creation of valid watertight spaces,
+and could be much simpler and more minimal than professional CAD tools. Then,
+users could quickly create spaces directly from the software, without having
+to worry about whether or not the model is valid for simulation.
 
 ### Future Work
 
@@ -309,7 +358,8 @@ application. This feature would greatly improve the usability of the program.
 However, it would not contribute to the main goal of the program, which is the
 accurate and fast acoustic simulation of virtual environments.  Convolution
 reverb tools already exist, and many users will have their own favourite
-programs and plug-ins for this purpose. The time that would have been spent
+programs and plug-ins, like Altiverb [@altiverb] and Reverberate 2
+[@reverberate2], for this purpose. The time that would have been spent
 replicating this functionality was better spent working on the unique and novel
 features of the program.
 
@@ -423,12 +473,12 @@ specialist training.  Additionally, all code is open-source, allowing
 collaboration and contribution from interested third-parties.
 
 On reflection, it appears that the scope of the project was too large, which in
-turn meant that none of the research goals were achieved. The majority of the
-project's duration was spent implementing the program, which meant that
-when functional issues (like the reverb time mismatch) were discovered during
-testing, there was no time to attempt a fix. Additionally, much more testing
-would be necessary in order for a comprehensive view of the program to be
-given, but again this was not possible.
+turn meant that none of the research goals were satisfactorily achieved. The
+majority of the project's duration was spent implementing the program, which
+meant that when functional issues (like the reverb time mismatch) were
+discovered during testing, there was no time to attempt a fix. Additionally,
+much more testing would be necessary in order for a comprehensive view of the
+program to be given, but again this was not possible.
 
 In its current state, Wayverb is unsuitable for use in creative contexts.
 However, it provides open-source implementations of three different acoustic

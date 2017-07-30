@@ -796,11 +796,11 @@ formulations exhibit dispersion error which limits the usable bandwidth of
 simulation results.
 
 Different mesh topologies have been compared. The tetrahedral topology has the
-lowest density and fewest inter-node connections, so it the optimal choice in
-terms of speed. Interpolated meshes are the most accurate and isotropic, but
-are more complicated to implement. For Wayverb, the rectilinear mesh was
-chosen, due to its relative simplicity, and because it was the only topology
-for which boundary formulations already existed.
+lowest density and fewest inter-node connections, so it is the optimal choice
+in terms of speed and memory consumption. Interpolated meshes are the most
+accurate and isotropic, but are more complicated to implement. For Wayverb, the
+rectilinear mesh was chosen, due to its relative simplicity, and because it was
+the only topology for which boundary formulations already existed.
 
 Mesh input methods have been explored, and it has been shown that solution
 growth places a major design constraint upon mesh inputs. The literature
@@ -823,9 +823,9 @@ an entirely new boundary modelling scheme, and using a soft source would have
 required development of a novel injection method. Such research, though useful,
 would have run counter to the specific research aims of this project.  As noted
 in the [Context]({{ site.baseurl}}{% link context.md %}) chapter, the purpose
-of Wayverb is primarily to create a useful tool for musicians, and to survey
-existing techniques for room simulation. Further research into these issues,
-though important, would have precluded the completion of a usable simulation
-program.  Of course, Wayverb's waveguide may be improved over time, as future
-research uncovers solutions to the problems identified in the course of this
-project.
+of Wayverb is primarily to create a useful tool for musicians, by surveying and
+combining existing techniques for room simulation. Further research into these
+issues, though important, would have precluded the completion of a usable
+simulation program.  Of course, future research may reveal solutions to the
+problems identified over the course of this project. Improvements to Wayverb
+may then be made, based on these solutions.

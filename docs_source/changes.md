@@ -19,8 +19,8 @@ Introduction 2nd bullet point: Done
 
 *Figure 2.1 is not referred to in the text*
 
-3.1.1 2nd paragraph: Added reference,
-now numbered figure 3.1 due to extra Theory chapter.
+3.1.1 2nd paragraph: Added reference, now numbered figure 3.1 due to extra
+Theory chapter.
 
 --------------------------------------------------------------------------------
 
@@ -61,7 +61,7 @@ p38 last paragraph: Done
 equation is obvious from your preceding description?)*
 
 4.2.1 penultimate paragraph: The equation should follow from the description,
-yes. Added the sentence beginning "It follows..." to clarify. Also added
+yes. Added the sentence beginning "It follows…" to clarify. Also added
 intermediate form to eq. 4.4.
 
 --------------------------------------------------------------------------------
@@ -88,9 +88,9 @@ Fixed throughout
 redraw the tetrahedral one so it’s easier to see (maybe put it in twice for the
 two orientations? Or use different colours for the two orientations?)*
 
-5.2.1: Maybe the printout was bad, but the lines really are black. Added
-diagram 5.3 showing tetrahedral structure in more detail. Added explanatory
-text in the second paragraph of 5.2.1.
+5.2.1: Maybe the print quality was poor, but the lines are black. Added diagram
+5.3 showing tetrahedral structure in more detail. Added explanatory text in the
+second paragraph of 5.2.1.
 
 --------------------------------------------------------------------------------
 
@@ -121,10 +121,9 @@ amplitudes on Dirac, Ricker and PCS are “filled in” – is this fluctuation 
 amplitude that is lost in the resolution or a presentational problem? If the
 former just clarify if the latter please fix.*
 
-5.2.2.2 fig. 5.5: Figure adjusted to remove the diagonal lines (these were
-supposed to indicate the "zoomed-in" region of the graph, although this is so
-small that they are essentially useless). The graphs are filled-in due to
-high-frequency fluctuations, which is clarified in the figure annotation.
+5.2.2.2 fig. 5.5: Figure adjusted to remove the diagonal lines. The graphs are
+filled-in due to high-frequency fluctuations, which is clarified in the figure
+annotation.
 
 --------------------------------------------------------------------------------
 
@@ -208,10 +207,11 @@ omnidirectional*
 *Page 59 bottom sentence. Looks like you are taking advantage of left right
 symmetry in arriving at 288 – if so please claify this.*
 
-7.3.2 last paragraph: Not sure exactly how to interpret this. For the most
-part, Wayverb assumes that both ears share the same location, and therefore the
-same raw data is used to compute the left and right ear responses. Added an
-explanation of the number of horizontal and vertical divisions.
+7.3.2 last paragraph: Not sure exactly how to interpret this.  Wayverb assumes
+that both ears share the same location, at least for the purposes of histogram
+creation, and therefore the same raw data is used to compute the left and right
+ear responses. Added an explanation of the number of horizontal and vertical
+divisions.
 
 --------------------------------------------------------------------------------
 
@@ -243,7 +243,7 @@ Fixed throughout
 *Page 78, 84 and 87 have unlabelled tables. Please label and then refer to in
 text.*
 
-All tables now labelled, referenced in the text.
+All are tables now labelled and referenced in the text.
 
 --------------------------------------------------------------------------------
 
@@ -276,7 +276,8 @@ Response Time"
 
 *Conclusions should be a section in its own right*
 
-Moved Analysis section of Evaluation onwards to a new Conclusion chapter.
+Moved the Analysis section of the Evaluation chapter onwards to a new
+Conclusion chapter.
 
 --------------------------------------------------------------------------------
 
@@ -284,7 +285,7 @@ Moved Analysis section of Evaluation onwards to a new Conclusion chapter.
 references 78 onwards - which are not cited in the text - should be deleted
 or placed in a Bibliography (or similarly named) section*
 
-Removed unreferenced references.
+Removed unused references.
 
 --------------------------------------------------------------------------------
 
@@ -319,7 +320,7 @@ information on boundary modelling has been moved from the beginning of the
 Boundary Modelling chapter. The "creative context" is quite a different topic
 to the background theory, so this was added to the existing Context chapter,
 rather than to the new Theory chapter. The creative context can be found in
-section 1.4.
+section 1.4, under the heading "Acoustic Simulation and the Creative Arts".
 
 --------------------------------------------------------------------------------
 
@@ -355,9 +356,18 @@ been moved to its own "Conclusion" chapter. This chapter begins with a new
 discussion of the testing procedure, and its shortcomings. It was not feasible
 to conduct further work towards the research goals, and instead ideas for tests
 which would have allowed more conclusive results to be drawn have been
-suggested. The *Simulation Method* section has been updated to individually
-consider each of the research goals, with new discussion regarding
-plausibility and accessibility.
+suggested in section 10.1.1. The "Simulation Method" section has been renamed
+to "Evaluation of Project Goals" (10.1.2) and updated to individually consider
+each of the research goals. The section on plausibility (10.1.2.1) has been
+adjusted to discuss the interplay between different components of the
+simulation. The paragraphs about efficiency (10.1.2.2) have been rewritten, and
+no longer discuss use in architectural contexts which are not relevant to the
+project aims. A completely new section on accessibility (10.1.2.3) has been
+added, which covers the design goals of the interface, some background on the
+implementation, and suggests future improvements. Finally, the summary (10.2)
+has been slightly extended to explain that the project scope was too broad, and
+that Wayverb's main contribution is a starting point for future projects,
+rather than a tool which is useful in its own right.
 
 --------------------------------------------------------------------------------
 
@@ -376,7 +386,8 @@ has not actually been properly tested as stated above.*
 
 1.5: Slightly reworded these. In particular, "accuracy" was changed to
 "plausibility" as this seems more useful in creative contexts. Rewrote the
-discussion of plausibility, and clarified the need for a sliding scale between
+discussion of plausibility, to focus it more on the aspects of the program
+which are actually tested. Clarified the need for a sliding scale between
 quality and speed. Added sentence to explain why accessibility is less
 important than the first two goals. The "specialist training" comment was
 supposed to refer to users of the software, so this has been made clearer.
@@ -403,8 +414,8 @@ a low-pass filter been tested? In general, it would be expected to see some
 interim results here of the IS algorithm as presented. Summary also needed as
 suggested above.*
 
-The need for further tests are recognised in the conclusion, but it was not
-feasible to produce such results. Summary has been added (section 3.3).
+The need for further tests is now recognised in the conclusion, but it was not
+feasible to produce new results. Summary has been added (section 3.3).
 
 --------------------------------------------------------------------------------
 
@@ -423,8 +434,8 @@ Fixed throughout.
 *p27: define the scattering coefficient ‘s’ (some of this detail comes later in
 the report, hence the need, in part, for a literature/theory chapter earlier).*
 
-This is now discussed in section 2.2.2. The previous chapter is referenced
-immediately after eq. 4.3.
+This is now discussed in section 2.2.2. The Theory chapter is referenced in the
+paragraph following eq. 4.3.
 
 --------------------------------------------------------------------------------
 
@@ -458,8 +469,10 @@ topologies. What constitutes an ‘accurate’ result?*
 *Figure 4.3 – y-axis magnitudes of frequency domain plots should have dB
 scale?*
 
-Pulse spectra are given on a linear scale in fig. 1 of the following paper.
-Therefore, I believe this approach is valid.
+Linear scales are required in order to display the similarity between the shape
+of each pulse in the time and frequency domains.  Also, pulse spectra are given
+on a linear scale in fig. 1 of the following paper.  Therefore, I believe this
+approach is valid.
 
 ]J. Sheaffer, M. van Walstijn, and B. Fazenda, ‘Physical and numerical
 constraints in source modeling for finite difference simulation of room
@@ -585,14 +598,20 @@ metric?*
 
 Now fig. 8.4: I checked the IRs, and they had very low amplitude. I re-ran the
 tests using a higher-amplitude initial signal, and the generated graphs became
-much smoother, leading me to believe that the floating-point epsilon was too
-large to resolve the fine detail in the original test.
+much smoother, leading me to believe that the magnitude of the signal was too
+small relative to the floating-point epsilon in the original test, leading to a
+loss of precision which caused noise in the graphed results. Figure 8.4 now
+shows the results obtained using a higher-amplitude input. The scales have not
+been adjusted, as they were chosen to show the entire range of outputs across
+all tests, and having different scales on each graph may be misleading. Error
+plots have not been supplied, as these were not given in the paper by Kowalczyk
+upon which this boundary test is based.
 
 I didn't previously discuss the source injection method for this test. This has
 been added to the 2nd paragraph of 8.4.1, along with a rationale.
 
-The first paragraph of the evaluation has been rewritten to take more possible
-causes of error into account.
+The first paragraph of the evaluation (8.4.3) has been rewritten to take more
+possible causes of error into account.
 
 --------------------------------------------------------------------------------
 
@@ -603,8 +622,8 @@ subsequent results.*
 
 This paragraph was removed, as it did not add to the discussion/was already
 covered in the re-written paragraph. Test limitations are covered in that
-paragraph. Implications for subsequent results are covered in the chapter
-summary.
+paragraph. Implications for subsequent results are covered in the new chapter
+summary (8.5).
 
 --------------------------------------------------------------------------------
 
@@ -635,8 +654,6 @@ arrive at a better estimation of RT60 for the room, which is what a Sabine
 estimation gives (rather that something specific to a given source/receiver
 pair).*
 
-
-
 *How have you arrived at the results in the table? Please discuss.  %-error
 might be a better metric to include, and also reference to JND for RT60.
 Octave band results should also be included, rather than overall RT60, as
@@ -654,11 +671,30 @@ physical reason is there for this? It could be down to the crossover of the
 filters used in the hybrid model and how you have implemented them. Again, some
 better discussion needed.*
 
+Limitations of the Sabine equation are discussed in section 2.3.1, and in the
+third-from-last paragraph of section 9.2.1. The penultimate paragraph of
+section 9.2.1 was added, discussing the averaging of several source/receiver
+positions. The final two paragraphs of the section discuss the limitations of
+the test in more detail.
+
+9.2.1 4th paragraph: Added that reverb times have been computed in accordance
+with the ISO 3382 specification. Percentage errors have been added to the
+table. Reference to JND added in the 5th paragraph. Octave-band results
+are given in fig. 9.2, and table 9.2 has been added showing the percentage
+differences in reverb times between the bands with the longest and shortest
+reverb times for each room size.
+
 --------------------------------------------------------------------------------
 
 *p85: ‘In effect the waveguide exhibits a high noise-floor under some
 conditions.’ Where have you shown this? How or why is this? More explanation
 needed.*
+
+The "noise floor" was supposed to refer to the continued oscillation at 400Hz,
+40dB below the level of the initial contribution, which was clearly shown in
+the spectrograms in figure 9.3.  However, "noise floor" was an incorrect
+description and this sentence did not add to the discussion, so it has been
+removed.
 
 --------------------------------------------------------------------------------
 
@@ -669,15 +705,31 @@ also mark what aspect of you model has contributed to each plot point (e.g.
 DWM, ISM, etc) ‘were placed’ = were replaced?  You should also check octave
 band results vs broadband results if possible.*
 
+Fig 9.2: corrected RT30 to T30. It should be clear from the 4th paragraph of
+9.2.1 that the T30 measurements are derived in accordance with the ISO
+specification. The data points have been marked more clearly, and the lines
+replaced with dotted lines. The model crossover frequency has been marked. The
+broadband results are given in table 9.1.
+
+9.2.1 10th paragraph: placed -> replaced
+
 --------------------------------------------------------------------------------
 
 *p87: ‘show that wall impedances are accurately modelled’ = define accurately,
 and are they actually ‘accurate’?*
 
+9.2.1 11th paragraph: replaced "impedances are accurately modelled" with "
+reflectances generally match predicted values to within 1dB for three material
+types and angles of incidence, at least in the band below 0.15 of the mesh
+sampling rate".
+
 --------------------------------------------------------------------------------
 
 *General point - A better approach to testing a study of this nature is
 presented in reference [26].*
+
+10.1.1 1st paragraph: the shortcomings of the testing procedure have been
+discussed, and the method in [26] has been put forward as a better alternative.
 
 --------------------------------------------------------------------------------
 
@@ -686,11 +738,24 @@ detail – we have no data to go on in relation to what these decay times are.
 Give the data (octave bands) and discuss, or more speculative comments should
 be removed.*
 
+Fig 9.4: octave-band T30 measurements have been given. Table 9.4, showing the
+difference between the minimum and maximum reverb time across all frequency
+bands, has been added. In section 9.2.2 it has been made clear that
+low-frequency bands have lower reverb times than high-frequency bands. The
+final paragraph of 9.2.2 has been added to put forward evidence that the
+low-frequency resonance at 400Hz seen in some tests is due to a deficiency
+specifically in the boundary model.
+
 --------------------------------------------------------------------------------
 
 *p89: ‘Therefore it is obvious’ – I’m not sure the results presented here mean
 that the conclusions you draw are in fact obvious. Energy metrics such as
 C50/C80 or event EDT could have been used instead.*
+
+Table 9.5: this table has been added, showing T20, T30, and EDT measurements,
+along with percentage differences. The 2nd paragraph of 9.2.3 has been added,
+explaining the purpose of the EDT measurement, and how the results can be
+interpreted.
 
 --------------------------------------------------------------------------------
 
@@ -700,11 +765,18 @@ this, or that the conclusions you draw follow on as a consequence. It is more
 likely that there are limitations with your implementation that have not as
 yet been explored and tested fully.*
 
+9.2.4 last paragraph: Replaced the "fast onset…" sentence with a few sentences
+taking concrete readings from fig. 9.8.
+
 --------------------------------------------------------------------------------
 
 *p94, Fig 8.9 – I would suggest adding the plot for the cardioid microphone
 pointing to the source here in another colour. Would make the case very
 clearly.*
+
+Fig: 9.10 has been adjusted to include responses from two cardioid capsules,
+one facing towards and one away from the receiver. Section 9.2.6 has been
+adjusted accordingly.
 
 --------------------------------------------------------------------------------
 
@@ -713,10 +785,18 @@ model? Please give the details of this test. I would improve Fig 8.10, to
 make the differences clearer, used a scale that enables ITD values to be
 highlighted.*
 
+9.2.7 1st paragraph: More details of the model are given here, and the
+schematics are shown in fig. 9.11.
+
+Fig 9.12 has been adjusted to cover a shorter time period, which should make
+the ITD more obvious.
+
 --------------------------------------------------------------------------------
 
 *Analysis – move this and what follows to a proper Conclusion Chapter as
 discussed above.*
+
+Done
 
 --------------------------------------------------------------------------------
 
@@ -726,6 +806,10 @@ tracer are fair, but the mis-match between modelling approaches and reverb
 times is probably down to errors or assumptions that could be fixed or
 improved?*
 
+10.1.2.1 1st paragraph: the word "precise" has been removed. It has been noted
+in 10.1.1 that proper listening tests are required, although it's evident that
+some kind of stereo effect is possible from the results in fig 9.12.
+
 --------------------------------------------------------------------------------
 
 *p98: The candidate starts off in the early chapters by making a case for an
@@ -734,22 +818,44 @@ the report, goes back to established arguments that two more years computing
 advancements will help to solve the computational limits of the current
 implementation!*
 
+10.1.2.1 last paragraph: This argument has been supplemented by an explanation
+that Wayverb is well-placed to benefit from current advances in processor
+technology, which tend to increase the number of processor cores rather than
+the overall clock speed.
+
 --------------------------------------------------------------------------------
 
 *‘than may be expected’ – but what is expected of the user interface and how
 has this been tested?*
+
+10.1.3.2 1st paragraph: Made it clear that the comparison is to the features of
+other software, rather than to user expectations.
+
+10.1.2.2 5th paragraph: explained that usability tests have not been conducted
+and why they are necessary.
 
 --------------------------------------------------------------------------------
 
 *p101: ‘the finished project is sufficiently accessible’ – as determined by
 whom?*
 
+This sentence has been removed.
+
 --------------------------------------------------------------------------------
 
-*p102: Valimaki = Välimäki *
+*p102: Valimaki = Välimäki*
+
+Fixed
 
 --------------------------------------------------------------------------------
 
 *p107: complete reference for [72] needed – where was this work presented?*
 
-## Other Changes
+Now reference [80]: added "in Proc. EuroNoise 2015"
+
+## Misc
+
+Added section numbers to make the document easier to navigate.
+
+3.1.2 Added the last three paragraphs, giving a basic overview of some of the
+maths involved in the image-source model.

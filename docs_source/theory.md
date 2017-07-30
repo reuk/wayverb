@@ -311,11 +311,10 @@ The Sabine equation has some important limitations. Firstly, it fails at high
 absorptions. With the absorption coefficient set to 1, it estimates a finite
 reverb time, even though a completely absorptive enclosure cannot reverberate.
 Secondly, the assumption that the sound field in the enclosure is perfectly
-diffuse is untrue in practice.  At low frequencies (that is, below the
-Schroeder frequency) rooms behave modally, concentrating sound energy at
-specific points in the room.  Under such circumstances, the sound field is
-clearly not diffuse, and so the Sabine equation is a poor predictor of reverb
-time at low frequencies.
+diffuse is untrue in practice.  At low frequencies rooms behave modally,
+concentrating sound energy at specific points in the room.  Under such
+circumstances, the sound field is clearly not diffuse, and so the Sabine
+equation is a poor predictor of reverb time at low frequencies.
 
 ### Computing Reverb Times from Measurements
 
@@ -351,7 +350,7 @@ much shorter period than the time taken for the level to drop 60dB, so the
 early part of the IR has greater perceptual significance than the late
 [@vorlander_auralization:_2007 p. 94].
 
-ISO 3382 also defines *just noticeable differences* (JND), which is the
+ISO 3382 also defines the term *just noticeable difference* (JND), which is the
 smallest perceivable difference between two acoustic measurements
 [@vorlander_auralization:_2007 pp. 99-100].  That is, in order for simulation
 results to be indistinguishable from predictions or real-world measurements,

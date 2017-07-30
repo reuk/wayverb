@@ -14,7 +14,7 @@ This section describes the Wayverb program, and demonstrates some example
 simulation results.  The simulations are chosen to highlight the behaviour of
 the simulator with respect to parameters such as reverb time, frequency
 content, and early reflection times. The project files for each of these tests
-is included in the Wayverb distribution.
+are included in the Wayverb distribution.
 
 ## Features
 
@@ -225,9 +225,9 @@ times of the exact image-source model, which will be close to the analytical
 solution in a cuboid room. The close match to the almost-exact image-source
 model suggests that the waveguide and boundary model have been implemented
 correctly. Additionally, the tests in the [Boundary Modelling]({{ site.baseurl
-}}{% link boundary.md %}) section show that wall impedances closely
-match predicted values for three material types and angles of incidence, at
-least in the band below 0.15 of the mesh sampling rate.
+}}{% link boundary.md %}) section show that wall reflectances generally match
+predicted values to within 1dB for three material types and angles of
+incidence, at least in the band below 0.15 of the mesh sampling rate.
 
 Given that in all previous tests the waveguide behaves as expected, it is
 likely that the Sabine equation is simply a poor predictor of low-frequency
@@ -421,9 +421,10 @@ broken up by regularly repeating pillars. The source and receiver are
 positioned seven metres apart, with their view obstructed by two pillars. If
 there were no obstruction, a strong direct impulse would be expected after
 0.0206 seconds. However, the pillars should block this direct contribution.
+The model is shown in +@fig:vault_demo.
 
 ![The testing set-up, showing the pillars blocking the line-of-sight between
-the source and receiver.](images/vault_demo.png)
+the source and receiver.](images/vault_demo.png){#fig:vault_demo}
 
 In the real world, objects with areas of a similar or greater order to the
 incident wavelength cause diffraction effects [@kuttruff_room_2009, p. 59].
@@ -548,8 +549,9 @@ microphone model is matched between both simulation methods.
 
 ![The response measured at cardioid microphones pointing towards and away from
 the source.  The times marked with dotted lines, from left to right, are the
-direct contribution time, the first reflection time, and the first and second
-*forward-incident* reflection times.](images/cardioid){#fig:cardioid}
+direct contribution time, the first reflection time, and the time of the first
+contribution from the opposite direction to the
+source.](images/cardioid){#fig:cardioid}
 
 <div id="audio_table">
 
