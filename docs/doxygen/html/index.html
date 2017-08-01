@@ -101,8 +101,11 @@ $(document).ready(function(){initNavTree('index.html','');});
 <div class="title">Wayverb </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><em>hybrid waveguide and ray-tracing room acoustics with GPU acceleration</em></p>
-<h1>Synopsis </h1>
+<div class="textblock"><p><b>Hybrid waveguide and ray-tracing room acoustic simulator with GPU acceleration.</b></p>
+<div class="image">
+<img src="docs_source/images/wayverb_ui.png" />
+</div>
+<h1>Synopsis</h1>
 <p>This project contains a library for offline room-acoustics simulations, along with a graphical app which can be used to set-up and run these simulations. The app produces room impulse responses, which can be used with convolution reverbs to create realistic auralisations of virtual spaces. Simulated room impulse responses may be particularly useful for architects, sound-designers, and musicians.</p>
 <p>There are several common methods for simulating room acoustics, which can largely be subdivided into two main categories:</p>
 <ul>
@@ -112,35 +115,55 @@ $(document).ready(function(){initNavTree('index.html','');});
 <p>As the strengths and weaknesses of the two methods balance one-another out, it makes sense to combine both methods, so that wave-modelling is used to simulate low-frequency output, and geometric methods are used to generate high-frequency content.</p>
 <p>The approach of this library is to use:</p>
 <ul>
-<li><b>image-source</b> for high-frequency early reflections,</li>
-<li><b>stochastic ray-tracing</b> for high-frequency late reflections, and</li>
-<li><b>rectilinear waveguide mesh</b> for all low-frequency content.</li>
+<li><b>image-source</b> (a geometric method) for high-frequency early reflections,</li>
+<li><b>stochastic ray-tracing</b> (another geometric method) for high-frequency late reflections, and</li>
+<li><b>rectilinear waveguide mesh</b> (a wave-based method) for all low-frequency content.</li>
 </ul>
-<h1>Usage Notes </h1>
-<p>You'll need a 3D model of the space. This model <em>must</em> be solid and watertight, without holes or no-thickness planes. The waveguide mesh setup process must be able to work out whether each node is 'inside' or 'outside' the space, and it will not be able to do so if the model does not have a well-defined inside and outside.</p>
-<p>To ensure that your model is valid, you can: </p><pre class="fragment">* Open the model in Sketchup.
-* Select-all and Edit &gt; Make Group.
-* Check the info window (Window &gt; Entity Info).
-* If this window displays a volume, it is correct.
-</pre><p>If the model is not valid, you can debug it using the <a href="https://extensions.sketchup.com/en/content/solid-inspector">'Solid Inspector' plugin</a>.</p>
+<h1>Usage Notes</h1>
+<p>You'll need a 3D model of the space. This model <em>must</em> be solid and watertight, without holes or no-thickness planes. When the simulation is run, the waveguide mesh setup process will attempt to work out whether each node is inside or outside the space, and it will not be able to do so if the model does not have a well-defined inside and outside.</p>
+<p>To ensure that your model is valid, you can:</p>
+<ol type="1">
+<li>Open the model in Sketchup.</li>
+<li>Select-all and Edit &gt; Make Group.</li>
+<li>Check the info window (Window &gt; Entity Info).</li>
+<li>If this window displays a volume, it is correct.</li>
+</ol>
+<p>If the model is not valid, you can debug it using the <a href="https://extensions.sketchup.com/en/content/solid-inspector">'Solid Inspector' plugin</a>.</p>
 <p>These instructions are taken from the readme for <a href="https://github.com/juuli/ParallelFDTD">ParallelFDTD</a>, which uses a similar (but not idential) technique to Wayverb for setting up a waveguide mesh.</p>
-<h1>Requirements </h1>
-<p>This project has been tested on macOS 10.11.6.</p>
-<p>The library code <em>should</em> be platform-independent, but relies on experimental language features from C++17, so you'll need a recent compiler to build it. It also links against the OpenCL framework. It should be possible to build on Linux by modifying the 'OpenCL' section of <code>dependencies.txt</code> to find your system's OpenCL drivers.</p>
+<p>Wayverb interprets the units used in the model file as metres. Some exporters (like the Sketchup <code>.dxf</code> exporter) silently change the scale of the model during export. For best results, it is recommended to export to <code>.obj</code> wherever possible. The following dialog shows optimum settings for the Sketchup Object exporter.</p>
+<div class="image">
+<img src="docs_source/images/export_options.png" />
+</div>
+<h1>Requirements</h1>
+<h2>Running</h2>
+<p>To run the program you will need:</p>
+<ul>
+<li>Mac OS 10.10 or newer</li>
+<li>GPU with double-precision support</li>
+</ul>
 <p>While this project <em>might</em> work on a mac with integrated graphics, ideally you should use a recent mac with a discrete graphics card. You could be waiting a long time otherwise!</p>
-<h1>Build Instructions </h1>
-<h2>Library Only </h2>
-<p>This project has a fairly standard CMake build process. You should be able to <code>git clone</code> a copy of the repository, then from the project folder run: </p><pre class="fragment">mkdir -p build      # create a folder to hold built products
-cd build            # move to that folder
-cmake ..            # run cmake to configure the build
-make                # run the build itself
-</pre><p>The first time you run this, CMake will download all the project's dependencies and build local copies of them. The build will be quite slow for this reason (depending on the speed of your internet connection).</p>
-<h2>Graphical App </h2>
-<p>The app is built with JUCE, and JUCE likes to own its own build.</p>
-<p>An Xcode project is included, which you should be able to open and run in the normal way.</p>
-<p>If you have a copy of the Projucer installed, you're welcome to try generating a Linux project from the included <code>wayverb.jucer</code>, but it's not guaranteed to work.</p>
-<h1>Project Structure </h1>
-<h2>Important Folders </h2>
+<p>This project has been developed and tested on Mac OS 10.11.6, on a Mac with an AMD GPU. It doesn't have any known bugs on this platform.</p>
+<p>Some testing has been carried out on Mac OS 10.10, using an Nvidia GPU. On this platform there were reasonably consistent crashes within OpenCL framework code. These crashes are difficult to track down and have not been fixed, as the author has been unable to secure extended access to a machine with this Nvidia/10.10 configuration.</p>
+<p>Some bugs are to be expected: if you find a bug, please file it using the issues tab on the Github repository.</p>
+<h2>Building</h2>
+<p>You will need:</p>
+<ul>
+<li>Mac OS 10.10 or newer</li>
+<li>Really recent Clang with C++14 support and experimental C++17 headers (development used Apple LLVM 8)</li>
+<li>CMake</li>
+</ul>
+<p>Open <code>wayverb/Builds/MacOS/wayverb.xcodeproj</code> and build from there. All dependencies should get downloaded and built automatically. <b>The initial build will be really slow</b>, due to downloading and compiling a lot of libraries. This is normal.</p>
+<p>Unfortunately, some of the dependencies have their own dependencies. If building fails, you may also need to install the following:</p>
+<ul>
+<li>autoconf</li>
+<li>autogen</li>
+<li>automake</li>
+<li>libtool</li>
+<li>pkg-config</li>
+</ul>
+<p>If you have <a href="http://brew.sh">Homebrew</a> installed, then you can grab everything you might need by running this command: </p><pre class="fragment">brew install cmake autoconf autogen automake libtool pkg-config
+</pre><h1>Project Structure</h1>
+<h2>Important Folders</h2>
 <ul>
 <li><b>src</b>: all the library code for the project. This is further subdivided:<ul>
 <li><b>core</b>: generic utilities such as data structures, architectural patterns and DSP helpers</li>
@@ -155,14 +178,16 @@ make                # run the build itself
 </li>
 <li><b>wayverb</b>: a GUI app interface to the <code>combined</code> library written with JUCE</li>
 <li><b>bin</b>: a collection of small command-line programs primarily for testing outputs from the library components</li>
+<li><b>docs_source</b>: the source-code for the accompanying documentation. This gets built into the contents of...</li>
+<li><b>docs</b>: automatically-generated documentation, visible at <a href="https://reuk.github.io/wayverb/">the Wayverb site</a>.</li>
 </ul>
-<h2>Other Folders </h2>
+<h2>Other Folders</h2>
 <ul>
 <li><b>scripts</b>: a 'scratchpad' folder for python and octave prototypes</li>
 <li><b>demo</b>: assets for testing purposes</li>
-<li><b>config</b>: These files configure the documentation generator. They used to configure the Travis CI process which automatically built and published the library documentation.</li>
+<li><b>config</b>: these files configure the documentation generator. They used to configure the Travis CI process which automatically built and published the library documentation.</li>
 </ul>
-<h1>License </h1>
+<h1>License</h1>
 <p>Please see the <code>LICENSE</code> file for details.</p>
 <p><b>Software is provided "as is", without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. In no event shall the authors or copyright holders be liable for any claim, damages or other libility, whether in an action of contract, tort or otherwise, arising from, out of or in connection with the software or the use or other dealings in the software.</b> </p>
 </div></div><!-- contents -->
@@ -177,4 +202,3 @@ make                # run the build itself
 </div>
 </body>
 </html>
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        

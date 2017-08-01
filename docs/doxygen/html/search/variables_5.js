@@ -1,3 +1,4 @@
 var searchData=
 [
-  ['table',['table',['../structwayverb_1_1core_1_1vector__look__up__table.html#a64210d71b119fb5f1913200ce192cc6d',1,'wayverb::core::vector_look_
+  ['samples',['samples',['../structwayverb_1_1core_1_1reverb__time.html#ad608995f566af84c03c25b6cd218265f',1,'wayverb::core::reverb_time']]]
+];

@@ -1,0 +1,355 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Wayverb - Theory</title>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" type="image/x-icon" href="/wayverb/assets/favicon.ico" />
+	<!--[if lte IE 8]><script src="/wayverb/assets/js/ie/html5shiv.js"></script><![endif]-->
+	<link rel="stylesheet" href="/wayverb/assets/css/main.css" />
+    <link rel="stylesheet" href="/wayverb/assets/css/font-awesome.min.css" />
+	<!--[if lte IE 9]><link rel="stylesheet" href="/wayverb/assets/css/ie9.css" /><![endif]-->
+	<!--[if lte IE 8]><link rel="stylesheet" href="/wayverb/assets/css/ie8.css" /><![endif]-->
+
+<!-- Scripts -->
+<script src='https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML'></script>
+</head>
+
+<body>
+<nav id="sidebar_nav">
+    <a href="/wayverb/" class="title">Wayverb</a>
+    <ul>
+        
+        
+            <li>
+                <a href="/wayverb/introduction.html" >
+                    Introduction
+                </a>
+            </li>
+        
+            <li>
+                <a href="/wayverb/context.html" >
+                    Context
+                </a>
+            </li>
+        
+            <li>
+                <a href="/wayverb/theory.html" class="active">
+                    Theory
+                </a>
+            </li>
+        
+            <li>
+                <a href="/wayverb/image_source.html" >
+                    Image-source Model
+                </a>
+            </li>
+        
+            <li>
+                <a href="/wayverb/ray_tracer.html" >
+                    Ray tracer
+                </a>
+            </li>
+        
+            <li>
+                <a href="/wayverb/waveguide.html" >
+                    Waveguide
+                </a>
+            </li>
+        
+            <li>
+                <a href="/wayverb/hybrid.html" >
+                    Hybrid Model
+                </a>
+            </li>
+        
+            <li>
+                <a href="/wayverb/microphone.html" >
+                    Microphone modelling
+                </a>
+            </li>
+        
+            <li>
+                <a href="/wayverb/boundary.html" >
+                    Boundary modelling
+                </a>
+            </li>
+        
+            <li>
+                <a href="/wayverb/evaluation.html" >
+                    Evaluation
+                </a>
+            </li>
+        
+            <li>
+                <a href="/wayverb/conclusion.html" >
+                    Conclusion
+                </a>
+            </li>
+        
+    </ul>
+</nav>
+
+<div id="page_main">
+    <header>
+        <ul>
+            <li class="nav_menu open" >
+                <a href="#sidebar_nav">
+                    &#9776;
+                </a>
+            </li>
+            <li class="nav_menu close" >
+                <a href="#">
+                    &#9776;
+                </a>
+            </li>
+            <li>
+                <a href="/wayverb/" >
+                    Wayverb
+                </a>
+            </li>
+        </ul>
+    </header>
+    <div class="inner">
+        <nav id="prev_next_nav">
+    
+    
+        
+    
+        
+    
+        
+            
+            
+            
+                <a href="/wayverb/context.html" class="prev_page">Context</a>
+            
+
+            
+            
+            
+                <a href="/wayverb/image_source.html" class="next_page">Image-source Model</a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+</nav>
+
+        <div id="TOC">
+<ul>
+<li><a href="#theory">Theory</a><ul>
+<li><a href="#waves-and-media">Waves and Media</a></li>
+<li><a href="#boundary-characteristics">Boundary Characteristics</a><ul>
+<li><a href="#magnitude-and-phase">Magnitude and Phase</a></li>
+<li><a href="#scattering">Scattering</a></li>
+</ul></li>
+<li><a href="#impulse-response-metrics">Impulse Response Metrics</a><ul>
+<li><a href="#sabines-equation">Sabine’s Equation</a></li>
+<li><a href="#computing-reverb-times-from-measurements">Computing Reverb Times from Measurements</a></li>
+</ul></li>
+<li><a href="#summary">Summary</a></li>
+</ul></li>
+<li><a href="#bibliography">References</a></li>
+</ul>
+</div>
+<h1 id="theory" class="major">Theory</h1>
+<p>This chapter explains some aspects of room acoustics theory, which will help to clarify the implementation decisions governing the simulation techniques discussed in later chapters. The account given here deals only with topics which are directly applied in Wayverb. For more detailed derivations of equations, along with information about more advanced acoustic phenomena such as diffraction, refraction, and the Doppler effect, the books by Vorländer <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>]</span> and Kuttruff <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">2</a>]</span> are recommended.</p>
+<h2 id="waves-and-media">Waves and Media</h2>
+<p>Sound waves can be described completely by specifying the instantaneous velocity, <span class="math inline">\(\vec{v}\)</span>, of each particle in the propagation medium. Not all particles will have the same velocity, which causes fluctuations in density, pressure, and temperature, which are dependent upon time, and position. <em>Sound pressure</em>, <span class="math inline">\(p\)</span>, is the difference between the “at rest” pressure <span class="math inline">\(p_0\)</span>, and the pressure measured in the medium at a particular position and time <span class="math inline">\(p_\text{tot}\)</span> <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 9]</span>:</p>
+<p><a name="eq:sound_pressure"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[p = p_\text{tot} - p_0\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(1)</span></span> </p>
+<p>Sound pressure is measured in pascals (1 Pa = 1 N/m²) <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 16]</span>. The goal of room acoustic simulation is to predict the change in sound pressure over time at particular points in a sound field. A similar equation to eq. <a href="#eq:sound_pressure">1</a> can be written for change in density due to sound <span class="math inline">\(\rho\)</span>, where <span class="math inline">\(\rho_0\)</span> is the static density of the medium, and <span class="math inline">\(\rho_\text{tot}\)</span> is the instantaneous density:</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[\rho = \rho_\text{tot} - \rho_0\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(2)</span></span> </p>
+<p>For the purposes of room acoustics, it may be assumed that the propagation medium is air. Sound propagation through liquids and solid structures will be ignored. The speed of sound in air, <span class="math inline">\(c\)</span>, is approximately</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[c=(331.4 + 0.6\theta) \text{m/s}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(3)</span></span> </p>
+<p>where <span class="math inline">\(\theta\)</span> is the temperature in degrees centigrade <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">2</a>, p. 7]</span>. In most real-world acoustics problems, variations in temperature will be very small, and can be ignored. That is, the propagation medium is assumed to be homogeneous. A propagation medium can be specified by its <em>characteristic impedance</em> or <em>wave impedance</em> <span class="math inline">\(Z_0\)</span> <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 14]</span>:</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[Z_0 = \rho_0 c\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(4)</span></span> </p>
+<p>This quantity denotes the medium’s resistance to pressure excitation, or alternatively the pressure required to induce movement in the medium’s particles. For air, the characteristic impedance is generally around 400 kg/m²s (although this depends on the speed of sound, and therefore the air temperature) <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 15]</span>.</p>
+<p>The difference in sound pressure between the quietest audible sound and the threshold of pain is around 13 orders of magnitude. To make working with the values involved more manageable, sound pressure is usually given in terms of the <em>sound pressure level</em> (SPL), which is measured on a logarithmic scale in decibels (dB) <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">2</a>, p. 23]</span>:</p>
+<p><a name="eq:spl"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[\text{SPL} = 20\log_{10}\frac{p_\text{rms}}{p_0} \text{dB}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(5)</span></span> </p>
+<p>Here, <span class="math inline">\(p_\text{rms}\)</span> is the <em>root mean square</em> sound pressure, and <span class="math inline">\(p_0\)</span> is a reference pressure of <span class="math inline">\(2 \times 10^{-5}\)</span> Pa.</p>
+<p>Wave propagation in a medium causes energy to be transported through that medium. This energy flow can be measured in terms of the energy transported per second through an area of 1m² (W/m²), and is called <em>sound intensity</em>, <span class="math inline">\(I\)</span> <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 19]</span>:</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[\vec{I} = \overline{p \vec{v}}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(6)</span></span> </p>
+<p>Note that the overline notation signifies time-averaging. The sound intensity can also be given in terms of the <em>intensity level</em>, <span class="math inline">\(L_I\)</span> <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 20]</span>:</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[L_I = 10\log_{10}\frac{|\vec{I}|}{I_0}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(7)</span></span> </p>
+<p>where <span class="math inline">\(I_0 = 10^{-12} W/m^2\)</span> is a reference intensity chosen to match the levels of sound pressure and intensity in a plane wave.</p>
+<p>For a harmonic wave, the temporal and spatial periods of the wave are related by the speed of sound, <span class="math inline">\(c\)</span>:</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[c = \lambda f = \frac{\lambda}{T}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(8)</span></span> </p>
+<p>where <span class="math inline">\(f\)</span> is the frequency of the wave in Hz, <span class="math inline">\(T\)</span> is the temporal period, and <span class="math inline">\(\lambda\)</span> is the spatial period or <em>wavelength</em>.</p>
+<p>In the simulation presented in this project, sound waves are assumed to propagate equally in all directions from a point-like source, or <em>monopole</em>. The pressure wave, propagating with increasing radius, is known as a <em>spherical wave</em>.</p>
+<p>The pressure <span class="math inline">\(p\)</span> observed at distance <span class="math inline">\(r\)</span> and time <span class="math inline">\(t\)</span> from a monopole source with signal strength <span class="math inline">\(Q(t)\)</span> is given by <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 24]</span>:</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[p(r, t) = \frac{\rho_0}{4\pi r}\dot{Q}\left(t-\frac{r}{c}\right)\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(9)</span></span> </p>
+<p>For harmonic waves, the total radiated sound power <span class="math inline">\(P\)</span> of a monopole source is related to the sound intensity by <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">2</a>, p. 15]</span>:</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[P = 4 \pi r^2 I\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(10)</span></span> </p>
+<h2 id="boundary-characteristics">Boundary Characteristics</h2>
+<p>Room acoustics is not just concerned with the behaviour of pressure waves in air. Additionally, room acoustics problems normally bound the air volume with a set of surfaces (walls, floors, baffles etc.), from which an incident pressure wave may be reflected and/or absorbed. The reflected pressure waves generally lead to complex sound fields, which in turn contribute to the particular sonic “character” or <em>acoustic</em> of an enclosure.</p>
+<p>Several assumptions are made to simplify the equations governing wave behaviour at a boundary. First, incident waves are assumed to be plane waves. This is never true in the Wayverb app, as simulations use point sources which produce spherical waves. However, the curvature of the wave front may be ignored so long as the source is not close to the reflecting surface <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">2</a>, pp. 35–36]</span> (“close” here will depend on the error constraints of the particular simulation). Secondly, boundary surfaces are assumed to be flat, and infinitely large <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">2</a>, p. 35]</span>. This is a valid approximation only if the size of each surface is large relative to the longest wavelength in the simulation.</p>
+<h3 id="magnitude-and-phase">Magnitude and Phase</h3>
+<p>The reflection factor <span class="math inline">\(R\)</span> of a boundary is a complex value given by</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[R=|R|\exp(i\chi)\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(11)</span></span> </p>
+<p>which describes a modification to the amplitude and phase of a wave reflected in a boundary (<span class="math inline">\(|R|\)</span> is the magnitude term, <span class="math inline">\(\chi\)</span> is phase).</p>
+<p>This factor depends both on the frequency and direction of the incident wave. When <span class="math inline">\(\chi = \pi\)</span>, <span class="math inline">\(R\)</span> is negative, corresponding to a phase reversal. This is known as a “soft” wall, but is rarely seen in room acoustics. It is reasonable to assume that reflections are in-phase in the majority of architectural acoustics problems <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">2</a>, p. 36]</span>.</p>
+<p>The wall impedance <span class="math inline">\(Z\)</span> is defined as the ratio of sound pressure to the normal component of particle velocity at the wall surface. It is related to the reflection factor by</p>
+<p><a name="eq:r_in_terms_of_z"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[R=\frac{Z\cos\theta-Z_0}{Z\cos\theta+Z_0}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(12)</span></span> </p>
+<p>where <span class="math inline">\(\theta\)</span> is the angle of incidence, and <span class="math inline">\(Z_0\)</span> is the characteristic impedance of the propagation medium, normally air. In the case that the wall impedance is independent of the wave angle-of-incidence, the surface is known as <em>locally reacting</em>. A locally reacting surface does not transmit waves tangentially along the wall surface. In Wayverb, all surfaces are modelled as locally reacting.</p>
+<p>The absorption coefficient <span class="math inline">\(\alpha\)</span> of a wall describes the proportion of incident energy which is lost during reflection. It is defined as</p>
+<p><a name="eq:alpha"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[\alpha =1-|R|^2\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(13)</span></span> </p>
+<p>The <em>specific acoustic impedance</em> <span class="math inline">\(\xi\)</span> for a given surface is defined as the impedance of that surface <span class="math inline">\(Z\)</span> divided by the acoustic impedance of the propagation medium (air) <span class="math inline">\(Z_0\)</span>.</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[\xi=\frac{Z}{Z_0}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(14)</span></span> </p>
+<p>Inserting this equation into eq. <a href="#eq:r_in_terms_of_z">12</a> gives:</p>
+<p><a name="eq:r_in_terms_of_xi"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[R=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(15)</span></span> </p>
+<p>where <span class="math inline">\(\theta\)</span> is the angle of incidence <span class="citation" data-cites="southern_room_2013">[<a href="#ref-southern_room_2013">3</a>]</span>.</p>
+<p>For a general surface, <span class="math inline">\(\xi\)</span> will be a function of the incident angle. However, in the case of a locally reacting surface, the impedance is independent of the angle of incidence. The <span class="math inline">\(\xi\)</span> term in eq. <a href="#eq:r_in_terms_of_xi">15</a> can then be replaced by <span class="math inline">\(\xi_0\)</span> which represents the normal-incidence specific impedance (which will be constant for all angles). Thus, the reflection factor of a locally reacting surface is</p>
+<p><a name="eq:r_normal_incidence"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[R=\frac{\xi_0\cos\theta-1}{\xi_0\cos\theta+1}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(16)</span></span> </p>
+<p>Surfaces in Wayverb are defined in terms of absorption coefficients. To express the reflectance in terms of absorption, an equation for <span class="math inline">\(\xi_0\)</span> in terms of absorption must be found, and substituted into eq. <a href="#eq:r_normal_incidence">16</a>.</p>
+<p>Assuming that the absorption coefficients denote normal-incidence absorption, then by rearranging eq. <a href="#eq:alpha">13</a>, the normal-incidence reflection coefficient <span class="math inline">\(R_0\)</span> is given by</p>
+<p><a name="eq:r_mag"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[R_0=\sqrt{1-\alpha}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(17)</span></span> </p>
+<p><span class="math inline">\(R_0\)</span> can also be expressed by setting <span class="math inline">\(\theta\)</span> to 0 in eq. <a href="#eq:r_normal_incidence">16</a>:</p>
+<p><a name="eq:r_0"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[R_0=\frac{\xi_0 -1}{\xi_0 +1}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(18)</span></span> </p>
+<p>To express <span class="math inline">\(\xi_0\)</span> in terms of <span class="math inline">\(\alpha\)</span>, eq. <a href="#eq:r_0">18</a> is rearranged in terms of the normal-incidence reflection coefficient:</p>
+<p><a name="eq:xi_0"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[\xi_0=\frac{1+R_0}{1-R_0}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(19)</span></span> </p>
+<p>Then, eq. <a href="#eq:r_mag">17</a> may be substituted into eq. <a href="#eq:xi_0">19</a> to give <span class="math inline">\(\xi_0\)</span> in terms of <span class="math inline">\(\alpha\)</span>. This new definition of <span class="math inline">\(\xi_0\)</span> can then be used in conjunction with eq. <a href="#eq:r_normal_incidence">16</a> to define the angle-dependent reflection factor of a locally reacting surface.</p>
+<h3 id="scattering">Scattering</h3>
+<p>The reflection factor, absorption coefficient, and wall impedance describe the behaviour of perfectly-reflected (specular) waves. If the reflecting surface has imperfections or details of the same order as the wavelength, as many surfaces in the real world do, then some components of the reflected wave will be <em>scattered</em> instead of specularly reflected.</p>
+<p>Describing the nature of the scattered sound is more complicated than specular reflections. A common method is to use a <em>scattering coefficient</em>, which describes the proportion of outgoing energy which is scattered, and which may be dependent on frequency (see fig. <a href="#fig:scattering">1</a>). The total outgoing energy <span class="math inline">\(E_\text{total}\)</span> is related to the incoming energy <span class="math inline">\(E_\text{incident}\)</span> by</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[E_{\text{total}}=E_{\text{incident}}(1-\alpha)\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(20)</span></span> </p>
+<p>Then the scattering coefficient <span class="math inline">\(s\)</span> defines the proportion of this outgoing energy which is reflected specularly <span class="math inline">\(E_\text{specular}\)</span> or scattered <span class="math inline">\(E_\text{scattered}\)</span>:</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[
+\begin{aligned}
+E_{\text{specular}} &amp; =E_{\text{incident}}(1-\alpha)(1-s) \\
+E_{\text{scattered}} &amp; =E_{\text{incident}}(1-\alpha)s
+\end{aligned}
+\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(21)</span></span> </p>
+<figure>
+<img src="images/scattering.svg" alt="Figure 1: Reflected components from a rough surface." id="fig:scattering" /><figcaption>Figure 1: Reflected components from a rough surface.</figcaption>
+</figure>
+<p>Alone, the scattering coefficient fails to describe the directional distribution of scattered energy. In the case of an ideally-diffusing surface, the scattered energy is distributed according to Lambert’s cosine law. That is, the intensity depends only on the cosine of the outgoing scattering angle, and is independent of the angle of incidence (see fig. <a href="#fig:lambert">2</a>). More complex scattering distributions, which also depend on the outgoing direction, are possible <span class="citation" data-cites="christensen_new_2005 durany_analytical_2015">[<a href="#ref-christensen_new_2005">4</a>], [<a href="#ref-durany_analytical_2015">5</a>]</span>, but there is no single definitive model to describe physically-accurate scattering.</p>
+<figure>
+<img src="images/lambert.svg" alt="Figure 2: Lambert scattering is used to model ideally-diffusing surfaces, for which scattered intensity is independent of incident angle." id="fig:lambert" /><figcaption>Figure 2: Lambert scattering is used to model ideally-diffusing surfaces, for which scattered intensity is independent of incident angle.</figcaption>
+</figure>
+<h2 id="impulse-response-metrics">Impulse Response Metrics</h2>
+<h3 id="sabines-equation">Sabine’s Equation</h3>
+<p>If an air-filled enclosure is excited impulsively, the sound field in the enclosure will not die away immediately, unless the boundaries are perfectly anechoic. Usually, the boundaries will reflect sound pressure waves back and forth inside the enclosure, and at each reflection some energy will be lost to the boundary. In this way the sound energy in the simulation will decrease gradually over time.</p>
+<p>Assuming that the sound field is diffuse (that is, isotropic; having the same intensity in all directions <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">2</a>, p. 52]</span>), there will be a constant number of reflections per unit time. Under the additional assumption that the boundary absorption, <span class="math inline">\(\alpha\)</span>, has a homogeneous distribution, each reflection will cause that wave front to lose a proportion of its ingoing energy equal to the absorption coefficient <span class="math inline">\(\alpha\)</span>.</p>
+<p>The <em>energy density</em>, <span class="math inline">\(w\)</span> of a sound field is defined as the amount of energy contained in one unit volume <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">2</a>, p. 14]</span>. In a diffuse sound field, the energy density at time <span class="math inline">\(t\)</span> can be given by</p>
+<p><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[w(t) \approx w_0 (1 - \alpha)^{\overline{n} t}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(22)</span></span> </p>
+<p>where <span class="math inline">\(w_0\)</span> is the initial energy density when <span class="math inline">\(t=0\)</span> (the time of the impulsive excitation), and <span class="math inline">\(\overline{n}\)</span> is the average number of reflections per unit time. Using the definition of sound pressure level, the energy density decay can be rewritten as a linear level decay <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 61]</span>:</p>
+<p><a name="eq:level"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[L(t) = L_0 + 10\log_{10} \frac{w(t)}{w_0} = L_0 + 4.34 \overline{n} t \ln (1 - \alpha)\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(23)</span></span> </p>
+<p>A common measure of reverberation time is the <em>RT60</em>, the time taken for the level to decrease by 60dB. By rearranging eq. <a href="#eq:level">23</a>, the RT60 can be expressed <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 61]</span>:</p>
+<p><a name="eq:general_rt"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[\text{RT60} = -\frac{60}{4.34\overline{n}\ln(1-\alpha)}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(24)</span></span> </p>
+<p>The average number of reflections per second, <span class="math inline">\(\overline{n}\)</span> can be approximated by</p>
+<p><a name="eq:reflections_per_second"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[\overline{n} = \frac{cS}{4V}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(25)</span></span> </p>
+<p>where <span class="math inline">\(S\)</span> is the total surface area of the enclosure boundaries, and <span class="math inline">\(V\)</span> is the enclosure volume <span class="citation" data-cites="kuttruff_room_2009">[<a href="#ref-kuttruff_room_2009">2</a>, p. 112]</span>.</p>
+<p>By substituting eq. <a href="#eq:reflections_per_second">25</a> into eq. <a href="#eq:general_rt">24</a> and simplifying (assuming <span class="math inline">\(\alpha\)</span> is very small), and assuming <span class="math inline">\(c = 343 m/s\)</span>, <em>Sabine’s equation</em> is found <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 61]</span>:</p>
+<p><a name="eq:sabine"></a><span style="display: inline-block; position: relative; width: 100%"><span class="math display">\[\text{RT60} = 0.161\frac{V}{S\alpha} = 0.161\frac{V}{A}\]</span><span style="position: absolute; right: 0em; top: 50%; line-height:0; text-align: right">(26)</span></span> </p>
+<p>This equation can be used to estimate the reverberation time of an enclosure, given the volume, surface area, and homogeneous absorption of that enclosure, and assuming that the sound field is diffuse.</p>
+<p>The Sabine equation has some important limitations. Firstly, it fails at high absorptions. With the absorption coefficient set to 1, it estimates a finite reverb time, even though a completely absorptive enclosure cannot reverberate. Secondly, the assumption that the sound field in the enclosure is perfectly diffuse is untrue in practice. At low frequencies rooms behave modally, concentrating sound energy at specific points in the room. Under such circumstances, the sound field is clearly not diffuse, and so the Sabine equation is a poor predictor of reverb time at low frequencies.</p>
+<h3 id="computing-reverb-times-from-measurements">Computing Reverb Times from Measurements</h3>
+<p>It is possible to compute the RT60 of a measured impulse response (IR). This is useful for comparing the reverb times of different IRs, or for evaluating an IR against a predicted reverb time.</p>
+<p>Methods for evaluating the RT60 from measurements are given in the ISO 3382 standard <span class="citation" data-cites="iso_3382">[<a href="#ref-iso_3382">6</a>]</span>. Normally, the decay time is measured over a shorter range than 60dB, and then extrapolated. For example, the <em>T20</em> measurement is an estimate of the RT60 based on a 20dB level drop, and the <em>T30</em> is based on a 30dB drop.</p>
+<p>The analysis itself proceeds as follows: the IR is reversed, each sample value is squared, then the squared sample values are integrated/accumulated. The backward-integrated IR can then be reversed once more to produce a decay curve. For a T20 measurement, the -5dB and -25dB points on the curve (relative to the maximum level) are found, and a regression line is fitted to the region between these points using the least-squares method. The gradient of this line, <span class="math inline">\(d\)</span>, is a value measured in dB/s. The T20, in seconds, is given by <span class="math inline">\(60/d\)</span>. The T30 is found in the same way, but the regression line is fitted to the region between -5dB and -35dB instead. To find the reverb time in a particular frequency band, the IR may be band-pass filtered before computing the decay curve.</p>
+<p>A final measurement, known as the <em>early decay time</em> (EDT) is also based on fitting a regression line to the region between 0dB and -10dB, and then extrapolating to 60dB as usual. This measurement is useful as a descriptor of the ratio of direct to reverberant sound: an IR with a louder direct contribution and quieter reverberation will have a steep early gradient, and therefore a relatively short EDT. EDT is also useful as a measure of “perceived reverberance”: the transients in music and speech normally have a much shorter period than the time taken for the level to drop 60dB, so the early part of the IR has greater perceptual significance than the late <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, p. 94]</span>.</p>
+<p>ISO 3382 also defines the term <em>just noticeable difference</em> (JND), which is the smallest perceivable difference between two acoustic measurements <span class="citation" data-cites="vorlander_auralization:_2007">[<a href="#ref-vorlander_auralization:_2007">1</a>, pp. 99–100]</span>. That is, in order for simulation results to be indistinguishable from predictions or real-world measurements, the difference in each characteristic should be within the JND for that characteristic. For example, the JND for reverb time measurements (EDT, T20, T30) is 5%, and the JND for level is 1dB.</p>
+<h2 id="summary">Summary</h2>
+<p>An overview of the properties governing the behaviour of a sound field in an enclosed space has been given. The relationships between different physical properties have been shown. Sound behaviour at boundaries has been explained, along with methods for deriving boundary characteristics from absorption and scattering coefficients. Finally, Sabine’s equation for estimating reverb time has been derived, and methods for computing statistics from recorded impulse responses have been given.</p>
+<h1 id="bibliography" class="unnumbered">References</h1>
+<div id="refs" class="references">
+<div id="ref-vorlander_auralization:_2007">
+<p>[1] M. Vorländer, <em>Auralization: Fundamentals of acoustics, modelling, simulation, algorithms and acoustic virtual reality</em>. Springer Science &amp; Business Media, 2007. </p>
+</div>
+<div id="ref-kuttruff_room_2009">
+<p>[2] H. Kuttruff, <em>Room Acoustics, Fifth Edition</em>. CRC Press, 2009. </p>
+</div>
+<div id="ref-southern_room_2013">
+<p>[3] A. Southern, S. Siltanen, D. T. Murphy, and L. Savioja, “Room impulse response synthesis and validation using a hybrid acoustic model,” <em>IEEE Transactions on Audio, Speech, and Language Processing</em>, vol. 21, no. 9, pp. 1940–1952, 2013. </p>
+</div>
+<div id="ref-christensen_new_2005">
+<p>[4] C. L. Christensen and J. H. Rindel, “A new scattering method that combines roughness and diffraction effects,” in <em>Forum Acousticum, Budapest, Hungary</em>, 2005. </p>
+</div>
+<div id="ref-durany_analytical_2015">
+<p>[5] J. Durany, T. Mateos, and A. Garriga, “Analytical Computation of Acoustic Bidirectional Reflectance Distribution Functions,” <em>Open Journal of Acoustics</em>, vol. 5, no. 04, p. 207, 2015. </p>
+</div>
+<div id="ref-iso_3382">
+<p>[6] International Organization for Standardization, Geneva, Switzerland, “ISO 3382-1:2009 acoustics – measurement of room acoustic parameters – part 1: Performance spaces.” 2009. </p>
+</div>
+</div>
+
+        <nav id="prev_next_nav">
+    
+    
+        
+    
+        
+    
+        
+            
+            
+            
+                <a href="/wayverb/context.html" class="prev_page">Context</a>
+            
+
+            
+            
+            
+                <a href="/wayverb/image_source.html" class="next_page">Image-source Model</a>
+            
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+</nav>
+
+    </div>
+    <footer id="footer" class="wrapper alt">
+    <div class="inner">
+        <ul class="menu">
+			<li>
+                &copy; Reuben Thomas 2016. All rights reserved.
+            </li>
+            <li>
+                Design: <a href="http://html5up.net">HTML5 UP</a>, modified by Reuben Thomas.
+            </li>
+		</ul>
+	</div>
+</footer>
+
+<!-- Scripts -->
+<script src="/wayverb/assets/js/jquery.min.js"></script>
+<script src="/wayverb/assets/js/jquery.scrollex.min.js"></script>
+<script src="/wayverb/assets/js/jquery.scrolly.min.js"></script>
+<script src="/wayverb/assets/js/skel.min.js"></script>
+<script src="/wayverb/assets/js/util.js"></script>
+<!--[if lte IE 8]><script src="/wayverb/assets/js/ie/respond.min.js"></script><![endif]-->
+<script src="/wayverb/assets/js/main.js"></script>
+
+</div>
+</body>
+</html>

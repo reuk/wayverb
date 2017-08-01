@@ -34,6 +34,12 @@
             </li>
         
             <li>
+                <a href="/wayverb/theory.html" >
+                    Theory
+                </a>
+            </li>
+        
+            <li>
                 <a href="/wayverb/image_source.html" >
                     Image-source Model
                 </a>
@@ -76,8 +82,8 @@
             </li>
         
             <li>
-                <a href="/wayverb/bibliography.html" >
-                    References
+                <a href="/wayverb/conclusion.html" >
+                    Conclusion
                 </a>
             </li>
         
@@ -120,8 +126,10 @@
             
             
             
-                <a href="/wayverb/image_source.html" class="next_page">Image-source Model</a>
+                <a href="/wayverb/theory.html" class="next_page">Theory</a>
             
+        
+    
         
     
         
@@ -151,6 +159,7 @@
 <li><a href="#wave-based-methods">Wave-based Methods</a></li>
 </ul></li>
 <li><a href="#existing-software">Existing Software</a></li>
+<li><a href="#acoustic-simulation-and-the-creative-arts">Acoustic Simulation and the Creative Arts</a></li>
 <li><a href="#project-aims">Project Aims</a><ul>
 <li><a href="#proposed-solution">Proposed Solution</a></li>
 </ul></li>
@@ -158,6 +167,7 @@
 <li><a href="#chosen-simulation-techniques">Chosen Simulation Techniques</a></li>
 <li><a href="#chosen-technology">Chosen Technology</a></li>
 </ul></li>
+<li><a href="#summary">Summary</a></li>
 </ul></li>
 <li><a href="#bibliography">References</a></li>
 </ul>
@@ -166,24 +176,24 @@
 <h2 id="overview">Overview</h2>
 <p>Room acoustics algorithms fall into two main categories: <em>geometric</em>, and <em>wave-based</em> <span class="citation" data-cites="southern_spatial_2011">[<a href="#ref-southern_spatial_2011">1</a>]</span>. Wave-based methods aim to solve the wave equation numerically, simulating the actual behaviour of sound waves within an enclosed space. Geometric methods instead make some simplifying assumptions about the behaviour of sound, which result in faster but less accurate simulations. These assumptions generally ignore all wave properties of sound, choosing to model sound as independent <em>rays</em>, <em>particles</em>, or <em>phonons</em>.</p>
 <p>The modelling of waves as particles has found great success in the field of computer graphics, where <em>ray-tracing</em> is used to simulate the reflections of light in a scene. The technique works well for simulating light because of the relatively high frequencies of the modelled waves. The wavelengths of these waves - the wavelengths of the visible spectrum - will generally be many times smaller than any surface in the scene being rendered, so wave phenomena have little or no visible effect.</p>
-<p>The assumption that rays and waves are interchangeable falls down somewhat when modelling sound. The wavelengths of sound in air range from 17m to 0.017m for the audible frequency range (20Hz to 20KHz), so while the simulation may be accurate at high frequencies, at low frequencies the wavelength is of the same order as the wall surfaces in the scene. Failure to take wave effects such as interference and diffraction into account at these frequencies therefore results in noticeable approximation error <span class="citation" data-cites="savioja_overview_2015">[<a href="#ref-savioja_overview_2015">2</a>]</span>.</p>
+<p>The assumption that rays and waves are interchangeable falls down somewhat when modelling sound. The wavelengths of sound in air range from 17m to 0.017m for the audible frequency range (20Hz to 20kHz), so while the simulation may be accurate at high frequencies, at low frequencies the wavelength is of the same order as the wall surfaces in the scene. Failure to take wave effects such as interference and diffraction into account at these frequencies therefore results in noticeable approximation error <span class="citation" data-cites="savioja_overview_2015">[<a href="#ref-savioja_overview_2015">2</a>]</span>.</p>
 <p>In many cases, some inaccuracy is an acceptable (or even necessary) trade-off. Wave-modelling is so computationally expensive that using it to simulate a large scene over a broad spectrum might take weeks on consumer hardware. This leaves geometric methods as the only viable alternative. Though wave-modelling been studied for some time <span class="citation" data-cites="smith_physical_1992">[<a href="#ref-smith_physical_1992">3</a>]</span>, and even applied to small simulations of strings and membranes in consumer devices such as keyboards, it is only recently, as computers have become more powerful, that these techniques have been seriously considered for room acoustics simulation.</p>
 <p>Given that wave-based methods are accurate, but become more expensive at higher frequencies, and that geometric methods are inexpensive, but become less accurate at lower frequencies, it is natural to combine the two models in a way that takes advantage of the desirable characteristics of each <span class="citation" data-cites="aretz_combined_2009">[<a href="#ref-aretz_combined_2009">4</a>]</span>. That is, by using wave-modelling for low-frequency content, and geometric methods for high-frequency content, simulations may be produced which are accurate across the entire spectrum, without incurring massive computational costs.</p>
 <h2 id="characteristics-of-room-acoustics-simulation-methods">Characteristics of Room Acoustics Simulation Methods</h2>
 <p>A short review of acoustic simulation methods will be given here. For a more detailed survey of methods used in room acoustics, see <span class="citation" data-cites="savioja_overview_2015">[<a href="#ref-savioja_overview_2015">2</a>]</span>.</p>
-<p>The following figure  shows the relationships between the most common simulation methods. The advantages and disadvantages of each method will be discussed throughout the remainder of this section.</p>
+<p>Figure <a href="#fig:simulation_techniques">1</a> shows the relationships between the most common simulation methods. The advantages and disadvantages of each method will be discussed throughout the remainder of this section.</p>
 <figure>
-<img src="images/simulation_techniques.svg" alt="An overview of different acoustic simulation methods, grouped by category." /><figcaption>An overview of different acoustic simulation methods, grouped by category.</figcaption>
+<img src="images/simulation_techniques.svg" alt="Figure 1: An overview of different acoustic simulation methods, grouped by category." id="fig:simulation_techniques" /><figcaption>Figure 1: An overview of different acoustic simulation methods, grouped by category.</figcaption>
 </figure>
 <h3 id="geometric-methods">Geometric Methods</h3>
 <p>Geometric methods can be grouped into two categories: <em>stochastic</em> and <em>deterministic</em>.</p>
 <p>Stochastic methods are generally based on statistical approximation via some kind of Monte Carlo method. Such methods are approximate by nature. They aim to randomly and repeatedly sample the problem space, recording samples which fulfil some correctness criteria, and discarding the rest. By combining the results from multiple samples, the probability of an incorrect result is reduced, and the accuracy is increased. The balance of quality and speed can be adjusted in a straightforward manner, simply by adjusting the number of samples taken.</p>
 <p>In room acoustics, stochastic algorithms may be based directly on reflection paths, using <em>ray tracing</em> or <em>beam tracing</em>, in which rays or beams are considered to transport acoustic energy around the scene. Alternatively, they may use a surface-based technique, such as <em>acoustic radiance transfer</em> (ART), in which surfaces are used as intermediate stores of acoustic energy.</p>
 <p>Surface-based methods, especially, are suited to real-time simulations (i.e. interactive, where the listener position can change), as the calculation occurs in several passes, only the last of which involves the receiver object. This means that early passes can be computed and cached, and only the final pass must be recomputed if the receiver position changes.</p>
-<p>The main deterministic method is the <em>image source</em> method, which is designed to calculate the exact reflection paths between a source and a receiver. For shoebox-shaped rooms, and perfectly rigid surfaces, it is able to produce an exact solution to the wave equation. However, by its nature, it can only model specular (perfect) reflections, ignoring diffuse and diffracted components. For this reason, it is inexact for arbitrary enclosures, and unsuitable for calculating reverb tails, which are predominantly diffuse. The technique also becomes prohibitively expensive beyond low orders of reflection. The naive implementation reflects the sound source against all surfaces in the scene, resulting in a set of <em>image sources</em>. Then, each of these image sources is itself reflected against all surfaces. For high orders of reflection, the required number of calculations quickly becomes impractical. For these reasons, the image source method is only suitable for early reflections, and is generally combined with a stochastic method to find the late part of an impulse response.</p>
+<p>The main deterministic method is the <em>image source</em> method, which is designed to calculate the exact reflection paths between a source and a receiver. For shoebox-shaped rooms, and perfectly rigid surfaces, it is able to produce an exact solution to the wave equation. However, by its nature, it can only model specular (perfect) reflections, ignoring diffuse and diffracted components. For this reason, it is inexact for arbitrary enclosures, and unsuitable for calculating reverb tails, which are predominantly diffuse. The technique also becomes prohibitively expensive beyond low orders of reflection. The naive implementation reflects the sound source against all surfaces in the scene, resulting in a set of <em>image sources</em>. Then, each of these image sources is itself reflected against all surfaces. For high orders of reflection, the required number of calculations quickly becomes impractical. For these reasons, the image source method is only suitable for early reflections, and is generally combined with a stochastic method to find the late part of an impulse response (IR).</p>
 <p>For a detailed reference on geometric acoustic methods, see <span class="citation" data-cites="savioja_overview_2015">[<a href="#ref-savioja_overview_2015">2</a>]</span>.</p>
 <h3 id="wave-based-methods">Wave-based Methods</h3>
-<p>The main advantage of wave-based methods is that they inherently account for wave effects such as diffraction and interference <span class="citation" data-cites="shelley_diffuse_2007">[<a href="#ref-shelley_diffuse_2007">5</a>]</span>, while geometric methods do not. This means that these wave-based methods are capable of accurately simulating the low-frequency component of a room impulse-response, where constructive and destructive wave interference form <em>room modes</em>. Room modes have the effect of amplifying and attenuating specific frequencies in the room impulse response, and produce much of the subjective sonic “colour” or “character” of a room. Reproducing these room modes is therefore vital for evaluating the acoustics of rooms such as concert halls and recording studios, or when producing musically pleasing reverbs.</p>
+<p>The main advantage of wave-based methods is that they inherently account for wave effects such as diffraction and interference <span class="citation" data-cites="shelley_diffuse_2007">[<a href="#ref-shelley_diffuse_2007">5</a>]</span>, while geometric methods do not. This means that these wave-based methods are capable of accurately simulating the low-frequency component of a room IR, where constructive and destructive wave interference form <em>room modes</em>. Room modes have the effect of amplifying and attenuating specific frequencies in the room IR, and produce much of the subjective sonic “colour” or “character” of a room. Reproducing these room modes is therefore vital for evaluating the acoustics of rooms such as concert halls and recording studios, or when producing musically pleasing reverbs.</p>
 <p>Wave-based methods may be derived from the <em>Finite Element Method</em> (FEM), <em>Boundary Element Method</em> (BEM) or <em>Finite-Difference Time-Domain</em> (FDTD) method. The FEM and BEM are known together as <em>Element Methods</em>.</p>
 <p>The FEM is an iterative numerical method for finding natural resonances of a bounded enclosure. It models the air pressure inside the enclosure using a grid of interconnected nodes, each of which represents a mechanical system with a single degree of freedom. The interconnectedness of the nodes leads to a set of simultaneous equations, which can be solved for displacement at each node, and then the solved equations can be used to calculate pressure values at certain elements. The BEM is similar, but models nodes on the surface of the enclosure, instead of within it. This in turn allows it to model unbounded spaces, whereas the FEM is limited to bounded spaces <span class="citation" data-cites="murphy_digital_2000">[<a href="#ref-murphy_digital_2000">6</a>, pp. 52–55]</span>.</p>
 <p>The FDTD method works by dividing the space to be modelled into a regular grid, and computing changes in some quantity (such as pressure or particle velocity) at each grid point over time. The formula used to update each grid point, along with the topology of the grid, may be varied depending on the accuracy, efficiency, and complexity required by the application. FDTD methods are generally applied to problems in electromagnetics, but a subclass of the FDTD method known as the <em>Digital Waveguide Mesh</em> (DWM) is often used for solving acoustics problems.</p>
@@ -191,11 +201,12 @@
 <p>The major advantage of FDTD over element methods is that it is run directly in the time domain, rather than producing frequency-domain results, which in turn affords a much simpler implementation.</p>
 <p>FDTD simulations can also be implemented with relative efficiency by taking advantage of their “embarrassingly parallel” nature. Each individual node in the simulation (of which there may be thousands or millions) can be updated without synchronisation. As a result, the nodes may be updated entirely in parallel, leading to massive reductions in simulation time.</p>
 <p>The main disadvantage of the FDTD method is that it is susceptible to <em>numerical dispersion</em>, in which wave components travel at different speeds depending on their frequency and direction, especially at high frequencies. Several techniques exist to reduce this error, such as oversampling the mesh <span class="citation" data-cites="campos_computational_2005">[<a href="#ref-campos_computational_2005">8</a>]</span>, using different mesh topologies <span class="citation" data-cites="savioja_reduction_1999 van_duyne_tetrahedral_1995">[<a href="#ref-savioja_reduction_1999">9</a>], [<a href="#ref-van_duyne_tetrahedral_1995">10</a>]</span>, and post-processing the simulation output <span class="citation" data-cites="savioja_interpolated_2001">[<a href="#ref-savioja_interpolated_2001">11</a>]</span>. Oversampling further increases the computational load of the simulation, while using different topologies and post-processing both introduce additional complexity.</p>
-<p>Despite its drawbacks, the FDTD method is generally preferred for room acoustics simulation <span class="citation" data-cites="valimaki_fifty_2012">[<a href="#ref-valimaki_fifty_2012">7</a>]</span>, due to its straightforward implementation, inherent parallelism, intuitive behaviour, and its ability to directly produce time-domain impulse responses.</p>
+<p>Despite its drawbacks, the FDTD method is generally preferred for room acoustics simulation <span class="citation" data-cites="valimaki_fifty_2012">[<a href="#ref-valimaki_fifty_2012">7</a>]</span>, due to its straightforward implementation, inherent parallelism, intuitive behaviour, and its ability to directly produce time-domain IRs.</p>
 <h2 id="existing-software">Existing Software</h2>
-<p>A handful of programs exist for acoustic simulation. The following table  shows a selection which, whilst not exhaustive, is representative.</p>
+<p>A handful of programs exist for acoustic simulation. Table <a href="#tbl:software">1</a> shows a selection which, whilst not exhaustive, is representative.</p>
+<a name="tbl:software"></a>
 <table>
-<caption>Some of the most prominent tools for acoustic simulation.</caption>
+<caption>Table 1: Some of the most prominent tools for acoustic simulation. </caption>
 <thead>
 <tr class="header">
 <th style="text-align: left;">Name</th>
@@ -267,22 +278,52 @@
 </blockquote>
 <p>Clearly there is a need for wave-modelling acoustics software, which can accurately predict low frequency behaviour. However, such software seems to be somewhat rarer than geometric acoustics software. Of the two wave-modelling programs listed, only one is generally available, which must additionally be run from Python or Matlab scripts. This is a good approach for research software, but would probably not be straightforward for users with limited programming experience.</p>
 <p>At time of writing (December 2016) it appears that no generally-available (commercially or otherwise) piece of software has taken the approach of combining wave-modelling and geometric methods, although this technique is well-known in the literature <span class="citation" data-cites="southern_hybrid_2013 aretz_combined_2009 murphy_hybrid_2008 southern_room_2013 vorlander_simulation_2009 southern_spatial_2011">[<a href="#ref-southern_spatial_2011">1</a>], [<a href="#ref-aretz_combined_2009">4</a>], [<a href="#ref-southern_hybrid_2013">24</a>]–[<a href="#ref-vorlander_simulation_2009">27</a>]</span>.</p>
-<h2 id="project-aims">Project Aims</h2>
-<p>The fundamental goals of the project are:</p>
+<h2 id="acoustic-simulation-and-the-creative-arts">Acoustic Simulation and the Creative Arts</h2>
+<p>Musicians and sound designers can choose from an abundance of convolution reverb plugins, such as Waves’ <em>IR1 Convolution Reverb</em> <span class="citation" data-cites="waves_ir1">[<a href="#ref-waves_ir1">28</a>]</span>, Audio Ease’s <em>Altiverb</em> <span class="citation" data-cites="altiverb">[<a href="#ref-altiverb">29</a>]</span>, and Liquid Sonics’ <em>Reverberate 2</em> <span class="citation" data-cites="reverberate2">[<a href="#ref-reverberate2">30</a>]</span>. These tools are extremely flexible: by convolving an IR with some other signal, that signal can be made to sound as though it was recorded in the same location as the IR. A music producer might use this technique to create a recording of an “orchestra” in which each instrument is recorded separately, composited, and convolved with the IR of a concert hall. Similarly, a foley artist could use convolution reverb to make studio-recorded effects sound more believable in the context of the environment on-screen.</p>
+<p>The main drawback of convolution reverbs is their dependency upon high-quality IR recordings. Although most tools come with a library of IRs, this library will not be comprehensive. In some circumstances (for example, when attempting to seamlessly combine foley effects with location recordings) a suitable pre-recorded IR will not be directly available. In other circumstances, it may not even be possible to record a suitable IR using traditional methods, because the desired reverb is designed to evoke an environment that does not (or cannot) exist.</p>
+<p>In these situations, the user has a few options. Firstly, a custom IR could be recorded. This will require specialist equipment, and access to the particular location. Secondly, the desired reverb could be approximated using an algorithmic (i.e. not convolution-based) reverb tool. Thirdly, the IR could be predicted using an acoustic simulator. The third approach seems like a sensible middle ground between the first two options. It should be less time-consuming than recording a custom IR, and will not require access to the modelled location (although a 3D virtual model would be necessary). Additionally, the simulated IR should match real-world behaviour more closely than an algorithmic reverb.</p>
+<p>Despite the obvious application of virtual acoustics to music and sound production, all of the software in table <a href="#tbl:software">1</a> appears to be targeted at technical users with specialist knowledge in acoustics. For example, the i-Simpa homepage <span class="citation" data-cites="_i-simpa_2016">[<a href="#ref-_i-simpa_2016">22</a>]</span> says:</p>
+<blockquote>
+<p>It is a perfect tool for experts (i.e. acousticians), for teachers and students, as well as for researchers, in their projects (room acoustics, urban acoustics, industrial spaces, acoustic courses…)</p>
+</blockquote>
+<p>The Olive Tree Lab “philosophy” page <span class="citation" data-cites="philosophy_otl_2016">[<a href="#ref-philosophy_otl_2016">31</a>]</span> describes a similar focus on technical users:</p>
+<blockquote>
+<p>…we hope to assist acousticians and engineers in predicting sound and noise propagation more accurately, especially in the field of Noise Control.</p>
+</blockquote>
+<p>In the case of the “EASE” software, its name is an acronym standing for “Enhanced Acoustic Simulator for Engineers”.</p>
+<p>This targeting of technical users has an effect on the program design. The programs prioritise physical accuracy, and the ability to export visualisations and statistics about the modelled acoustics. These tools may also have steep learning curve, assuming that users are already familiar with acoustics theory. A simulation tool for creative users should have different goals:</p>
 <ul>
-<li><strong>Accuracy</strong>: Provide a way of generating accurate impulse responses of arbitrary enclosed spaces.</li>
-<li><strong>Efficiency</strong>: Ensure that the simulation is fast. Simulations times should be minutes, rather than hours or days.</li>
-<li><strong>Accessibility</strong>: It should be possible for someone with no programming experience to generate impulse responses. It should also be possible for other programmers to extend and modify the project’s code.</li>
+<li><strong>Sound quality</strong>: Generated IRs should be suitable for use without any additional cleanup or editing.</li>
+<li><strong>Intuitive controls</strong>: The interface should make it obvious how each parameter will affect the output.</li>
+<li><strong>Simulation speed</strong>: Part of the creative process is experimentation, and users need to hear the effects of their experiments quickly in order to iterate towards the desired sound.</li>
 </ul>
-<p>The project is primarily designed to help musicians and sound designers, who require high-quality reverberation effects. These users also need fast iteration times between making parameter adjustments and hearing the results, so that the “right” sound can be created quickly. The solution must run on commodity hardware, as musicians are not expected to have access to dedicated compute clusters or server farms.</p>
-<p>Accuracy and efficiency are competing goals, which must be balanced. Extreme performance, allowing real-time usage, has already been implemented in several of the commercial programs listed above, and generally relies on simplified acoustic models, which in turn reduce accuracy. This runs counter to the aims of the project. Similarly, extreme accuracy generally requires long compute times and specialised hardware, both of which are inaccessible to the target user. Therefore, the focus of the project cannot be solely on accuracy. Software which balances these two aims does not exist, at time of writing, and there is a clear need for a solution which is both reasonably fast and accurate.</p>
-<p>Accessibility is extremely important, and the final product must be accessible to two main groups. Firstly, it must be useful to the target users. It must be simple to install and run, and should not require specialist training in acoustics or programming. Secondly, the code and supporting materials must be made free to researchers, to encourage further research and modification.</p>
+<p>Creative users only require a subset of the functionality provided by other simulators. That is, they only require the final IR result. Other features, such as the creation and export of statistics and visualisations, are not required. Therefore, such a tool could be reasonably streamlined, presenting a simple “import, configure, render” workflow and omitting additional analysis features.</p>
+<h2 id="project-aims">Project Aims</h2>
+<p>Based on the evidence presented, it seems that there is a clear need for an acoustic simulation tool which uses wave-modelling to predict low-frequency behaviour, and which is targeted at creative users. The goal of the Wayverb project is build such a tool. The development of this program should prioritise the following goals:</p>
+<ul>
+<li><strong>Plausibility</strong>: Provide a way of generating physically plausible impulse responses of arbitrary enclosed spaces.</li>
+<li><strong>Efficiency</strong>: Ensure that the simulation is fast. Simulations should take less than ten minutes in general, and certainly never more than an hour.</li>
+<li><strong>Accessibility</strong>: The program’s controls should be intuitive, and it should be possible for someone with no programming or acoustics experience to generate IRs.</li>
+</ul>
+<p>The ideal simulation program would be capable of replicating, with perfect accuracy, the real-world behaviour of any acoustic scenario. However, for the purposes of sound-design, this level of accuracy is not necessary. When creating a reverb, a sound designer’s focus is generally on experimenting and developing the desired atmosphere, rather than on perfectly reconstructing a physical location. Therefore, simulation results should be believable first:</p>
+<ul>
+<li>The room size should directly affect the reverb duration, with smaller rooms exhibiting lower reverb times than larger spaces.</li>
+<li>The absorptions of the surfaces in the room should also affect reverb times. Absorptive surfaces should produce lower reverb times than more reflective surfaces. This effect should also be frequency-dependent, so that a room which is largely reflective at low frequencies and absorptive at high frequencies will exhibit appropriate relative reverb times in each frequency band.</li>
+<li>Rooms with parallel surfaces should show modal resonances at the correct frequencies.</li>
+<li>Adjusting the separating distance between a source and receiver should lead to corresponding changes in the balance between early and late reflections. For larger separations, the direct contribution should become less pronounced.</li>
+<li>If the source is not directly visible from the receiver, there should be no direct contribution.</li>
+<li>Reflective tunnel-like rooms should produce distinct echoes in the reverb tail.</li>
+<li>Modelled microphones should attenuate directional contributions appropriately, according to the polar pattern of the capsule.</li>
+</ul>
+<p>Another aspect of plausibility is overall quality: if a generated IR contains obvious artefacts, it is by definition physically implausible, and of limited use to a sound designer.</p>
+<p>Plausibility and efficiency are competing goals, which must be balanced. Extreme performance, allowing real-time usage, has already been implemented in several of the commercial programs listed above, and generally relies on simplified acoustic models, which in turn reduce accuracy. This runs counter to the aims of the project. Similarly, high-quality simulations generally require long compute times and specialised hardware, both of which are inaccessible to the target user. Therefore, the focus of the project cannot be solely on plausibility. Software which balances these two aims does not exist, at time of writing, and there is a clear need for a solution which runs on commodity hardware, and is both reasonably fast and produces believable results. Ideally, this software would allow the user control over the trade-off between accuracy and efficiency, enabling fast, lower-quality simulations to be used when auditioning, and a slower, higher-quality render to be produced once the user is happy with all the simulation settings.</p>
+<p>Regarding accessibility, the program must be simple to install and run, and users should not require specialist training in acoustics or programming in order to become productive. Controls must be intuitive, and it should be obvious how each parameter will affect the final IR. The project as a whole should be accessible too: the code and supporting materials must be made freely available to researchers, to encourage further research and modification. Note that accessibility is a lesser goal than plausibility and efficiency: if the program is fast and produces high quality, usable results, users will be prepared to invest time to learn the program. Meanwhile, if the program is easy to use but is too slow or produces poor results, users will have no reason to learn the software in the first place.</p>
 <h3 id="proposed-solution">Proposed Solution</h3>
-<p>It appears that an approach combining geometric and wave-based methods will be most flexible in achieving both accuracy and efficiency: wave-based methods are accurate but slow; and geometric methods are faster but less accurate. Accuracy and efficiency can be balanced by adjusting the proportion of the output generated with each method. The Wayverb project puts forward an acoustic simulator based on this hybrid method.</p>
+<p>It appears that an approach combining geometric and wave-based methods will be most flexible in achieving both plausibility and efficiency: wave-based methods are accurate but slow; and geometric methods are faster but more approximate. Efficiency can be balanced against output quality by adjusting the proportion of the output generated with each method. The Wayverb project puts forward an acoustic simulator based on this hybrid method.</p>
 <p>To achieve the goal of accessibility, the Wayverb program runs on consumer hardware, and is accessed through a graphical interface which allows simulations to be configured, stored, and run. Code for the project is public and permissively licensed.</p>
 <h2 id="original-contributions">Original Contributions</h2>
 <p>Most importantly, at time of writing, Wayverb is the only public graphical acoustics tool incorporating geometric and wave-based methods. Although hybrid acoustics methods are well documented <span class="citation" data-cites="southern_hybrid_2013 aretz_combined_2009 murphy_hybrid_2008">[<a href="#ref-aretz_combined_2009">4</a>], [<a href="#ref-southern_hybrid_2013">24</a>], [<a href="#ref-murphy_hybrid_2008">25</a>]</span>, they have only been used in specific research settings, for producing experimental results. It may be assumed that these tools have been built to model specific test-cases, rather than general simulation tasks, but this is uncertain as no tools incorporating these techniques have been made public. However, Wayverb is able to model arbitrary enclosures.</p>
-<p>The project acts as a survey of room acoustics techniques, and related issues regarding practical implementation. Rather than designing completely new simulation methods, existing techniques were investigated, compared, and evaluated in terms of their accuracy and performance. Then, optimum techniques were chosen and further developed for use in the final program. An especially important consideration is the matching of parameters between models. For example, all models should produce the same sound energy at a given distance, and should exhibit the same reverb time for a given scene. Therefore, the acoustics techniques were chosen so that they produce consistent results.</p>
+<p>The project acts as a survey of room acoustics techniques, and related issues regarding practical implementation. Rather than designing completely new simulation methods, existing techniques were investigated, compared, and evaluated in terms of their plausibility and performance. Then, optimum techniques were chosen and further developed for use in the final program. An especially important consideration is the matching of parameters between models. For example, all models should produce the same sound energy at a given distance, and should exhibit the same reverb time for a given scene. Therefore, the acoustics techniques were chosen so that they produce consistent results.</p>
 <p>Sometimes the models required development beyond the methods presented in the literature in order to become useful. An example of this is the waveguide set-up process. Most experimental set-ups in the literature only model cuboid-shaped enclosures, and no guidance is given for setting up simulations in arbitrarily-shaped enclosures. Of course, it must be possible to model real, complex room shapes, and so an original set-up procedure had to be developed. The same goes for memory layout and implementation details: in the literature, techniques for efficient implementation are rarely discussed. As a result, new techniques had to be invented, rather than reimplementing known methods. Where extensions to existing techniques have been developed for use in Wayverb, this is mentioned in the text.</p>
 <p>Much of the literature on acoustic simulation focuses predominantly on accuracy. Performance appraisals are rarely given, presumably because they are somewhat subjective, and “reasonable” efficiency will vary between applications. Ideally, the simulation methods in Wayverb should be selected and implemented to allow tunable performance, so that results with acceptable accuracy can be generated within a few minutes, but it is possible to run longer simulations if higher-accuracy results are needed. This is similar to approaches taken in computer graphics, where “overview” renders may take seconds to generate, but physically-modelled simulations for film often take hours to render, even on purpose-built compute clusters.</p>
 <p>The notable components of the Wayverb project are as follows, each of which has a dedicated chapter with detailed explanation:</p>
@@ -295,11 +336,11 @@
 <li>A boundary model with matched performance in all three simulation-types.</li>
 </ul>
 <h3 id="chosen-simulation-techniques">Chosen Simulation Techniques</h3>
-<p>The image-source and stochastic ray-tracing methods were chosen for modelling high-frequency content. These models are complementary: the image model can find early reflections with great accuracy but is slow at finding later reflections; while the ray-tracer is much faster but more approximate, making it better suited to finding naturally-diffuse late reflections. Specifically, a simple ray tracing method was chosen over a phonon- or surface-based method for the late-reflection simulation, for several reasons. Firstly, ray tracing is broadly discussed in the literature <span class="citation" data-cites="krokstad_calculating_1968 kuttruff_room_2009 vorlander_auralization:_2007 schroder_physically_2011 alpkocak_computing_2010">[<a href="#ref-krokstad_calculating_1968">28</a>]–[<a href="#ref-alpkocak_computing_2010">32</a>]</span>, so would not require a great deal of experimentation to implement. Secondly, ray tracing has the property of being an <em>embarrassingly parallel</em> algorithm, because each individual ray can be simulated entirely independently, without requiring communication or synchronisation. By running the algorithm on graphics hardware, which is designed to run great numbers of calculations in parallel, all rays could be simulated in one go, yielding much greater performance than processing each ray sequentially. Finally, though surface-based methods are capable of real-time operation, they do not pose any performance benefit for non-real-time or “one-off” simulations. Their performance comes from re-using pre-computed information when the receiver position changes, but in a one-off simulation the receiver position is fixed. Ray tracing is also less complex and better documented than surface-based methods, making it the superior choice for this application. A logistical reason for choosing the image-source and ray tracing solution for high-frequency modelling was that the author had previously implemented such a system for an undergraduate project. It was hoped that much of the code from that project could be re-used, but it transpired that the project suffered from accuracy and implementation issues, making it unsuitable for direct integration within Wayverb. Therefore, the majority of this code was completely re-written. The author was, however, able to re-use much of the knowledge and experience gained from the previous project, which would not have been possible if a completely new stochastic method had been introduced.</p>
-<p>For low-frequency simulation, a FDTD-based DWM model was chosen. There is a great deal of writing on this method <span class="citation" data-cites="van_duyne_3d_1996 savioja_interpolated_2014 kowalczyk_room_2011 campos_computational_2005 murphy_digital_2000">[<a href="#ref-murphy_digital_2000">6</a>], [<a href="#ref-campos_computational_2005">8</a>], [<a href="#ref-van_duyne_3d_1996">33</a>]–[<a href="#ref-kowalczyk_room_2011">35</a>]</span>, it is relatively simple to implement, and shares with ray tracing the characteristic of being embarrassingly parallel. As wave-modelling is especially costly, a parallel implementation is necessary in order to achieve simulation times in the order of minutes rather than hours or days.</p>
-<p>An in-depth description of the algorithms implemented is given in the <a href="/wayverb/image_source.html">Image-Source</a>, <a href="/wayverb/ray_tracer.html">Ray Tracer</a>, and <a href="/wayverb/waveguide.html">Waveguide</a> sections. The following figure  shows how the outputs from the different methods work together to produce a broadband impulse response. It shows that the lower portion of the spectrum is generated entirely with the waveguide, while the upper portion is simulated using the image-source method for early reflections, and the ray tracing method for the reverb tail.</p>
+<p>The image-source and stochastic ray-tracing methods were chosen for modelling high-frequency content. These models are complementary: the image model can find early reflections with great accuracy but is slow at finding later reflections; while the ray-tracer is much faster but more approximate, making it better suited to finding naturally-diffuse late reflections. Specifically, a simple ray tracing method was chosen over a phonon- or surface-based method for the late-reflection simulation, for several reasons. Firstly, ray tracing is broadly discussed in the literature <span class="citation" data-cites="krokstad_calculating_1968 kuttruff_room_2009 vorlander_auralization:_2007 schroder_physically_2011 alpkocak_computing_2010">[<a href="#ref-krokstad_calculating_1968">32</a>]–[<a href="#ref-alpkocak_computing_2010">36</a>]</span>, so would not require a great deal of experimentation to implement. Secondly, ray tracing has the property of being an <em>embarrassingly parallel</em> algorithm, because each individual ray can be simulated entirely independently, without requiring communication or synchronisation. By running the algorithm on graphics hardware, which is designed to run great numbers of calculations in parallel, all rays could be simulated in one go, yielding much greater performance than processing each ray sequentially. Finally, though surface-based methods are capable of real-time operation, they do not pose any performance benefit for non-real-time or “one-off” simulations. Their performance comes from re-using pre-computed information when the receiver position changes, but in a one-off simulation the receiver position is fixed. Ray tracing is also less complex and better documented than surface-based methods, making it the superior choice for this application. A logistical reason for choosing the image-source and ray tracing solution for high-frequency modelling was that the author had previously implemented such a system for an undergraduate project. It was hoped that much of the code from that project could be re-used, but it transpired that the project suffered from accuracy and implementation issues, making it unsuitable for direct integration within Wayverb. Therefore, the majority of this code was completely re-written. The author was, however, able to re-use much of the knowledge and experience gained from the previous project, which would not have been possible if a completely new stochastic method had been introduced.</p>
+<p>For low-frequency simulation, a FDTD-based DWM model was chosen. There is a great deal of writing on this method <span class="citation" data-cites="van_duyne_3d_1996 savioja_interpolated_2014 kowalczyk_room_2011 campos_computational_2005 murphy_digital_2000">[<a href="#ref-murphy_digital_2000">6</a>], [<a href="#ref-campos_computational_2005">8</a>], [<a href="#ref-van_duyne_3d_1996">37</a>]–[<a href="#ref-kowalczyk_room_2011">39</a>]</span>, it is relatively simple to implement, and shares with ray tracing the characteristic of being embarrassingly parallel. As wave-modelling is especially costly, a parallel implementation is necessary in order to achieve simulation times in the order of minutes rather than hours or days.</p>
+<p>An in-depth description of the algorithms implemented is given in the <a href="/wayverb/image_source.html">Image-Source</a>, <a href="/wayverb/ray_tracer.html">Ray Tracer</a>, and <a href="/wayverb/waveguide.html">Waveguide</a> sections. Figure <a href="#fig:regions">2</a> shows how the outputs from the different methods work together to produce a broadband IR. It shows that the lower portion of the spectrum is generated entirely with the waveguide, while the upper portion is simulated using the image-source method for early reflections, and the ray tracing method for the reverb tail.</p>
 <figure>
-<img src="images/regions.svg" alt="The structure of a simulated impulse response." /><figcaption>The structure of a simulated impulse response.</figcaption>
+<img src="images/regions.svg" alt="Figure 2: The structure of a simulated IR." id="fig:regions" /><figcaption>Figure 2: The structure of a simulated IR.</figcaption>
 </figure>
 <p>Deciding on the simulation techniques led to three questions:</p>
 <ul>
@@ -318,7 +359,7 @@
 <dd>Provides vector and matrix primitives and operations, primarily designed for use in 3D graphics software, but useful for any program that will deal with 3D space.
 </dd>
 <dt>Assimp</dt>
-<dd>Used for loading and saving 3D model files in a wide array of formats, with a consistent interface for querying loaded files.
+<dd>Used for loading and saving 3D model files in a wide array of formats, with a consistent interface for querying loaded files. Using a 3D mesh importer means that users can load and simulate models created in practically any mesh editor, providing the mesh is manifold and represents a single watertight enclosure.
 </dd>
 <dt>FFTW3</dt>
 <dd>Provides Fast Fourier Transform routines. Used mainly for filtering and convolution.
@@ -343,7 +384,9 @@
 </dd>
 </dl>
 <p>The project uses CMake to configure its build, and to automatically download project dependencies. Python and Octave were used for running and automating tests and generating graphs.</p>
-<p>This documentation is written in Markdown, and compiled to html and to pdf using Pandoc. The project website is generated with Jekyll.</p>
+<p>This documentation is written in Markdown, and compiled to HTML and to PDF using Pandoc. The project website is generated with Jekyll.</p>
+<h2 id="summary">Summary</h2>
+<p>An account of techniques commonly used for room acoustics simulation has been provided. The strengths and weaknesses of these techniques have been discussed, leading to the observation that geometric and wave-based models have complementary characteristics. The weaknesses of the individual models could be minimised by creating a combined “hybrid” model. This hybrid approach has not previously been used in publicly-available software, and such acoustic simulation software that is available is consistently targeted at technical users. This evidence suggests the need for a program focused on the requirements of creative users, which uses a hybrid modelling approach, and which is made publicly available. Specific goals for such a program have been suggested and explained, and the original contributions of the program have been examined. Finally, a plan to build the program has been put forward.</p>
 <h1 id="bibliography" class="unnumbered">References</h1>
 <div id="refs" class="references">
 <div id="ref-southern_spatial_2011">
@@ -365,19 +408,19 @@
 <p>[6] D. T. Murphy and D. M. Howard, “Digital waveguide mesh topologies in room acoustics modelling,” PhD thesis, Citeseer, 2000. </p>
 </div>
 <div id="ref-valimaki_fifty_2012">
-<p>[7] V. Valimaki, J. D. Parker, L. Savioja, J. O. Smith, and J. S. Abel, “Fifty years of artificial reverberation,” <em>IEEE Transactions on Audio, Speech, and Language Processing</em>, vol. 20, no. 5, pp. 1421–1448, 2012. </p>
+<p>[7] V. Välimäki, J. D. Parker, L. Savioja, J. O. Smith, and J. S. Abel, “Fifty years of artificial reverberation,” <em>IEEE Transactions on Audio, Speech, and Language Processing</em>, vol. 20, no. 5, pp. 1421–1448, 2012. </p>
 </div>
 <div id="ref-campos_computational_2005">
 <p>[8] G. R. Campos and D. M. Howard, “On the computational efficiency of different waveguide mesh topologies for room acoustic simulation,” <em>IEEE Transactions on Speech and Audio Processing</em>, vol. 13, no. 5, pp. 1063–1072, 2005. </p>
 </div>
 <div id="ref-savioja_reduction_1999">
-<p>[9] L. Savioja and V. Valimaki, “Reduction of the dispersion error in the interpolated digital waveguide mesh using frequency warping,” in <em>Acoustics, Speech, and Signal Processing, 1999. Proceedings., 1999 IEEE International Conference on</em>, 1999, vol. 2, pp. 973–976. </p>
+<p>[9] L. Savioja and V. Välimäki, “Reduction of the dispersion error in the interpolated digital waveguide mesh using frequency warping,” in <em>Acoustics, Speech, and Signal Processing, 1999. Proceedings., 1999 IEEE International Conference on</em>, 1999, vol. 2, pp. 973–976. </p>
 </div>
 <div id="ref-van_duyne_tetrahedral_1995">
 <p>[10] S. A. Van Duyne and J. O. Smith, “The tetrahedral digital waveguide mesh,” in <em>Applications of Signal Processing to Audio and Acoustics, 1995., IEEE ASSP Workshop on</em>, 1995, pp. 234–237. </p>
 </div>
 <div id="ref-savioja_interpolated_2001">
-<p>[11] L. Savioja and V. Valimaki, “Interpolated 3-D digital waveguide mesh with frequency warping,” in <em>Acoustics, Speech, and Signal Processing, 2001. Proceedings.(ICASSP’01). 2001 IEEE International Conference on</em>, 2001, vol. 5, pp. 3345–3348. </p>
+<p>[11] L. Savioja and V. Välimäki, “Interpolated 3-D digital waveguide mesh with frequency warping,” in <em>Acoustics, Speech, and Signal Processing, 2001. Proceedings.(ICASSP’01). 2001 IEEE International Conference on</em>, 2001, vol. 5, pp. 3345–3348. </p>
 </div>
 <div id="ref-_odeon_2016">
 <p>[12] “Odeon.” 2016 [Online]. Available: <a href="http://www.odeon.dk/" class="uri">http://www.odeon.dk/</a>. [Accessed: 05-Dec-2016]</p>
@@ -425,46 +468,58 @@
 <p>[26] A. Southern, S. Siltanen, D. T. Murphy, and L. Savioja, “Room impulse response synthesis and validation using a hybrid acoustic model,” <em>IEEE Transactions on Audio, Speech, and Language Processing</em>, vol. 21, no. 9, pp. 1940–1952, 2013. </p>
 </div>
 <div id="ref-vorlander_simulation_2009">
-<p>[27] M. Vorlander, “Simulation and auralization of broadband room impulse responses,” in <em>Tecniacústica 2009</em>, 2009. </p>
+<p>[27] M. Vorländer, “Simulation and auralization of broadband room impulse responses,” in <em>Tecniacústica 2009</em>, 2009. </p>
+</div>
+<div id="ref-waves_ir1">
+<p>[28] “Waves iR1 convolution reverb.” 2017 [Online]. Available: <a href="http://www.waves.com/plugins/ir1-convolution-reverb" class="uri">http://www.waves.com/plugins/ir1-convolution-reverb</a>. [Accessed: 22-Jul-2017]</p>
+</div>
+<div id="ref-altiverb">
+<p>[29] “Altiverb.” 2017 [Online]. Available: <a href="https://www.audioease.com/altiverb/" class="uri">https://www.audioease.com/altiverb/</a>. [Accessed: 22-Jul-2017]</p>
+</div>
+<div id="ref-reverberate2">
+<p>[30] “Reverberate 2.” 2017 [Online]. Available: <a href="https://www.liquidsonics.com/software/reverberate-2/" class="uri">https://www.liquidsonics.com/software/reverberate-2/</a>. [Accessed: 22-Jul-2017]</p>
+</div>
+<div id="ref-philosophy_otl_2016">
+<p>[31] “Our philosophy.” 2017 [Online]. Available: <a href="http://www.mediterraneanacoustics.com/philosophy.html" class="uri">http://www.mediterraneanacoustics.com/philosophy.html</a>. [Accessed: 05-Jul-2017]</p>
 </div>
 <div id="ref-krokstad_calculating_1968">
-<p>[28] A. Krokstad, S. Strom, and S. Sørsdal, “Calculating the acoustical room response by the use of a ray tracing technique,” <em>Journal of Sound and Vibration</em>, vol. 8, no. 1, pp. 118–125, 1968. </p>
+<p>[32] A. Krokstad, S. Strom, and S. Sørsdal, “Calculating the acoustical room response by the use of a ray tracing technique,” <em>Journal of Sound and Vibration</em>, vol. 8, no. 1, pp. 118–125, 1968. </p>
 </div>
 <div id="ref-kuttruff_room_2009">
-<p>[29] H. Kuttruff, <em>Room Acoustics, Fifth Edition</em>. CRC Press, 2009. </p>
+<p>[33] H. Kuttruff, <em>Room Acoustics, Fifth Edition</em>. CRC Press, 2009. </p>
 </div>
 <div id="ref-vorlander_auralization:_2007">
-<p>[30] M. Vorländer, <em>Auralization: Fundamentals of acoustics, modelling, simulation, algorithms and acoustic virtual reality</em>. Springer Science &amp; Business Media, 2007. </p>
+<p>[34] M. Vorländer, <em>Auralization: Fundamentals of acoustics, modelling, simulation, algorithms and acoustic virtual reality</em>. Springer Science &amp; Business Media, 2007. </p>
 </div>
 <div id="ref-schroder_physically_2011">
-<p>[31] D. Schröder, <em>Physically based real-time auralization of interactive virtual environments</em>, vol. 11. Logos Verlag Berlin GmbH, 2011. </p>
+<p>[35] D. Schröder, <em>Physically based real-time auralization of interactive virtual environments</em>, vol. 11. Logos Verlag Berlin GmbH, 2011. </p>
 </div>
 <div id="ref-alpkocak_computing_2010">
-<p>[32] A. Alpkocak and M. Sis, “Computing impulse response of room acoustics using the ray-tracing method in time domain,” <em>Archives of Acoustics</em>, vol. 35, no. 4, pp. 505–519, 2010. </p>
+<p>[36] A. Alpkocak and M. Sis, “Computing impulse response of room acoustics using the ray-tracing method in time domain,” <em>Archives of Acoustics</em>, vol. 35, no. 4, pp. 505–519, 2010. </p>
 </div>
 <div id="ref-van_duyne_3d_1996">
-<p>[33] S. A. Van Duyne and J. O. Smith III, “The 3D tetrahedral digital waveguide mesh with musical applications,” in <em>Proceedings of the 1996 International Computer Music Conference</em>, 1996, pp. 9–16. </p>
+<p>[37] S. A. Van Duyne and J. O. Smith III, “The 3D tetrahedral digital waveguide mesh with musical applications,” in <em>Proceedings of the 1996 International Computer Music Conference</em>, 1996, pp. 9–16. </p>
 </div>
 <div id="ref-savioja_interpolated_2014">
-<p>[34] L. Savioja, T. Lokki, and V. Välimäki, “The interpolated 3-D digital waveguide mesh method for room acoustic simulation and auralization,” <em>Ultragarsas“ Ultrasound”</em>, vol. 48, no. 3, pp. 48–52, 2014. </p>
+<p>[38] L. Savioja, T. Lokki, and V. Välimäki, “The interpolated 3-D digital waveguide mesh method for room acoustic simulation and auralization,” <em>Ultragarsas“ Ultrasound”</em>, vol. 48, no. 3, pp. 48–52, 2014. </p>
 </div>
 <div id="ref-kowalczyk_room_2011">
-<p>[35] K. Kowalczyk and M. van Walstijn, “Room acoustics simulation using 3-D compact explicit FDTD schemes,” <em>IEEE Transactions on Audio, Speech, and Language Processing</em>, vol. 19, no. 1, pp. 34–46, 2011. </p>
+<p>[39] K. Kowalczyk and M. van Walstijn, “Room acoustics simulation using 3-D compact explicit FDTD schemes,” <em>IEEE Transactions on Audio, Speech, and Language Processing</em>, vol. 19, no. 1, pp. 34–46, 2011. </p>
 </div>
 <div id="ref-_visual_2016">
-<p>[36] “Visual Studio support for C++ language features.” 2016 [Online]. Available: <a href="https://msdn.microsoft.com/en-us/library/hh567368.aspx" class="uri">https://msdn.microsoft.com/en-us/library/hh567368.aspx</a>. [Accessed: 09-Dec-2016]</p>
+<p>[40] “Visual Studio support for C++ language features.” 2016 [Online]. Available: <a href="https://msdn.microsoft.com/en-us/library/hh567368.aspx" class="uri">https://msdn.microsoft.com/en-us/library/hh567368.aspx</a>. [Accessed: 09-Dec-2016]</p>
 </div>
 <div id="ref-_clang_2016">
-<p>[37] “Clang support for C++ language features.” 2016 [Online]. Available: <a href="http://clang.llvm.org/cxx_status.html" class="uri">http://clang.llvm.org/cxx_status.html</a>. [Accessed: 09-Dec-2016]</p>
+<p>[41] “Clang support for C++ language features.” 2016 [Online]. Available: <a href="http://clang.llvm.org/cxx_status.html" class="uri">http://clang.llvm.org/cxx_status.html</a>. [Accessed: 09-Dec-2016]</p>
 </div>
 <div id="ref-_download_2016">
-<p>[38] “Download LLVM releases.” 2016 [Online]. Available: <a href="http://llvm.org/releases/" class="uri">http://llvm.org/releases/</a>. [Accessed: 09-Dec-2016]</p>
+<p>[42] “Download LLVM releases.” 2016 [Online]. Available: <a href="http://llvm.org/releases/" class="uri">http://llvm.org/releases/</a>. [Accessed: 09-Dec-2016]</p>
 </div>
 </div>
 <section class="footnotes">
 <hr />
 <ol>
-<li id="fn1"><p>Visual Studio 2015 for Windows still does not support all of the C++11 language features <span class="citation" data-cites="_visual_2016">[<a href="#ref-_visual_2016">36</a>]</span>, while the Clang compiler used by Mac OS has supported newer C++14 features since version 3.4 <span class="citation" data-cites="_clang_2016">[<a href="#ref-_clang_2016">37</a>]</span>, released in May 2014 <span class="citation" data-cites="_download_2016">[<a href="#ref-_download_2016">38</a>]</span>.<a href="#fnref1">↩</a></p></li>
+<li id="fn1"><p>Visual Studio 2015 for Windows still does not support all of the C++11 language features <span class="citation" data-cites="_visual_2016">[<a href="#ref-_visual_2016">40</a>]</span>, while the Clang compiler used by Mac OS has supported newer C++14 features since version 3.4 <span class="citation" data-cites="_clang_2016">[<a href="#ref-_clang_2016">41</a>]</span>, released in May 2014 <span class="citation" data-cites="_download_2016">[<a href="#ref-_download_2016">42</a>]</span>.<a href="#fnref1">↩</a></p></li>
 </ol>
 </section>
 
@@ -483,8 +538,10 @@
             
             
             
-                <a href="/wayverb/image_source.html" class="next_page">Image-source Model</a>
+                <a href="/wayverb/theory.html" class="next_page">Theory</a>
             
+        
+    
         
     
         

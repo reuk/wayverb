@@ -1,3 +1,4 @@
 var searchData=
 [
-  ['usable_5fportion',['usable_portion',['../structwayverb_1_1waveguide_1_1single__band__parameters.html#a98c36ae87d2b23cacac5733b23c3e7f5',1,'wayverb::waveguid
+  ['table',['table',['../structwayverb_1_1core_1_1vector__look__up__table.html#a64210d71b119fb5f1913200ce192cc6d',1,'wayverb::core::vector_look_up_table']]]
+];

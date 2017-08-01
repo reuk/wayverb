@@ -238,13 +238,16 @@ var annotated_dup =
         ] ],
         [ "reflection_processor", null, [
           [ "energy_histogram_sum_functor", "structwayverb_1_1raytracer_1_1reflection__processor_1_1energy__histogram__sum__functor.html", "structwayverb_1_1raytracer_1_1reflection__processor_1_1energy__histogram__sum__functor" ],
-          [ "image_source", "classwayverb_1_1raytracer_1_1reflection__processor_1_1image__source.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1image__source" ],
+          [ "image_source_group_processor", "classwayverb_1_1raytracer_1_1reflection__processor_1_1image__source__group__processor.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1image__source__group__processor" ],
+          [ "image_source_processor", "classwayverb_1_1raytracer_1_1reflection__processor_1_1image__source__processor.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1image__source__processor" ],
           [ "make_directional_histogram", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__directional__histogram.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__directional__histogram" ],
           [ "make_image_source", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__image__source.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__image__source" ],
           [ "make_stochastic_histogram", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__stochastic__histogram.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__stochastic__histogram" ],
           [ "make_visual", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__visual.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1make__visual" ],
-          [ "stochastic_histogram", "classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__histogram.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__histogram" ],
-          [ "visual", "classwayverb_1_1raytracer_1_1reflection__processor_1_1visual.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1visual" ]
+          [ "stochastic_group_processor", "classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__group__processor.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__group__processor" ],
+          [ "stochastic_processor", "classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__processor.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1stochastic__processor" ],
+          [ "visual_group_processor", "classwayverb_1_1raytracer_1_1reflection__processor_1_1visual__group__processor.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1visual__group__processor" ],
+          [ "visual_processor", "classwayverb_1_1raytracer_1_1reflection__processor_1_1visual__processor.html", "classwayverb_1_1raytracer_1_1reflection__processor_1_1visual__processor" ]
         ] ],
         [ "stochastic", null, [
           [ "dirac_sequence", "structwayverb_1_1raytracer_1_1stochastic_1_1dirac__sequence.html", "structwayverb_1_1raytracer_1_1stochastic_1_1dirac__sequence" ],
@@ -258,16 +261,13 @@ var annotated_dup =
         [ "attenuated_impulse", "structwayverb_1_1raytracer_1_1attenuated__impulse.html", "structwayverb_1_1raytracer_1_1attenuated__impulse" ],
         [ "canonical_results", "structwayverb_1_1raytracer_1_1canonical__results.html", "structwayverb_1_1raytracer_1_1canonical__results" ],
         [ "dirac_sum_functor", "structwayverb_1_1raytracer_1_1dirac__sum__functor.html", "structwayverb_1_1raytracer_1_1dirac__sum__functor" ],
-        [ "get_results_functor_adapter", "classwayverb_1_1raytracer_1_1get__results__functor__adapter.html", "classwayverb_1_1raytracer_1_1get__results__functor__adapter" ],
         [ "histogram_mapper", "structwayverb_1_1raytracer_1_1histogram__mapper.html", "structwayverb_1_1raytracer_1_1histogram__mapper" ],
         [ "impulse", "structwayverb_1_1raytracer_1_1impulse.html", "structwayverb_1_1raytracer_1_1impulse" ],
         [ "item_with_time", "structwayverb_1_1raytracer_1_1item__with__time.html", "structwayverb_1_1raytracer_1_1item__with__time" ],
         [ "iterative_builder", "classwayverb_1_1raytracer_1_1iterative__builder.html", "classwayverb_1_1raytracer_1_1iterative__builder" ],
-        [ "make_get_results_functor_adapter", "structwayverb_1_1raytracer_1_1make__get__results__functor__adapter.html", "structwayverb_1_1raytracer_1_1make__get__results__functor__adapter" ],
-        [ "make_process_functor_adapter", "structwayverb_1_1raytracer_1_1make__process__functor__adapter.html", "structwayverb_1_1raytracer_1_1make__process__functor__adapter" ],
         [ "multitree", "structwayverb_1_1raytracer_1_1multitree.html", "structwayverb_1_1raytracer_1_1multitree" ],
-        [ "process_functor_adapter", "classwayverb_1_1raytracer_1_1process__functor__adapter.html", "classwayverb_1_1raytracer_1_1process__functor__adapter" ],
         [ "program", "classwayverb_1_1raytracer_1_1program.html", "classwayverb_1_1raytracer_1_1program" ],
+        [ "random_direction_generator_iterator", "classwayverb_1_1raytracer_1_1random__direction__generator__iterator.html", "classwayverb_1_1raytracer_1_1random__direction__generator__iterator" ],
         [ "reflection", "structwayverb_1_1raytracer_1_1reflection.html", "structwayverb_1_1raytracer_1_1reflection" ],
         [ "reflector", "classwayverb_1_1raytracer_1_1reflector.html", "classwayverb_1_1raytracer_1_1reflector" ],
         [ "simulation_parameters", "structwayverb_1_1raytracer_1_1simulation__parameters.html", "structwayverb_1_1raytracer_1_1simulation__parameters" ],
@@ -328,4 +328,4 @@ var annotated_dup =
     [ "Triangle3", "struct_triangle3.html", "struct_triangle3" ],
     [ "troublesome", "structtroublesome.html", "structtroublesome" ],
     [ "Type", "struct_type.html", null ]
-];                                                                                                                                                                                                                       
+];
