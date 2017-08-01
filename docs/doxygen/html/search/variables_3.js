@@ -1,3 +1,4 @@
 var searchData=
 [
-  ['r',['r',['../structwayverb_1_1core_1_1linear__regression.html#a06e94eeb11b3503f5f8c74a9fc9abda8',1,'wayverb::core::linear_regression::r()'],['../structwayverb_1_1core_1_1reverb__time.html#ae39b378803eba996fdb9d608f
+  ['maximum_5fimage_5fsource_5forder',['maximum_image_source_order',['../structwayverb_1_1raytracer_1_1simulation__parameters.html#a4b1aac64fdb5e3eb846214b621ca2945',1,'wayverb::raytracer::simulation_parameters']]]
+];

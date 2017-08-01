@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Hybrid Model
-navigation_weight: 5
+navigation_weight: 6
 ---
 
 ---
@@ -14,12 +14,13 @@ reference-section-title: References
 
 The previous sections have looked at the theory and implementation of three
 different acoustic simulation techniques.  The image-source method is accurate
-for early reflections, but slow for longer responses.  The ray tracing method
-is inaccurate, but produces acceptable responses for "diffuse" reverb tails.
-The waveguide method models physical phenomena better than the geometric
-methods, but is expensive at high frequencies.  By combining all three models
-together, accurate broadband impulse responses can be created, without
-requiring exceptional computing power.
+for early reflections, but slow for longer responses.
+The ray tracing method is inaccurate, but produces acceptable responses for
+"diffuse" reverb tails.  The waveguide method models physical phenomena better
+than the geometric methods, but is expensive at high frequencies.  By combining
+all three models, accurate broadband impulse responses can be created, but for
+a much lower computational cost than would be possible with any individual
+method.
 
 This section will focus on the two most important factors governing the
 combination of modelling techniques. The first is positioning transitions: in
@@ -35,9 +36,9 @@ level, and the transitions are seamless.
 The beginning of the image-source process relies on randomly ray tracing a
 certain number of reflections.  This ray tracing process is similar to that
 used for estimating late, diffuse reflections.  When the simulation is run in
-Wayverb, rays are actually traced to a depth of maybe 100 reflections or more.
-The first few reflections are routed to image-source processing, while the
-entire set of reflections is used for finding the reverb tail.
+Wayverb, rays are actually traced to a depth of 100 reflections or more.  The
+first few reflections are routed to image-source processing, while the entire
+set of reflections is used for finding the reverb tail.
 
 It is important to note that the stochastic ray tracing process will record
 both specular and diffuse reflections.  At the beginning of the impulse
@@ -83,40 +84,47 @@ simulation with stochastic ray-tracing methods [@kuttruff_room_2009, p. 126].
 In the interests of efficiency, the most accurate waveguide method is only used
 at low frequencies, where it is relatively cheap. The rest of the audible
 spectrum is modelled with geometric methods, which are most accurate at higher
-frequencies.  However, there is no concrete rule to place the crossover between
-"low" and "high" frequencies in this context.  It should be clear that, when
-the time and computing power is available, the cutoff should be placed as high
-as possible, so as to use accurate wave-based modelling for the majority of the
-output.  However, in practice, it might be useful to have an estimate for the
-frequencies where wave-modelling is strictly required, to guide the placement
-of the cutoff frequency.  The *Schroeder frequency* is such an estimate, and is
-based on the density of room resonances or "modes".  Below the Schroeder
-frequency, room modes are well separated and can be individually excited.
-Above, the room modes overlap much more, resulting in a more "even" and less
-distinctly resonant sound.  The Schroeder frequency is defined as follows (see
-[@kuttruff_room_2009, p. 84] for a detailed derivation):
+frequencies.  However, there is no concrete rule governing where to place the
+crossover between "low" and "high" frequencies in this context.  It should be
+clear that, when the time and computing power is available, the cutoff should
+be placed as high as possible, so as to use accurate wave-based modelling for
+the majority of the output.  However, in practice, it might be useful to have
+an estimate for the frequencies where wave-modelling is strictly required, to
+guide the placement of the cutoff frequency.  The *Schroeder frequency* is such
+an estimate, and is based on the density of room resonances or "modes".  Below
+the Schroeder frequency, room modes are well separated and can be individually
+excited.  Above, the room modes overlap much more, resulting in a more "even"
+and less distinctly resonant sound.  The Schroeder frequency is defined as
+follows (see [@kuttruff_room_2009, p. 84] for a detailed derivation):
 
-(@) $$2000\sqrt{\frac{RT60}{V}}$$
+$$2000\sqrt{\frac{RT60}{V}}$$ {#eq:schroeder}
 
 Here, $RT60$ is the time taken for the reverb tail to decay by 60dB, and $V$ is
-the room volume in cubic metres.  Note that the Schroeder frequency is
-inversely proportional to the square root of the room volume.  This implies
-that in larger rooms, the shift from modal to non-modal behaviour is lower, and
-therefore wave-based methods will be required to compute a smaller portion of
-the spectrum.  In turn, this helps to keep the computational cost of the
-waveguide simulations within reasonable bounds.  Although the cost of
-wave-based methods increases with output frequency and simulation size, larger
-simulations require a lower maximum output frequency.  As a result, a hybrid
-acoustic simulator should be able to simulate even very large enclosures with
-reasonable perceived accuracy, without incurring excessive costs.
+the room volume in cubic metres.  In the [Waveguide]({{ site.baseurl }}{% link
+waveguide.md %}) section the complexity of a waveguide simulation was given as
+$O(V f_s^3)$ for a space with volume $V$, at sampling frequency $f_s$.  Given
+that $f_s$ is proportional to the waveguide cutoff frequency, which in turn may
+be set proportional to $V^{-\frac{1}{2}}$ by +@eq:schroeder, the waveguide
+simulation complexity becomes $O(V \cdot V^{-\frac{3}{2}})$ or
+$O(V^{-\frac{1}{2}})$. This implies that, for a waveguide simulation capped at
+the Schroeder frequency, a larger room will be cheaper to simulate than a
+smaller one when the reverb times of both rooms are equal.
 
 The Schroeder frequency is only an estimate. The actual frequency dividing
 "resonant" and "even" behaviours will vary depending on the surface area,
 absorption coefficients, and shape of the modelled space. The optimum crossover
 frequency should also be guided by the accuracy and time constraints imposed by
-the user. For this reason, the Schroeder frequency is not displayed in the
-Wayverb interface. It does, however, illustrate that in the general case it is
-justified to use a lower crossover frequency for larger simulated volumes.
+the user. For this reason, the Schroeder frequency is not used to guide the
+placement of the crossover frequency in Wayverb. Instead, the user may select
+the maximum frequency modelled by the waveguide, along with an oversampling
+ratio.  In this way, the user can use the waveguide to model as wide a
+bandwidth as their time constraints allow.  The literature indicates that this
+is a valid approach: [@southern_room_2013] suggests that "under ideal
+conditions the FDTD method would compute the entire RIR in all bands to ensure
+physical accuracy", and [@southern_spatial_2011] notes that further research is
+required in order to find an objective method for placing the crossover.
+Finally, the systems described in [@southern_hybrid_2013] and
+[@murphy_hybrid_2008] allow arbitrary placement of the crossover frequency.
 
 ### Combining Outputs
 
@@ -163,7 +171,7 @@ First, equations for the intensity at the receiver must be created.  Given a
 source and receiver separated by distance $r$, the intensity of the direct
 image-source contribution is given by:
 
-(@) $$E_{\text{image source}}=\frac{E_{\text{source}}}{4\pi r^2}$$
+$$E_{\text{image source}}=\frac{E_{\text{source}}}{4\pi r^2}$$ {#eq:}
 
 This is the standard equation for describing the power radiated from a point
 source.
@@ -177,38 +185,38 @@ proportion of rays which intersect the receiver can be estimated as the ratio
 between the area covered by the receiver, and the total area over which the
 rays are distributed. If the receiver is at a distance $r$ from the source,
 with an opening angle $\gamma$, then its area is that of a spherical cap (see
-the following figure\text{ (\ref{fig:detected_energy})}):
++@fig:detected_energy):
 
-(@) $$ A_{\text{intersection}} = 2\pi r^2(1-\cos\gamma) $$
+$$ A_{\text{intersection}} = 2\pi r^2(1-\cos\gamma) $$ {#eq:}
 
 Then, the total direct energy registered by the ray tracer can be expressed:
 
-(@) $$
+$$
 \begin{aligned}
 E_{\text{ray tracer}} & = NE_r \left( \frac{A_{\text{intersection}}}{4\pi r^2} \right) \\
                       & = NE_r \left( \frac{2\pi r^2(1-\cos\gamma)}{4\pi r^2} \right) \\
                       & = NE_r \left( \frac{1-\cos\gamma}{2} \right)
 \end{aligned}
-$$
+$$ {#eq:}
 
 ![The proportion of uniformly-distributed rays intersecting the receiver
 depends on the distance to the source, and opening angle formed by the
 receiver. The acoustic intensity registered by the ray tracer is given by the
 number of rays which intersect the receiver, and the energy carried by each
-ray.\label{fig:detected_energy}](images/detected_energy)
+ray.](images/detected_energy){#fig:detected_energy}
 
 The direct energy in both models should be equal, so the two equations can be
 set equal to one another, giving an equation for the initial intensity of each
 ray, in terms of the source intensity $E_{\text{source}}$, the opening angle of
 the receiver $\gamma$, and the number of rays $N$.
 
-(@) $$
+$$
 \begin{aligned}
 E_{\text{ray tracer}} &= E_{\text{image source}} \\
 NE_r \left( \frac{1-\cos\gamma}{2} \right) &= \frac{E_{\text{source}}}{4\pi r^2} \\
 E_r &= \frac{E_{\text{source}}}{2 \pi r^2 N (1 - \cos\gamma)}
 \end{aligned}
-$$
+$$ {#eq:}
 
 As long as the initial ray intensities are set according to this equation, both
 methods will produce outputs with the correct relative levels.  The outputs
@@ -232,7 +240,7 @@ output. The calibration coefficient is then equal to the ratio of these two
 magnitudes.  This approach is flawed, in that the same frequency band must be
 used for both signals. This frequency band will therefore be towards the lower
 end of the geometric output, which is known to be inaccurate (this is the
-entire reason for hybrid modelling), and at the to end of the waveguide output
+entire reason for hybrid modelling), and at the top end of the waveguide output
 (which may be inaccurate due to numerical dispersion).  It is impossible to
 compute an accurate calibration coefficient from inaccurate data.
 
@@ -266,7 +274,7 @@ below the noise floor).  Now, the change in pressure at a distance $X$ is
 known, where $X$ is the inter-nodal spacing of the waveguide mesh.  The
 geometric pressure level at the same distance is given by
 
-(@) $$ p_g=\sqrt{\frac{PZ_0}{4\pi}} / X $$
+$$ p_g=\sqrt{\frac{PZ_0}{4\pi}} / X $$ {#eq:}
 
 where $P$ is the source strength and $Z_0$ is the acoustic impedance of air.
 The waveguide pressure level cannot be directly compared to the geometric
@@ -275,7 +283,7 @@ range is invalid. Instead, the DC levels are compared. The DC component of the
 waveguide output can be found simply by accumulating the signal at the
 receiver. Now, the calibration coefficient $\eta$ can be expressed like so:
 
-(@) $$\eta = \frac{p_\text{init}R}{p_\text{DC}X}$$
+$$\eta = \frac{p_\text{init}R}{p_\text{DC}X}$$ {#eq:}
 
 where $p_\text{init}$ and $p_\text{DC}$ are the initial and DC pressure levels
 respectively, $X$ is the inter-nodal spacing, and $R$ is the distance at which
@@ -317,16 +325,15 @@ responses should match.
 A room, measuring $5.56 \times 3.97 \times 2.81$ metres is simulated, using the
 accelerated image-source and waveguide methods. The source is placed at (1, 1,
 1), with a receiver at (2, 3, 1.5). Both methods are run at a sampling rate of
-16KHz.  The simulation is carried out three times, with surface absorptions of
+16kHz.  The simulation is carried out three times, with surface absorptions of
 0.2, 0.1, and 0.05, and in all cases the simulation is run up until the
 Sabine-estimated RT60, which is 0.52, 1.03 and 2.06 seconds respectively.  The
-resulting frequency responses are shown below\text{ (figure
-\ref{fig:calibration})}.
+resulting frequency responses are shown in +@fig:calibration.
 
 ![Frequency responses analysis of image-source and waveguide outputs. The
 initial waveguide level has been calibrated using the technique described
 above. Room mode frequencies are shown in
-grey.\label{fig:calibration}](images/calibration)
+grey.](images/calibration){#fig:calibration}
 
 In the graphs, room modes are shown. One of the properties of the waveguide is
 that it models wave effects which directly contribute to this low-frequency
@@ -340,13 +347,14 @@ Below 30Hz, the responses show significant differences. Between 30 and 70Hz,
 the responses match closely, to within a decibel. There is some divergence at
 80Hz, after which the results match closely again until the upper limit of
 200Hz. At the upper end of the spectrum, the levels match closely between
-outputs, but the peaks and troughs are slightly "shifted". 
+outputs, but the peaks and troughs are slightly "shifted".
 
 The low-frequency differences can be explained as error introduced by the
 hard-source/Dirac-delta waveguide excitation method (see [Digital Waveguide
 Mesh]({{ site.baseurl }}{% link waveguide.md %})). This source type has
 previously been demonstrated to cause significant error at very low frequencies
-[@sheaffer_physical_2014].
+[@sheaffer_physical_2014]. However, it is not known how this error will be
+affected by changes in mesh sampling rate.
 
 There are several possible causes for the remaining differences seen between
 the outputs of the different models. Firstly, the image-source technique is
@@ -377,12 +385,14 @@ with exact dimensions.
 Despite the small differences between the frequency responses, the close level
 match between models suggests that the calibration coefficient is correct.
 
-The reverb times of the outputs are also compared and shown in the following
-table.
+The reverb times of the outputs are also compared and shown in
++@tbl:reverb_times.
+
+Table: Reverb times of outputs generated by image source and waveguide models {#tbl:reverb_times}
 
 -------------------------------------------------------------------------------
 absorption          method              T20 / s             T30 / s
-------------------- ------------------- ------------------- ------------------- 
+------------------- ------------------- ------------------- -------------------
 0.05                exact image source  1.044               1.065
 
 0.05                waveguide           1.165               1.180
@@ -397,7 +407,47 @@ absorption          method              T20 / s             T30 / s
 -------------------------------------------------------------------------------
 
 There is a difference of 11% for the lowest absorption, which falls to 6% for
-an absorption of 0.10, and to 4% for an absorption of 0.20. Given that the
-image-source method is nearly exact in cuboid rooms, these differences are
-small enough to suggest that the waveguide and its boundary model have been
-implemented correctly.
+an absorption of 0.10, and to 4% for an absorption of 0.20. The *just
+noticeable difference* (JND) for reverb time is 5%, so for the lowest two
+absorptions the difference is larger than the JND, so the match cannot be
+considered accurate. The waveguide's longer reverb times may be a by-product of
+the relatively increased level below 30Hz. Octave-band reverb-time measurements
+may help to clarify whether the error is indeed frequency-dependent.  In any
+case, the match between the modal responses above 30Hz suggests that the
+boundary models have equivalent behaviour, at least within the audible range.
+
+## Summary
+
+By combining the results from different models, IRs can be generated which have
+better broadband accuracy than the geometric output alone, and which are faster
+to produce than broadband waveguide results. In Wayverb, the crossover
+frequency between models can be adjusted by the user, depending on the desired
+accuracy and simulation speed. Similarly, the image-source depth is somewhat
+subjective and may be set manually. Investigation of the Schroeder frequency
+suggests that the waveguide bandwidth can be reduced in larger rooms, which
+means that the overall simulation complexity is effectively below linear in the
+volume of the modelled enclosure.
+
+A technique for matching levels in the geometric models has been derived from
+the equation for power radiated from a monopole source. This results in a
+formula for the initial energy carried by each ray, expressed in terms of the
+energy at the source, the distance between the source and receiver, the
+receiver radius, and the number of rays. When this formula is used to set
+initial ray energies, the ray tracer and image source models will register the
+same energy level at the receiver by definition, and therefore this particular
+calibration has not been tested.
+
+The process for calibrating the waveguide is also reasonably straightforward,
+but depends on a constant derived from experimental data put forward in
+[@siltanen_finite-difference_2013].  This method is not provably correct, and
+therefore has been verified through independent experimentation.  The
+calibrated waveguide output has been compared to the output of an ideal
+image-source model, showing close agreement in level between 30 and 200Hz.
+Below 30Hz, the waveguide level is higher than the image-source level,
+suggesting that some component of the waveguide (likely the injection method or
+boundary model) behaves incorrectly at low frequencies. The calibration method
+adjusts the broadband gain of the waveguide, so this error is definitely not
+due to an error in calibration. Further testing and analysis is necessary to
+show how the low-frequency error is related to the simulation parameters, and
+whether it is likely to be problematic in practice. The waveguide calibration
+method itself appears to function correctly.

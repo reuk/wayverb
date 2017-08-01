@@ -1,19 +1,26 @@
 .PHONY: all
 all: wayverb.pdf
 
-wayverb.pdf: $(SOURCES) pdfs haskell/audioTable
+wayverb.pdf: $(SOURCES) imgs haskell/audioTable
 	pandoc $(PANDOC_OPTIONS) -o $@ $(SOURCES)
 
-.PHONY: pdfs
-pdfs: sketches $(patsubst %.svg,%.pdf,$(wildcard images/*))
+wayverb.tex: $(SOURCES) imgs haskell/audioTable
+	pandoc $(PANDOC_OPTIONS) -o $@ $(SOURCES) --standalone
 
-.PHONY: sketches
-sketches:
-	$(MAKE) -C images/sketch
-	cp images/sketch/*.svg images
+diff.tex: wayverb.tex wayverb.old.tex
+	latexdiff \
+		--config "PICTUREENV=(?:picture|equation|DIFnomarkup|enumerate)[\w\d*@]*" \
+		wayverb.old.tex wayverb.tex > diff.tex \
+		#
 
-%.pdf: %.svg
-	inkscape --export-pdf=$@ --without-gui $<
+diff.pdf: diff.tex
+	./fix_latexdiff_output.py -i diff.tex
+	lualatex diff.tex
+	lualatex diff.tex
+
+.PHONY: imgs
+imgs:
+	make -C images
 
 PANDOC_OPTIONS = \
 	--smart \
@@ -22,12 +29,17 @@ PANDOC_OPTIONS = \
 	--variable=geometry:margin=2cm \
 	--variable=geometry:a4paper \
 	--variable=documentclass:scrreprt \
+	--filter haskell/audioTable \
+	--filter pandoc-fignos \
+	--filter pandoc-eqnos \
+	--filter pandoc-tablenos \
+	--filter table_filter.py \
 	--bibliography=wayverb.bib \
 	--csl=ieee-with-url.csl \
 	--default-image-extension=pdf \
-	--filter haskell/audioTable \
 	--metadata=link-citations:true \
-	--latex-engine=lualatex 
+	--latex-engine=lualatex \
+	#
 
 %.tex: %.md
 	pandoc $(PANDOC_OPTIONS) --standalone -o $@ $<
@@ -43,6 +55,7 @@ SOURCES := \
 	acknowledgements.md \
 	introduction.md \
 	context.md \
+	theory.md \
 	image_source.md \
 	ray_tracer.md \
 	waveguide.md \
@@ -50,7 +63,9 @@ SOURCES := \
 	microphone.md \
 	boundary.md \
 	evaluation.md \
-	bibliography.md
+	conclusion.md \
+	bibliography.md \
+	#
 
 .PHONY: check
 check:

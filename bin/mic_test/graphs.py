@@ -29,7 +29,18 @@ def do_plot(subdir, fname):
             1.0: 'Bidirectional',
            }[shape]
 
-    normalised_band_edges = [0.01, 0.0141421, 0.02, 0.0282843, 0.04, 0.0565685, 0.08, 0.113137, 0.16]
+    #normalised_band_edges = [0.01, 0.0141421, 0.02, 0.0282843, 0.04, 0.0565685, 0.08, 0.113137, 0.16]
+    normalised_band_edges = [
+        0.002,
+        0.00345873,
+        0.0059814,
+        0.010344,
+        0.0178885,
+        0.0309358,
+        0.0534992,
+        0.0925196,
+        0.16,
+    ]
 
     sr = 50000
     band_edges = [i * sr for i in normalised_band_edges]
@@ -65,7 +76,7 @@ def do_plot(subdir, fname):
         ax.plot(theta, nrg, color='r', linewidth=1)
         ax.plot(theta, desired, color='b', linewidth=1)
 
-        ax.set_title(str(lower) + ' to ' + str(upper) + ' Hz')
+        ax.set_title('{:.2} to {:.2} Hz'.format(lower, upper))
         ax.title.set_position([.5, 1.1])
 
     plt.suptitle('Directional Response of ' + name + ' Receiver')

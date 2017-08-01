@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Waveguide
-navigation_weight: 4
+navigation_weight: 5
 ---
 
 --- 
@@ -54,14 +54,14 @@ d'Alembert's solution of the wave equation in one dimension
 [@shelley_diffuse_2007, p. 86].  The displacement of a string $y$ at time $t$
 and position $x$ can be written as
 
-(@) $$y(t,x)=y_r\left(t-\frac{x}{c}\right) + y_l\left(t+\frac{x}{c}\right)$$
+$$y(t,x)=y_r\left(t-\frac{x}{c}\right) + y_l\left(t+\frac{x}{c}\right)$$ {#eq:}
 
 where $y_r\left(t-\frac{x}{c}\right)$ and $y_l\left(t+\frac{x}{c}\right)$ are
 the right- and left-going travelling waves respectively, with speed $c$
 [@smith_physical_1992].  The discrete form of this equation is given in terms
 of constant time and space divisions, $T$ and $X$ respectively:
 
-(@) $$y(nT,mX) \buildrel \Delta \over = y^+(n-m) + y^-(n+m)$$
+$$y(nT,mX) \buildrel \Delta \over = y^+(n-m) + y^-(n+m)$$ {#eq:}
 
 where superscript $+$ and $-$ denote propagation to the right and left
 respectively, and $n$ and $m$ are integers, used to index the
@@ -69,15 +69,14 @@ spatial and temporal sampling intervals [@smith_iii_equivalence_2004].
 
 An implementation of these equations will take the form of two parallel delay
 lines, which propagate wave components in opposite directions.  This is shown
-in the following diagram\text{ (\ref{fig:one_d_waveguide})}.  The "output" of
-the simulation, that is, the physical displacement of the modelled string over
-time, is found by adding the wave components in both delay lines at a single
-point.
+in +@fig:one_d_waveguide.  The "output" of the simulation, that is, the
+physical displacement of the modelled string over time, is found by adding the
+wave components in both delay lines at a single point.
 
 ![Delay lines cause wave components to be propagated along the "string" over
 time. The total displacement of the string is found by adding together values
 from the same point on each delay
-line.\label{fig:one_d_waveguide}](images/one_d_waveguide)
+line.](images/one_d_waveguide){#fig:one_d_waveguide}
 
 Waveguides in higher dimensions can be created in a straightforward manner, by
 connecting digital waveguide elements at a *scattering junction*.  Wave
@@ -87,14 +86,13 @@ conservation laws [@shelley_diffuse_2007, p. 87].  The sound pressure $p_J$ at
 a lossless scattering junction $J$ with $N$ connected elements or "ports" is
 the summed incoming components of all connected elements:
 
-(@)
-$$p_J=\frac{2\sum_{i=1}^{N}\frac{p_i^+}{Z_i}}{\sum_{i=1}^{N}\frac{1}{Z_i}}$$
+$$p_J=\frac{2\sum_{i=1}^{N}\frac{p_i^+}{Z_i}}{\sum_{i=1}^{N}\frac{1}{Z_i}}$$ {#eq:}
 
 where $p_i$ is the pressure in waveguide element $i$ and $Z_i$ is its
 associated impedance.  This simplifies, if all impedances are equal, which is
 true for homogeneous media:
 
-(@) $$p_J=\frac{2}{N}\sum_{i=1}^{N}p_i^+$$
+$$p_J=\frac{2}{N}\sum_{i=1}^{N}p_i^+$$ {#eq:}
 
 A *digital waveguide mesh* is any configuration of regularly-arranged $N$-port
 scattering junctions which are separated by unit delay lines.  In some
@@ -106,7 +104,7 @@ junction at the previous time step.  This fact allows the waveguide mesh to
 alternatively be formulated directly in terms of the pressure at each junction
 (assuming all junction impedances are equal) [@beeson_roomweaver:_2004]:
 
-(@) $$p_J(n)=\frac{2}{N}\sum_{i=1}^{N}p_i(n-1)-p_J(n-2)$$
+$$p_J(n)=\frac{2}{N}\sum_{i=1}^{N}p_i(n-1)-p_J(n-2)$$ {#eq:}
 
 That is, the next pressure at a given node depends on the previous pressure at
 that node, and the current pressure at surrounding nodes.  This alternative
@@ -132,13 +130,16 @@ temporal sampling periods are related by the Courant number $\lambda$.  The
 Courant criterion specifies the conditions required for numerical stability of
 the simulation:
 
-(@) $$\lambda=\frac{cT}{X} \leq \frac{1}{\sqrt{N}}$$
+$$\lambda=\frac{cT}{X} \leq \frac{1}{\sqrt{N}}$$ {#eq:}
 
 The highest sampling rate and lowest error is achieved by setting the Courant
-to its maximum value [@sheaffer_fdtd/k-dwm_2010].  This is normally desirable,
-and so the inequality above can be simplified:
+number to its maximum value [@sheaffer_fdtd/k-dwm_2010].  This is normally
+desirable, and so the inequality above can be simplified:
 
-(@) $$T=\frac{X}{c\sqrt{N}}$$
+$$T=\frac{X}{c\sqrt{N}}$$ {#eq:}
+
+Here, $T$ is the temporal sampling period, $X$ is the spatial sampling period,
+$c$ is the speed of sound and $N$ is the number of spatial dimensions.
 
 A higher output sampling rate requires a smaller inter-nodal spacing and
 therefore more modelled points per-unit-volume, which in turn requires more
@@ -184,9 +185,9 @@ The greatest limitation of the DWM is *dispersion error*.  Unlike waves in
 homogeneous physical media, the velocity of wave propagation in the DWM depends
 on the direction of propagation, and also on the frequency of the wave
 component.  This leads to errors in the frequency response of recorded signals,
-especially toward the upper limit of the output bandwidth.  The exact pattern
+especially towards the upper limit of the output bandwidth.  The exact pattern
 of dispersion error is dependent upon the topology of the mesh (topology is
-explained in [Mesh Topology] subsection), and can be examined using *Von
+explained in the [Mesh Topology] subsection), and can be examined using *Von
 Neumann* analysis [@van_duyne_3d_1996].  One solution to the dispersion problem
 is to increase the sampling rate of the mesh, moving the high-error area out of
 the region of interest.  Of course, this can quickly become very expensive, as
@@ -226,24 +227,37 @@ implement, as the nodes can be stored in memory in a three-dimensional array,
 in which the array extents define the mesh dimensions, and the array indices
 refer to the positions of individual nodes.  Other options for the topology
 include tetrahedral, octahedral, and dodecahedral, in which nodes have 4, 8,
-and 12 neighbours respectively, as shown in the following
-figure\text{ (\ref{fig:topology})}.
+and 12 neighbours respectively, as shown in +@fig:topology. In most of these
+meshes, the nodes align to a cubic grid in a straightforward manner.  However,
+in the case of the tetrahedral mesh, the tessellation scheme is less obvious.
+The method used to construct the tetrahedral mesh is shown in detail in
++@fig:tetrahedral_topology.
 
 ![Some of the most common mesh topologies. Black lines show connections to
 nodes that will be checked during update. Note that the tetrahedral topology is
 unique, in that nodes can have two different
-orientations.\label{fig:topology}](images/topology)
+orientations.](images/topology){#fig:topology}
 
-The accuracy may be increased by overlaying or "superposing" rectilinear,
-octahedral, and dodecahedral schemes together, as all nodes are oriented
-uniformly, and have cubic tessellation.  Such schemes are known as
-*interpolated*, and in these schemes each node has 26 neighbours.  The
-rectilinear, octahedral, dodecahedral, and interpolated schemes may
-additionally all be represented by a single "unified" update equation,
-described in [@kowalczyk_room_2011].  In this respect the tetrahedral scheme is
-unique, requiring a dedicated update method.  This is because the node
-connection in a tetrahedral mesh may be oriented in either of two directions,
-effectively requiring two update equations instead of one.
+![**Left:** A single "block" of a tetrahedral mesh.  **Right:**
+Individual blocks are combined in an alternating chessboard-like pattern to
+create a mesh with tetrahedral
+topology.](images/tetrahedral){#fig:tetrahedral_topology}
+
+In their evaluation of different mesh topologies, Kowalczyk and Walstijn
+[@kowalczyk_room_2011] define an accuracy criterion which can be used to
+compare topologies.  This criterion is defined as the frequency band within
+which the maximum relative numerical error does not exceed 2%.  They also
+describe how this "acceptably-accurate bandwidth" may be increased by
+overlaying or "superposing" rectilinear, octahedral, and dodecahedral schemes
+together. This is possible because all nodes are oriented uniformly, and have
+cubic tessellation.  Such schemes are known as *interpolated*, and in these
+schemes each node has 26 neighbours.  The rectilinear, octahedral,
+dodecahedral, and interpolated schemes may additionally all be represented by a
+single "unified" update equation, which is presented in [@kowalczyk_room_2011].
+In this respect the tetrahedral scheme is unique, requiring a dedicated update
+method.  This is because the node connections in a tetrahedral mesh may be
+oriented in either of two directions, effectively requiring two update
+equations instead of one.
 
 If the primary concern is speed rather than accuracy, a scheme with fewer
 neighbour nodes should be used, as the number of calculations per node is
@@ -271,7 +285,7 @@ interpolated schemes cannot be tuned to produce less accurate results quickly -
 they will always be accurate but inefficient.  For these reasons, the
 tetrahedral mesh was initially chosen for use in Wayverb.
 
-The tetrahedral mesh was implemented during within the first two months of the
+The tetrahedral mesh was implemented during the first two months of the
 project, with support for microphone modelling.  When it came to implementing
 frequency dependent boundary conditions, no prior research could be found
 discussing boundary implementations in a tetrahedral topology.  As noted in the
@@ -436,30 +450,30 @@ first time derivative of fluid emergence.  Fluid emergence should start and end
 at zero, which in turn enforces a null DC component.
 
 Some particular possibilities for the input signal are the *sine-modulated
-Gaussian pulse* [jeong_source_2012], and the *differentiated Gaussian pulse*
+Gaussian pulse* [@jeong_source_2012], and the *differentiated Gaussian pulse*
 and *Ricker wavelet* [@sheaffer_physical_2014].  All of these signals satisfy
 the differentiation constraint and the length constraint.  However, they all
-have non-flat pass-bands, as shown in the following figure\text{
-(\ref{fig:input_signal_info})}.  A final option is the *physically constrained
-source* (PCS) model presented in [@sheaffer_physical_2014].  This method can be
-used to create input signals with pass-bands much flatter than those of the
-more conventional pulse and wavelet signals. PCS signals obey the
-differentiation constraint, have wide and flat passbands, and are short in
-time.  They use soft-source injection, so will not cause scattering artefacts,
-and as they have no DC component, they should not introduce solution-growth.  A
-PCS input signal seems like and obvious choice for this application.  
+have non-flat pass-bands, as shown in +@fig:input_signal_info.  A final option
+is the *physically constrained source* (PCS) model presented in
+[@sheaffer_physical_2014].  This method can be used to create input signals
+with pass-bands much flatter than those of the more conventional pulse and
+wavelet signals. PCS signals obey the differentiation constraint, have wide and
+flat passbands, and are short in time.  They use soft-source injection, so will
+not cause scattering artefacts, and as they have no DC component, they should
+not introduce solution-growth.  A PCS input signal seems like an obvious choice
+for this application.
 
 ![The time-domain and frequency-domain responses of some signals commonly used
 as FDTD excitations.  All signals are shown with an upper cutoff of $0.2f_s$.
 The pulse signals have their centre frequencies set to $0.1f_s$.  The PCS
-signal shown has a sampling rate of 10KHz, a mass of 25g, a low cutoff of
+signal shown has a sampling rate of 10kHz, a mass of 25g, a low cutoff of
 100Hz, and a Q of 0.7. It *includes* the injection filter, which means the
 signal shown could be injected like a soft source.
-\label{fig:input_signal_info}](images/kernel_properties)
+](images/kernel_properties){#fig:input_signal_info}
 
 A test was devised to ensure that the source injection method did not cause
 solution-growth.  A standard rectilinear waveguide mesh with a sampling
-frequency of 10KHz was set up within a cuboid room, measuring $5.56 \times 3.97
+frequency of 10kHz was set up within a cuboid room, measuring $5.56 \times 3.97
 \times 2.81$ metres. A source was placed at (4.8, 2.18, 2.12), and a receiver
 at (4.7, 2.08, 2.02).  The walls of the room were set to have a uniform
 broadband absorption of 0.006 (see the [Boundary Modelling]({{ site.baseurl}}{%
@@ -477,36 +491,38 @@ infinite-impulse-response *injection filter*, and used as a soft source.
 but a full discussion of their meaning is beyond the scope of this paper. The
 interested reader is directed to [@sheaffer_physical_2014] or to the
 implementation of the physically-constrained source in the Wayverb repository.)
-Finally, the simulation was run for around 85000 steps (less than the expected
+Finally, the simulation was run for around 85,000 steps (less than the expected
 Sabine RT60 of the room) with each of the four sources, and the response at the
 receiver was recorded.
 
-The results of the experiment are shown in the following figure\text{
-(\ref{fig:solution_growth_results})}.  The response of a transparent Dirac
-source (which has a strong DC component) is also shown.  Solution growth can be
-seen in all the outputs. However, the magnitude of growth is different
-depending on the input signal.  As expected, the Dirac signal exhibits the
-largest rate of growth, followed by the differentiated Gaussian, sine-modulated
-Gaussian, Ricker wavelet, and finally the PCS signal.  All the sources with no
-DC component show significantly less solution-growth than the transparent Dirac
-source.  The PCS has a much lower rate of growth than the alternatives.
-However, all inputs *do* show the effects of solution-growth.
+The results of the experiment are shown in +@fig:solution_growth_results.  The
+response of a transparent Dirac source (which has a strong DC component) is
+also shown.  Solution growth can be seen in all the outputs. However, the
+magnitude of growth is different depending on the input signal.  As expected,
+the Dirac signal exhibits the largest rate of growth, followed by the
+differentiated Gaussian, sine-modulated Gaussian, Ricker wavelet, and finally
+the PCS signal.  All the sources with no DC component show significantly less
+solution-growth than the transparent Dirac source.  The PCS has a much lower
+rate of growth than the alternatives.  However, all inputs *do* show the
+effects of solution-growth.
 
 ![Solution growth in the waveguide mesh with a selection of different inputs.
 Results are normalized so that the initial wave-fronts have the same magnitude.
 The overlays show the initial 500 samples of the response on the same scale,
 highlighting the different shapes of the excitation signals. The full signals
-are shown behind, with *different* amplitude scales.
-\label{fig:solution_growth_results}](images/solution_growth)
+are shown behind, with *different* amplitude scales. In the Dirac, Ricker, and
+PCS examples, high-frequency oscillations with increasing magnitude over time
+are observed, causing the graph to appear "filled-in".
+](images/solution_growth){#fig:solution_growth_results}
 
 The solution-growth seen here only becomes prominent towards the end of the
-simulation, after around 60000 steps.  However, papers which propose
+simulation, after around 60,000 steps.  However, papers which propose
 countermeasures to the solution-growth problem generally only test their
-solutions up to 15000 steps or so [@sheaffer_physical_2014;
+solutions up to 15,000 steps or so [@sheaffer_physical_2014;
 @sheaffer_physically-constrained_2012; @jeong_source_2012].  The results of
 testing the solution in [@dimitrijevic_optimization_2015] are not even
-presented.  It is entirely possible that these input methods have not been
-tested in such a long simulation before.
+presented. However, the experiments in [@botts_spectral_2014] are run for
+100,000 steps, exhibiting similar DC instability to the results presented here.
 
 The reason for the solution-growth is not clear. In general, the problem is
 caused by repeated superposition of the DC level, which is reflected from
@@ -519,6 +535,13 @@ which is necessary because using double-precision would double the memory usage
 and halve the computational throughput.  It is possible that error in these
 single-precision calculations manifests as a tiny DC component, which then
 multiplies as the simulation progresses.
+
+The numerical-precision theory is reinforced by [@botts_spectral_2014], which
+shows that numerical error can perturb otherwise-stable simulations, causing
+gradual amplification.  The solution proposed there is to conduct the entire
+simulation using double-precision floating-point, which would effectively delay
+rather than remove the effects of DC instability. As explained above, this
+approach is not practical in Wayverb.
 
 Whatever the reason, it is clear that using a soft source generally causes a DC
 offset to accumulate, even when the input signal has no DC component.  Soft
@@ -565,7 +588,7 @@ derived from a maximum cutoff frequency and an oversampling coefficient.
 The first step is to calculate the position of each node in the mesh.
 The inter-nodal spacing $X$ (that is, the spatial sampling period) is given by
 
-(@) $$X=\frac{c}{f_s\lambda} = \frac{c\sqrt{3}}{f_s}$$
+$$X=\frac{c}{f_s\lambda} = \frac{c\sqrt{3}}{f_s}$$ {#eq:}
 
 where $\lambda$ is the Courant number, set to its maximum stable value.  Now,
 the axis-aligned bounding box of the scene is found, and padded to exact
@@ -604,13 +627,12 @@ and the results are stored.
 
 ### Boundary Node Classification
 
-Now the inner nodes are known. However, the remaining nodes are not all
-"outside" the simulation: some are "boundary" nodes (see [Boundary
-Modelling]({{ site.baseurl }}{% link boundary.md %})). These boundary nodes
-must be found and classified.
+The previous section described how to classify the "inner" nodes of an
+enclosure.  However, the remaining nodes are not all "outside" the simulation:
+some are "boundary" nodes (see [Boundary Modelling]({{ site.baseurl }}{% link
+boundary.md %})). These boundary nodes must be found and classified.
 
-Boundary nodes fall into three main categories, shown in the following
-diagram\text{ (\ref{fig:boundary_types})}:
+Boundary nodes fall into three main categories, shown in +@fig:boundary_types:
 
 - **1D** nodes are situated directly adjacent to a single inner node in one of the six axial directions.
 - **2D** nodes are next to a single inner node in one of the twelve on-axis diagonal directions.
@@ -618,7 +640,7 @@ diagram\text{ (\ref{fig:boundary_types})}:
 
 ![A given node (represented by a large dot) is a boundary node if it is *not*
 an inner node, but there is an adjacent inner node at one of the locations
-shown by smaller dots.\label{fig:boundary_types}](images/boundary_types)
+shown by smaller dots.](images/boundary_types){#fig:boundary_types}
 
 There is also a fourth category, known as *re-entrant* nodes, which are
 adjacent to two or more inner nodes. These nodes are special, in that they fall
@@ -699,9 +721,15 @@ nodes are checked, and their filter coefficient indices are used, which saves
 running further closest-triangle tests. For 3D boundaries, adjacent 1D *and* 2D
 nodes are checked.
 
+At this point, all information required to run the simulation has been
+computed.  Simulations may contain many millions of nodes, each with
+associated metadata, so this information must be stored in a way which
+minimises redundancy whilst still allowing for efficient queries. Wayverb's
+memory layout scheme is shown in +@fig:memory_layout.
+
 ![Efficient memory usage is important in large-scale simulations such as those
 conducted by Wayverb. The waveguide storage scheme aims to minimise redundant
-duplication of data.\label{fig:memory_layout}](images/memory_layout)
+duplication of data.](images/memory_layout){#fig:memory_layout}
 
 ### Running the Simulation
 
@@ -727,7 +755,7 @@ node. This is shown in the following equation, where $i$, $j$, and $k$ are
 spatial indices on the $x$, $y$ and $z$ axes respectively, and $n$ is a time
 index.
 
-(@) $$p_{i,j,k}^{n+1} = \frac{1}{3}(p_{i-1,j,k}^n + p_{i+1,j,k}^n + p_{i,j-1,k}^n + p_{i,j+1,k}^n + p_{i,j,k-1}^n + p_{i,j,k+1}^n) - p_{i,j,k}^{n-1}$$
+$$p_{i,j,k}^{n+1} = \frac{1}{3}(p_{i-1,j,k}^n + p_{i+1,j,k}^n + p_{i,j-1,k}^n + p_{i,j+1,k}^n + p_{i,j,k-1}^n + p_{i,j,k+1}^n) - p_{i,j,k}^{n-1}$$ {#eq:}
 
 If the node is a boundary node, then it is instead updated according to the
 boundary update equations found in [@kowalczyk_modeling_2008].
@@ -757,3 +785,47 @@ of a single node to an array, which can be retrieved at the end of the
 simulation.  Again, the architecture is flexible, in that it allows for
 different receiver types, such as those discussed in [Microphone Modelling]({{
 site.baseurl }}{% link microphone.md %}).
+
+## Summary
+
+A derivation for the waveguide mesh update formulae has been presented, along
+with the equations which relate the spatial sampling frequency, temporal
+sampling frequency, speed of sound, and number of dimensions. The K-DWM has
+been shown to be faster and more memory-efficient than the W-DWM, although both
+formulations exhibit dispersion error which limits the usable bandwidth of
+simulation results.
+
+Different mesh topologies have been compared. The tetrahedral topology has the
+lowest density and fewest inter-node connections, so it is the optimal choice
+in terms of speed and memory consumption. Interpolated meshes are the most
+accurate and isotropic, but are more complicated to implement. For Wayverb, the
+rectilinear mesh was chosen, due to its relative simplicity, and because it was
+the only topology for which boundary formulations already existed.
+
+Mesh input methods have been explored, and it has been shown that solution
+growth places a major design constraint upon mesh inputs. The literature
+suggests that the PCS is the optimal input signal. However, tests of five
+different non-hard inputs (including a PCS) showed that they all lead to
+solution growth, likely because of accumulated numerical error. The presence of
+solution growth means that pressure values may eventually overflow,
+invalidating results.  To avoid this eventuality, Wayverb must use a hard
+source.
+
+A simple procedure for building space-filling waveguide meshes with classified
+boundaries in arbitrary watertight manifold meshes has been presented. This is
+a novel contribution. Details relating to the efficient implementation of a DWM
+on graphics hardware have also been provided.
+
+As shown, the DWM in Wayverb is obviously sub-optimal. Its topology is neither
+the fastest nor the most accurate, and its hard source causes scattering
+artefacts. Using a more efficient mesh topology would have required formulating
+an entirely new boundary modelling scheme, and using a soft source would have
+required development of a novel injection method. Such research, though useful,
+would have run counter to the specific research aims of this project.  As noted
+in the [Context]({{ site.baseurl}}{% link context.md %}) chapter, the purpose
+of Wayverb is primarily to create a useful tool for musicians, by surveying and
+combining existing techniques for room simulation. Further research into these
+issues, though important, would have precluded the completion of a usable
+simulation program.  Of course, future research may reveal solutions to the
+problems identified over the course of this project. Improvements to Wayverb
+may then be made, based on these solutions.

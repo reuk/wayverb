@@ -1,0 +1,57 @@
+def box {
+    def p0 (0, 0, 0)
+    def p1 (0, 0, 1)
+    def p2 (0, 1, 0)
+    def p3 (0, 1, 1)
+    def p4 (1, 0, 0)
+    def p5 (1, 0, 1)
+    def p6 (1, 1, 0)
+    def p7 (1, 1, 1)
+
+    def style [fillstyle=solid, opacity=0.4, cull=false, linecolor=gray, linestyle=dotted]
+
+    polygon [style] (p0) (p2) (p6) (p4)
+    polygon [style] (p5) (p7) (p3) (p1)
+    polygon [style] (p0) (p1) (p3) (p2)
+    polygon [style] (p5) (p4) (p6) (p7)
+    polygon [style] (p0) (p4) (p5) (p1)
+    polygon [style] (p2) (p3) (p7) (p6)
+}
+
+def tetrahedral {
+    {box}
+
+    def unit {
+        def m0 (0, 0, 0)
+        def m1 (1, 0, 1)
+        def m2 (0.5, 0.5, 0.5)
+        def m3 (0, 1, 1)
+        def m4 (1, 1, 0)
+
+        dots [dotsize=0.2, linecolor=blue] 
+             (m0) (m1) (m2) (m3) (m4)
+
+        line (m2) (m0)
+        line (m2) (m1)
+        line (m2) (m3)
+        line (m2) (m4)
+    }
+
+    put { translate ([0, 0, 0]) } {unit}
+}
+
+def multi {
+    put { translate ([0, 0, 0]) } {tetrahedral}
+    put { translate ([1, 0, 1]) } {tetrahedral}
+    put { translate ([0, 1, 1]) } {tetrahedral}
+    put { translate ([1, 1, 0]) } {tetrahedral}
+}
+
+def eye (2, 5, 7)
+def look_at (3, 0, 0)
+
+put { view ((eye), (look_at)) then perspective (30) } {
+    put { translate ([1.5, 0.5, 0.5]) } {tetrahedral}
+
+    put { translate ([3, 0, 0]) } {multi}
+}

@@ -19,6 +19,9 @@ pandoc:
     extensions:
         - smart
         - mathjax
+        - filter: pandoc-fignos
+        - filter: pandoc-eqnos
+        - filter: pandoc-tablenos
         - csl: ieee-with-url.csl
         - bibliography: wayverb.bib
         - metadata: "link-citations:true"
@@ -35,10 +38,15 @@ exclude:
     - title_page.md
     - abstract.md
     - acknowledgements.md
+    - bibliography.md
+    - meeting_notes.md
+    - todo_amendments.md
+    - changes.md
     - template.html
     - images/sketch
     - writegood
     - haskell
+    - latexdiff
     - '*.sh'
     - '*.py'
     - '*.csl'
@@ -46,3 +54,7 @@ exclude:
     - '*.bib'
     - '*.wav'
     - '*.pdf'
+    - '*.log'
+    - '*.tex'
+    - '*.out'
+    - '*.toc'

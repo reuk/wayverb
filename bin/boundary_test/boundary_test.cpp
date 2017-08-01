@@ -99,16 +99,26 @@ private:
         const auto source_index =
                 compute_index(mesh.get_descriptor(), source_position_);
 
+#if 1
         const auto input = [&] {
-            const util::aligned::vector<float> raw_input{1.0f};
+            const util::aligned::vector<float> raw_input{1000.0f};
             auto ret = wayverb::waveguide::make_transparent(
                     raw_input.data(), raw_input.data() + raw_input.size());
             ret.resize(steps, 0);
             return ret;
         }();
-
         auto prep = wayverb::waveguide::preprocessor::make_soft_source(
                 source_index, input.begin(), input.end());
+
+#else
+        const auto input = [&] {
+            util::aligned::vector<float> raw_input(steps, 0);
+            raw_input[0] = 1000.0f;
+            return raw_input;
+        }();
+        auto prep = wayverb::waveguide::preprocessor::make_hard_source(
+                source_index, input.begin(), input.end());
+#endif
 
         auto output_holders = util::map_to_vector(
                 begin(receivers), end(receivers), [&](auto i) {

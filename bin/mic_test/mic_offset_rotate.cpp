@@ -63,7 +63,7 @@ auto run_single_angle(float angle,
     const glm::vec3 source{receiver + glm::vec3{distance * std::sin(angle),
                                                 0,
                                                 distance * std::cos(angle)}};
-    constexpr util::range<double> valid_frequency_range{0.01, 0.16};
+    constexpr util::range<double> valid_frequency_range{0.002, 0.16};
     const auto params = frequency_domain::compute_multiband_params<8>(
             valid_frequency_range, 1);
 

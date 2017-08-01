@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Microphone modelling
-navigation_weight: 6
+navigation_weight: 7
 ---
 
 ---
@@ -44,25 +44,28 @@ When recording impulse responses of physical spaces, several techniques might
 be used to retain ITD and ILD information.
 
 One option is to record the impulse response using a matched pair of
-microphones.  An AB pair will capture interchannel time difference, but will
-only capture interchannel level difference if the source is positioned near to
-the microphones. Alternatively, an XY or Blumlein pair will capture level
-difference, but will be incapable of recording time difference because
-wave-fronts will always arrive at both capsules simultaneously.
+microphones.  An AB pair of spaced omnidirectional capsules will capture
+interchannel time difference, but will only capture interchannel level
+difference if the source is positioned near to the microphones. Alternatively,
+an XY or Blumlein pair (which consist of coincident cardioid or bidirectional
+capsules respectively) will capture level difference, but will be incapable of
+recording time difference because wave-fronts will always arrive at both
+capsules simultaneously.
 
 Microphone pair methods are only suitable for recording stereo signals, as they
 only capture a two-dimensional "slice" through the modelled scene, where all
 directional information is restricted to the same plane as the microphone
 capsules. The technique can be extended to higher dimensions by using more
 microphone capsules. This is the basis of the ambisonic approach, which for
-B-format recordings uses four coincident directional microphone capsules to
-capture the three-dimensional directional pressure gradient and overall
-pressure level.  Instead of being used directly, the recorded signals are
-post-processed depending on the configuration of the output speakers. For
-playback on headphones, the signals can be filtered with *head related transfer
-functions* (HRTFs), which modify the frequency content of the sound depending
-on its originating direction, mimicking the absorptive characteristics of the
-human head and torso [@noisternig_3d_2003].
+B-format recordings uses four coincident microphone capsules, three
+bidirectional and one omnidirectional, to capture the three-dimensional
+directional pressure gradient and overall pressure level.  Instead of being
+used directly, the recorded signals are post-processed depending on the
+configuration of the output speakers. For playback on headphones, the signals
+can be filtered with *head related transfer functions* (HRTFs), which modify
+the frequency content of the sound depending on its originating direction,
+mimicking the absorptive characteristics of the human head and torso
+[@noisternig_3d_2003].
 
 If it is known that the recording will only be reproduced on headphones, the
 preferred method for capturing impulse responses which retain appropriate ILD
@@ -96,12 +99,12 @@ virtual microphone is pointing in direction $\hat{p}$, and has a "shape"
 parameter $0 \leq s \leq 1$, the direction-dependent attenuation $a(\hat{d})$
 from direction $\hat{d}$ is given by
 
-(@) $$a(\hat{d}) = (1 - s) + s(\hat{d} \cdot \hat{p})$$
+$$a(\hat{d}) = (1 - s) + s(\hat{d} \cdot \hat{p})$$ {#eq:}
 
 where $\hat{p}$ and $\hat{d}$ are unit vectors, and $\cdot$ is the dot-product
 operator. When $s$ is set to 0, the $a(\hat{d})$ is equal to one for all values
 of $\hat{d}$, modelling an omnidirectional polar pattern. When $s$ is 1, the
-modelled polar pattern is bidirectional, with a gain of 1 in front the
+modelled polar pattern is bidirectional, with a gain of 1 in front of the
 microphone, 0 at either side, and -1 behind. When $s$ is 0.5, the pattern is
 cardioid. Sub- and supercardioid patterns are created by setting $s$ lower or
 higher than 0.5 respectively. This microphone model is flexible, allowing
@@ -160,13 +163,13 @@ signal. If this approach were to be taken in Wayverb, it would require creating
 a separate output signal for each of the incident directions, and then
 convolving each direction separately, before a final mixdown. This would be
 extremely costly: for separation angles of fifteen degrees, this means
-recording signals for each of 288 incident directions, which might easily
-occupy more than a gigabyte of memory (288 3-second impulse responses at
-32-bits and 44.1KHz require 1160MB of memory), and then separately convolving
-and mixing them. While this is definitely possible, it would be extremely time
-consuming to run. By restricting the HRTF data to 8 frequency bands, the
-application architecture can be simplified, while also improving memory usage
-and runtime performance.
+recording signals for each of 288 incident directions (24 azimuth angles, each
+with 12 elevation angles), which might easily occupy more than a gigabyte of
+memory (288 3-second impulse responses at 32-bits and 44.1kHz require 1160MB of
+memory), and then separately convolving and mixing them. While this is
+definitely possible, it would be extremely time consuming to run. By
+restricting the HRTF data to 8 frequency bands, the application architecture
+can be simplified, while also improving memory usage and runtime performance.
 
 ## Image Source Implementation
 
@@ -250,7 +253,7 @@ the direction quantisation intervals are on the order of ten to twenty degrees.
 To generate audio-rate results, the directional histograms must be combined
 into a single energy histogram, which can then be used to weight a noise
 sequence as discussed in the [Ray Tracer]({{ site.baseurl }}{% link
-ray_tracer.md %}}) section. This achieved by taking the centre direction of
+ray_tracer.md %}}) section. This is achieved by taking the centre direction of
 each directivity group, calculating or looking-up the correct attenuation for
 that direction, and then multiplying the entire histogram by that value. The
 final direction-weighted histogram is given by the elementwise sum of all
@@ -310,7 +313,12 @@ in [@southern_2nd_2007] uses a sensor spacing of 0.04 metres, giving a maximum
 valid sampling frequency of 4.25kHz.  However, to allow accurate placement of
 these sensors, a grid with a spacing of 0.0027m is required.  This increase in
 mesh density necessitates more than 3000 times the original number of nodes,
-which is only practical for very small modelled spaces.
+which is only practical for very small modelled spaces.  An alternative to
+oversampling is interpolation, which may be used to obtain signal values for
+positions that do not coincide with grid nodes, as in [@southern_spatial_2012].
+However, the interpolated approach given in this paper is only applicable in
+the 2D case, so it cannot be applied in Wayverb, which requires a general
+solution in three dimensions.
 
 Finally, this method places an additional constraint on the portion of the
 spectrum of the output signal which may be considered valid. The maximum valid
@@ -318,9 +326,9 @@ frequency of the output spectrum is determined by the ratio between the
 receiver spacing and the wavelength at that frequency. To raise the upper
 frequency limit, the receiver spacings must be made as small as possible, which
 requires costly mesh oversampling. Small receiver spacings reduce the
-sensitivity at the lower end of the spectrum, so ideally the simulation will
-use several sets of receiver nodes with different spacings, in order to
-maintain a flat frequency response.
+sensitivity at the lower end of the spectrum (even when interpolation is used),
+so ideally the simulation must use several sets of receiver nodes with
+different spacings, in order to maintain a flat frequency response.
 
 This technique seems suitable for calculating lower-order ambisonic signals in
 small modelled spaces.  For higher order outputs, with consistent frequency
@@ -331,7 +339,7 @@ and configurations are required for a single simulation output).
 #### Intensity Calculation Technique
 
 The second method considered for implementation in Wayverb is described by
-Hacıhabiboglu in [@hacihabiboglu_simulation_2010].  This method is based around
+Hacıhabiboğlu in [@hacihabiboglu_simulation_2010].  This method is based around
 estimating the acoustic intensity at the output node of the DWM.
 
 The technique is much more straight-forward than the technique discussed above.
@@ -352,15 +360,15 @@ technique. Both techniques calculate the instantaneous pressure gradient at the
 output node by subtracting the pressures of the surrounding nodes. The main
 difference is that the Blumlein method requires that the mesh pressure is found
 at exact locations relative to the output node, which often requires mesh
-oversampling. The intensity calculation technique instead uses a more general
-matrix-based method, which incorporates the relative node positions into the
-calculation. In short, the Blumlein method requires that the mesh is designed
-to suit the receiver configuration, whereas the intensity calculation method
-can adapt to arbitrary mesh topologies and spacings.
+oversampling or interpolation. The intensity calculation technique instead uses
+a more general matrix-based method, which incorporates the relative node
+positions into the calculation. In short, the Blumlein method requires that the
+mesh is designed to suit the receiver configuration, whereas the intensity
+calculation method can adapt to arbitrary mesh topologies and spacings.
 
 The frequency range issues mentioned in [@southern_methods_2007] (where large
 mesh spacings reduce the output bandwidth, and low mesh spacings reduce low
-frequency sensitivity) are mentioned by Hacıhabiboglu in
+frequency sensitivity) are mentioned by Hacıhabiboğlu in
 [@hacihabiboglu_simulation_2010].  It is unclear whether the intensity
 calculation technique solves this problem, although the results presented in
 [@hacihabiboglu_simulation_2010] appear consistent across the spectrum.  Some
@@ -483,7 +491,7 @@ The testing procedure is similar to that described in
 measuring $1.5 \times 1.5 \times 1.5$ metres.  Sixteen equally-spaced source
 positions are generated in a circle with radius 1m around the receiver.  For
 each source, the room is simulated using a rectilinear waveguide mesh with a
-sampling rate of 50KHz, for 294 steps.  The step number is chosen so that the
+sampling rate of 50kHz, for 294 steps.  The step number is chosen so that the
 initial wave-front will reach the receiver, but reflections from the room walls
 will not.  After each simulation, the directionally-weighted signal recorded at
 the receiver is split into frequency bands, and the normalised energy per band
@@ -500,29 +508,36 @@ the response in the front direction.  If there is a close match, then the model
 is successful.
 
 Three different microphone polar patterns are simulated: omnidirectional,
-bidirectional, and cardioid.  The results are shown in the following
-figures\text{ (\ref{fig:omnidirectional} to \ref{fig:bidirectional})}. 
+bidirectional, and cardioid.  The results are shown in +@fig:omnidirectional to
+!@fig:bidirectional. In these figures, the red lines show the measured energy
+in each direction, while the blue lines show the expected polar pattern,
+normalized so that the 0-degree level matches the experimentally-obtained level
+in that direction.
 
-![The directional response of an omnidirectional receiver in the waveguide mesh.\label{fig:omnidirectional}](images/Omnidirectional_response)
+![The directional response of an omnidirectional receiver in the waveguide
+mesh.](images/Omnidirectional_response){#fig:omnidirectional}
 
-![The directional response of a cardioid receiver in the waveguide mesh.\label{fig:cardioid}](images/Cardioid_response)
+![The directional response of a cardioid receiver in the waveguide
+mesh.](images/Cardioid_response){#fig:cardioid}
 
-![The directional response of a bidirectional receiver in the waveguide mesh.\label{fig:bidirectional}](images/Bidirectional_response)
+![The directional response of a bidirectional receiver in the waveguide
+mesh.](images/Bidirectional_response){#fig:bidirectional}
 
-Results are consistent across all polar patterns tested.  At low frequencies,
-the match is particularly good, with virtually no error in all directions.  As
-frequency increases, the error increases greatly. This happens as a result of
-frequency-dependent dispersion. At higher frequencies, the speed of wave-fronts
-changes depending on their direction. In the rectilinear mesh, there is no
-dispersion along diagonal directions [@kowalczyk_room_2011]. Along axial
-directions, however, high-frequency wave-fronts move more slowly. This is
-likely the cause of the predominant "spikes" seen in the diagonal directions:
-in these directions, all the acoustic energy reaches the receiver, while along
-axial directions, the wave-fronts are slower, and the full energy does not
-reach the receiver within the simulation window.
+Results are consistent across all polar patterns tested.  At the lower
+frequencies shown, the match is particularly good, with virtually no error in
+all directions.  As frequency increases, the error increases greatly. This
+happens as a result of frequency-dependent dispersion. At higher frequencies,
+the speed of wave-fronts changes depending on their direction. In the
+rectilinear mesh, there is no dispersion along diagonal directions
+[@kowalczyk_room_2011]. Along axial directions, however, high-frequency
+wave-fronts move more slowly. This is likely the cause of the predominant
+"spikes" seen in the diagonal directions: in these directions, all the acoustic
+energy reaches the receiver, while along axial directions, the wave-fronts are
+slower, and the full energy does not reach the receiver within the simulation
+window.
 
-These results mirror those seen by Hacıhabiboglu, who also records similar
-large errors in diagonal directions in the highest (8KHz) band. These errors
+These results mirror those seen by Hacıhabiboğlu, who also records similar
+large errors in diagonal directions in the highest (8kHz) band. These errors
 are also attributed to directional dispersion.  Therefore, error in the results
 is likely due to the properties of the waveguide and the particular receiver
 technique used, rather than an error in the implementation.
@@ -536,3 +551,42 @@ if accurate directional responses are required at higher frequencies, the mesh
 can be oversampled to reduce directional dispersion. Although costly, it is at
 least potentially possible to produce very accurate responses using this
 method.
+
+## Summary
+
+The need for a virtual microphone model has been explained. Real-world
+microphone techniques rely on capsules with direction- and frequency-dependent
+responses, therefore a virtual model is put forward which is capable of
+simulating these same characteristics.
+
+In the geometric models, directional information is directly available: each
+ray has a direction, which can be logged and used to attenuate each
+contribution according to the receiver polar pattern. These models already
+operate in multiple frequency bands, so to model frequency-dependent responses,
+the receiver can simply use a different directional response per band. A novel
+"offsetting" method has been put forward as an extension to the image-source
+model, which can reconstruct ITD information.
+
+The waveguide does not model directional information natively. Instead, the
+pressure gradient at the output must be approximated using the pressures at
+surrounding nodes.  The intensity calculation technique is used for this
+purpose in Wayverb, as it is simpler, faster, and more flexible than the main
+alternative (the Blumlein difference technique). It has been shown that
+Wayverb's implementation is capable of reproducing three different polar
+patterns with reasonable accuracy across the spectrum, although numerical
+dispersion causes accuracy to worsen as frequency increases. If receiver
+accuracy is a major concern, the mesh can be oversampled, reducing dispersion
+in the output bandwidth.
+
+The test results presented are encouraging but superficial. The test procedure
+is modelled on that presented in [@hacihabiboglu_simulation_2010], which has
+the shortcoming that it doesn't consider interactions with other aspects of the
+waveguide simulation. In particular, it has not been shown how the microphone
+model responds to source gain and distance, or whether it affects the measured
+frequency response at the receiver. These are important considerations which
+have important implications for the validity of the waveguide model as a whole.
+Due to the number of components in Wayverb, and the time spent on
+implementation alone, there was not time to test all aspects of the program.
+However, the [Evaluation]({{ site.baseurl }}{% link evaluation.md %}) contains
+a number of tests, all of which use this microphone model. In the future, more
+detailed tests should be conducted which focus solely on the microphone model.

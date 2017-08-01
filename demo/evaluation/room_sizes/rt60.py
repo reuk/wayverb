@@ -20,7 +20,7 @@ sys.path.append('python')
 
 def get_frequency_rt30_tuple(line):
     split = line.split()
-    return (split[0], split[6])
+    return (float(split[0]), float(split[6]))
 
 
 def read_rt30(fname):
@@ -43,12 +43,24 @@ def main():
         x = [freq for freq, _ in tuples]
         y = [time for _, time in tuples]
 
-        plt.plot(x, y, label=label)
+        min_time = min(y)
+        max_time = max(y)
+
+        average = (max_time - min_time) * 100.0 / ((max_time + min_time) * 0.5)
+
+        print('file: {}, min: {}, max: {}, average: {}'.format(
+            fname, min_time, max_time, average))
+
+        plt.plot(x, y, label=label, marker='o', linestyle='--')
 
     plt.xscale('log')
 
+    plt.axvline(x=500)
+
+    plt.annotate(xy=(520, 1.4), s='waveguide cutoff')
+
     plt.legend(loc='lower center', ncol=3, bbox_to_anchor=(0, -0.05, 1, 1), bbox_transform=plt.gcf().transFigure)
-    plt.title('Octave-band RT30 Measurements for Different Room Sizes')
+    plt.title('Octave-band T30 Measurements for Different Room Sizes')
 
     plt.xlabel('frequency / Hz')
     plt.ylabel('time / s')
@@ -66,7 +78,6 @@ if __name__ == '__main__':
         'font.family': 'serif',
         'font.serif': [],
         'font.sans-serif': ['Helvetica Neue'],
-        'font.monospace': ['Input Mono Condensed'],
         'legend.fontsize': 12,
     }
 

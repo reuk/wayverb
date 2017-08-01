@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Image-source Model
-navigation_weight: 2
+navigation_weight: 3
 ---
 
 ---
@@ -24,17 +24,18 @@ ray has travelled [@vorlander_auralization:_2007, p. 58].
 Rays are perfectly reflected at boundaries.  When a ray is reflected, it spawns
 a secondary source "behind" the boundary surface.  This source is located on a
 line perpendicular to the wall, at the same distance from it as the original
-source, as if the original source has been "mirrored" in the surface.  This new
-"image" source now represents a perfect reflection path, in that the distance
-along the straight line between the receiver and the image source has the same
-length as the path from the *real* source to the receiver, reflected in the
-boundary. If the source is reflected in a single boundary, this represents a
-first-order reflection.  A ray which is reflected from several boundaries is
-represented by a "higher-order" image-source, which has been mirrored in each
-of those boundaries in turn [@kuttruff_room_2009, p.  104].
+source, as if the original source has been "mirrored" in the surface (an
+example is shown in +@fig:image_source_construction).  This new "image" source
+now represents a perfect reflection path, in that the distance along the
+straight line between the receiver and the image source has the same length as
+the path from the *real* source to the receiver, reflected in the boundary. If
+the source is reflected in a single boundary, this represents a first-order
+reflection.  A ray which is reflected from several boundaries is represented by
+a "higher-order" image-source, which has been mirrored in each of those
+boundaries in turn [@kuttruff_room_2009, p. 104].
 
 ![Image sources are found by reflecting the source position in a
-boundary.\label{fig:image_source_construction}](images/image_source_construction)
+boundary.](images/image_source_construction){#fig:image_source_construction}
 
 All sources, original and image, emit the same impulsive source signal at the
 same time.  The total impulse response (i.e. sound pressure against time) is
@@ -87,12 +88,30 @@ reflected in $A$ then $B$.  For the image-source to be valid:
 The validation of a third-order image-source will require three intersection
 checks, a fourth-order image will require four checks, and so on.  This method
 of tracing backwards from the receiver to each of the image sources is known as
-*backtracking*.
+*backtracking*. This process is shown in +@fig:backtracking.
 
 ![**Left:** The paths $S \rightarrow A \rightarrow R$ and $S \rightarrow A
 \rightarrow B \rightarrow R$ are both valid. **Right:** $S \rightarrow B
 \rightarrow A \rightarrow R$ is an invalid path because $R \rightarrow S_{BA}$
-does not intersect $A$.\label{fig:backtracking}](images/backtracking)
+does not intersect $A$.](images/backtracking){#fig:backtracking}
+
+For a point $p$, its reflection $p'$ in a plane with unit normal vector $n$ and
+intersecting the point $t$ can be found by
+
+$$p' = p - 2n (n \cdot (p - t))$$ {#eq:reflection}
+
+In +@eq:reflection, $\cdot$ is the vector dot operator. This equation can be
+used to find image source positions. However, in Wayverb surfaces are
+represented by triangles rather than by infinite planes. The triangle normal
+vector $n$ is found by taking the cross-product of two of the triangle edge
+vectors, where an edge vector is the difference between two triangle vertices.
+The point on the plane $t$ can be set to any of the triangle vertex positions.
+
+To implement backtracking, an algorithm is required for computing the
+intersection point between a line and a triangle. A description of the
+ray-triangle intersection method used in Wayverb would be involved, and is
+omitted here in the interests of brevity. A detailed explanation can be found
+in [@moller2005fast].
 
 ### Accelerating the Algorithm
 
@@ -108,8 +127,15 @@ equal to the number of surfaces raised to the power of that order.  The
 relationship between the image-source order and the computation time is
 therefore exponential, with average-case complexity of $O(N^o)$ where $N$
 denotes the number of boundaries, and $o$ is the image-source order.  As a
-result, it is impossible to validate all possible image-source positions within
-a reasonable time.
+result, it is practically impossible to validate all possible image-source
+positions when the room geometry is complex or the image-source order is high.
+As an example, imagine that a particular (fictional) simulator might take a
+second to simulate a scene with 100 surfaces to an image-source depth of 2.  If
+the image source depth is increased to facilitate a longer reverb tail,
+third-order image sources will take 100 seconds to compute, and fourth-order
+sources will take 3 hours. Fifth-order sources will take 12 days.  Clearly, it
+is not possible to achieve Wayverb's efficiency goal of "ten minutes or fewer"
+under all circumstances using this naive image source technique.
 
 The majority of higher-order image sources found with the naive algorithm will
 be invalid.  That is, they will fail the audibility test.  For example, for
@@ -157,12 +183,11 @@ smaller than would be required by a naive implementation.
 ## Implementation
 
 Here the concrete implementation of the image-source method is presented, as it
-is used in Wayverb.  The following figure
-\text{(\ref{fig:image_source_process})} gives an overview of the entire
+is used in Wayverb. *@fig:image_source_process gives an overview of the entire
 process.
 
 ![Creation of an impulse response using image
-sources.\label{fig:image_source_process}](images/image_source_process)
+sources.](images/image_source_process){#fig:image_source_process}
 
 <!--
 The simulation prerequisites are:
@@ -186,7 +211,7 @@ voxel.  The voxel mesh acts as an "acceleration structure", speeding up
 intersection tests between rays and triangles.  To check for an intersection
 between a ray and a number of triangles, the simplest method is to check the
 ray against each triangle individually, which is very time consuming.  The
-voxel mesh allows the number to checks to be greatly reduced, by checking only
+voxel mesh allows the number of checks to be greatly reduced, by checking only
 triangles that are within voxels that the ray intersects.  These voxels can be
 found very quickly, by "walking" the voxels along the ray, using an algorithm
 presented by Amanatides, Woo et al. [@amanatides_fast_1987].  For large scenes
@@ -244,29 +269,24 @@ value.
 The surface reflectances are found by converting per-band absorptions into
 per-band normal-incidence reflectance magnitudes using
 
-(@) $$|R|=\sqrt{1-\alpha}$$
+$$|R|=\sqrt{1-\alpha}$$ {#eq:}
 
 where $R$ is the surface reflectance, and $\alpha$ is the absorption
-coefficient of that frequency band.  These are converted to per-band impedances
-$\xi$ by 
-
-(@) $$\xi=\frac{1+|R|}{1-|R|}$$
-
-Finally, the impedances are converted back to *angle-dependent* reflectances by
-
-(@) $$R(\theta)=\frac{\xi\cos\theta-1}{\xi\cos\theta+1}$$
-
-where $\theta$ is the angle of incidence at the surface.  This is the same
-approach taken in [@southern_room_2013]. $\theta$ must be found for each
-individual reflection, by taking the inverse cosine of the dot product between
-the incident ray direction and the surface normal, when both are unit vectors.
+coefficient of that frequency band.  This equation is simply a rearrangement of
++@eq:alpha. These per-band reflectances are converted to per-band
+normal-incidence impedances using +@eq:xi_0.  Finally, the impedances are
+converted back to *angle-dependent* reflectances by +@eq:r_normal_incidence.
+This is the same approach taken in [@southern_room_2013]. The angle of
+incidence must be found for each individual reflection, by taking the inverse
+cosine of the dot product between the incident ray direction and the surface
+normal, when both are unit vectors.
 
 The contribution $g$ of a single image source with intermediate surfaces $m_1
 m_2 \dots m_n$ is given by
 
-(@) $$g_{m_1 m_2 \dots m_n} = \frac{\sqrt{Z_0/4\pi}}{d_{m_1 m_2 \dots m_n}}
+$$g_{m_1 m_2 \dots m_n} = \frac{\sqrt{Z_0/4\pi}}{d_{m_1 m_2 \dots m_n}}
 \cdot R_{m_1} \ast R_{m_2} \ast \dots \ast R_{m_n} \ast \delta(\frac{d_{m_1 m_2
-\dots m_n}}{c})$$
+\dots m_n}}{c})$$ {#eq:}
 
 where $Z_0$ is the acoustic impedance of air, $c$ is the speed of sound,
 $d_{m_1 m_2 \dots m_n}$ is the distance from the receiver to the image source,
@@ -293,13 +313,13 @@ Nyquist frequency.  Such an impulse response is infinitely long, but tends to
 zero quickly, so a Hann window can be applied to limit its length.  This form
 of the impulse is as follows:
 
-(@) $$
+$$
 \delta_{\text{LPF}}(n - \epsilon)=
 \begin{cases}
 	\frac{1}{2}(1+\cos\frac{2\pi (n - \epsilon)}{N_w})\text{sinc}(n - \epsilon), & - \frac{N_w}{2} < n < \frac{N_w}{2} \\
 	0, & \text{otherwise}
 \end{cases} 
-$$
+$$ {#eq:}
 
 where $n$ is an index in the output buffer, $\epsilon$ is the centre of the
 impulse in samples ($\epsilon=\tau f_s$), and $N_w$ is the width of the window
@@ -314,10 +334,19 @@ simulation is created by band-passing and then mixing down the buffers (item
 more details are given in the [Ray Tracer]({{ site.baseurl }}{% link
 ray_tracer.md %}) section.
 
-<!--
+## Summary
 
-## Testing
-
-TODO compare "exact" method to new method in shoebox model
-
--->
+The image source model can be used to find the path lengths and pressures of
+purely specular reflections. It cannot model diffuse reflections, and late
+reflections are generally diffuse. Therefore, the image source model is only
+suitable for predicting early reflections.  The naive implementation of the
+image source model has exponential complexity, and a great deal of the
+computations are redundant. For this reason, a ray-tracing-based implementation
+with greatly improved complexity has been developed. This implementation is
+more efficient than the naive implementation (i.e. it does less redundant work)
+although it may fail to find some valid image sources if the number of rays is
+too low. This has been deemed a reasonable trade-off. The implementation is
+also designed to re-use ray paths found by the ray-tracer model, minimising
+duplicated work between the two models.  Finally, implementation details such
+as a method for frequency-dependent boundary modelling, and sub-sample-accurate
+impulse placement, have been described.
