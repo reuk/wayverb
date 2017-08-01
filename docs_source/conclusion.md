@@ -1,12 +1,11 @@
 ---
 layout: page
-title: Evaluation
+title: Conclusion
 navigation_weight: 24 
 ---
 
 ---
-suppress-bibliography: true
-toc: null
+reference-section-title: References
 ...
 
 # Conclusion {.major}

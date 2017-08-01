@@ -38,10 +38,15 @@ exclude:
     - title_page.md
     - abstract.md
     - acknowledgements.md
+    - bibliography.md
+    - meeting_notes.md
+    - todo_amendments.md
+    - changes.md
     - template.html
     - images/sketch
     - writegood
     - haskell
+    - latexdiff
     - '*.sh'
     - '*.py'
     - '*.csl'
@@ -49,3 +54,7 @@ exclude:
     - '*.bib'
     - '*.wav'
     - '*.pdf'
+    - '*.log'
+    - '*.tex'
+    - '*.out'
+    - '*.toc'
