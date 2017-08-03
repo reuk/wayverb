@@ -16,7 +16,7 @@ cd docs_source
 
 # Generate pdf.
 make clean
-make
+make wayverb.pdf diff.pdf changes.pdf
 
 # Generate website.
 # Github pages will serve the static site from docs, on the master branch.

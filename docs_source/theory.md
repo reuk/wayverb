@@ -46,7 +46,7 @@ ignored.  The speed of sound in air, $c$, is approximately
 
 $$c=(331.4 + 0.6\theta) \text{m/s}$$ {#eq:}
 
-where $\theta$ is the temperature in degrees centigrade [@kuttruff_room_2009 p.
+where $\theta$ is the temperature in degrees Celsius [@kuttruff_room_2009 p.
 7]. In most real-world acoustics problems, variations in temperature will be
 very small, and can be ignored. That is, the propagation medium is assumed to
 be homogeneous.  A propagation medium can be specified by its *characteristic
@@ -267,7 +267,7 @@ Assuming that the sound field is diffuse (that is, isotropic; having the same
 intensity in all directions [@kuttruff_room_2009 p. 52]), there will be a
 constant number of reflections per unit time.  Under the additional assumption
 that the boundary absorption, $\alpha$, has a homogeneous distribution, each
-reflection will cause that wave front to lose a proportion of its ingoing
+reflection will cause that wave front to lose a proportion of its incoming
 energy equal to the absorption coefficient $\alpha$.
 
 The *energy density*, $w$ of a sound field is defined as the amount of energy
@@ -366,4 +366,4 @@ properties have been shown. Sound behaviour at boundaries has been explained,
 along with methods for deriving boundary characteristics from absorption and
 scattering coefficients. Finally, Sabine's equation for estimating reverb time
 has been derived, and methods for computing statistics from recorded impulse
-responses have been given.
+responses have been set out.

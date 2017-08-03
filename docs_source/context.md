@@ -106,7 +106,7 @@ implementation reflects the sound source against all surfaces in the scene,
 resulting in a set of *image sources*.  Then, each of these image sources is
 itself reflected against all surfaces.  For high orders of reflection, the
 required number of calculations quickly becomes impractical.  For these
-reasons, the image source method is only suitable for early reflections, and is
+reasons, the image-source method is only suitable for early reflections, and is
 generally combined with a stochastic method to find the late part of an impulse
 response (IR).
 

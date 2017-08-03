@@ -100,12 +100,13 @@ intersecting the point $t$ can be found by
 
 $$p' = p - 2n (n \cdot (p - t))$$ {#eq:reflection}
 
-In +@eq:reflection, $\cdot$ is the vector dot operator. This equation can be
-used to find image source positions. However, in Wayverb surfaces are
-represented by triangles rather than by infinite planes. The triangle normal
-vector $n$ is found by taking the cross-product of two of the triangle edge
-vectors, where an edge vector is the difference between two triangle vertices.
-The point on the plane $t$ can be set to any of the triangle vertex positions.
+In +@eq:reflection, the symbol $\cdot$ is the vector dot operator.
+*@eq:reflection can be used to find image source positions. However, in Wayverb
+surfaces are represented by triangles rather than by infinite planes. The
+triangle normal vector $n$ is found by taking the cross-product of two of the
+triangle edge vectors, where an edge vector is the difference between two
+triangle vertices.  The point on the plane $t$ can be set to any of the
+triangle vertex positions.
 
 To implement backtracking, an algorithm is required for computing the
 intersection point between a line and a triangle. A description of the
@@ -127,11 +128,11 @@ equal to the number of surfaces raised to the power of that order.  The
 relationship between the image-source order and the computation time is
 therefore exponential, with average-case complexity of $O(N^o)$ where $N$
 denotes the number of boundaries, and $o$ is the image-source order.  As a
-result, it is practically impossible to validate all possible image-source
+result, it is practically impossible to validate all possible image source
 positions when the room geometry is complex or the image-source order is high.
 As an example, imagine that a particular (fictional) simulator might take a
 second to simulate a scene with 100 surfaces to an image-source depth of 2.  If
-the image source depth is increased to facilitate a longer reverb tail,
+the image-source depth is increased to facilitate a longer reverb tail,
 third-order image sources will take 100 seconds to compute, and fourth-order
 sources will take 3 hours. Fifth-order sources will take 12 days.  Clearly, it
 is not possible to achieve Wayverb's efficiency goal of "ten minutes or fewer"
@@ -340,7 +341,7 @@ The image source model can be used to find the path lengths and pressures of
 purely specular reflections. It cannot model diffuse reflections, and late
 reflections are generally diffuse. Therefore, the image source model is only
 suitable for predicting early reflections.  The naive implementation of the
-image source model has exponential complexity, and a great deal of the
+image source model has exponential complexity, and a large proportion of the
 computations are redundant. For this reason, a ray-tracing-based implementation
 with greatly improved complexity has been developed. This implementation is
 more efficient than the naive implementation (i.e. it does less redundant work)

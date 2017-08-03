@@ -28,7 +28,7 @@ Theory chapter.
 “when…”*
 
 3.1.3 2nd paragraph: Gives a concrete example of the effects of exponential
-complexity.
+complexity to qualify the preceding claim.
 
 --------------------------------------------------------------------------------
 
