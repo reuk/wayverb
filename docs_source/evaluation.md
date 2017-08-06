@@ -364,7 +364,7 @@ the results in +@tbl:room_spacing.  The differences between the reverb time
 measurements for the two source-receiver spacings are below the 5% JND, but the
 difference in early decay time is more than twice the JND.  This suggests that
 the relative levels of the early and late reflections in the simulation change
-depending on receiver position, as in reality.
+depending on receiver position, as expected.
 
 Sound is simulated to travel at 340m/s, so when the source and receiver are
 placed 1m apart, a strong impulse is expected after 1/340 = 0.00294 seconds.

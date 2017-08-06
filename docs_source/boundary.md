@@ -363,7 +363,7 @@ much higher order than those tested in [@kowalczyk_modeling_2008], leading to
 accumulated numerical error.
 
 Whatever the cause of the poor performance at the top of the spectrum, the
-implications for Wayverb are minor, as as the waveguide mesh is designed to
+implications for Wayverb are minor, as the waveguide mesh is designed to
 generate low-frequency content.  If wideband results are required, then the
 mesh can simply be oversampled.  To prevent boundary modelling error affecting
 the results of impulse response synthesis in the Wayverb app, the mesh cutoff

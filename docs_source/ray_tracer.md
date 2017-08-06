@@ -383,15 +383,15 @@ noise sequences.
 
 ## Summary
 
-Like the image source model, ray tracing assumes that energy is transported
+Like the image-source model, ray tracing assumes that energy is transported
 through the sound field in rays. However, ray tracing is stochastic, meaning
 that the overall accuracy of the simulation (including the maximum viable
 sampling rate) is governed by the number of rays used in the simulation.
-Tracing enough rays to produce audio-rate results is unnecessarily expensive.
-It is much cheaper to trace at a reduced sampling rate, and to approximate the
-fine structure of the reverb tail during post-processing. This matches the
-goals of the Wayverb project, by increasing efficiency without negatively
-affecting the plausibility of the results.
+Tracing enough rays to produce audio-rate results is unnecessarily
+computationally expensive.  It is much more efficient to trace at a reduced
+sampling rate, and to approximate the fine structure of the reverb tail during
+post-processing. This matches the goals of the Wayverb project, by increasing
+efficiency without negatively affecting the plausibility of the results.
 
 In Wayverb, the ray tracer produces multi-band energy histograms, which are
 used to weight Poisson noise sequences. Perfect-reconstruction frequency-domain

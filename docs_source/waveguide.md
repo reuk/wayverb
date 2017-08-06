@@ -511,8 +511,8 @@ Results are normalized so that the initial wave-fronts have the same magnitude.
 The overlays show the initial 500 samples of the response on the same scale,
 highlighting the different shapes of the excitation signals. The full signals
 are shown behind, with *different* amplitude scales. In the Dirac, Ricker, and
-PCS examples, high-frequency oscillations with increasing magnitude over time
-are observed, causing the graph to appear "filled-in".
+PCS examples, the graphs appear "filled-in" due to high-frequency oscillations
+which increase in magnitude over time.
 ](images/solution_growth){#fig:solution_growth_results}
 
 The solution-growth seen here only becomes prominent towards the end of the
@@ -536,12 +536,13 @@ and halve the computational throughput.  It is possible that error in these
 single-precision calculations manifests as a tiny DC component, which then
 multiplies as the simulation progresses.
 
-The numerical-precision theory is reinforced by [@botts_spectral_2014], which
-shows that numerical error can perturb otherwise-stable simulations, causing
-gradual amplification.  The solution proposed there is to conduct the entire
-simulation using double-precision floating-point, which would effectively delay
-rather than remove the effects of DC instability. As explained above, this
-approach is not practical in Wayverb.
+The theory that low numerical-precision leads to solution-growth is reinforced
+by evidence given in [@botts_spectral_2014]. This study shows that numerical
+error can perturb otherwise-stable simulations, causing gradual amplification.
+The solution proposed there is to conduct the entire simulation using
+double-precision floating-point, which would effectively delay rather than
+remove the effects of DC instability. As explained above, this approach is not
+practical in Wayverb.
 
 Whatever the reason, it is clear that using a soft source generally causes a DC
 offset to accumulate, even when the input signal has no DC component.  Soft
@@ -828,4 +829,4 @@ combining existing techniques for room simulation. Further research into these
 issues, though important, would have precluded the completion of a usable
 simulation program.  Of course, future research may reveal solutions to the
 problems identified over the course of this project. Improvements to Wayverb
-may then be made, based on these solutions.
+could then be made, based on these solutions.

@@ -101,7 +101,7 @@ $$2000\sqrt{\frac{RT60}{V}}$$ {#eq:schroeder}
 
 Here, $RT60$ is the time taken for the reverb tail to decay by 60dB, and $V$ is
 the room volume in cubic metres.  In the [Waveguide]({{ site.baseurl }}{% link
-waveguide.md %}) section the complexity of a waveguide simulation was given as
+waveguide.md %}) chapter, the complexity of a waveguide simulation was given as
 $O(V f_s^3)$ for a space with volume $V$, at sampling frequency $f_s$.  Given
 that $f_s$ is proportional to the waveguide cutoff frequency, which in turn may
 be set proportional to $V^{-\frac{1}{2}}$ by +@eq:schroeder, the waveguide
@@ -408,7 +408,7 @@ absorption          method              T20 / s             T30 / s
 
 There is a difference of 11% for the lowest absorption, which falls to 6% for
 an absorption of 0.10, and to 4% for an absorption of 0.20. The *just
-noticeable difference* (JND) for reverb time is 5%, so for the lowest two
+noticeable difference* (JND) for reverb time is 5%. For the lowest two
 absorptions the difference is larger than the JND, so the match cannot be
 considered accurate. The waveguide's longer reverb times may be a by-product of
 the relatively increased level below 30Hz. Octave-band reverb-time measurements
@@ -433,7 +433,7 @@ the equation for power radiated from a monopole source. This results in a
 formula for the initial energy carried by each ray, expressed in terms of the
 energy at the source, the distance between the source and receiver, the
 receiver radius, and the number of rays. When this formula is used to set
-initial ray energies, the ray tracer and image source models will register the
+initial ray energies, the ray tracer and image-source models will register the
 same energy level at the receiver by definition, and therefore this particular
 calibration has not been tested.
 
@@ -442,7 +442,7 @@ but depends on a constant derived from experimental data put forward in
 [@siltanen_finite-difference_2013].  This method is not provably correct, and
 therefore has been verified through independent experimentation.  The
 calibrated waveguide output has been compared to the output of an ideal
-image-source model, showing close agreement in level between 30 and 200Hz.
+image-source model, showing close agreement in level between 30Hz and 200Hz.
 Below 30Hz, the waveguide level is higher than the image-source level,
 suggesting that some component of the waveguide (likely the injection method or
 boundary model) behaves incorrectly at low frequencies. The calibration method

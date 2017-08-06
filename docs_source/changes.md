@@ -1,7 +1,19 @@
 # Amendments
 
-Requested changes are shown *in italics like this*. Responses follow
-immediately, and use a regular font.
+In this document, requested changes are shown *in italics like this*. Responses
+follow immediately, and use a regular font.
+
+In the document comparing the original and amended theses (`diff.pdf`),
+unchanged text is black, while deletions are shown in red with a
+strike-through, and additions are shown in blue with a wavy underline.  This
+comparative document was produced using an automated tool (`latexdiff`).  This
+program shows the changes accurately, but occasionally splits paragraphs in
+unexpected ways (for example between pp. 87-90). It is recommended to view this
+document in colour, and to read it alongside the final version of the thesis,
+which has more legible formatting.
+
+Section numbers have been added in the amended thesis, and can be used to
+locate the following changes.
 
 ## Internal Examiner
 
@@ -53,7 +65,7 @@ complexity to qualify the preceding claim.
 *Page 27 fifth paragraph – “which a common descriptor” should be “which is a
 common descriptor”*
 
-p38 last paragraph: Done
+4.2.1 last paragraph: Done
 
 --------------------------------------------------------------------------------
 
@@ -314,7 +326,7 @@ science/engineering backgrounds, an MA-Research thesis should have its
 foundation and justification in the creative arts and relevant humanities
 focused scholarship.*
 
-Added chapter 2, which covers equations governing wave behaviour, boundary
+Added Chapter 2, which covers equations governing wave behaviour, boundary
 models, and reverb time estimates and measurements.  The majority of the
 information on boundary modelling has been moved from the beginning of the
 Boundary Modelling chapter. The "creative context" is quite a different topic
@@ -329,7 +341,8 @@ one to the other tackling various technical issues, but with no reflection on
 what has been achieved in each case, or considering the implication of any
 interim results (if given).*
 
-All chapters now have a summary which attempts to meet these aims.
+All chapters now have a reflective summary which attempts to fulfil this
+requirement.
 
 --------------------------------------------------------------------------------
 
@@ -523,7 +536,7 @@ cited or justified.  Please do so.*
 *p56: T20 and T30 used before definition in later chapter. See comments on a
 proper literature review.*
 
-Discussion of reverb time given in chapter 2.
+Discussion of reverb time given in Chapter 2.
 
 --------------------------------------------------------------------------------
 
@@ -563,7 +576,7 @@ explained in the 3rd paragraph of this section.
 *Chapter 7: Some repetition here of Image Source section. See comments made
 earlier.*
 
-All background information moved to chapter 2.
+All background information moved to Chapter 2.
 
 --------------------------------------------------------------------------------
 
@@ -642,7 +655,7 @@ can load CAD files.
 this standard for a proper definition of how T20 and T30 are determined from
 a RIR.*
 
-This is done in chapter 2.
+This is done in Chapter 2.
 
 --------------------------------------------------------------------------------
 
@@ -718,8 +731,8 @@ broadband results are given in table 9.1.
 *p87: ‘show that wall impedances are accurately modelled’ = define accurately,
 and are they actually ‘accurate’?*
 
-9.2.1 11th paragraph: replaced "impedances are accurately modelled" with "
-reflectances generally match predicted values to within 1dB for three material
+9.2.1 11th paragraph: replaced "impedances are accurately modelled" with
+"reflectances generally match predicted values to within 1dB for three material
 types and angles of incidence, at least in the band below 0.15 of the mesh
 sampling rate".
 
@@ -839,7 +852,8 @@ and why they are necessary.
 *p101: ‘the finished project is sufficiently accessible’ – as determined by
 whom?*
 
-This sentence has been removed.
+This sentence has been removed, and a more complete discussion of accessibility
+can be found in section 10.1.2.2.
 
 --------------------------------------------------------------------------------
 

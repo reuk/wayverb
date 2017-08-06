@@ -14,12 +14,12 @@ reference-section-title: References
 
 ### Testing Procedure
 
-Due to time constraints, the tests presented in the
-[Evaluation]({{site.baseurl}}{% link evaluation.md %}) are not exhaustive.
-Only one of the research goals is considered, namely plausibility, and the
-testing procedure does not even consider all aspects of this goal.  Ideally a
-more thorough testing procedure, such as that used in [@southern_room_2013],
-would have been followed.  That paper presents test results for the boundary
+Due to time constraints, the tests of Wayverb, presented in the
+[Evaluation]({{site.baseurl}}{% link evaluation.md %}), are not exhaustive.
+Only one of the research goals, namely plausibility, is examined. However, the
+examination does not consider all aspects of this goal.  Ideally a more
+thorough testing procedure, such as that used in [@southern_room_2013], would
+have been followed.  That paper presents test results for the boundary
 performance, modal content, diffraction, and reverb times of acoustic models
 including FDTD, FEM, image-source model and *beam-tree acoustic radiance
 transfer*. A wide range of results for each test is shown: the modal response
@@ -45,10 +45,10 @@ response uses the image-source method as a target, and the reverb time tests in
 the [Evaluation]({{site.baseurl}}{% link evaluation.md %}) compare the
 simulation results against the Sabine reverb time. These approximations have
 shortcomings, as discussed in the relevant sections. It would be more useful to
-compare obtained results directly against experimentally-obtained IRs of real
-locations, which would have no such shortcomings. If the simulated results were
-shown to be within a "just noticeable difference" of the real results, this
-would be strong evidence of the simulation's suitability for prediction of
+directly compare the results obtained against experimentally-obtained IRs of
+real locations, which would have no such shortcomings. If the simulated results
+were shown to be within a "just noticeable difference" of the real results,
+this would be strong evidence of the simulation's suitability for prediction of
 architectural acoustics. These tests would be time consuming, not just because
 impulse responses would have to be recorded in a physical location, but also
 because that same location would need to be reconstructed virtually, using the
@@ -69,23 +69,21 @@ enjoyed. If it could be shown that listeners perceived the sound quality to be
 at least as good as real IRs, this would make a good case for Wayverb's utility
 in a sound designer's toolbox.
 
-Wayverb's results could be compared (both through acoustic parameters like T30,
-and using listening tests) to the outputs of other similar modelling programs.
+Wayverb's results could be compared to the outputs of other similar modelling
+programs, both through acoustic parameters like T30, and using listening tests.
 As noted in the [Context]({{site.baseurl}}{% link context.md %}) chapter,
-Wayverb is, at time of writing, the only generally-available
-acoustics-modelling tool that uses both geometric and waveguide models. Without
-comparing against other tools, it is difficult to say whether this hybrid
-approach yields tangible sound quality gains over a more traditional
-single-model approach.
+Wayverb is, at time of writing, the only publicly-available acoustics-modelling
+tool that uses both geometric and waveguide models. Without comparing against
+other tools, it is difficult to say whether this hybrid approach yields
+tangible sound quality gains over a more traditional single-model approach.
 
-The goals of efficiency and usability were not tested at all. In terms of
-efficiency, it would be useful to show how simulation time varies with
-parameters such as room size, average surface absorption, and model crossover
-frequency. The simulation speed could also be compared to competing software
-packages. Usability is more difficult to test, but a sensible starting point
-would be to simply observe some creative professionals using the software (in
-order to find common points of confusion or frustration) and to ask for
-feedback.
+The goals of efficiency and usability were not tested. In terms of efficiency,
+it would be useful to show how simulation time varies with parameters such as
+room size, average surface absorption, and model crossover frequency. The
+simulation speed could also be compared to competing software packages.
+Usability is more difficult to test, but a sensible starting point would be to
+simply observe some creative professionals using the software (in order to find
+common points of confusion or frustration) and to ask for feedback.
 
 As it stands, the tests presented in the [Evaluation]({{site.baseurl}}{% link
 evaluation.md %}) do not have sufficient scope in order to make claims about
@@ -473,11 +471,11 @@ collaboration and contribution from interested third-parties.
 
 On reflection, it appears that the scope of the project was too large, which in
 turn meant that none of the research goals were satisfactorily achieved. The
-majority of the project's duration was spent implementing the program, which
-meant that when functional issues (like the reverb time mismatch) were
-discovered during testing, there was no time to attempt a fix. Additionally,
-much more testing would be necessary in order for a comprehensive view of the
-program to be given, but again this was not possible.
+majority of the time spent on the project was given to implementing the
+program, which meant that when functional issues (like the reverb time
+mismatch) were discovered during testing, there was no time to attempt a fix.
+Additionally, much more testing would be necessary in order for a comprehensive
+view of the program to be given, but again this was not possible.
 
 In its current state, Wayverb is unsuitable for use in creative contexts.
 However, it provides open-source implementations of three different acoustic

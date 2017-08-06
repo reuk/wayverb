@@ -524,17 +524,17 @@ mesh.](images/Cardioid_response){#fig:cardioid}
 mesh.](images/Bidirectional_response){#fig:bidirectional}
 
 Results are consistent across all polar patterns tested.  At the lower
-frequencies shown, the match is particularly good, with virtually no error in
-all directions.  As frequency increases, the error increases greatly. This
-happens as a result of frequency-dependent dispersion. At higher frequencies,
-the speed of wave-fronts changes depending on their direction. In the
-rectilinear mesh, there is no dispersion along diagonal directions
-[@kowalczyk_room_2011]. Along axial directions, however, high-frequency
-wave-fronts move more slowly. This is likely the cause of the predominant
-"spikes" seen in the diagonal directions: in these directions, all the acoustic
-energy reaches the receiver, while along axial directions, the wave-fronts are
-slower, and the full energy does not reach the receiver within the simulation
-window.
+frequencies shown (100Hz to 1.5kHz), the match is particularly good, with
+virtually no error in all directions.  As frequency increases, the error
+increases greatly. This happens as a result of frequency-dependent dispersion.
+At higher frequencies (above 2.7kHz), the speed of wave-fronts changes
+depending on their direction. In the rectilinear mesh, there is no dispersion
+along diagonal directions [@kowalczyk_room_2011]. Along axial directions,
+however, high-frequency wave-fronts move more slowly. This is likely the cause
+of the predominant "spikes" seen in the diagonal directions: in these
+directions, all the acoustic energy reaches the receiver, while along axial
+directions, the wave-fronts are slower, and the full energy does not reach the
+receiver within the simulation window.
 
 These results mirror those seen by Hacıhabiboğlu, who also records similar
 large errors in diagonal directions in the highest (8kHz) band. These errors
@@ -559,11 +559,11 @@ microphone techniques rely on capsules with direction- and frequency-dependent
 responses, therefore a virtual model is put forward which is capable of
 simulating these same characteristics.
 
-In the geometric models, directional information is directly available: each
-ray has a direction, which can be logged and used to attenuate each
-contribution according to the receiver polar pattern. These models already
-operate in multiple frequency bands, so to model frequency-dependent responses,
-the receiver can simply use a different directional response per band. A novel
+Directional information is inherent in the geometric models: each ray has a
+direction, which can be logged and used to attenuate each contribution
+according to the receiver polar pattern. These models already operate in
+multiple frequency bands, so to model frequency-dependent responses, the
+receiver can simply use a different directional response per band. A novel
 "offsetting" method has been put forward as an extension to the image-source
 model, which can reconstruct ITD information.
 
