@@ -1,4 +1,4 @@
-# Amendments
+# Amendments {-}
 
 In this document, requested changes are shown *in italics like this*. Responses
 follow immediately, and use a regular font.

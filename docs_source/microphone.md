@@ -584,9 +584,9 @@ the shortcoming that it doesn't consider interactions with other aspects of the
 waveguide simulation. In particular, it has not been shown how the microphone
 model responds to source gain and distance, or whether it affects the measured
 frequency response at the receiver. These are important considerations which
-have important implications for the validity of the waveguide model as a whole.
-Due to the number of components in Wayverb, and the time spent on
-implementation alone, there was not time to test all aspects of the program.
-However, the [Evaluation]({{ site.baseurl }}{% link evaluation.md %}) contains
-a number of tests, all of which use this microphone model. In the future, more
-detailed tests should be conducted which focus solely on the microphone model.
+have implications for the validity of the waveguide model as a whole.  Due to
+the number of components in Wayverb, and the time spent on implementation
+alone, there was not time to test all aspects of the program.  However, the
+[Evaluation]({{ site.baseurl }}{% link evaluation.md %}) contains a number of
+tests, all of which use this microphone model. In the future, more detailed
+tests should be conducted which focus solely on the microphone model.

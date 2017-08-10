@@ -199,9 +199,9 @@ scale across all available GPU cores.
 
 #### Accessibility
 
-The accessibility of the program was limited to the design of the graphical
-interface. The target demographic of creative users was considered in several
-ways.
+Considerations regarding the accessibility of the program were limited to the
+design of the graphical interface. The target demographic of creative users was
+considered in several ways.
 
 The workflow is designed to be intuitive. When the app is opened, it asks for a
 CAD file to load. Once a file has been selected, a list of settings will open

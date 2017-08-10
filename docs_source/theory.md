@@ -303,9 +303,11 @@ simplifying (assuming $\alpha$ is very small), and assuming $c = 343 m/s$,
 
 $$\text{RT60} = 0.161\frac{V}{S\alpha} = 0.161\frac{V}{A}$$ {#eq:sabine}
 
-This equation can be used to estimate the reverberation time of an enclosure,
-given the volume, surface area, and homogeneous absorption of that enclosure,
-and assuming that the sound field is diffuse.
+The term $A = S\alpha$ is known as the *equivalent absorption area* of the room
+[@kuttruff_room_2009 p. 130]. Sabine's equation can be used to estimate the
+reverberation time of an enclosure, given the volume, surface area, and
+homogeneous absorption of that enclosure, and assuming that the sound field is
+diffuse.
 
 The Sabine equation has some important limitations. Firstly, it fails at high
 absorptions. With the absorption coefficient set to 1, it estimates a finite
